@@ -15,12 +15,12 @@
 #   in _config.yml. It will appear in your document head meta (for Google search
 #   results) and in your feed.xml site description.
 
-title: Open Coding 
-description: "Class of 2026"
-owner_name: Open Coding Society 
-github_username: open-coding-society 
-github_repo: "pages" 
-baseurl: "" 
+title: Binary Beasts 
+description: "Class of 2028"
+owner_name: Aneesh Deevi 
+github_username: whitelunarium 
+github_repo: "BB_FrontEnd2" 
+baseurl: "BB_FrontEnd2" 
 future: true
 
 # Exclude from Jekyll watch - these are processed by our conversion scripts
