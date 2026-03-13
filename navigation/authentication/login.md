@@ -7,8 +7,6 @@ show_reading_time: false
 ---
 <br>
 
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-
 <div class="login-container">
     <!-- Python Login Form -->
     <div class="login-card">
@@ -30,34 +28,6 @@ show_reading_time: false
     <div class="signup-card">
         <h1 id="signupTitle">Sign Up</h1>
         <hr>
-        <!-- Google OAuth Section (initially hidden) -->
-        <div id="oauth-verification" style="display: none; text-align: center; margin-bottom: 2rem;">
-            <h3 style="color: #6366f1; margin-bottom: 1rem;">🎓 School Email Verification</h3>
-            <p style="margin-bottom: 1.5rem; color: #d1d5db;">
-                Please sign in with your school Google account to verify you're a Poway USD student or teacher.
-                <br><strong>You must use an email ending in @stu.powayusd.com or @powayusd.com</strong>
-            </p>
-            <div id="g_id_onload"
-                 data-client_id="65827797404-ccjleg7jg4g2an8ddpmhnlca4ii2gk8q.apps.googleusercontent.com"
-                 data-callback="handleGoogleSignIn"
-                 data-auto_prompt="false">
-            </div>
-            <div class="g_id_signin" 
-                 data-type="standard"
-                 data-size="large"
-                 data-theme="filled_blue"
-                 data-text="signin_with"
-                 data-shape="rectangular"
-                 data-logo_alignment="left"
-                 style="margin-bottom: 1rem;">
-            </div>
-            <button type="button" class="large secondary" onclick="showSignupForm()" 
-                    style="background-color: #6b7280;">
-                ← Back to Form
-            </button>
-            <div id="oauth-status" style="margin-top: 1rem;"></div>
-        </div>
-        <!-- Signup Form -->
         <form id="signupForm" onsubmit="handleSignupSubmit(event);">
             <div class="form-group">
                 <input type="text" id="name" placeholder="Name" required>
@@ -123,9 +93,7 @@ show_reading_time: false
     import { login, pythonURI, javaURI, fetchOptions } from '{{site.baseurl}}/assets/js/api/config.js';
 
     let signupFormData = {};
-    let verifiedSchoolEmail = null;
     let validationTimeout = null;
-    const GOOGLE_CLIENT_ID = "65827797404-ccjleg7jg4g2an8ddpmhnlca4ii2gk8q.apps.googleusercontent.com";
 
     // Password validation with debouncing (1.5 second delay)
     function validatePasswordsDebounced() {
@@ -201,27 +169,48 @@ show_reading_time: false
         const element = document.getElementById(`${backend}Status`);
         const icon = element.querySelector('.status-icon');
         const text = element.querySelector('.status-text');
+        const backendName = backend.charAt(0).toUpperCase() + backend.slice(1);
 
         // Remove existing status classes
-        element.classList.remove('pending', 'success', 'error');
+        element.classList.remove('pending', 'success', 'error', 'disabled');
 
         switch(status) {
             case 'pending':
                 element.classList.add('pending');
                 icon.textContent = '⏳';
-                text.textContent = backend.charAt(0).toUpperCase() + backend.slice(1);
+                text.textContent = backendName;
                 break;
             case 'success':
                 element.classList.add('success');
                 icon.textContent = '✅';
-                text.textContent = `${backend.charAt(0).toUpperCase() + backend.slice(1)} ✓`;
+                text.textContent = `${backendName} ✓`;
                 break;
             case 'error':
                 element.classList.add('error');
                 icon.textContent = '❌';
-                text.textContent = `${backend.charAt(0).toUpperCase() + backend.slice(1)} ✗`;
+                text.textContent = `${backendName} ✗`;
+                break;
+            case 'disabled':
+                element.classList.add('disabled');
+                icon.textContent = '⏭️';
+                text.textContent = message || `${backendName} skipped`;
                 break;
         }
+    }
+
+    function setOverallStatus(type, message) {
+        const overallEl = document.getElementById('overallStatus');
+        overallEl.classList.remove('hidden', 'success', 'partial', 'error');
+        overallEl.classList.add(type);
+        overallEl.textContent = message;
+    }
+
+    function isLocalJavaService() {
+        return javaURI.includes('localhost:8585') || javaURI.includes('127.0.0.1:8585');
+    }
+
+    function isMissingUsersTableError(error) {
+        return error && typeof error.message === 'string' && error.message.includes('no such table: users');
     }
 
     function updateOverallStatus() {
@@ -237,17 +226,13 @@ show_reading_time: false
         overallEl.classList.remove('hidden', 'success', 'partial', 'error');
 
         if (flaskSuccess && springSuccess) {
-            overallEl.classList.add('success');
-            overallEl.textContent = '🎉 Account created on both backends! You can now login.';
+            setOverallStatus('success', '🎉 Account created on both backends! You can now login.');
         } else if (flaskSuccess && springError) {
-            overallEl.classList.add('partial');
-            overallEl.textContent = '⚠️ Flask account created successfully! Spring failed but you can still login.';
+            setOverallStatus('partial', '⚠️ Flask account created successfully! Spring failed but you can still login.');
         } else if (flaskError && springSuccess) {
-            overallEl.classList.add('partial');
-            overallEl.textContent = '⚠️ Spring account created! Flask failed - please try again.';
+            setOverallStatus('partial', '⚠️ Spring account created! Flask failed - please try again.');
         } else if (flaskError && springError) {
-            overallEl.classList.add('error');
-            overallEl.textContent = '💥 Both backends failed. Please check your information and try again.';
+            setOverallStatus('error', '💥 Both backends failed. Please check your information and try again.');
         }
     }
 
@@ -277,65 +262,7 @@ show_reading_time: false
             kasm_server_needed: document.getElementById("kasmNeeded").checked,
         };
 
-        // Show OAuth verification
-        showOAuthVerification();
-    }
-
-    function showOAuthVerification() {
-        document.getElementById('signupForm').style.display = 'none';
-        document.getElementById('oauth-verification').style.display = 'block';
-    }
-
-    window.showSignupForm = function() {
-        document.getElementById('oauth-verification').style.display = 'none';
-        document.getElementById('signupForm').style.display = 'block';
-        clearOAuthStatus();
-    }
-
-    function clearOAuthStatus() {
-        document.getElementById('oauth-status').innerHTML = '';
-    }
-
-    function showOAuthStatus(message, isError = false) {
-        const statusDiv = document.getElementById('oauth-status');
-        statusDiv.innerHTML = `<div class="${isError ? 'oauth-error' : 'oauth-success'}">${message}</div>`;
-    }
-
-    window.handleGoogleSignIn = function(response) {
-        try {
-            const userInfo = parseJwt(response.credential);
-            const email = userInfo.email;
-            if (!email.endsWith('@stu.powayusd.com') && !email.endsWith('@powayusd.com')) {
-                showOAuthStatus('❌ You must use your school email address ending with @stu.powayusd.com or @powayusd.com', true);
-                return;
-            }
-            verifiedSchoolEmail = email;
-            showOAuthStatus(`✅ School email verified: ${email}`);
-
-            setTimeout(() => {
-                document.getElementById('oauth-verification').style.display = 'none';
-                document.getElementById('signupForm').style.display = 'block';
-
-                console.log("About to call signup() with stored data:", signupFormData);
-                console.log("pythonURI:", pythonURI);
-
-
-                signup();
-            }, 1500);
-
-        } catch (error) {
-            console.error("Error handling Google Sign-In:", error);
-            showOAuthStatus('❌ Error processing Google Sign-In. Please try again.', true);
-        }
-    }
-
-    function parseJwt(token) {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
-        return JSON.parse(jsonPayload);
+        signup();
     }
 
     // Initialize password validation when page loads
@@ -349,12 +276,6 @@ show_reading_time: false
             confirmPasswordField.addEventListener('input', validatePasswordsDebounced);
         }
 
-        if (window.google && window.google.accounts) {
-            window.google.accounts.id.initialize({
-                client_id: GOOGLE_CLIENT_ID,
-                callback: handleGoogleSignIn
-            });
-        }
     });
 
     // Function to handle both Python and Java login simultaneously
@@ -526,10 +447,6 @@ show_reading_time: false
             kasmServerNeeded: data.kasm_server_needed,
         };
 
-        if (verifiedSchoolEmail) {
-            console.log("Account created with verified school email:", verifiedSchoolEmail);
-        }
-
         console.log("Sending this data to Flask:", JSON.stringify(data, null, 2));
         console.log("Request URL:", `${pythonURI}/api/user`);
 
@@ -558,27 +475,35 @@ show_reading_time: false
             throw error;
         });
 
-        // Spring Backend Request
-        const springPromise = fetch(`${javaURI}/api/person/create`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(signupDataJava)
-        })
-        .then(response => {
-            if (response.ok) {
-                updateBackendStatus('spring', 'success');
-                return response.json();
-            } else {
-                throw new Error(`Spring: ${response.status}`);
-            }
-        })
-        .catch(error => {
-            console.error("Spring signup error:", error);
-            updateBackendStatus('spring', 'error');
-            throw error;
-        });
+        let springPromise;
+        if (isLocalJavaService()) {
+            updateBackendStatus('spring', 'disabled', 'Spring skipped on local dev');
+            springPromise = Promise.resolve({
+                skipped: true,
+                reason: 'Spring signup skipped because localhost:8585 is not required for local frontend signup.'
+            });
+        } else {
+            springPromise = fetch(`${javaURI}/api/person/create`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(signupDataJava)
+            })
+            .then(response => {
+                if (response.ok) {
+                    updateBackendStatus('spring', 'success');
+                    return response.json();
+                } else {
+                    throw new Error(`Spring: ${response.status}`);
+                }
+            })
+            .catch(error => {
+                console.error("Spring signup error:", error);
+                updateBackendStatus('spring', 'error');
+                throw error;
+            });
+        }
 
         // Handle both requests
         Promise.allSettled([flaskPromise, springPromise])
@@ -588,8 +513,16 @@ show_reading_time: false
                 console.log("Flask result:", flaskResult);
                 console.log("Spring result:", springResult);
 
-                // Update overall status after both complete
-                setTimeout(updateOverallStatus, 500);
+                if (flaskResult.status === 'rejected' && isMissingUsersTableError(flaskResult.reason)) {
+                    setOverallStatus(
+                        'error',
+                        'Flask signup failed because the local database is not initialized. Run `python scripts/db_init.py` in the Flask backend repo, then try again.'
+                    );
+                } else if (flaskResult.status === 'fulfilled' && springResult.status === 'fulfilled' && springResult.value?.skipped) {
+                    setOverallStatus('success', '🎉 Flask account created successfully. Spring was skipped for local development.');
+                } else {
+                    setTimeout(updateOverallStatus, 500);
+                }
 
                 // Re-enable button
                 signupButton.disabled = false;

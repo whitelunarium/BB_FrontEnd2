@@ -18,7 +18,8 @@
     const CONFIG = {
         batchInterval: 30000, // Flush analytics every 30 seconds
         pageUnloadTimeout: 5000, // Wait 5s before sending on page unload
-        enableDebug: false
+        enableDebug: false,
+        disableLocalJavaAnalytics: true
     };
 
     // Analytics session state
@@ -410,6 +411,14 @@
         try {
             const javaURI = window.javaURI || '/api';
             const payload = preparePayload();
+
+            if (
+                CONFIG.disableLocalJavaAnalytics &&
+                (javaURI.includes('localhost:8585') || javaURI.includes('127.0.0.1:8585'))
+            ) {
+                debug('Skipping analytics submission - local Spring backend is disabled');
+                return;
+            }
             
             // Only submit if there's meaningful data
             if (!analyticsState.questName && 
