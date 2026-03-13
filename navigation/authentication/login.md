@@ -90,7 +90,7 @@ show_reading_time: false
 </div>
 
 <script type="module">
-    import { login, pythonURI, javaURI, fetchOptions } from '{{site.baseurl}}/assets/js/api/config.js';
+    import { login, pythonURI, javaURI, fetchOptions } from '{{ "/assets/js/api/config.js" | relative_url }}';
 
     let signupFormData = {};
     let validationTimeout = null;
@@ -289,7 +289,7 @@ show_reading_time: false
         });
         Promise.allSettled([javaPromise, pythonPromise]).then(() => {
             // Only redirect after both have completed (success or fail)
-            window.location.href = '{{site.baseurl}}/profile';
+            window.location.href = '{{ "/profile" | relative_url }}';
         });
     };
     // Function to handle Python login
@@ -414,7 +414,7 @@ show_reading_time: false
         // The user is already authenticated (token in cookie), so just redirect to profile.
         console.log("Authentication successful, redirecting to profile...");
         setTimeout(() => {
-            window.location.href = '{{site.baseurl}}/profile';
+            window.location.href = '{{ "/profile" | relative_url }}';
         }, 1000);
     }  
     window.signup = function () {
