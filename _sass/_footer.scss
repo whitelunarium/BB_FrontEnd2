@@ -1,0 +1,181 @@
+// _footer.scss
+// PNEC Site Footer
+
+.pnec-footer {
+  background-color: $color-navy;
+  color: rgba(255, 255, 255, 0.8);
+  padding: $spacing-xxl 0 $spacing-lg;
+}
+
+.footer-grid {
+  max-width: $max-width;
+  margin: 0 auto;
+  padding: 0 $spacing-lg;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: $spacing-xl;
+
+  @media (max-width: $bp-lg) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @media (max-width: $bp-md) {
+    grid-template-columns: 1fr;
+    gap: $spacing-lg;
+  }
+}
+
+.footer-brand {
+  .footer-logo-area {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-md;
+    color: $color-white-pure;
+    text-decoration: none;
+
+    &:hover { text-decoration: none; }
+  }
+
+  .footer-org-name {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: $color-white-pure;
+    line-height: 1.2;
+  }
+
+  .footer-tagline {
+    font-size: $font-size-sm;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.5;
+    margin-bottom: $spacing-md;
+  }
+
+  .footer-contact-info {
+    font-size: $font-size-sm;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.8;
+
+    a {
+      color: rgba(255, 255, 255, 0.7);
+      &:hover { color: $color-white-pure; text-decoration: none; }
+    }
+  }
+}
+
+.footer-section {
+  h4 {
+    font-size: $font-size-sm;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: $color-white-pure;
+    margin-bottom: $spacing-md;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      margin-bottom: $spacing-sm;
+
+      a {
+        font-size: $font-size-sm;
+        color: rgba(255, 255, 255, 0.7);
+        transition: color $transition-fast;
+
+        &:hover { color: $color-white-pure; text-decoration: none; }
+      }
+    }
+  }
+}
+
+.footer-newsletter {
+  h4 {
+    font-size: $font-size-sm;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: $color-white-pure;
+    margin-bottom: $spacing-sm;
+  }
+
+  p {
+    font-size: $font-size-sm;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: $spacing-md;
+  }
+
+  // Constant Contact embed container
+  .newsletter-form-container {
+    .btn-newsletter {
+      background-color: $color-red;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: $border-radius-md;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: $font-size-sm;
+      width: 100%;
+      transition: background-color $transition-fast;
+
+      &:hover { background-color: $color-red-dark; }
+    }
+  }
+}
+
+.footer-bottom {
+  max-width: $max-width;
+  margin: $spacing-xl auto 0;
+  padding: $spacing-md $spacing-lg 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: $spacing-md;
+
+  p {
+    font-size: $font-size-sm;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: $spacing-md;
+
+    a {
+      font-size: $font-size-sm;
+      color: rgba(255, 255, 255, 0.5);
+      transition: color $transition-fast;
+
+      &:hover { color: $color-white-pure; text-decoration: none; }
+    }
+  }
+}
+
+.footer-social {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: $spacing-md;
+
+  a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 16px;
+    transition: background-color $transition-fast, color $transition-fast;
+    text-decoration: none;
+
+    &:hover { background-color: rgba(255, 255, 255, 0.2); color: $color-white-pure; }
+  }
+}

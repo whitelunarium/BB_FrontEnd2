@@ -1,0 +1,170 @@
+<!-- _includes/nav/navbar.html -->
+<!-- PNEC top navigation bar — desktop + mobile hamburger -->
+
+<nav class="pnec-navbar" role="navigation" aria-label="Main navigation">
+  <div class="navbar-inner">
+
+    <!-- Brand -->
+    <a href="{{ '/' | relative_url }}" class="navbar-brand" aria-label="PNEC Home">
+      <div class="brand-text">
+        <span class="brand-name">PNEC</span>
+        <span class="brand-tagline">Poway Emergency Corps</span>
+      </div>
+    </a>
+
+    <!-- Desktop nav links -->
+    <ul class="navbar-nav" role="list">
+
+      <li class="nav-item">
+        <a href="{{ '/' | relative_url }}" class="nav-link{% if page.url == '/' %} active{% endif %}">Home</a>
+      </li>
+
+      <!-- Prepare dropdown -->
+      <li class="nav-item">
+        <a href="{{ '/pages/prepare.html' | relative_url }}" class="nav-link{% if page.url contains '/prepare' %} active{% endif %}">
+          Prepare ▾
+        </a>
+        <ul class="dropdown-menu" role="menu">
+          <li><a href="{{ '/pages/kit.html' | relative_url }}" class="dropdown-item" role="menuitem">72-Hour Kit Checklist</a></li>
+          <li><a href="{{ '/pages/resources.html' | relative_url }}" class="dropdown-item" role="menuitem">Preparedness Resources</a></li>
+          <li><a href="{{ '/pages/neighborhood-map.html' | relative_url }}" class="dropdown-item" role="menuitem">Find Your Neighborhood</a></li>
+        </ul>
+      </li>
+
+      <!-- Community dropdown -->
+      <li class="nav-item">
+        <a href="{{ '/pages/community.html' | relative_url }}" class="nav-link{% if page.url contains '/community' %} active{% endif %}">
+          Community ▾
+        </a>
+        <ul class="dropdown-menu" role="menu">
+          <li><a href="{{ '/pages/events.html' | relative_url }}" class="dropdown-item" role="menuitem">Events &amp; Calendar</a></li>
+          <li><a href="{{ '/pages/gallery.html' | relative_url }}" class="dropdown-item" role="menuitem">Community Gallery</a></li>
+          <li><a href="{{ '/pages/game.html' | relative_url }}" class="dropdown-item" role="menuitem">Preparedness Game</a></li>
+        </ul>
+      </li>
+
+      <!-- Resources dropdown -->
+      <li class="nav-item">
+        <a href="{{ '/pages/resources.html' | relative_url }}" class="nav-link{% if page.url contains '/resources' %} active{% endif %}">
+          Resources ▾
+        </a>
+        <ul class="dropdown-menu" role="menu">
+          <li><a href="{{ '/pages/programs.html' | relative_url }}" class="dropdown-item" role="menuitem">Programs &amp; Services</a></li>
+          <li><a href="{{ '/pages/statistics.html' | relative_url }}" class="dropdown-item" role="menuitem">Statistics &amp; Info</a></li>
+        </ul>
+      </li>
+
+      <!-- Connect dropdown -->
+      <li class="nav-item">
+        <a href="{{ '/pages/connect.html' | relative_url }}" class="nav-link{% if page.url contains '/connect' %} active{% endif %}">
+          Connect ▾
+        </a>
+        <ul class="dropdown-menu" role="menu">
+          <li><a href="{{ '/pages/contact.html' | relative_url }}" class="dropdown-item" role="menuitem">Contact</a></li>
+          <li><a href="{{ '/pages/volunteer.html' | relative_url }}" class="dropdown-item" role="menuitem">Volunteer / Apply</a></li>
+          <li><a href="{{ '/pages/donate.html' | relative_url }}" class="dropdown-item" role="menuitem">Donate</a></li>
+        </ul>
+      </li>
+
+    </ul>
+
+    <!-- Right-side actions -->
+    <div class="navbar-actions">
+
+      <!-- Auth state: logged out (default, JS will replace) -->
+      <div class="navbar-auth-links" id="navbar-auth-logged-out">
+        <a href="{{ '/pages/login.html' | relative_url }}">Sign In</a>
+        <a href="{{ '/pages/register.html' | relative_url }}">Register</a>
+      </div>
+
+      <!-- Auth state: logged in (hidden until JS confirms) -->
+      <div class="user-menu" id="navbar-auth-logged-in" style="display:none">
+        <button class="user-menu-trigger" id="user-menu-trigger" aria-expanded="false" aria-haspopup="true">
+          <div class="user-avatar" id="user-avatar-initials">?</div>
+          <span id="navbar-display-name">User</span>
+          <span id="navbar-role-badge"></span>
+          <span>▾</span>
+        </button>
+        <ul class="user-menu-dropdown" id="user-menu-dropdown" role="menu">
+          <li class="user-menu-header">
+            <div class="user-name" id="user-menu-name">User</div>
+            <div id="user-menu-email"></div>
+          </li>
+          <li><a href="{{ '/pages/profile.html' | relative_url }}" class="user-menu-item" role="menuitem">My Profile</a></li>
+          <li id="nav-media-link" style="display:none"><a href="{{ '/pages/upload.html' | relative_url }}" class="user-menu-item" role="menuitem">Upload Media</a></li>
+          <li id="nav-events-link" style="display:none"><a href="{{ '/pages/manage-events.html' | relative_url }}" class="user-menu-item" role="menuitem">Manage Events</a></li>
+          <li id="nav-dashboard-link" style="display:none"><a href="{{ '/pages/dashboard.html' | relative_url }}" class="user-menu-item" role="menuitem">Staff Dashboard</a></li>
+          <li><button class="user-menu-item danger" id="navbar-logout-btn" role="menuitem">Sign Out</button></li>
+        </ul>
+      </div>
+
+      <!-- Donate button (always visible) -->
+      <a href="{{ '/pages/donate.html' | relative_url }}" class="btn-donate-nav">Donate</a>
+
+      <!-- Mobile hamburger -->
+      <button class="hamburger" id="hamburger-btn" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open navigation menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+  </div>
+</nav>
+
+<!-- Mobile nav overlay -->
+<div class="mobile-nav-overlay" id="mobile-nav-overlay" aria-hidden="true"></div>
+
+<!-- Mobile drawer -->
+<nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation" aria-hidden="true">
+  <div class="mobile-nav-header">
+    <span style="color:white;font-weight:700;font-size:1.1rem;">PNEC</span>
+    <button class="mobile-nav-close" id="mobile-nav-close" aria-label="Close navigation">✕</button>
+  </div>
+
+  <ul class="mobile-nav-links">
+    <li class="mobile-nav-section">
+      <a href="{{ '/' | relative_url }}">Home</a>
+    </li>
+
+    <li class="mobile-nav-section">
+      <div class="mobile-nav-section-label">Prepare</div>
+      <a href="{{ '/pages/kit.html' | relative_url }}">72-Hour Kit Checklist</a>
+      <a href="{{ '/pages/resources.html' | relative_url }}">Preparedness Resources</a>
+      <a href="{{ '/pages/neighborhood-map.html' | relative_url }}">Find Your Neighborhood</a>
+    </li>
+
+    <li class="mobile-nav-section">
+      <div class="mobile-nav-section-label">Community</div>
+      <a href="{{ '/pages/events.html' | relative_url }}">Events &amp; Calendar</a>
+      <a href="{{ '/pages/gallery.html' | relative_url }}">Community Gallery</a>
+      <a href="{{ '/pages/game.html' | relative_url }}">Preparedness Game</a>
+    </li>
+
+    <li class="mobile-nav-section">
+      <div class="mobile-nav-section-label">Resources</div>
+      <a href="{{ '/pages/programs.html' | relative_url }}">Programs &amp; Services</a>
+      <a href="{{ '/pages/statistics.html' | relative_url }}">Statistics &amp; Info</a>
+    </li>
+
+    <li class="mobile-nav-section">
+      <div class="mobile-nav-section-label">Connect</div>
+      <a href="{{ '/pages/contact.html' | relative_url }}">Contact</a>
+      <a href="{{ '/pages/volunteer.html' | relative_url }}">Volunteer / Apply</a>
+      <a href="{{ '/pages/donate.html' | relative_url }}">Donate</a>
+    </li>
+
+    <!-- Mobile auth links -->
+    <li class="mobile-nav-section" id="mobile-auth-logged-out">
+      <div class="mobile-nav-section-label">Account</div>
+      <a href="{{ '/pages/login.html' | relative_url }}">Sign In</a>
+      <a href="{{ '/pages/register.html' | relative_url }}">Create Account</a>
+    </li>
+    <li class="mobile-nav-section" id="mobile-auth-logged-in" style="display:none">
+      <div class="mobile-nav-section-label">Account</div>
+      <a href="{{ '/pages/profile.html' | relative_url }}">My Profile</a>
+      <a href="{{ '/pages/dashboard.html' | relative_url }}" id="mobile-dashboard-link" style="display:none">Staff Dashboard</a>
+      <a href="#" id="mobile-logout-btn" style="color: #fc8181;">Sign Out</a>
+    </li>
+  </ul>
+
+  <a href="{{ '/pages/donate.html' | relative_url }}" class="btn btn-primary btn-block">Donate Now</a>
+</nav>

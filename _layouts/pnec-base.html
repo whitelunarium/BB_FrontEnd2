@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>{% if page.title %}{{ page.title }} — {% endif %}{{ site.title }}</title>
+  <meta name="description" content="{% if page.description %}{{ page.description }}{% else %}{{ site.description }}{% endif %}">
+
+  <!-- SEO -->
+  <meta property="og:title" content="{% if page.title %}{{ page.title }} — {% endif %}{{ site.title }}">
+  <meta property="og:description" content="{% if page.description %}{{ page.description }}{% else %}{{ site.description }}{% endif %}">
+  <meta property="og:type" content="website">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="{{ '/favicon.ico' | relative_url }}">
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}">
+
+  <!-- Leaflet (loaded only on map page) -->
+  {% if page.use_leaflet %}
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  {% endif %}
+
+  {% if page.head_extra %}{{ page.head_extra }}{% endif %}
+</head>
+<body class="{{ page.body_class }}">
+
+  <!-- Skip to main content (accessibility) -->
+  <a href="#main-content" class="sr-only" style="position:absolute;left:-9999px">Skip to main content</a>
+
+  {% include nav/navbar.html %}
+
+  <main id="main-content">
+    {{ content }}
+  </main>
+
+  {% include footer.html %}
+
+  <!-- FAQ Chatbot Widget (on every page) -->
+  {% include chatbot/chatbot-widget.html %}
+
+  <!-- Core scripts -->
+  <script src="{{ '/assets/js/utils/errors.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/api/auth-api.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/ui/auth-ui.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/api/faq-api.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/ui/chatbot-ui.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/pages/chatbot.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/pages/navbar.js' | relative_url }}"></script>
+
+  {% if page.use_leaflet %}
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/WLs=" crossorigin=""></script>
+  <script src="{{ '/assets/js/api/neighborhood-api.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/ui/map-ui.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/pages/neighborhood-map.js' | relative_url }}"></script>
+  {% endif %}
+
+  {% if page.page_scripts %}{{ page.page_scripts }}{% endif %}
+</body>
+</html>

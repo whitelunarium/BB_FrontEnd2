@@ -1,0 +1,82 @@
+---
+layout: pnec-base
+title: "Community"
+description: "PNEC community events, training, gallery, and the preparedness game — Poway, CA."
+body_class: inner-page
+---
+
+<div class="page-hero page-hero--navy">
+  <div class="container">
+    <h1>Our Community</h1>
+    <p>Preparedness is a community effort. Join your neighbors at events, see us in action, or test your skills.</p>
+  </div>
+</div>
+
+<div class="container section">
+  <div class="grid grid-3">
+
+    <a href="{{ '/pages/events.html' | relative_url }}" class="community-nav-card">
+      <div class="cn-icon">📅</div>
+      <h3>Events &amp; Calendar</h3>
+      <p>CERT training, neighborhood drills, monthly PNEC meetings, and community preparedness fairs.</p>
+      <span class="btn btn-outline btn-sm">View Events</span>
+    </a>
+
+    <a href="{{ '/pages/gallery.html' | relative_url }}" class="community-nav-card">
+      <div class="cn-icon">📷</div>
+      <h3>Community Gallery</h3>
+      <p>Photos and videos from PNEC trainings, neighborhood meetings, and emergency exercises.</p>
+      <span class="btn btn-outline btn-sm">View Gallery</span>
+    </a>
+
+    <a href="{{ '/pages/game.html' | relative_url }}" class="community-nav-card">
+      <div class="cn-icon">🎮</div>
+      <h3>Preparedness Game</h3>
+      <p>Test your emergency knowledge across 15 scenarios covering wildfire, earthquake, flood, and more.</p>
+      <span class="btn btn-outline btn-sm">Play Now</span>
+    </a>
+
+  </div>
+</div>
+
+<div class="section section--gray">
+  <div class="container">
+    <h2>Upcoming Events</h2>
+    <p>Stay connected with your PNEC community — trainings, meetings, and exercises.</p>
+    <div id="community-events-list" class="grid grid-3" style="margin-top:24px" aria-live="polite">
+      <div class="loading-overlay"><span class="spinner"></span></div>
+    </div>
+    <div style="text-align:center;margin-top:32px">
+      <a href="{{ '/pages/events.html' | relative_url }}" class="btn btn-primary">See Full Calendar</a>
+    </div>
+  </div>
+</div>
+
+<script src="{{ '/assets/js/api/events-api.js' | relative_url }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var container = document.getElementById('community-events-list');
+  if (!container) return;
+  fetchEvents()
+    .then(function(events) {
+      var upcoming = events.filter(function(e) { return new Date(e.date) >= new Date(); }).slice(0, 3);
+      if (!upcoming.length) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📅</div><p>No upcoming events right now. Check back soon!</p></div>';
+        return;
+      }
+      container.innerHTML = upcoming.map(function(e) {
+        var d = new Date(e.date);
+        var month = d.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+        var day = d.getDate();
+        return '<div class="event-card"><div class="event-body">' +
+          '<div class="event-date-badge"><span class="event-month">' + month + '</span><span class="event-day">' + day + '</span></div>' +
+          '<h3>' + escapeHtml(e.title) + '</h3>' +
+          '<p class="event-location">📍 ' + escapeHtml(e.location || 'Poway, CA') + '</p>' +
+          '</div></div>';
+      }).join('');
+    })
+    .catch(function() {
+      container.innerHTML = '<div class="empty-state"><p>Events unavailable. Please check back later.</p></div>';
+    });
+});
+</script>

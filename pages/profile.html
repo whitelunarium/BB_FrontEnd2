@@ -1,0 +1,63 @@
+---
+layout: pnec-base
+title: "My Profile"
+description: "Manage your PNEC account."
+body_class: inner-page
+---
+
+<div class="container section">
+  <div id="profile-content">
+    <div class="loading-overlay" style="position:relative;height:200px;">
+      <span class="spinner"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var container = document.getElementById('profile-content');
+
+  fetchCurrentUser()
+    .then(function(user) {
+      if (!user) {
+        window.location.href = '/pages/login.html?next=/pages/profile.html';
+        return;
+      }
+      renderProfile(user, container);
+    })
+    .catch(function() {
+      container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><h3>Unable to load profile</h3><p>Please <a href="/pages/login.html">sign in</a> to view your profile.</p></div>';
+    });
+});
+
+function renderProfile(user, container) {
+  var roleBadgeHtml = '';
+  var roleLabels = { coordinator: 'Coordinator', staff: 'Staff', admin: 'Admin' };
+  var roleClasses = { coordinator: 'badge-coordinator', staff: 'badge-staff', admin: 'badge-admin' };
+  if (user.role && user.role !== 'resident') {
+    roleBadgeHtml = '<span class="badge ' + (roleClasses[user.role] || '') + '">' + (roleLabels[user.role] || user.role) + '</span>';
+  }
+
+  var joined = user.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : '';
+
+  container.innerHTML =
+    '<div class="profile-card">' +
+      '<div class="profile-avatar" aria-hidden="true">' + getInitials(user.display_name) + '</div>' +
+      '<div class="profile-info">' +
+        '<h1 class="profile-name">' + escapeHtml(user.display_name) + ' ' + roleBadgeHtml + '</h1>' +
+        '<p class="profile-email">' + escapeHtml(user.email) + '</p>' +
+        (joined ? '<p class="profile-joined">Member since ' + joined + '</p>' : '') +
+      '</div>' +
+    '</div>' +
+    '<div class="profile-actions">' +
+      '<a href="/" class="btn btn-outline">← Back to Home</a>' +
+    '</div>';
+}
+
+function getInitials(name) {
+  if (!name) return '?';
+  var words = name.trim().split(/\s+/);
+  if (words.length === 1) return words[0][0].toUpperCase();
+  return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+}
+</script>

@@ -1,0 +1,56 @@
+---
+layout: pnec-base
+title: "Events & Calendar"
+description: "PNEC training events, community meetings, and preparedness exercises in Poway, CA."
+---
+
+<div class="page-hero" role="banner">
+  <div class="container">
+    <div class="page-hero-eyebrow">Community Calendar</div>
+    <h1>Events &amp; Calendar</h1>
+    <p>CERT training courses, neighborhood coordinator meetings, go-bag workshops, and community preparedness exercises — all happening in Poway, CA.</p>
+  </div>
+</div>
+
+<div class="events-page">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px">
+    <div class="events-view-toggle" role="group" aria-label="View toggle">
+      <button id="view-calendar-btn" class="btn btn-secondary btn-sm" aria-pressed="true">
+        📅 Calendar View
+      </button>
+      <button id="view-list-btn" class="btn btn-outline btn-sm" aria-pressed="false">
+        ☰ List View
+      </button>
+    </div>
+    <button id="add-event-btn" class="btn btn-primary btn-sm" style="display:none" aria-label="Add new event">
+      + Add Event
+    </button>
+  </div>
+
+  <section id="calendar-view" class="events-view-toggle" aria-label="Calendar view">
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:24px">
+      <div id="pnec-calendar" aria-live="polite">
+        <div class="loading-overlay"><span class="spinner"></span> Loading calendar…</div>
+      </div>
+      <aside id="calendar-event-sidebar" aria-live="polite" aria-label="Selected day events">
+        <div class="card">
+          <div class="card-header"><strong>Select a Day</strong></div>
+          <div class="card-body" style="color:#5a5a5a;font-size:14px">
+            Click a date on the calendar to see events scheduled for that day.
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section id="list-view" style="display:none" aria-label="List view">
+    <div id="events-list-container" class="grid grid-3" aria-live="polite">
+      <div class="loading-overlay"><span class="spinner"></span> Loading events…</div>
+    </div>
+  </section>
+
+</div>
+
+<script src="/assets/js/api/events-api.js"></script>
+<script src="/assets/js/pages/events-page.js"></script>

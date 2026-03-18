@@ -1,0 +1,154 @@
+---
+layout: pnec-base
+title: "Volunteer with PNEC"
+description: "Join PNEC as a neighborhood emergency coordinator, CERT volunteer, ham radio operator, or community organizer in Poway, CA."
+---
+
+<div class="page-hero" role="banner">
+  <div class="container">
+    <div class="page-hero-eyebrow">Get Involved</div>
+    <h1>Get Involved with PNEC</h1>
+    <p>Whether you can give two hours a year or become a frontline responder, there's a meaningful role for you in Poway's emergency preparedness network.</p>
+  </div>
+</div>
+
+<section class="section" aria-labelledby="roles-heading">
+  <div class="container">
+    <div class="section-heading">
+      <h2 id="roles-heading">Volunteer Roles</h2>
+      <p>All roles are open to Poway residents. No prior experience required — PNEC provides all training.</p>
+    </div>
+
+    <div class="grid grid-2">
+
+      <article class="card card-body" aria-labelledby="role-coordinator">
+        <span style="font-size:2rem" aria-hidden="true">🏘️</span>
+        <h3 id="role-coordinator" style="margin-top:12px">Neighborhood Coordinator</h3>
+        <p>Be the emergency point of contact for your street or block. Coordinators conduct annual household surveys, maintain a neighborhood resource inventory, and serve as the link between residents and PNEC leadership during a disaster.</p>
+        <ul>
+          <li>Commitment: ~4 hours/month</li>
+          <li>Annual all-coordinator training included</li>
+          <li>Best for: community-minded residents who know their neighbors</li>
+        </ul>
+      </article>
+
+      <article class="card card-body" aria-labelledby="role-cert">
+        <span style="font-size:2rem" aria-hidden="true">🎓</span>
+        <h3 id="role-cert" style="margin-top:12px">CERT Volunteer</h3>
+        <p>Complete PNEC's 24-hour CERT training and join a team that activates during local emergencies to support fire, medical, and search-and-rescue operations until professional responders arrive.</p>
+        <ul>
+          <li>Commitment: 24-hr training + quarterly drills</li>
+          <li>Training provided free by the City of Poway Fire Dept</li>
+          <li>Best for: hands-on helpers ready to respond when called</li>
+        </ul>
+      </article>
+
+      <article class="card card-body" aria-labelledby="role-pact">
+        <span style="font-size:2rem" aria-hidden="true">📻</span>
+        <h3 id="role-pact" style="margin-top:12px">Ham Radio Operator</h3>
+        <p>Get your FCC Technician license and join PACT — the Poway Amateur Communications Team. PACT operators provide emergency voice and data communications when cell and internet infrastructure fails.</p>
+        <ul>
+          <li>Commitment: monthly nets + emergency activations</li>
+          <li>PNEC sponsors licensing exam study sessions</li>
+          <li>Best for: tech-savvy residents comfortable with radio equipment</li>
+        </ul>
+      </article>
+
+      <article class="card card-body" aria-labelledby="role-admin">
+        <span style="font-size:2rem" aria-hidden="true">📋</span>
+        <h3 id="role-admin" style="margin-top:12px">Administrative &amp; Board Support</h3>
+        <p>Help PNEC run its outreach campaigns, events, social media, grant writing, and organizational operations. Board members serve one-year terms and guide PNEC's strategic direction.</p>
+        <ul>
+          <li>Commitment: varies by role (2–8 hrs/month)</li>
+          <li>Skills needed: writing, design, event planning, finance, IT</li>
+          <li>Best for: organized, community-focused residents</li>
+        </ul>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<section class="section-sm" style="background:#f5f5f0" aria-labelledby="apply-heading">
+  <div class="container-narrow">
+    <div class="section-heading">
+      <h2 id="apply-heading">Express Your Interest</h2>
+      <p>Fill out the form below and a PNEC coordinator will follow up within a few business days.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <form id="volunteer-form" novalidate>
+          <div class="grid grid-2" style="gap:16px">
+            <div class="form-group">
+              <label class="form-label" for="vol-name">Full Name</label>
+              <input id="vol-name" name="name" type="text" class="form-input"
+                     placeholder="Your name" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="vol-email">Email Address</label>
+              <input id="vol-email" name="email" type="email" class="form-input"
+                     placeholder="you@example.com" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="vol-role">Role of Interest</label>
+            <select id="vol-role" name="role" class="form-select" required>
+              <option value="">Select a role…</option>
+              <option value="coordinator">Neighborhood Coordinator</option>
+              <option value="cert">CERT Volunteer</option>
+              <option value="pact">Ham Radio / PACT</option>
+              <option value="admin">Administrative / Board Support</option>
+              <option value="unsure">Not Sure Yet</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="vol-message">Tell Us About Yourself <span style="font-weight:400;color:#9e9e9e">(optional)</span></label>
+            <textarea id="vol-message" name="message" class="form-textarea" rows="4"
+                      placeholder="Your neighborhood, any relevant experience, questions you have…"></textarea>
+          </div>
+          <div id="volunteer-form-status" class="alert" style="display:none" role="alert"></div>
+          <button type="submit" class="btn btn-primary btn-block">Send My Interest</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+document.getElementById('volunteer-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  var form = e.target;
+  var statusEl = document.getElementById('volunteer-form-status');
+  var submitBtn = form.querySelector('button[type="submit"]');
+  var payload = {
+    name: form.querySelector('#vol-name').value.trim(),
+    email: form.querySelector('#vol-email').value.trim(),
+    question: 'Volunteer interest: ' + form.querySelector('#vol-role').value,
+    message: form.querySelector('#vol-message').value.trim()
+  };
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Sending…';
+  fetch('/api/questions/submit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+  .then(function() {
+    statusEl.className = 'alert alert-success';
+    statusEl.style.display = 'flex';
+    statusEl.textContent = 'Thank you! A PNEC coordinator will be in touch within a few business days.';
+    form.reset();
+  })
+  .catch(function() {
+    statusEl.className = 'alert alert-error';
+    statusEl.style.display = 'flex';
+    statusEl.textContent = 'Something went wrong. Please email us directly at info@pnec.org.';
+  })
+  .finally(function() {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Send My Interest';
+  });
+});
+</script>

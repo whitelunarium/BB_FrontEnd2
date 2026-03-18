@@ -1,0 +1,80 @@
+---
+layout: pnec-base
+title: "Staff Dashboard"
+description: "PNEC staff dashboard — manage user questions and community submissions."
+---
+
+<div id="dashboard-access-gate"></div>
+
+<div id="dashboard-content" style="display:none" class="dashboard-page">
+
+  <div class="page-hero" role="banner">
+    <div class="container">
+      <div class="page-hero-eyebrow">Staff Only</div>
+      <h1>Staff Dashboard</h1>
+      <p>Manage community-submitted questions, review pending answers, and monitor coordinator activity.</p>
+    </div>
+  </div>
+
+  <div style="max-width:1200px;margin:0 auto;padding:40px 24px">
+
+    <section aria-labelledby="questions-heading">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px">
+        <h2 id="questions-heading" style="margin:0">Preparedness Questions</h2>
+        <div class="tabs" role="tablist">
+          <button class="tab-btn active" data-status="all" role="tab" aria-selected="true">All</button>
+          <button class="tab-btn" data-status="open" role="tab" aria-selected="false">Open</button>
+          <button class="tab-btn" data-status="claimed" role="tab" aria-selected="false">Claimed</button>
+          <button class="tab-btn" data-status="answered" role="tab" aria-selected="false">Answered</button>
+        </div>
+      </div>
+
+      <div style="overflow-x:auto">
+        <table id="questions-table" class="dashboard-table" aria-live="polite">
+          <thead>
+            <tr>
+              <th>Question</th>
+              <th>Submitted</th>
+              <th>Status</th>
+              <th>Claimed By</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colspan="5">
+                <div class="loading-overlay"><span class="spinner"></span> Loading questions…</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+  <div id="answer-modal" class="modal-backdrop" style="display:none" role="dialog" aria-modal="true" aria-labelledby="answer-modal-title">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="answer-modal-title">Answer Question</h3>
+        <button class="modal-close" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="answer-modal-question" style="font-weight:600;color:#0a1628;margin-bottom:16px"></p>
+        <div class="form-group">
+          <label class="form-label" for="answer-textarea">Your Answer</label>
+          <textarea id="answer-textarea" class="form-textarea" rows="6"
+                    placeholder="Write a clear, helpful answer for the community…"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost modal-cancel-btn">Cancel</button>
+        <button id="answer-submit-btn" class="btn btn-primary">Submit Answer</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="/assets/js/api/faq-api.js"></script>
+<script src="/assets/js/pages/dashboard-page.js"></script>

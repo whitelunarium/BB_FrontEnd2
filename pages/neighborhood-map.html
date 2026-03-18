@@ -1,0 +1,48 @@
+---
+layout: pnec-base
+title: "Find Your Neighborhood Coordinator"
+description: "Interactive map of all Poway neighborhoods with emergency coordinator contact information."
+use_leaflet: true
+---
+
+<div class="page-hero" role="banner">
+  <div class="container">
+    <div class="page-hero-eyebrow">Neighborhood Network</div>
+    <h1>Find Your Neighborhood</h1>
+    <p>
+      PNEC covers every residential neighborhood in Poway. Click your neighborhood on the map or search by address to find your emergency coordinator's contact information.
+    </p>
+  </div>
+</div>
+
+<div class="map-page-layout">
+
+  <aside class="map-sidebar" aria-label="Neighborhood search and coordinator info">
+
+    <div class="map-sidebar-header">
+      <h2>Poway Neighborhoods</h2>
+      <form class="map-search" role="search" onsubmit="return false">
+        <input id="map-search-input"
+               type="search"
+               placeholder="Enter your address or neighborhood #"
+               aria-label="Search by address or neighborhood number"
+               autocomplete="off">
+        <button id="map-search-btn" type="submit" aria-label="Search">Search</button>
+      </form>
+    </div>
+
+    <div id="coordinator-info-panel" class="map-coordinator-info" aria-live="polite">
+      <div class="empty-state">
+        <div class="empty-state-icon">📍</div>
+        <h3>Select a Neighborhood</h3>
+        <p>Click a neighborhood on the map or search above to see coordinator contact details.</p>
+      </div>
+    </div>
+
+  </aside>
+
+  <div class="map-container" aria-label="Interactive neighborhood map">
+    <div id="pnec-map" style="width:100%;height:100%"></div>
+  </div>
+
+</div>

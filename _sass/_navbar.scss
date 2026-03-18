@@ -1,0 +1,369 @@
+// _navbar.scss
+// PNEC Navigation ? desktop + mobile hamburger drawer
+
+.pnec-navbar {
+  position: sticky;
+  top: 0;
+  z-index: $z-navbar;
+  background-color: $color-navy;
+  border-bottom: 3px solid $color-red;
+  box-shadow: $shadow-md;
+}
+
+.navbar-inner {
+  max-width: $max-width;
+  margin: 0 auto;
+  padding: 0 $spacing-lg;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+}
+
+// --- Brand --------------------------------------------------------------------
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  text-decoration: none;
+  color: $color-white-pure;
+  flex-shrink: 0;
+
+  &:hover { text-decoration: none; color: $color-white-pure; opacity: 0.9; }
+
+  .brand-logo {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+  }
+
+  .brand-text {
+    .brand-name {
+      font-size: 1.1rem;
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+    .brand-tagline {
+      font-size: 11px;
+      opacity: 0.7;
+      line-height: 1;
+      font-weight: 400;
+    }
+  }
+}
+
+// --- Desktop nav links --------------------------------------------------------
+.navbar-nav {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  @media (max-width: $bp-lg) {
+    display: none;
+  }
+}
+
+.nav-item {
+  position: relative;
+
+  &:hover .dropdown-menu {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateY(0);
+  }
+}
+
+.nav-link {
+  display: block;
+  padding: 8px 12px;
+  font-size: $font-size-sm;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  border-radius: $border-radius-sm;
+  transition: color $transition-fast, background-color $transition-fast;
+  letter-spacing: 0.01em;
+
+  &:hover, &.active {
+    color: $color-white-pure;
+    background-color: rgba(255, 255, 255, 0.1);
+    text-decoration: none;
+  }
+}
+
+// --- Dropdown menus -----------------------------------------------------------
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 200px;
+  background: $color-white-pure;
+  border: 1px solid $color-gray-200;
+  border-radius: $border-radius-md;
+  box-shadow: $shadow-lg;
+  padding: $spacing-sm;
+  list-style: none;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-8px);
+  transition: opacity $transition-fast, transform $transition-fast;
+
+  .dropdown-item {
+    display: block;
+    padding: 8px 12px;
+    font-size: $font-size-sm;
+    color: $color-gray-800;
+    border-radius: $border-radius-sm;
+    transition: background-color $transition-fast;
+
+    &:hover {
+      background-color: $color-gray-100;
+      color: $color-navy;
+      text-decoration: none;
+    }
+  }
+
+  .dropdown-divider {
+    border: none;
+    border-top: 1px solid $color-gray-200;
+    margin: $spacing-xs 0;
+  }
+}
+
+// --- Navbar right actions -----------------------------------------------------
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+
+  @media (max-width: $bp-lg) {
+    .nav-user-menu { display: none; }
+  }
+}
+
+.btn-donate-nav {
+  padding: 7px 16px;
+  font-size: $font-size-sm;
+  font-weight: 700;
+  background-color: $color-red;
+  color: $color-white-pure;
+  border: 2px solid $color-red;
+  border-radius: $border-radius-md;
+  text-decoration: none;
+  transition: background-color $transition-fast, border-color $transition-fast;
+  white-space: nowrap;
+
+  &:hover { background-color: $color-red-dark; border-color: $color-red-dark; color: $color-white-pure; text-decoration: none; }
+}
+
+// --- User menu dropdown -------------------------------------------------------
+.user-menu {
+  position: relative;
+}
+
+.user-menu-trigger {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: $border-radius-md;
+  color: $color-white-pure;
+  cursor: pointer;
+  font-size: $font-size-sm;
+  font-weight: 600;
+  transition: background-color $transition-fast;
+
+  &:hover { background-color: rgba(255, 255, 255, 0.15); }
+
+  .user-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: $color-red;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+  }
+}
+
+.user-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 200px;
+  background: $color-white-pure;
+  border: 1px solid $color-gray-200;
+  border-radius: $border-radius-md;
+  box-shadow: $shadow-lg;
+  padding: $spacing-sm;
+  list-style: none;
+  margin: 0;
+  display: none;
+
+  &.open { display: block; }
+
+  .user-menu-header {
+    padding: $spacing-sm $spacing-md;
+    font-size: $font-size-sm;
+    color: $color-gray-600;
+    border-bottom: 1px solid $color-gray-200;
+    margin-bottom: $spacing-xs;
+
+    .user-name { font-weight: 700; color: $color-navy; }
+  }
+
+  .user-menu-item {
+    display: block;
+    padding: 8px 12px;
+    font-size: $font-size-sm;
+    color: $color-gray-800;
+    border-radius: $border-radius-sm;
+    transition: background-color $transition-fast;
+
+    &:hover { background-color: $color-gray-100; color: $color-navy; text-decoration: none; }
+
+    &.danger { color: $color-red; }
+    &.danger:hover { background-color: #fee2e2; }
+  }
+}
+
+// --- Sign in / Register buttons (logged out) ----------------------------------
+.navbar-auth-links {
+  display: flex;
+  gap: $spacing-sm;
+  align-items: center;
+
+  a {
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+    padding: 6px 10px;
+    border-radius: $border-radius-sm;
+    transition: color $transition-fast, background-color $transition-fast;
+
+    &:hover { color: white; background-color: rgba(255, 255, 255, 0.1); text-decoration: none; }
+  }
+}
+
+// --- Mobile hamburger ---------------------------------------------------------
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  padding: $spacing-sm;
+  cursor: pointer;
+
+  @media (max-width: $bp-lg) {
+    display: flex;
+  }
+
+  span {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background-color: $color-white-pure;
+    border-radius: 2px;
+    transition: transform $transition-fast, opacity $transition-fast;
+  }
+
+  &.open {
+    span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    span:nth-child(2) { opacity: 0; }
+    span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  }
+}
+
+// --- Mobile drawer ------------------------------------------------------------
+.mobile-nav {
+  display: none;
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: min(320px, 100vw);
+  height: 100vh;
+  background-color: $color-navy;
+  z-index: $z-modal;
+  padding: $spacing-lg;
+  overflow-y: auto;
+  transition: right $transition-base;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);
+
+  &.open { right: 0; }
+
+  @media (max-width: $bp-lg) {
+    display: block;
+  }
+}
+
+.mobile-nav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-xl;
+
+  .mobile-nav-close {
+    background: none;
+    border: none;
+    color: $color-white-pure;
+    font-size: 1.75rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: $spacing-xs;
+  }
+}
+
+.mobile-nav-links {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 $spacing-xl;
+}
+
+.mobile-nav-section {
+  margin-bottom: $spacing-md;
+
+  .mobile-nav-section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.4);
+    padding: $spacing-sm 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: $spacing-xs;
+  }
+
+  a {
+    display: block;
+    padding: 10px 0;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: $font-size-base;
+    font-weight: 500;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    transition: color $transition-fast;
+
+    &:hover { color: $color-white-pure; text-decoration: none; }
+    &.active { color: $color-red-light; }
+  }
+}
+
+.mobile-nav-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: calc(#{$z-modal} - 1);
+
+  &.open { display: block; }
+}

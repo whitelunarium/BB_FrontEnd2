@@ -1,0 +1,75 @@
+// _variables.scss
+// PNEC Design System ? Color palette, typography, spacing, breakpoints
+
+// --- Color Palette ------------------------------------------------------------
+$color-navy:        #0a1628;   // Primary brand ? deep navy
+$color-navy-mid:    #162035;   // Card backgrounds, secondary sections
+$color-navy-light:  #1e2e4a;   // Borders, dividers on dark backgrounds
+$color-red:         #c0392b;   // Emergency red ? CTAs, alerts, accents
+$color-red-dark:    #962d22;   // Hover state for red elements
+$color-red-light:   #e74c3c;   // Lighter red for badges
+$color-white:       #f8f5f0;   // Warm white ? primary background
+$color-white-pure:  #ffffff;   // Pure white for cards
+$color-amber:       #e67e22;   // Amber alert ? medium severity
+$color-amber-dark:  #ca6f1e;   // Hover state for amber
+$color-green:       #27ae60;   // Safe/clear status
+$color-green-dark:  #1e8449;   // Hover state for green
+$color-gray-100:    #f5f5f0;   // Lightest gray ? section alternation
+$color-gray-200:    #e8e6e1;   // Borders, dividers
+$color-gray-400:    #9e9e9e;   // Muted text
+$color-gray-600:    #5a5a5a;   // Body text secondary
+$color-gray-800:    #2c2c2c;   // Body text primary
+
+// --- Risk Level Colors ---------------------------------------------------------
+$risk-low:          #27ae60;   // Score 0-3
+$risk-moderate:     #f39c12;   // Score 4-6
+$risk-high:         $color-amber;   // Score 7-8
+$risk-critical:     $color-red;    // Score 9-10
+
+// --- Typography ---------------------------------------------------------------
+$font-family-base:  -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+$font-size-base:    16px;
+$font-size-sm:      14px;
+$font-size-lg:      18px;
+$font-size-xl:      22px;
+$line-height-base:  1.65;
+$line-height-heading: 1.25;
+
+// --- Spacing ------------------------------------------------------------------
+$spacing-xs:    4px;
+$spacing-sm:    8px;
+$spacing-md:    16px;
+$spacing-lg:    24px;
+$spacing-xl:    40px;
+$spacing-xxl:   64px;
+
+// --- Layout -------------------------------------------------------------------
+$max-width:         1200px;
+$max-width-narrow:  800px;
+$border-radius-sm:  4px;
+$border-radius-md:  8px;
+$border-radius-lg:  12px;
+$border-radius-pill: 999px;
+
+// --- Shadows ------------------------------------------------------------------
+$shadow-sm:   0 1px 3px rgba(0, 0, 0, 0.08);
+$shadow-md:   0 4px 12px rgba(0, 0, 0, 0.12);
+$shadow-lg:   0 8px 24px rgba(0, 0, 0, 0.16);
+$shadow-card: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+
+// --- Transitions --------------------------------------------------------------
+$transition-fast:   0.15s ease;
+$transition-base:   0.25s ease;
+$transition-slow:   0.4s ease;
+
+// --- Breakpoints --------------------------------------------------------------
+$bp-sm:   576px;
+$bp-md:   768px;
+$bp-lg:   1024px;
+$bp-xl:   1200px;
+
+// --- Z-index scale ------------------------------------------------------------
+$z-navbar:    100;
+$z-chatbot:   200;
+$z-modal:     300;
+$z-tooltip:   400;

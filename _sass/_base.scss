@@ -1,0 +1,141 @@
+// _base.scss
+// PNEC Design System ? Base resets, body, typography, links
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: $font-size-base;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: $font-family-base;
+  font-size: $font-size-base;
+  line-height: $line-height-base;
+  color: $color-gray-800;
+  background-color: $color-white;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// --- Headings -----------------------------------------------------------------
+h1, h2, h3, h4, h5, h6 {
+  font-family: $font-family-base;
+  line-height: $line-height-heading;
+  color: $color-navy;
+  font-weight: 700;
+}
+
+h1 { font-size: 2.25rem; }
+h2 { font-size: 1.75rem; }
+h3 { font-size: 1.375rem; }
+h4 { font-size: 1.125rem; }
+h5 { font-size: 1rem; }
+h6 { font-size: 0.875rem; }
+
+// --- Body text ----------------------------------------------------------------
+p {
+  margin-bottom: $spacing-md;
+  color: $color-gray-800;
+
+  &:last-child { margin-bottom: 0; }
+}
+
+// --- Links --------------------------------------------------------------------
+a {
+  color: $color-red;
+  text-decoration: none;
+  transition: color $transition-fast;
+
+  &:hover {
+    color: $color-red-dark;
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 3px solid $color-amber;
+    outline-offset: 2px;
+    border-radius: $border-radius-sm;
+  }
+}
+
+// --- Lists --------------------------------------------------------------------
+ul, ol {
+  padding-left: $spacing-lg;
+  margin-bottom: $spacing-md;
+
+  li { margin-bottom: $spacing-xs; }
+}
+
+// --- Images -------------------------------------------------------------------
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+// --- Form elements ------------------------------------------------------------
+input, textarea, select {
+  font-family: $font-family-base;
+  font-size: $font-size-base;
+}
+
+button {
+  font-family: $font-family-base;
+  cursor: pointer;
+}
+
+// --- Horizontal rule ----------------------------------------------------------
+hr {
+  border: none;
+  border-top: 1px solid $color-gray-200;
+  margin: $spacing-xl 0;
+}
+
+// --- Utility containers -------------------------------------------------------
+.container {
+  max-width: $max-width;
+  margin: 0 auto;
+  padding: 0 $spacing-lg;
+
+  @media (max-width: $bp-md) {
+    padding: 0 $spacing-md;
+  }
+}
+
+.container-narrow {
+  max-width: $max-width-narrow;
+  margin: 0 auto;
+  padding: 0 $spacing-lg;
+}
+
+// --- Section spacing ----------------------------------------------------------
+.section {
+  padding: $spacing-xxl 0;
+
+  @media (max-width: $bp-md) {
+    padding: $spacing-xl 0;
+  }
+}
+
+.section-sm {
+  padding: $spacing-xl 0;
+}
+
+// --- Visually hidden (accessibility) -----------------------------------------
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

@@ -1,0 +1,418 @@
+// _homepage.scss
+// PNEC Homepage ? hero, risk widget, quick links, featured sections
+
+// --- Hero ---------------------------------------------------------------------
+.hero {
+  background-color: $color-navy;
+  padding: $spacing-xxl 0 $spacing-xl;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba($color-navy, 0.97) 50%, rgba($color-red, 0.08) 100%);
+    pointer-events: none;
+  }
+}
+
+.hero-inner {
+  max-width: $max-width;
+  margin: 0 auto;
+  padding: 0 $spacing-lg;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-xxl;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+
+  @media (max-width: $bp-lg) {
+    grid-template-columns: 1fr;
+    gap: $spacing-xl;
+  }
+}
+
+.hero-content {
+  .hero-eyebrow {
+    font-size: $font-size-sm;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: $color-red-light;
+    margin-bottom: $spacing-md;
+  }
+
+  h1 {
+    font-size: 2.75rem;
+    font-weight: 800;
+    color: $color-white-pure;
+    line-height: 1.1;
+    margin-bottom: $spacing-lg;
+
+    @media (max-width: $bp-md) { font-size: 2rem; }
+
+    span { color: $color-red-light; }
+  }
+
+  .hero-desc {
+    font-size: $font-size-lg;
+    color: rgba(255, 255, 255, 0.75);
+    line-height: 1.6;
+    margin-bottom: $spacing-xl;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: $spacing-md;
+    flex-wrap: wrap;
+  }
+}
+
+.hero-photo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 160px 160px;
+  gap: $spacing-sm;
+
+  @media (max-width: $bp-lg) {
+    display: none;
+  }
+
+  .hero-photo {
+    border-radius: $border-radius-md;
+    overflow: hidden;
+
+    &:first-child {
+      grid-row: span 2;
+      border-radius: $border-radius-lg;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    &.photo-placeholder {
+      background-color: $color-navy-light;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255, 255, 255, 0.3);
+      font-size: 2rem;
+    }
+  }
+}
+
+// --- Risk Widget --------------------------------------------------------------
+.risk-section {
+  background-color: $color-white;
+  padding: $spacing-xl 0;
+  border-bottom: 1px solid $color-gray-200;
+}
+
+.risk-widget-container {
+  max-width: $max-width;
+  margin: 0 auto;
+  padding: 0 $spacing-lg;
+}
+
+.risk-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-lg;
+  flex-wrap: wrap;
+  gap: $spacing-md;
+
+  h2 {
+    font-size: 1.25rem;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+  }
+
+  .risk-updated {
+    font-size: $font-size-sm;
+    color: $color-gray-400;
+  }
+}
+
+.risk-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-md;
+
+  @media (max-width: $bp-md) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.risk-card {
+  border-radius: $border-radius-lg;
+  padding: $spacing-lg;
+  border: 2px solid;
+  transition: box-shadow $transition-base;
+
+  &.risk-low      { background: #f0fdf4; border-color: #86efac; }
+  &.risk-moderate { background: #fffbeb; border-color: #fcd34d; }
+  &.risk-high     { background: #fff7ed; border-color: #fb923c; }
+  &.risk-critical { background: #fef2f2; border-color: $color-red; }
+
+  .risk-card-header {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-md;
+
+    .risk-icon { font-size: 1.5rem; }
+
+    .risk-type {
+      font-weight: 700;
+      font-size: $font-size-sm;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+  }
+
+  .risk-score-row {
+    display: flex;
+    align-items: baseline;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-sm;
+
+    .risk-score {
+      font-size: 2.5rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .risk-max { font-size: $font-size-sm; color: $color-gray-400; }
+
+    .risk-label {
+      font-size: $font-size-sm;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: $border-radius-pill;
+    }
+  }
+
+  .risk-conditions {
+    font-size: $font-size-sm;
+    color: $color-gray-600;
+    line-height: 1.7;
+
+    .condition-row {
+      display: flex;
+      justify-content: space-between;
+
+      .condition-label { color: $color-gray-400; }
+      .condition-value { font-weight: 600; }
+    }
+  }
+}
+
+// --- Quick links section ------------------------------------------------------
+.quick-links-section {
+  background-color: $color-navy;
+  padding: $spacing-xl 0;
+}
+
+.quick-links-grid {
+  max-width: $max-width;
+  margin: 0 auto;
+  padding: 0 $spacing-lg;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $spacing-md;
+
+  @media (max-width: $bp-lg) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: $bp-sm) { grid-template-columns: 1fr; }
+}
+
+.quick-link-card {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-md $spacing-lg;
+  background-color: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: $border-radius-lg;
+  text-decoration: none;
+  transition: background-color $transition-fast, border-color $transition-fast;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.13);
+    border-color: rgba(255, 255, 255, 0.2);
+    text-decoration: none;
+  }
+
+  .ql-icon {
+    font-size: 1.75rem;
+    flex-shrink: 0;
+  }
+
+  .ql-text {
+    .ql-title {
+      font-size: $font-size-base;
+      font-weight: 700;
+      color: $color-white-pure;
+      display: block;
+      line-height: 1.2;
+    }
+    .ql-desc {
+      font-size: $font-size-sm;
+      color: rgba(255, 255, 255, 0.6);
+      display: block;
+      margin-top: 2px;
+    }
+  }
+}
+
+// --- About section ------------------------------------------------------------
+.about-section {
+  padding: $spacing-xxl 0;
+  background-color: $color-white;
+}
+
+.about-inner {
+  max-width: $max-width;
+  margin: 0 auto;
+  padding: 0 $spacing-lg;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-xxl;
+  align-items: center;
+
+  @media (max-width: $bp-md) {
+    grid-template-columns: 1fr;
+    gap: $spacing-xl;
+  }
+}
+
+.about-content {
+  .section-eyebrow {
+    font-size: $font-size-sm;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: $color-red;
+    margin-bottom: $spacing-sm;
+  }
+
+  h2 { margin-bottom: $spacing-md; }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: $spacing-md;
+    margin-top: $spacing-xl;
+    padding-top: $spacing-lg;
+    border-top: 1px solid $color-gray-200;
+
+    .stat {
+      .stat-num {
+        font-size: 2rem;
+        font-weight: 800;
+        color: $color-red;
+        display: block;
+        line-height: 1;
+      }
+      .stat-label {
+        font-size: $font-size-sm;
+        color: $color-gray-600;
+        margin-top: $spacing-xs;
+      }
+    }
+  }
+}
+
+.about-image {
+  border-radius: $border-radius-lg;
+  overflow: hidden;
+  box-shadow: $shadow-lg;
+
+  img {
+    width: 100%;
+    height: 340px;
+    object-fit: cover;
+  }
+
+  .about-image-placeholder {
+    width: 100%;
+    height: 340px;
+    background: linear-gradient(135deg, $color-navy-light, $color-navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 4rem;
+  }
+}
+
+// --- Upcoming event teaser ----------------------------------------------------
+.upcoming-event-section {
+  background-color: $color-gray-100;
+  padding: $spacing-xl 0;
+  border-top: 1px solid $color-gray-200;
+  border-bottom: 1px solid $color-gray-200;
+}
+
+// --- Photo gallery teaser -----------------------------------------------------
+.gallery-teaser {
+  padding: $spacing-xxl 0;
+  background-color: $color-white;
+}
+
+.gallery-teaser-grid {
+  max-width: $max-width;
+  margin: 0 auto;
+  padding: 0 $spacing-lg;
+
+  .gallery-photos {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: $spacing-md;
+    margin-bottom: $spacing-lg;
+
+    @media (max-width: $bp-md) {
+      grid-template-columns: 1fr;
+    }
+
+    .gallery-photo-item {
+      border-radius: $border-radius-md;
+      overflow: hidden;
+      aspect-ratio: 4/3;
+      background-color: $color-gray-100;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform $transition-slow;
+      }
+
+      &:hover img { transform: scale(1.05); }
+    }
+  }
+}
+
+// --- Volunteer CTA -------------------------------------------------------------
+.volunteer-cta {
+  background: linear-gradient(135deg, $color-navy 0%, #1a2e4a 100%);
+  padding: $spacing-xxl 0;
+  text-align: center;
+
+  h2 { color: $color-white-pure; margin-bottom: $spacing-md; }
+  p  { color: rgba(255, 255, 255, 0.75); font-size: $font-size-lg; max-width: 560px; margin: 0 auto $spacing-xl; }
+
+  .cta-actions {
+    display: flex;
+    gap: $spacing-md;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}

@@ -1,0 +1,35 @@
+---
+layout: pnec-base
+title: "Community Gallery"
+description: "Photos and media from PNEC trainings, neighborhood meetings, and emergency preparedness events in Poway, CA."
+---
+
+<div class="page-hero" role="banner">
+  <div class="container">
+    <div class="page-hero-eyebrow">Community</div>
+    <h1>Community Gallery</h1>
+    <p>Moments from PNEC training sessions, neighborhood coordinator meetings, go-bag workshops, and community preparedness exercises across Poway.</p>
+  </div>
+</div>
+
+<div class="gallery-page">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+    <p style="margin:0;color:#5a5a5a;font-size:14px">
+      Photos shared by PNEC coordinators and community volunteers.
+    </p>
+    <button id="upload-media-btn" class="btn btn-primary" style="display:none" aria-label="Upload photo or media">
+      + Upload Photo
+    </button>
+  </div>
+
+  <div id="gallery-masonry" class="gallery-masonry" aria-live="polite" aria-label="Community photo gallery">
+    <div class="loading-overlay" style="grid-column:1/-1">
+      <span class="spinner"></span> Loading gallery…
+    </div>
+  </div>
+
+</div>
+
+<script src="/assets/js/api/events-api.js"></script>
+<script src="/assets/js/pages/gallery-page.js"></script>

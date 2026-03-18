@@ -1,0 +1,21 @@
+// main.scss
+// PNEC Design System ? Entry point
+// Imports all partials in dependency order
+
+// 1. Variables (must be first ? all partials reference these)
+@import "variables";
+
+// 2. Base resets and typography
+@import "base";
+
+// 3. Layout components
+@import "navbar";
+@import "footer";
+
+// 4. UI components (buttons, cards, forms, badges)
+@import "components";
+
+// 5. Feature-specific styles
+@import "homepage";
+@import "chatbot";
+@import "pages";

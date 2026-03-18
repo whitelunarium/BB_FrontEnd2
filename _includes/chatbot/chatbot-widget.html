@@ -1,0 +1,146 @@
+<!-- _includes/chatbot/chatbot-widget.html -->
+<!-- PNEC FAQ Preparedness Assistant — floating chatbot widget -->
+<!-- Rendered on every page via pnec-base layout -->
+
+<!-- Floating trigger button -->
+<button class="chatbot-trigger" id="chatbot-trigger-btn" aria-label="Open Preparedness Assistant" aria-expanded="false">
+  <span class="chatbot-trigger-icon" aria-hidden="true">💬</span>
+  <span class="chatbot-unread-badge" id="chatbot-unread-badge" aria-hidden="true">1</span>
+</button>
+
+<!-- Chat panel -->
+<div class="chatbot-panel" id="chatbot-panel" role="dialog" aria-modal="true" aria-label="PNEC Preparedness Assistant">
+
+  <!-- Header -->
+  <div class="chatbot-header">
+    <div class="chatbot-header-logo" aria-hidden="true">🚨</div>
+    <div class="chatbot-header-title">
+      <div class="chatbot-name">Preparedness Assistant</div>
+      <div class="chatbot-subtitle">Poway Neighborhood Emergency Corps</div>
+    </div>
+    <button class="chatbot-close" id="chatbot-close-btn" aria-label="Close assistant">✕</button>
+  </div>
+
+  <!-- Body -->
+  <div class="chatbot-body" id="chatbot-body">
+
+    <!-- Screen: Welcome -->
+    <div class="chatbot-screen active" id="screen-welcome">
+      <div class="chatbot-welcome">
+        <div class="chatbot-greeting">
+          <span class="greeting-emoji" aria-hidden="true">👋</span>
+          <h3>How can I help you prepare?</h3>
+          <p>Browse topics below or search for answers to emergency preparedness questions.</p>
+        </div>
+
+        <div class="chatbot-search-bar">
+          <input type="text"
+                 id="chatbot-search-input"
+                 placeholder="Search questions..."
+                 aria-label="Search preparedness questions"
+                 autocomplete="off">
+          <span class="search-icon" aria-hidden="true">🔍</span>
+        </div>
+
+        <!-- Search results (hidden until typing) -->
+        <div class="chatbot-search-results" id="chatbot-search-results" aria-live="polite" style="display:none"></div>
+
+        <!-- Category grid (shown when not searching) -->
+        <div class="chatbot-categories" id="chatbot-categories" aria-label="Question categories">
+          <!-- Populated by chatbot.js via faq-api.js -->
+          <div class="loading-overlay">
+            <span class="spinner"></span> Loading topics…
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen: Category questions -->
+    <div class="chatbot-screen" id="screen-category">
+      <div class="chatbot-category-header">
+        <button class="back-btn" id="back-to-welcome" aria-label="Back to categories">‹</button>
+        <h4 id="category-screen-title">Category</h4>
+      </div>
+      <ul class="chatbot-question-list" id="chatbot-question-list" aria-label="Questions in this category">
+        <!-- Populated dynamically -->
+      </ul>
+    </div>
+
+    <!-- Screen: Answer view -->
+    <div class="chatbot-screen" id="screen-answer">
+      <div class="chatbot-answer-header">
+        <button class="back-btn" id="back-to-category" aria-label="Back to questions">‹</button>
+        <h4 id="answer-question-text"></h4>
+      </div>
+
+      <div class="chatbot-answer-text" id="answer-body" aria-live="polite">
+        <!-- Populated dynamically -->
+      </div>
+
+      <div class="chatbot-feedback">
+        <span>Was this helpful?</span>
+        <button class="feedback-btn" id="feedback-yes-btn" aria-label="Yes, this was helpful">👍 Yes</button>
+        <button class="feedback-btn" id="feedback-no-btn" aria-label="No, this was not helpful">👎 No</button>
+      </div>
+
+      <div class="chatbot-ask-staff">
+        <button class="btn btn-outline-red btn-sm btn-ask-staff" id="show-ask-form-btn">
+          Ask a Staff Member
+        </button>
+      </div>
+    </div>
+
+    <!-- Screen: Ask staff form -->
+    <div class="chatbot-screen" id="screen-ask-staff">
+      <div class="chatbot-category-header">
+        <button class="back-btn" id="back-from-ask-form" aria-label="Back">‹</button>
+        <h4>Ask a Staff Member</h4>
+      </div>
+
+      <div class="chatbot-ask-form">
+        <p style="font-size:13px;color:#5a5a5a;margin-bottom:16px;">
+          Our volunteer staff typically respond within 1–2 business days.
+        </p>
+
+        <form id="ask-staff-form" novalidate>
+          <div class="form-group">
+            <label class="form-label" for="ask-name">Your Name</label>
+            <input type="text" class="form-input" id="ask-name" name="name" placeholder="Jane Smith" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="ask-email">Email Address</label>
+            <input type="email" class="form-input" id="ask-email" name="email" placeholder="you@example.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="ask-question">Your Question</label>
+            <textarea class="form-textarea" id="ask-question" name="question_text"
+                      placeholder="Describe your question in detail..." required></textarea>
+          </div>
+          <div id="ask-form-error" class="form-error" aria-live="polite" style="display:none"></div>
+          <button type="submit" class="btn btn-primary btn-block btn-sm" id="ask-form-submit">
+            Send Question
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Screen: Success confirmation -->
+    <div class="chatbot-screen" id="screen-success">
+      <div class="chatbot-success">
+        <div class="success-icon" aria-hidden="true">✅</div>
+        <h4>Question Received!</h4>
+        <p>A PNEC staff member will respond to your question at the email you provided, typically within 1–2 business days.</p>
+        <button class="btn btn-secondary btn-sm" id="success-back-btn" style="margin-top:16px">
+          Back to Topics
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /.chatbot-body -->
+
+  <!-- Footer -->
+  <div class="chatbot-footer">
+    <p>PNEC staff-reviewed answers • <a href="{{ '/pages/contact.html' | relative_url }}" style="color:#9e9e9e">Contact us directly</a></p>
+  </div>
+
+</div><!-- /.chatbot-panel -->

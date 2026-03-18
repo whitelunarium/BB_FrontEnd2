@@ -1,0 +1,221 @@
+---
+layout: pnec-base
+title: "Neighbor-to-Neighbor Emergency Preparedness"
+description: "Poway Neighborhood Emergency Corps — preparing Poway, CA residents for wildfires, earthquakes, floods, and more since 1995."
+body_class: home-page
+page_scripts: |
+  <script src="/assets/js/api/risk-api.js"></script>
+  <script src="/assets/js/ui/risk-ui.js"></script>
+  <script src="/assets/js/pages/risk-widget.js"></script>
+---
+
+<!-- ─── Hero ─────────────────────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-eyebrow">Poway, CA — Serving Our Community Since 1995</div>
+      <h1>Is Your Neighborhood <span>Ready?</span></h1>
+      <p class="hero-desc">
+        PNEC connects neighbors across Poway's 60+ neighborhoods to prepare together for wildfires, earthquakes, floods, and extreme heat — because when disaster strikes, neighbors are your first responders.
+      </p>
+      <div class="hero-actions">
+        <a href="/pages/kit.html" class="btn btn-primary btn-lg">Build Your 72-Hour Kit</a>
+        <a href="/pages/neighborhood-map.html" class="btn btn-outline" style="color:white;border-color:rgba(255,255,255,0.5)">Find My Coordinator</a>
+      </div>
+    </div>
+
+    <div class="hero-photo-grid" aria-hidden="true">
+      <div class="hero-photo photo-placeholder">
+        <span>🏘️</span>
+      </div>
+      <div class="hero-photo photo-placeholder" style="background:#1a2c44">
+        <span>🚒</span>
+      </div>
+      <div class="hero-photo photo-placeholder" style="background:#162035">
+        <span>🎒</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Risk widget ────────────────────────────────────────────────────────────── -->
+<section class="risk-section" aria-labelledby="risk-heading">
+  <div class="risk-widget-container">
+    <div class="risk-header">
+      <h2 id="risk-heading">
+        🌤 Current Poway Hazard Conditions
+      </h2>
+      <span class="risk-updated" id="risk-updated-time" aria-live="polite">Loading…</span>
+    </div>
+    <div class="risk-cards" role="list">
+      <div class="risk-card" id="fire-risk-card" role="listitem" aria-label="Fire risk level">
+        <div class="loading-overlay"><span class="spinner"></span></div>
+      </div>
+      <div class="risk-card" id="flood-risk-card" role="listitem" aria-label="Flood risk level">
+        <div class="loading-overlay"><span class="spinner"></span></div>
+      </div>
+      <div class="risk-card" id="heat-risk-card" role="listitem" aria-label="Extreme heat risk level">
+        <div class="loading-overlay"><span class="spinner"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Quick links ───────────────────────────────────────────────────────────── -->
+<section class="quick-links-section" aria-label="Quick links">
+  <div class="quick-links-grid">
+    <a href="/pages/kit.html" class="quick-link-card">
+      <span class="ql-icon" aria-hidden="true">🎒</span>
+      <div class="ql-text">
+        <span class="ql-title">72-Hour Kit</span>
+        <span class="ql-desc">Build &amp; track your go-bag</span>
+      </div>
+    </a>
+    <a href="/pages/neighborhood-map.html" class="quick-link-card">
+      <span class="ql-icon" aria-hidden="true">📍</span>
+      <div class="ql-text">
+        <span class="ql-title">Find My Coordinator</span>
+        <span class="ql-desc">Locate your neighborhood contact</span>
+      </div>
+    </a>
+    <a href="/pages/events.html" class="quick-link-card">
+      <span class="ql-icon" aria-hidden="true">📅</span>
+      <div class="ql-text">
+        <span class="ql-title">Upcoming Events</span>
+        <span class="ql-desc">Training &amp; community meetings</span>
+      </div>
+    </a>
+    <a href="#chatbot-trigger-btn" onclick="document.getElementById('chatbot-trigger-btn').click();return false" class="quick-link-card">
+      <span class="ql-icon" aria-hidden="true">💬</span>
+      <div class="ql-text">
+        <span class="ql-title">Ask a Question</span>
+        <span class="ql-desc">Get answers from our FAQ assistant</span>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- ─── About PNEC ────────────────────────────────────────────────────────────── -->
+<section class="about-section section" aria-labelledby="about-heading">
+  <div class="about-inner">
+    <div class="about-content">
+      <div class="section-eyebrow">About PNEC</div>
+      <h2 id="about-heading">Your Neighbors Are Your Best First Responders</h2>
+      <p>
+        In the critical minutes and hours after a disaster, professional help may not reach every neighborhood. PNEC trains and organizes Poway residents so neighbors can help each other — and help themselves.
+      </p>
+      <p>
+        We coordinate <strong>Neighborhood Emergency Coordinators</strong> across all of Poway's residential areas, offering CERT training, ham radio communication through our <strong>PACT program</strong>, and year-round preparedness education.
+      </p>
+      <div class="stat-row">
+        <div class="stat">
+          <span class="stat-num">60+</span>
+          <span class="stat-label">Neighborhoods Covered</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">500+</span>
+          <span class="stat-label">Trained Volunteers</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">1995</span>
+          <span class="stat-label">Year Founded</span>
+        </div>
+      </div>
+    </div>
+    <div class="about-image">
+      <div class="about-image-placeholder" aria-label="PNEC volunteers">
+        <span aria-hidden="true">🏘️</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Upcoming events teaser ────────────────────────────────────────────────── -->
+<section class="upcoming-event-section section-sm" aria-labelledby="events-heading">
+  <div class="container">
+    <div class="section-heading">
+      <h2 id="events-heading">Upcoming Events</h2>
+      <p>Join us for training, community meetings, and preparedness exercises.</p>
+    </div>
+    <div id="homepage-events-list" class="grid grid-3" aria-live="polite">
+      <div class="loading-overlay">
+        <span class="spinner"></span> Loading events…
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:32px">
+      <a href="/pages/events.html" class="btn btn-outline">View All Events</a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Gallery teaser ────────────────────────────────────────────────────────── -->
+<section class="gallery-teaser section" aria-labelledby="gallery-heading">
+  <div class="gallery-teaser-grid">
+    <div class="section-heading">
+      <h2 id="gallery-heading">Community in Action</h2>
+      <p>Photos from PNEC trainings, neighborhood meetings, and emergency response exercises.</p>
+    </div>
+    <div class="gallery-photos" id="homepage-gallery" aria-live="polite">
+      <!-- Placeholder tiles until media API loads -->
+      <div class="gallery-photo-item" style="background:#e8e6e1;display:flex;align-items:center;justify-content:center;color:#9e9e9e;font-size:2rem" aria-label="Community photo placeholder">
+        <span aria-hidden="true">📷</span>
+      </div>
+      <div class="gallery-photo-item" style="background:#e8e6e1;display:flex;align-items:center;justify-content:center;color:#9e9e9e;font-size:2rem" aria-label="Community photo placeholder">
+        <span aria-hidden="true">📷</span>
+      </div>
+      <div class="gallery-photo-item" style="background:#e8e6e1;display:flex;align-items:center;justify-content:center;color:#9e9e9e;font-size:2rem" aria-label="Community photo placeholder">
+        <span aria-hidden="true">📷</span>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:24px">
+      <a href="/pages/gallery.html" class="btn btn-outline">View Gallery</a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Volunteer CTA ─────────────────────────────────────────────────────────── -->
+<section class="volunteer-cta" aria-labelledby="volunteer-heading">
+  <div class="container">
+    <h2 id="volunteer-heading">Join Your Neighborhood's Emergency Team</h2>
+    <p>Whether you have 2 hours a year or 20, there's a place for you in PNEC. Volunteer coordinators, CERT trainees, ham radio operators, and organizational supporters all make a difference.</p>
+    <div class="cta-actions">
+      <a href="/pages/volunteer.html" class="btn btn-primary btn-lg">Get Involved</a>
+      <a href="/pages/donate.html" class="btn btn-outline" style="color:white;border-color:rgba(255,255,255,0.5)">Support PNEC</a>
+    </div>
+  </div>
+</section>
+
+<script>
+// Load upcoming events for homepage teaser
+document.addEventListener('DOMContentLoaded', function() {
+  var container = document.getElementById('homepage-events-list');
+  if (!container) return;
+
+  fetchEvents()
+    .then(function(events) {
+      var upcoming = events
+        .filter(function(e) { return new Date(e.date) >= new Date(); })
+        .slice(0, 3);
+
+      if (!upcoming.length) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📅</div><h3>No upcoming events</h3><p>Check back soon for new events.</p></div>';
+        return;
+      }
+
+      container.innerHTML = upcoming.map(function(event) {
+        var d = new Date(event.date);
+        var month = d.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+        var day   = d.getDate();
+        return '<div class="event-card"><div class="event-body">' +
+          '<div class="event-date-badge"><span class="event-month">' + month + '</span><span class="event-day">' + day + '</span></div>' +
+          '<h3>' + escapeHtml(event.title) + '</h3>' +
+          '<p class="event-location">📍 ' + escapeHtml(event.location || 'Poway, CA') + '</p>' +
+          '<p>' + escapeHtml((event.description || '').substring(0, 100)) + (event.description && event.description.length > 100 ? '…' : '') + '</p>' +
+          '</div></div>';
+      }).join('');
+    })
+    .catch(function() {
+      container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📅</div><h3>Events unavailable</h3><p>Please check back later.</p></div>';
+    });
+});
+</script>

@@ -1,0 +1,54 @@
+---
+layout: pnec-base
+title: "Preparedness Challenge Game"
+description: "Test your emergency preparedness knowledge with PNEC's scenario-based quiz game."
+body_class: game-page-body
+---
+
+<div class="game-page">
+  <div class="game-container">
+
+    <div class="game-header">
+      <h2>PNEC Preparedness Challenge</h2>
+      <div class="game-stats">
+        <div class="stat-pill lives">
+          Lives: <span id="game-lives-display">&#10084;&#10084;&#10084;</span>
+        </div>
+        <div class="stat-pill score">
+          Score: <span id="game-score-display">0</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="game-scenario-container">
+
+      <div class="game-scenario-card">
+        <span id="scenario-badge" class="scenario-badge">Loading scenario…</span>
+        <div class="scenario-body">
+          <span id="scenario-emoji" class="scenario-emoji" aria-hidden="true"></span>
+          <p id="scenario-text" class="scenario-text">
+            Preparing your scenario — get ready!
+          </p>
+        </div>
+      </div>
+
+      <div id="game-options-container" class="game-options" role="group" aria-label="Answer choices">
+        <!-- JS populates answer buttons -->
+      </div>
+
+      <div id="game-explanation" class="game-explanation" aria-live="polite"></div>
+
+    </div>
+
+    <aside style="margin-top:32px;background:rgba(255,255,255,0.06);border-radius:12px;padding:20px">
+      <h3 style="color:white;margin-bottom:16px;font-size:1rem">Top Scores</h3>
+      <div id="leaderboard-list" aria-live="polite">
+        <div style="color:rgba(255,255,255,0.4);font-size:14px">Loading leaderboard…</div>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+<script src="/assets/js/api/game-api.js"></script>
+<script src="/assets/js/pages/game.js"></script>
