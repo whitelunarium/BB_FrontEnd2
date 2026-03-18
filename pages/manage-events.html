@@ -1,0 +1,111 @@
+---
+layout: pnec-base
+title: "Manage Events"
+description: "Create and manage PNEC events for the community calendar."
+---
+
+<div id="manage-events-access-gate"></div>
+
+<div id="manage-events-content" style="display:none">
+
+  <div class="page-hero" role="banner">
+    <div class="container">
+      <div class="page-hero-eyebrow">Coordinator Tools</div>
+      <h1>Manage Events</h1>
+      <p>Add new events to the PNEC community calendar.</p>
+    </div>
+  </div>
+
+  <div class="container section" style="max-width:640px">
+    <div class="card">
+      <div class="card-header">
+        <strong>Add New Event</strong>
+      </div>
+      <div class="card-body">
+        <form id="event-form" novalidate>
+          <div class="form-group">
+            <label class="form-label" for="event-title">Event Title <span aria-hidden="true" style="color:#c0392b">*</span></label>
+            <input id="event-title" name="title" type="text" class="form-input"
+                   placeholder="e.g. CERT Basic Training" required maxlength="120">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="event-date">Date <span aria-hidden="true" style="color:#c0392b">*</span></label>
+            <input id="event-date" name="date" type="date" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="event-location">Location</label>
+            <input id="event-location" name="location" type="text" class="form-input"
+                   placeholder="e.g. Poway Community Park, 13094 Civic Center Dr" maxlength="200">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="event-description">Description</label>
+            <textarea id="event-description" name="description" class="form-textarea" rows="4"
+                      placeholder="Describe the event — what to bring, who it's for, how to register…" maxlength="1000"></textarea>
+          </div>
+          <div id="event-form-status" class="alert" style="display:none" role="alert"></div>
+          <div style="display:flex;gap:12px;justify-content:flex-end">
+            <a href="/pages/events.html" class="btn btn-ghost">Cancel</a>
+            <button id="event-submit-btn" type="submit" class="btn btn-primary">Create Event</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div style="margin-top:24px;text-align:center">
+      <a href="/pages/events.html" class="btn btn-outline">View All Events →</a>
+    </div>
+  </div>
+
+</div>
+
+<script src="/assets/js/api/events-api.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  fetchCurrentUser().then(function(user) {
+    if (!user || !['coordinator', 'staff', 'admin'].includes(user.role)) {
+      renderAccessDenied(document.getElementById('manage-events-access-gate'), 'Coordinator');
+      return;
+    }
+    document.getElementById('manage-events-content').style.display = '';
+  }).catch(function() {
+    renderAccessDenied(document.getElementById('manage-events-access-gate'), 'Coordinator');
+  });
+
+  document.getElementById('event-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var title       = document.getElementById('event-title').value.trim();
+    var date        = document.getElementById('event-date').value;
+    var location    = document.getElementById('event-location').value.trim();
+    var description = document.getElementById('event-description').value.trim();
+    var statusEl    = document.getElementById('event-form-status');
+    var submitBtn   = document.getElementById('event-submit-btn');
+
+    if (!title || !date) {
+      statusEl.className = 'alert alert-error';
+      statusEl.style.display = 'flex';
+      statusEl.textContent = 'Title and date are required.';
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Creating…';
+    statusEl.style.display = 'none';
+
+    createEvent({ title: title, date: date, location: location, description: description })
+      .then(function() {
+        statusEl.className = 'alert alert-success';
+        statusEl.style.display = 'flex';
+        statusEl.textContent = 'Event created! Redirecting to calendar…';
+        document.getElementById('event-form').reset();
+        setTimeout(function() { window.location.href = '/pages/events.html'; }, 1500);
+      })
+      .catch(function() {
+        statusEl.className = 'alert alert-error';
+        statusEl.style.display = 'flex';
+        statusEl.textContent = 'Unable to create event. Please try again.';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create Event';
+      });
+  });
+});
+</script>

@@ -1,0 +1,104 @@
+---
+layout: pnec-base
+title: "Upload Media"
+description: "Upload photos and videos from PNEC training sessions and community events."
+---
+
+<div id="upload-access-gate"></div>
+
+<div id="upload-content" style="display:none">
+
+  <div class="page-hero" role="banner">
+    <div class="container">
+      <div class="page-hero-eyebrow">Coordinator Tools</div>
+      <h1>Upload Media</h1>
+      <p>Share photos and videos from PNEC trainings, neighborhood meetings, and community events.</p>
+    </div>
+  </div>
+
+  <div class="container section" style="max-width:640px">
+    <div class="card">
+      <div class="card-body">
+        <form id="upload-form" novalidate enctype="multipart/form-data">
+          <div class="form-group">
+            <label class="form-label" for="upload-title">Title <span aria-hidden="true" style="color:#c0392b">*</span></label>
+            <input id="upload-title" name="title" type="text" class="form-input"
+                   placeholder="e.g. CERT Training — Spring 2025" required maxlength="120">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="upload-caption">Caption</label>
+            <textarea id="upload-caption" name="caption" class="form-textarea" rows="3"
+                      placeholder="Brief description of what's in the photo…" maxlength="300"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="upload-file">Photo or Video <span aria-hidden="true" style="color:#c0392b">*</span></label>
+            <input id="upload-file" name="file" type="file" class="form-input"
+                   accept="image/*,video/mp4,video/webm" required style="padding:8px">
+            <div style="font-size:12px;color:#5a5a5a;margin-top:4px">Accepted: JPG, PNG, GIF, MP4, WEBM. Max 20MB.</div>
+          </div>
+          <div id="upload-status" class="alert" style="display:none" role="alert"></div>
+          <div style="display:flex;gap:12px;justify-content:flex-end">
+            <a href="/pages/gallery.html" class="btn btn-ghost">Cancel</a>
+            <button id="upload-submit-btn" type="submit" class="btn btn-primary">Upload</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="/assets/js/api/events-api.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  fetchCurrentUser().then(function(user) {
+    if (!user || !['coordinator', 'staff', 'admin'].includes(user.role)) {
+      renderAccessDenied(document.getElementById('upload-access-gate'), 'Coordinator');
+      return;
+    }
+    document.getElementById('upload-content').style.display = '';
+  }).catch(function() {
+    renderAccessDenied(document.getElementById('upload-access-gate'), 'Coordinator');
+  });
+
+  document.getElementById('upload-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var title   = document.getElementById('upload-title').value.trim();
+    var caption = document.getElementById('upload-caption').value.trim();
+    var fileEl  = document.getElementById('upload-file');
+    var statusEl  = document.getElementById('upload-status');
+    var submitBtn = document.getElementById('upload-submit-btn');
+
+    if (!title || !fileEl.files.length) {
+      statusEl.className = 'alert alert-error';
+      statusEl.style.display = 'flex';
+      statusEl.textContent = 'Please provide a title and select a file.';
+      return;
+    }
+
+    var fd = new FormData();
+    fd.append('title',   title);
+    fd.append('caption', caption);
+    fd.append('file',    fileEl.files[0]);
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Uploading…';
+    statusEl.style.display = 'none';
+
+    uploadMediaPost(fd)
+      .then(function() {
+        statusEl.className = 'alert alert-success';
+        statusEl.style.display = 'flex';
+        statusEl.textContent = 'Uploaded successfully! Redirecting to gallery…';
+        setTimeout(function() { window.location.href = '/pages/gallery.html'; }, 1500);
+      })
+      .catch(function() {
+        statusEl.className = 'alert alert-error';
+        statusEl.style.display = 'flex';
+        statusEl.textContent = 'Upload failed. Please check the file size and try again.';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Upload';
+      });
+  });
+});
+</script>

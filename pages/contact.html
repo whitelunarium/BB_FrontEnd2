@@ -106,13 +106,13 @@ document.getElementById('contact-form').addEventListener('submit', function(e) {
   var statusEl = document.getElementById('contact-form-status');
   var submitBtn = document.getElementById('contact-submit-btn');
   var payload = {
-    name: form.querySelector('#contact-name').value.trim(),
+    display_name: form.querySelector('#contact-name').value.trim(),
     email: form.querySelector('#contact-email').value.trim(),
-    question: '[' + form.querySelector('#contact-subject').value + '] ' + form.querySelector('#contact-message').value.trim()
+    question_text: '[' + form.querySelector('#contact-subject').value + '] ' + form.querySelector('#contact-message').value.trim()
   };
   submitBtn.disabled = true;
   submitBtn.textContent = 'Sending…';
-  fetch('/api/questions/submit', {
+  fetch(API_BASE + '/api/questions/submit', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)

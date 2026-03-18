@@ -4,21 +4,22 @@
 
 /**
  * Purpose: Send login credentials to the API.
- * @param {string} email - User email address
+ * @param {string} email    - User email address
  * @param {string} password - User password
+ * @param {boolean} remember - Whether to persist the session cookie
  * @returns {Promise<Object>} API response with user data and role
  * Algorithm:
- * 1. Build request body with email + password
+ * 1. Build request body with email, password, remember flag
  * 2. POST to /api/auth/login with credentials
  * 3. Validate HTTP response
  * 4. Parse and return JSON
  */
-function loginUser(email, password) {
+function loginUser(email, password, remember = false) {
   return fetch(`${API_BASE}/api/auth/login`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password, remember }),
   })
     .then(validateResponse)
     .then(response => response.json());

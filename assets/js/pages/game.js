@@ -436,7 +436,7 @@ function showEndScreen() {
       <div class="game-badge" aria-hidden="true">${badge.emoji}</div>
       <h2>You earned:<br><span style="color:#c0392b">${escapeHtml(badge.name)}</span></h2>
       <div class="game-final-score">${gameState.score.toLocaleString()} pts</div>
-      <p>${lives === 0 ? 'You ran out of lives, but every scenario teaches you something. Try again!' : 'Excellent work! You completed all scenarios.'}</p>
+      <p>${gameState.lives <= 0 ? 'You ran out of lives, but every scenario teaches you something. Try again!' : 'Excellent work! You completed all scenarios.'}</p>
 
       <form id="leaderboard-submit-form" style="margin-bottom:24px">
         <input type="text" id="leaderboard-name" class="form-input"
