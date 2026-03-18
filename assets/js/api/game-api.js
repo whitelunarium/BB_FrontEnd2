@@ -11,10 +11,10 @@
  * 3. Return scores array
  */
 function fetchLeaderboardTop10() {
-  return fetch(`${API_BASE}/api/leaderboard/top10`, { credentials: 'include' })
+  return fetch(`${API_BASE}/api/leaderboard`, { credentials: 'include' })
     .then(validateResponse)
     .then(response => response.json())
-    .then(data => data.scores || []);
+    .then(data => data.leaderboard || []);
 }
 
 /**
