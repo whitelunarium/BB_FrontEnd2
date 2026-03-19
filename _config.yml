@@ -6,8 +6,8 @@ title: "Poway Neighborhood Emergency Corps"
 description: "Serving Poway, CA since 1995 — neighbor-to-neighbor emergency preparedness, response, and recovery."
 owner_name: "Poway Neighborhood Emergency Corps"
 github_username: ""
-baseurl: ""
-url: ""
+baseurl: "/BB_FrontEnd2"
+url: "https://whitelunarium.github.io"
 future: false
 
 # Author defaults
