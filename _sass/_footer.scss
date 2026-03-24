@@ -2,7 +2,7 @@
 // PNEC Site Footer
 
 .pnec-footer {
-  background-color: $color-navy;
+  background-color: #11314e;
   color: rgba(255, 255, 255, 0.8);
   padding: $spacing-xxl 0 $spacing-lg;
 }
@@ -12,7 +12,7 @@
   margin: 0 auto;
   padding: 0 $spacing-lg;
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr 1.2fr;
   gap: $spacing-xl;
 
   @media (max-width: $bp-lg) {
@@ -29,12 +29,21 @@
   .footer-logo-area {
     display: flex;
     align-items: center;
-    gap: $spacing-sm;
+    gap: $spacing-md;
     margin-bottom: $spacing-md;
     color: $color-white-pure;
     text-decoration: none;
 
     &:hover { text-decoration: none; }
+  }
+
+  .footer-logo-mark {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+    border-radius: 50%;
+    background: #fff;
+    padding: 4px;
   }
 
   .footer-org-name {
@@ -115,7 +124,7 @@
       color: white;
       border: none;
       padding: 10px 20px;
-      border-radius: $border-radius-md;
+      border-radius: 999px;
       font-weight: 600;
       cursor: pointer;
       font-size: $font-size-sm;
@@ -147,6 +156,7 @@
   .footer-links {
     display: flex;
     gap: $spacing-md;
+    flex-wrap: wrap;
 
     a {
       font-size: $font-size-sm;

@@ -16,9 +16,8 @@ author:
   email: "info@powaynec.com"
 
 # Build settings
-remote_theme: jekyll/minima
+theme: minima
 plugins:
-  - jekyll-remote-theme
   - jekyll-include-cache
   - jekyll-seo-tag
 

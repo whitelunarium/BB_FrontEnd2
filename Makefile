@@ -227,12 +227,12 @@ clean: stop
 
 stop:
 	@echo "Stopping server..."
-	@@lsof -ti :$(PORT) | xargs kill >/dev/null 2>&1 || true
+	@lsof -ti :$(PORT) | xargs kill >/dev/null 2>&1 || true
 	@echo "Stopping logging process..."
-	@@ps aux | awk -v log_file=$(LOG_FILE) '$$0 ~ "tail -f " log_file { print $$2 }' | xargs kill >/dev/null 2>&1 || true
+	@ps aux | awk -v log_file=$(LOG_FILE) '$$0 ~ "tail -f " log_file { print $$2 }' | xargs kill >/dev/null 2>&1 || true
 	@echo "Stopping notebook watcher..."
-	@@ps aux | grep "watch-notebooks" | grep -v grep | awk '{print $$2}' | xargs kill >/dev/null 2>&1 || true
-	@@ps aux | grep "find _notebooks" | grep -v grep | awk '{print $$2}' | xargs kill >/dev/null 2>&1 || true
+	@ps aux | grep "watch-notebooks" | grep -v grep | awk '{print $$2}' | xargs kill >/dev/null 2>&1 || true
+	@ps aux | grep "find _notebooks" | grep -v grep | awk '{print $$2}' | xargs kill >/dev/null 2>&1 || true
 	@rm -f $(LOG_FILE) /tmp/.notebook_watch_marker /tmp/.jekyll_regenerating
 
 reload:
@@ -290,7 +290,7 @@ wait-for-server:
 			grep "Server address:" $(LOG_FILE); \
 			break; \
 		fi; \
-		if [ $$COUNTER -eq 300 ]; then \
+		if [ $$COUNTER -eq 900 ]; then \
 			echo "Server timed out after $$COUNTER seconds."; \
 			echo "Review errors from $(LOG_FILE)."; \
 			cat $(LOG_FILE); \

@@ -5,9 +5,9 @@
   position: sticky;
   top: 0;
   z-index: $z-navbar;
-  background-color: $color-navy;
-  border-bottom: 3px solid $color-red;
-  box-shadow: $shadow-md;
+  background-color: $color-white-pure;
+  border-bottom: 1px solid #d8dde5;
+  box-shadow: 0 6px 22px rgba(13, 29, 53, 0.08);
 }
 
 .navbar-inner {
@@ -17,24 +17,28 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 64px;
+  min-height: 82px;
+  gap: $spacing-md;
 }
 
 // --- Brand --------------------------------------------------------------------
 .navbar-brand {
   display: flex;
   align-items: center;
-  gap: $spacing-sm;
+  gap: 12px;
   text-decoration: none;
-  color: $color-white-pure;
+  color: $color-navy;
   flex-shrink: 0;
 
-  &:hover { text-decoration: none; color: $color-white-pure; opacity: 0.9; }
+  &:hover { text-decoration: none; color: $color-navy; opacity: 0.92; }
 
   .brand-logo {
-    width: 40px;
-    height: 40px;
+    width: 48px;
+    height: 48px;
     object-fit: contain;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.16);
   }
 
   .brand-text {
@@ -45,8 +49,8 @@
       letter-spacing: -0.02em;
     }
     .brand-tagline {
-      font-size: 11px;
-      opacity: 0.7;
+      font-size: 12px;
+      opacity: 0.72;
       line-height: 1;
       font-weight: 400;
     }
@@ -57,7 +61,7 @@
 .navbar-nav {
   display: flex;
   align-items: center;
-  gap: $spacing-xs;
+  gap: 2px;
   list-style: none;
   padding: 0;
   margin: 0;
@@ -79,17 +83,18 @@
 
 .nav-link {
   display: block;
-  padding: 8px 12px;
+  padding: 10px 12px;
   font-size: $font-size-sm;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
+  font-weight: 700;
+  color: #244468;
   border-radius: $border-radius-sm;
   transition: color $transition-fast, background-color $transition-fast;
   letter-spacing: 0.01em;
+  white-space: nowrap;
 
   &:hover, &.active {
-    color: $color-white-pure;
-    background-color: rgba(255, 255, 255, 0.1);
+    color: $color-navy;
+    background-color: #eef3f8;
     text-decoration: none;
   }
 }
@@ -146,13 +151,13 @@
 }
 
 .btn-donate-nav {
-  padding: 7px 16px;
+  padding: 10px 18px;
   font-size: $font-size-sm;
   font-weight: 700;
   background-color: $color-red;
   color: $color-white-pure;
   border: 2px solid $color-red;
-  border-radius: $border-radius-md;
+  border-radius: 999px;
   text-decoration: none;
   transition: background-color $transition-fast, border-color $transition-fast;
   white-space: nowrap;
@@ -170,16 +175,16 @@
   align-items: center;
   gap: $spacing-sm;
   padding: 6px 12px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #f4f7fa;
+  border: 1px solid #d8dde5;
   border-radius: $border-radius-md;
-  color: $color-white-pure;
+  color: $color-navy;
   cursor: pointer;
   font-size: $font-size-sm;
   font-weight: 600;
   transition: background-color $transition-fast;
 
-  &:hover { background-color: rgba(255, 255, 255, 0.15); }
+  &:hover { background-color: #ebf1f6; }
 
   .user-avatar {
     width: 28px;
@@ -246,12 +251,12 @@
   a {
     font-size: $font-size-sm;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.85);
+    color: #35516f;
     padding: 6px 10px;
     border-radius: $border-radius-sm;
     transition: color $transition-fast, background-color $transition-fast;
 
-    &:hover { color: white; background-color: rgba(255, 255, 255, 0.1); text-decoration: none; }
+    &:hover { color: $color-navy; background-color: #eef3f8; text-decoration: none; }
   }
 }
 
@@ -273,7 +278,7 @@
     display: block;
     width: 24px;
     height: 2px;
-    background-color: $color-white-pure;
+    background-color: $color-navy;
     border-radius: 2px;
     transition: transform $transition-fast, opacity $transition-fast;
   }
@@ -293,7 +298,7 @@
   right: -100%;
   width: min(320px, 100vw);
   height: 100vh;
-  background-color: $color-navy;
+  background-color: #163653;
   z-index: $z-modal;
   padding: $spacing-lg;
   overflow-y: auto;

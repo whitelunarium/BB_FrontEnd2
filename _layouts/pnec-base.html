@@ -19,6 +19,19 @@
   <!-- Main Stylesheet -->
   <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}">
 
+  {% if page.use_poway_live_styles %}
+  <link rel="stylesheet" href="https://powaynec.com/wp-content/plugins/elementor/assets/lib/font-awesome/css/all.min.css?ver=3.35.7">
+  <link rel="stylesheet" href="https://powaynec.com/wp-content/uploads/jupiterx/compiler/jupiterx/b517470.css?ver=4.9.2">
+  <link rel="stylesheet" href="https://powaynec.com/wp-content/uploads/jupiterx/compiler/jupiterx-elements-dynamic-styles/41d6799.css?ver=4.9.2">
+  <link rel="stylesheet" href="https://powaynec.com/wp-content/uploads/elementor/css/custom-frontend.min.css?ver=1773234694">
+  <link rel="stylesheet" href="https://powaynec.com/wp-content/uploads/elementor/css/custom-pro-widget-nav-menu.min.css?ver=1773234694">
+  <link rel="stylesheet" href="https://powaynec.com/wp-content/plugins/jupiterx-core/includes/extensions/raven/assets/css/frontend.min.css?ver=6.9.1">
+  <link rel="stylesheet" href="https://powaynec.com/wp-content/uploads/elementor/css/post-771.css?ver=1773234694">
+  <link rel="stylesheet" href="https://powaynec.com/wp-content/uploads/elementor/css/post-22.css?ver=1773234695">
+  <link rel="stylesheet" href="https://powaynec.com/wp-content/uploads/elementor/css/post-6.css?ver=1773234695">
+  <link rel="stylesheet" href="https://powaynec.com/wp-content/uploads/elementor/google-fonts/css/roboto.css?ver=1742222182">
+  {% endif %}
+
   <!-- Leaflet (loaded only on map page) -->
   {% if page.use_leaflet %}
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -27,22 +40,30 @@
 
   {% if page.head_extra %}{{ page.head_extra }}{% endif %}
 </head>
-<body class="{{ page.body_class }}">
+<body class="{% if page.use_poway_live_styles %}home wp-singular page-template page-template-elementor_header_footer page page-id-22 wp-theme-jupiterx no-js ctct-jupiterx elementor-default elementor-template-full-width elementor-kit-771 elementor-page elementor-page-22 jupiterx-header-overlapped jupiterx-header-overlapped-tablet jupiterx-header-overlapped-mobile {% endif %}{{ page.body_class }}">
 
   <!-- Skip to main content (accessibility) -->
   <a href="#main-content" class="sr-only" style="position:absolute;left:-9999px">Skip to main content</a>
+  <div class="{% if page.use_poway_live_styles %}jupiterx-site{% endif %}">
+    {% unless page.use_poway_embed %}
+    {% include nav/navbar.html %}
+    {% endunless %}
 
-  {% include nav/navbar.html %}
+    <main id="{% if page.use_poway_live_styles %}jupiterx-main{% else %}main-content{% endif %}" class="{% if page.use_poway_live_styles %}jupiterx-main{% endif %}">
+      {{ content }}
+    </main>
 
-  <main id="main-content">
-    {{ content }}
-  </main>
+    {% unless page.use_poway_embed %}
+    {% include footer.html %}
+    {% endunless %}
+  </div>
 
-  {% include footer.html %}
-
+  {% unless page.use_poway_embed %}
   <!-- FAQ Chatbot Widget (on every page) -->
   {% include chatbot/chatbot-widget.html %}
+  {% endunless %}
 
+  {% unless page.use_poway_embed %}
   <!-- Core scripts -->
   <script src="{{ '/assets/js/utils/errors.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/api/auth-api.js' | relative_url }}"></script>
@@ -61,5 +82,6 @@
   {% endif %}
 
   {% if page.page_scripts %}{{ page.page_scripts }}{% endif %}
+  {% endunless %}
 </body>
 </html>
