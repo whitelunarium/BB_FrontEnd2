@@ -76,7 +76,9 @@ function fetchCurrentUser() {
   })
     .then(response => {
       if (response.status === 401) return null;
-      return validateResponse(response).then(r => r.json());
+      return validateResponse(response)
+        .then(r => r.json())
+        .then(data => data.user || null);
     });
 }
 

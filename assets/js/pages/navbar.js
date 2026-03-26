@@ -3,6 +3,7 @@
 //                 user menu dropdown on every page load.
 
 (function initNavbar() {
+  window.PNEC_SITE_BASE = window.location.pathname.startsWith('/BB_FrontEnd2') ? '/BB_FrontEnd2' : '';
   loadAuthState();
   bindHamburger();
   bindUserMenuToggle();
@@ -134,6 +135,6 @@ function handleLogout(event) {
     .catch(() => {/* Ignore server errors — clear session regardless */})
     .finally(() => {
       sessionStorage.removeItem('pnec_user');
-      window.location.href = '/';
+      window.location.href = `${window.PNEC_SITE_BASE}/`;
     });
 }

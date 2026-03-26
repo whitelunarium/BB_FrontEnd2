@@ -4,6 +4,8 @@
 
 document.addEventListener('DOMContentLoaded', initLoginPage);
 
+const SITE_BASE = window.location.pathname.startsWith('/BB_FrontEnd2') ? '/BB_FrontEnd2' : '';
+
 /**
  * Purpose: Initialize the login page — bind form submission event.
  * @returns {void}
@@ -14,7 +16,7 @@ document.addEventListener('DOMContentLoaded', initLoginPage);
  */
 function initLoginPage() {
   const existingUser = _readSessionUser();
-  if (existingUser) { window.location.href = '/'; return; }
+  if (existingUser) { window.location.href = `${SITE_BASE}/`; return; }
 
   const form = document.getElementById('login-form');
   if (form) form.addEventListener('submit', handleLoginSubmit);
@@ -71,7 +73,7 @@ function validateLoginInputs(email, password) {
  */
 function handleLoginSuccess(user) {
   sessionStorage.setItem('pnec_user', JSON.stringify(user));
-  const redirect = new URLSearchParams(window.location.search).get('next') || '/';
+  const redirect = new URLSearchParams(window.location.search).get('next') || `${SITE_BASE}/`;
   window.location.href = redirect;
 }
 

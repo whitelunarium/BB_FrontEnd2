@@ -21,7 +21,8 @@ const ROLE_CONFIG = {
  * 4. Show role-gated menu items based on user.role
  */
 function renderNavbarLoggedIn(user) {
-  const loggedOutEl  = document.getElementById('navbar-auth-logged-out');
+  const loginItem    = document.getElementById('navbar-login-item');
+  const registerItem = document.getElementById('navbar-register-item');
   const loggedInEl   = document.getElementById('navbar-auth-logged-in');
   const displayName  = document.getElementById('navbar-display-name');
   const roleBadge    = document.getElementById('navbar-role-badge');
@@ -31,7 +32,8 @@ function renderNavbarLoggedIn(user) {
 
   if (!loggedInEl) return;
 
-  if (loggedOutEl) loggedOutEl.style.display = 'none';
+  if (loginItem)    loginItem.style.display = 'none';
+  if (registerItem) registerItem.style.display = 'none';
   loggedInEl.style.display = 'block';
 
   if (displayName) displayName.textContent = user.display_name;
@@ -58,12 +60,14 @@ function renderNavbarLoggedIn(user) {
  * 3. Reset mobile nav auth section
  */
 function renderNavbarLoggedOut() {
-  const loggedOutEl = document.getElementById('navbar-auth-logged-out');
+  const loginItem = document.getElementById('navbar-login-item');
+  const registerItem = document.getElementById('navbar-register-item');
   const loggedInEl  = document.getElementById('navbar-auth-logged-in');
   const mobileLoggedOut = document.getElementById('mobile-auth-logged-out');
   const mobileLoggedIn  = document.getElementById('mobile-auth-logged-in');
 
-  if (loggedOutEl) loggedOutEl.style.display = 'flex';
+  if (loginItem) loginItem.style.display = 'list-item';
+  if (registerItem) registerItem.style.display = 'list-item';
   if (loggedInEl)  loggedInEl.style.display = 'none';
   if (mobileLoggedOut) mobileLoggedOut.style.display = 'block';
   if (mobileLoggedIn)  mobileLoggedIn.style.display = 'none';
@@ -141,12 +145,13 @@ function getInitials(name) {
  */
 function renderAccessDenied(containerEl, requiredRole) {
   if (!containerEl) return;
+  const siteBase = window.PNEC_SITE_BASE || '';
   containerEl.innerHTML = `
     <div class="empty-state" style="padding: 80px 24px;">
       <div class="empty-state-icon">🔒</div>
       <h3>Access Restricted</h3>
       <p>This page requires <strong>${requiredRole}</strong> access.<br>
-         If you believe this is an error, please <a href="/pages/contact.html">contact PNEC staff</a>.</p>
-      <a href="/" class="btn btn-secondary" style="margin-top:24px">Return to Home</a>
+         If you believe this is an error, please <a href="${siteBase}/pages/contact.html">contact PNEC staff</a>.</p>
+      <a href="${siteBase}/" class="btn btn-secondary" style="margin-top:24px">Return to Home</a>
     </div>`;
 }

@@ -52,7 +52,7 @@ function classifyHttpError(status) {
   if (status === 401) return ERROR_TYPES.AUTH_REQUIRED;
   if (status === 403) return ERROR_TYPES.FORBIDDEN;
   if (status === 404) return ERROR_TYPES.NOT_FOUND;
-  if (status === 422) return ERROR_TYPES.INVALID_DATA;
+  if (status === 400 || status === 409 || status === 422) return ERROR_TYPES.INVALID_DATA;
   if (status >= 500)  return ERROR_TYPES.SERVER_ERROR;
   return ERROR_TYPES.HTTP_ERROR;
 }

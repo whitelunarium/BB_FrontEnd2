@@ -242,24 +242,6 @@
   }
 }
 
-// --- Sign in / Register buttons (logged out) ----------------------------------
-.navbar-auth-links {
-  display: flex;
-  gap: $spacing-sm;
-  align-items: center;
-
-  a {
-    font-size: $font-size-sm;
-    font-weight: 600;
-    color: #35516f;
-    padding: 6px 10px;
-    border-radius: $border-radius-sm;
-    transition: color $transition-fast, background-color $transition-fast;
-
-    &:hover { color: $color-navy; background-color: #eef3f8; text-decoration: none; }
-  }
-}
-
 // --- Mobile hamburger ---------------------------------------------------------
 .hamburger {
   display: none;

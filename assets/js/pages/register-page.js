@@ -4,6 +4,8 @@
 
 document.addEventListener('DOMContentLoaded', initRegisterPage);
 
+const SITE_BASE = window.location.pathname.startsWith('/BB_FrontEnd2') ? '/BB_FrontEnd2' : '';
+
 /**
  * Purpose: Initialize the register page — load neighborhoods, bind submit.
  * @returns {void}
@@ -115,7 +117,7 @@ function validateRegisterInputs(name, email, pass, confirm) {
  */
 function handleRegisterSuccess(user) {
   sessionStorage.setItem('pnec_user', JSON.stringify(user));
-  window.location.href = '/';
+  window.location.href = `${SITE_BASE}/`;
 }
 
 /**
@@ -125,7 +127,7 @@ function handleRegisterSuccess(user) {
  * @returns {void}
  */
 function handleRegisterError(error, submitBtn) {
-  const message = error.type === ERROR_TYPES.INVALID_DATA
+  const message = error.type === ERROR_TYPES.INVALID_DATA || error.status === 409
     ? 'An account with that email already exists.'
     : getErrorMessage(error.type);
   showRegisterError(message);

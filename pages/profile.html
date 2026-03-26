@@ -15,18 +15,19 @@ body_class: inner-page
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+  var siteBase = window.PNEC_SITE_BASE || (window.location.pathname.startsWith('/BB_FrontEnd2') ? '/BB_FrontEnd2' : '');
   var container = document.getElementById('profile-content');
 
   fetchCurrentUser()
     .then(function(user) {
       if (!user) {
-        window.location.href = '/pages/login.html?next=/pages/profile.html';
+        window.location.href = siteBase + '/pages/login.html?next=' + encodeURIComponent(siteBase + '/pages/profile.html');
         return;
       }
       renderProfile(user, container);
     })
     .catch(function() {
-      container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><h3>Unable to load profile</h3><p>Please <a href="/pages/login.html">sign in</a> to view your profile.</p></div>';
+      container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><h3>Unable to load profile</h3><p>Please <a href="' + siteBase + '/pages/login.html">sign in</a> to view your profile.</p></div>';
     });
 });
 
@@ -50,7 +51,7 @@ function renderProfile(user, container) {
       '</div>' +
     '</div>' +
     '<div class="profile-actions">' +
-      '<a href="/" class="btn btn-outline">← Back to Home</a>' +
+      '<a href="' + (window.PNEC_SITE_BASE || '') + '/" class="btn btn-outline">← Back to Home</a>' +
     '</div>';
 }
 

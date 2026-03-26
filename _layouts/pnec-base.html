@@ -17,9 +17,13 @@
   <link rel="icon" type="image/x-icon" href="{{ '/favicon.ico' | relative_url }}">
 
   <!-- Main Stylesheet -->
+  {% unless page.use_poway_source_clone %}
   <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}">
+  {% endunless %}
 
-  {% if page.use_poway_live_styles %}
+  {% if page.use_poway_source_clone %}
+  {% include poway-live-head.html %}
+  {% elsif page.use_poway_live_styles %}
   <link rel="stylesheet" href="https://powaynec.com/wp-content/plugins/elementor/assets/lib/font-awesome/css/all.min.css?ver=3.35.7">
   <link rel="stylesheet" href="https://powaynec.com/wp-content/uploads/jupiterx/compiler/jupiterx/b517470.css?ver=4.9.2">
   <link rel="stylesheet" href="https://powaynec.com/wp-content/uploads/jupiterx/compiler/jupiterx-elements-dynamic-styles/41d6799.css?ver=4.9.2">
@@ -40,7 +44,11 @@
 
   {% if page.head_extra %}{{ page.head_extra }}{% endif %}
 </head>
-<body class="{% if page.use_poway_live_styles %}home wp-singular page-template page-template-elementor_header_footer page page-id-22 wp-theme-jupiterx no-js ctct-jupiterx elementor-default elementor-template-full-width elementor-kit-771 elementor-page elementor-page-22 jupiterx-header-overlapped jupiterx-header-overlapped-tablet jupiterx-header-overlapped-mobile {% endif %}{{ page.body_class }}">
+<body{% if page.body_class or page.use_poway_live_styles %} class="{% if page.use_poway_live_styles and page.use_poway_source_clone != true %}home wp-singular page-template page-template-elementor_header_footer page page-id-22 wp-theme-jupiterx no-js ctct-jupiterx elementor-default elementor-template-full-width elementor-kit-771 elementor-page elementor-page-22 jupiterx-header-overlapped jupiterx-header-overlapped-tablet jupiterx-header-overlapped-mobile {% endif %}{{ page.body_class }}"{% endif %}{% if page.body_attributes %} {{ page.body_attributes }}{% endif %}>
+
+  {% if page.use_poway_source_clone %}
+  {% include poway-live-body.html %}
+  {% else %}
 
   <!-- Skip to main content (accessibility) -->
   <a href="#main-content" class="sr-only" style="position:absolute;left:-9999px">Skip to main content</a>
@@ -83,5 +91,6 @@
 
   {% if page.page_scripts %}{{ page.page_scripts }}{% endif %}
   {% endunless %}
+  {% endif %}
 </body>
 </html>
