@@ -1,11 +1,11 @@
 #!/bin/bash
 # scripts/setup.sh
-# Run this once to set up your local BB_FrontEnd2 Jekyll development environment.
-# Usage: cd /Users/samarthvaka/BB_FrontEnd2 && bash scripts/setup.sh
+# Run this once to set up your local Beasts_FrontEnd Jekyll development environment.
+# Usage: cd /Users/samarthvaka/Beasts_FrontEnd && bash scripts/setup.sh
 
 set -e
 
-echo "=== BB_FrontEnd2 Setup ==="
+echo "=== Beasts_FrontEnd Setup ==="
 cd "$(dirname "$0")/.."
 
 # ── 1. Check Ruby ────────────────────────────────────────────────────────────

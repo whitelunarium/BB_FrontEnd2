@@ -3,7 +3,7 @@
 //                 user menu dropdown on every page load.
 
 (function initNavbar() {
-  window.PNEC_SITE_BASE = window.location.pathname.startsWith('/BB_FrontEnd2') ? '/BB_FrontEnd2' : '';
+  window.PNEC_SITE_BASE = window.location.pathname.startsWith('/Beasts_FrontEnd') ? '/Beasts_FrontEnd' : '';
   loadAuthState();
   bindHamburger();
   bindUserMenuToggle();

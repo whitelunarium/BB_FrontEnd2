@@ -7,7 +7,7 @@ Jekyll / GitHub Pages static site for [powaynec.com](https://powaynec.com). Serv
 **Prerequisites:** Ruby 3+, Bundler
 
 ```bash
-cd BB_FrontEnd2
+cd Beasts_FrontEnd
 bundle install
 bundle exec jekyll serve --port 4000
 ```

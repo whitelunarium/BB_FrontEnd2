@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Serve the generated _site directory at /BB_FrontEnd2 for local preview."""
+"""Serve the generated _site directory at /Beasts_FrontEnd for local preview."""
 
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -7,7 +7,7 @@ from urllib.parse import unquote, urlparse
 
 
 SITE_ROOT = Path(__file__).resolve().parent.parent / "_site"
-BASE_PATH = "/BB_FrontEnd2"
+BASE_PATH = "/Beasts_FrontEnd"
 DEFAULT_PORT = 4500
 
 

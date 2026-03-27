@@ -4,7 +4,7 @@
 
 document.addEventListener('DOMContentLoaded', initLoginPage);
 
-const SITE_BASE = window.location.pathname.startsWith('/BB_FrontEnd2') ? '/BB_FrontEnd2' : '';
+const SITE_BASE = window.location.pathname.startsWith('/Beasts_FrontEnd') ? '/Beasts_FrontEnd' : '';
 
 /**
  * Purpose: Initialize the login page — bind form submission event.
