@@ -8,3 +8,4 @@ gem "github-pages", "~> 228", group: :jekyll_plugins
 
 # Local server for development
 gem "webrick", "~> 1.7"
+gem 'csv'
