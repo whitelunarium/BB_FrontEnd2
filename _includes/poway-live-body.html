@@ -95,11 +95,11 @@
 							<div class="hero-slider" style="width:100%; height:500px; overflow:hidden; position:relative;">
 							<div class="hero-slides" style="display:flex; transition:transform 0.8s ease; height:100%;">
 								<div class="hero-slide" style="min-width:100%; height:100%;">
-								<img src="https://powaynec.com/wp-content/uploads/2021/08/20210803_094845-1-scaled.jpg"
+								<img src="{{ '/assets/images/Poway_Fire.webp' | relative_url }}"
 									style="width:100%;height:100%;object-fit:cover;display:block;" />
 								</div>
 								<div class="hero-slide" style="min-width:100%; height:100%;">
-								<img src="{{ '/assets/images/Poway_Fire.webp' | relative_url }}"
+								<img src="{{ '/images/360_F_224909144_NHNArff0sWb32XNzHbMvYFuUI1lQo4s1.jpg' | relative_url }}"
 									style="width:100%;height:100%;object-fit:cover;display:block;" />
 								</div>
 								<div class="hero-slide" style="min-width:100%; height:100%;">
@@ -111,8 +111,6 @@
 									style="width:100%;height:100%;object-fit:cover;display:block;" />
 								</div>
 							</div>
-							<button onclick="heroSlide(-1)" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.4);color:#fff;border:none;font-size:2rem;padding:8px 14px;cursor:pointer;z-index:10;">&#8249;</button>
-							<button onclick="heroSlide(1)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.4);color:#fff;border:none;font-size:2rem;padding:8px 14px;cursor:pointer;z-index:10;">&#8250;</button>
 							</div>
 
 							<script>
@@ -125,29 +123,6 @@
 								document.querySelector('.hero-slides').style.transform = 'translateX(-' + (heroIndex * 100) + '%)';
 							}
 							</script>
-
-							<script>
-							function initHeroSwiper() {
-								if (typeof Swiper !== 'undefined') {
-								new Swiper('.hero-slider', {
-									loop: true,
-									autoplay: { delay: 4000, disableOnInteraction: false },
-									speed: 800,
-									pagination: {
-									el: '.hero-slider .swiper-pagination',
-									clickable: true
-									},
-									navigation: {
-									nextEl: '.hero-slider .swiper-button-next',
-									prevEl: '.hero-slider .swiper-button-prev',
-									},
-								});
-								} else {
-								setTimeout(initHeroSwiper, 200);
-								}
-							}
-							window.addEventListener('load', initHeroSwiper);
-							</script>
 							</div>
 				</div>
 					</div>
@@ -158,20 +133,253 @@
 						<div class="elementor-container elementor-column-gap-wide">
 					<div class="elementor-column elementor-col-50 elementor-top-column elementor-element elementor-element-3d4666f" data-id="3d4666f" data-element_type="column" data-e-type="column">
 			<div class="elementor-widget-wrap elementor-element-populated">
-						<div class="elementor-element elementor-element-17a6446 elementor--h-position-center elementor--v-position-middle elementor-arrows-position-inside elementor-pagination-position-inside elementor-widget elementor-widget-slides" data-id="17a6446" data-element_type="widget" data-e-type="widget" data-settings="{&quot;transition_speed&quot;:400,&quot;navigation&quot;:&quot;both&quot;,&quot;autoplay&quot;:&quot;yes&quot;,&quot;pause_on_hover&quot;:&quot;yes&quot;,&quot;pause_on_interaction&quot;:&quot;yes&quot;,&quot;autoplay_speed&quot;:5000,&quot;infinite&quot;:&quot;yes&quot;,&quot;transition&quot;:&quot;slide&quot;}" data-widget_type="slides.default">
+						<div class="elementor-element elementor-element-17a6446 elementor-widget elementor-widget-html" data-id="17a6446" data-element_type="widget" data-widget_type="html.default">
 				<div class="elementor-widget-container">
-									<div class="elementor-swiper">
-					<div class="elementor-slides-wrapper elementor-main-swiper swiper" role="region" aria-roledescription="carousel" aria-label="Slides" dir="ltr" data-animation="fadeInUp">
-				<div class="swiper-wrapper elementor-slides">
-										<div class="elementor-repeater-item-eb6f532 swiper-slide" role="group" aria-roledescription="slide"><div class="swiper-slide-bg" role="img" aria-label="Marianna and child.2"></div><div class="elementor-background-overlay"></div><a class="swiper-slide-inner" href="{{ '/pages/programs-and-services.html' | relative_url }}"><div class="swiper-slide-contents"><div class="elementor-slide-heading">Neighbors Helping Neighbors</div><div class="elementor-slide-description">We foster a grass roots network ensuring the most vulnerable are helped by those around them. </div><div  class="elementor-button elementor-slide-button elementor-size-sm">Learn More</div></div></a></div><div class="elementor-repeater-item-51de175 swiper-slide" role="group" aria-roledescription="slide"><div class="swiper-slide-bg" role="img" aria-label="IMG_2779-1024x683"></div><div class="elementor-background-overlay"></div><a class="swiper-slide-inner" href="{{ '/pages/community-events-and-activities.html' | relative_url }}"><div class="swiper-slide-contents"><div class="elementor-slide-heading">Preparedness Activities</div><div class="elementor-slide-description">PNEC regularly organizes seminars and training to prepare Poway's citizens for emergencies.</div><div  class="elementor-button elementor-slide-button elementor-size-sm">Learn More</div></div></a></div><div class="elementor-repeater-item-d1ba80d swiper-slide" role="group" aria-roledescription="slide"><div class="swiper-slide-bg" role="img" aria-label="all-hands_t20_Ggz10w"></div><div class="elementor-background-overlay"></div><a class="swiper-slide-inner" href="{{ '/pages/contact.html' | relative_url }}"><div class="swiper-slide-contents"><div class="elementor-slide-heading">Volunteers Are Needed</div><div class="elementor-slide-description">Reach out to PNEC to learn about all the ways you can give back to your community.</div><div  class="elementor-button elementor-slide-button elementor-size-sm">Contact</div></div></a></div>				</div>
-															<div class="elementor-swiper-button elementor-swiper-button-prev" role="button" tabindex="0" aria-label="Previous slide">
-							<i aria-hidden="true" class="eicon-chevron-left"></i>						</div>
-						<div class="elementor-swiper-button elementor-swiper-button-next" role="button" tabindex="0" aria-label="Next slide">
-							<i aria-hidden="true" class="eicon-chevron-right"></i>						</div>
-																<div class="swiper-pagination"></div>
-												</div>
+					<style>
+						.pnec-home-carousel {
+							position: relative;
+							min-height: 540px;
+							border-radius: 0;
+							overflow: hidden;
+							background: #111;
+							box-shadow: 0 22px 48px rgba(0, 0, 0, 0.18);
+						}
+
+						.pnec-home-carousel__slide {
+							position: absolute;
+							inset: 0;
+							display: flex;
+							align-items: center;
+							justify-content: center;
+							padding: 48px;
+							background-size: cover;
+							background-position: center;
+							opacity: 0;
+							visibility: hidden;
+							transition: opacity 0.45s ease, visibility 0.45s ease;
+						}
+
+						.pnec-home-carousel__slide.is-active {
+							opacity: 1;
+							visibility: visible;
+						}
+
+						.pnec-home-carousel__overlay {
+							position: absolute;
+							inset: 0;
+							background: linear-gradient(180deg, rgba(18, 22, 27, 0.22) 0%, rgba(10, 13, 18, 0.58) 100%);
+						}
+
+						.pnec-home-carousel__content {
+							position: relative;
+							z-index: 1;
+							max-width: 300px;
+							color: #fff;
+							text-align: center;
+						}
+
+						.pnec-home-carousel__title {
+							margin: 0 0 18px;
+							font-size: clamp(2.5rem, 4vw, 4rem);
+							line-height: 0.95;
+							font-weight: 800;
+							letter-spacing: -0.04em;
+							text-shadow: 0 12px 36px rgba(0, 0, 0, 0.32);
+						}
+
+						.pnec-home-carousel__description {
+							margin: 0 0 28px;
+							font-size: 1rem;
+							line-height: 1.5;
+							text-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
+						}
+
+						.pnec-home-carousel__link {
+							display: inline-flex;
+							align-items: center;
+							justify-content: center;
+							min-width: 180px;
+							padding: 14px 24px;
+							border: 2px solid rgba(255, 255, 255, 0.92);
+							color: #fff;
+							font-size: 0.98rem;
+							font-weight: 600;
+							text-decoration: none;
+							backdrop-filter: blur(6px);
+							transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+						}
+
+						.pnec-home-carousel__link:hover,
+						.pnec-home-carousel__link:focus-visible {
+							background: rgba(255, 255, 255, 0.92);
+							color: #111;
+							transform: translateY(-1px);
+						}
+
+						.pnec-home-carousel__nav {
+							position: absolute;
+							top: 50%;
+							z-index: 2;
+							width: 52px;
+							height: 52px;
+							border: 0;
+							background: transparent;
+							color: #fff;
+							font-size: 3.5rem;
+							line-height: 1;
+							transform: translateY(-50%);
+							cursor: pointer;
+							text-shadow: 0 8px 24px rgba(0, 0, 0, 0.42);
+						}
+
+						.pnec-home-carousel__nav--prev { left: 18px; }
+						.pnec-home-carousel__nav--next { right: 18px; }
+
+						.pnec-home-carousel__dots {
+							position: absolute;
+							bottom: 20px;
+							left: 50%;
+							z-index: 2;
+							display: flex;
+							gap: 10px;
+							transform: translateX(-50%);
+						}
+
+						.pnec-home-carousel__dot {
+							width: 11px;
+							height: 11px;
+							padding: 0;
+							border: 0;
+							border-radius: 999px;
+							background: rgba(255, 255, 255, 0.35);
+							cursor: pointer;
+						}
+
+						.pnec-home-carousel__dot.is-active {
+							background: #111;
+							box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.85);
+						}
+
+						@media (max-width: 767px) {
+							.pnec-home-carousel {
+								min-height: 430px;
+							}
+
+							.pnec-home-carousel__slide {
+								padding: 36px 28px 54px;
+							}
+
+							.pnec-home-carousel__content {
+								max-width: 260px;
+							}
+
+							.pnec-home-carousel__nav {
+								width: 42px;
+								height: 42px;
+								font-size: 2.8rem;
+							}
+						}
+					</style>
+					<div class="pnec-home-carousel" data-pnec-carousel>
+						<div class="pnec-home-carousel__slide is-active" data-carousel-slide style="background-image:url('https://powaynec.com/wp-content/uploads/2021/08/Marianna-and-child.2-1.jpg');" aria-hidden="false">
+							<div class="pnec-home-carousel__overlay"></div>
+							<div class="pnec-home-carousel__content">
+								<h2 class="pnec-home-carousel__title">Neighbors Helping Neighbors</h2>
+								<p class="pnec-home-carousel__description">We foster a grass roots network ensuring the most vulnerable are helped by those around them.</p>
+								<a class="pnec-home-carousel__link" href="{{ '/pages/programs-and-services.html' | relative_url }}">Learn More</a>
+							</div>
+						</div>
+						<div class="pnec-home-carousel__slide" data-carousel-slide style="background-image:url('https://powaynec.com/wp-content/uploads/2020/05/IMG_2779-1024x683-1.jpg');" aria-hidden="true">
+							<div class="pnec-home-carousel__overlay"></div>
+							<div class="pnec-home-carousel__content">
+								<h2 class="pnec-home-carousel__title">Preparedness Activities</h2>
+								<p class="pnec-home-carousel__description">PNEC regularly organizes seminars and training to prepare Poway citizens for emergencies.</p>
+								<a class="pnec-home-carousel__link" href="{{ '/pages/community-events-and-activities.html' | relative_url }}">Learn More</a>
+							</div>
+						</div>
+						<div class="pnec-home-carousel__slide" data-carousel-slide style="background-image:url('https://powaynec.com/wp-content/uploads/2019/12/all-hands_t20_Ggz10w-scaled.jpg');" aria-hidden="true">
+							<div class="pnec-home-carousel__overlay"></div>
+							<div class="pnec-home-carousel__content">
+								<h2 class="pnec-home-carousel__title">Volunteers Are Needed</h2>
+								<p class="pnec-home-carousel__description">Reach out to PNEC to learn about the ways you can give back to your community.</p>
+								<a class="pnec-home-carousel__link" href="{{ '/pages/contact.html' | relative_url }}">Contact</a>
+							</div>
+						</div>
+						<button class="pnec-home-carousel__nav pnec-home-carousel__nav--prev" type="button" data-carousel-prev aria-label="Previous slide">&#8249;</button>
+						<button class="pnec-home-carousel__nav pnec-home-carousel__nav--next" type="button" data-carousel-next aria-label="Next slide">&#8250;</button>
+						<div class="pnec-home-carousel__dots" role="tablist" aria-label="Homepage highlights">
+							<button class="pnec-home-carousel__dot is-active" type="button" data-carousel-dot aria-label="Go to slide 1" aria-pressed="true"></button>
+							<button class="pnec-home-carousel__dot" type="button" data-carousel-dot aria-label="Go to slide 2" aria-pressed="false"></button>
+							<button class="pnec-home-carousel__dot" type="button" data-carousel-dot aria-label="Go to slide 3" aria-pressed="false"></button>
+						</div>
+					</div>
+					<script>
+						(function () {
+							var carousel = document.querySelector('[data-pnec-carousel]');
+							if (!carousel) return;
+
+							var slides = Array.prototype.slice.call(carousel.querySelectorAll('[data-carousel-slide]'));
+							var dots = Array.prototype.slice.call(carousel.querySelectorAll('[data-carousel-dot]'));
+							var nextButton = carousel.querySelector('[data-carousel-next]');
+							var prevButton = carousel.querySelector('[data-carousel-prev]');
+							var activeIndex = 0;
+							var autoAdvance = null;
+
+							function renderSlide(nextIndex) {
+								activeIndex = (nextIndex + slides.length) % slides.length;
+
+								slides.forEach(function (slide, index) {
+									var isActive = index === activeIndex;
+									slide.classList.toggle('is-active', isActive);
+									slide.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+								});
+
+								dots.forEach(function (dot, index) {
+									var isActive = index === activeIndex;
+									dot.classList.toggle('is-active', isActive);
+									dot.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+								});
+							}
+
+							function restartAutoAdvance() {
+								window.clearInterval(autoAdvance);
+								autoAdvance = window.setInterval(function () {
+									renderSlide(activeIndex + 1);
+								}, 5000);
+							}
+
+							if (nextButton) {
+								nextButton.addEventListener('click', function () {
+									renderSlide(activeIndex + 1);
+									restartAutoAdvance();
+								});
+							}
+
+							if (prevButton) {
+								prevButton.addEventListener('click', function () {
+									renderSlide(activeIndex - 1);
+									restartAutoAdvance();
+								});
+							}
+
+							dots.forEach(function (dot, index) {
+								dot.addEventListener('click', function () {
+									renderSlide(index);
+									restartAutoAdvance();
+								});
+							});
+
+							carousel.addEventListener('mouseenter', function () {
+								window.clearInterval(autoAdvance);
+							});
+
+							carousel.addEventListener('mouseleave', restartAutoAdvance);
+
+							renderSlide(0);
+							restartAutoAdvance();
+						})();
+					</script>
 				</div>
-								</div>
 				</div>
 					</div>
 		</div>
@@ -179,8 +387,14 @@
 			<div class="elementor-widget-wrap elementor-element-populated">
 						<div class="elementor-element elementor-element-7bddfff elementor-widget elementor-widget-video" data-id="7bddfff" data-element_type="widget" data-e-type="widget" data-settings="{&quot;youtube_url&quot;:&quot;https:\/\/youtu.be\/WqM5YvjzZp8&quot;,&quot;autoplay&quot;:&quot;yes&quot;,&quot;play_on_mobile&quot;:&quot;yes&quot;,&quot;mute&quot;:&quot;yes&quot;,&quot;loop&quot;:&quot;yes&quot;,&quot;video_type&quot;:&quot;youtube&quot;,&quot;controls&quot;:&quot;yes&quot;}" data-widget_type="video.default">
 				<div class="elementor-widget-container">
-							<div class="elementor-wrapper elementor-open-inline">
-			<div class="elementor-video"></div>		</div>
+							<div class="elementor-wrapper elementor-open-inline" style="border-radius:10px;overflow:hidden;box-shadow:0 0 20px rgba(0,0,0,0.5);background:#000;">
+			<iframe
+				src="https://www.youtube.com/embed/WqM5YvjzZp8?autoplay=1&mute=1&loop=1&playlist=WqM5YvjzZp8&controls=1&rel=0"
+				title="PNEC PSA English"
+				style="width:100%;aspect-ratio:16 / 9;border:0;display:block;"
+				allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+				referrerpolicy="strict-origin-when-cross-origin"
+				allowfullscreen></iframe>		</div>
 						</div>
 				</div>
 				<div class="elementor-element elementor-element-4023c78 elementor-align-center elementor-widget elementor-widget-button" data-id="4023c78" data-element_type="widget" data-e-type="widget" data-widget_type="button.default">
