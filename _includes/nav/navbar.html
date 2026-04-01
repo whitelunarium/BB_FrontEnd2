@@ -1,78 +1,80 @@
 <!-- _includes/nav/navbar.html -->
-<!-- PNEC top navigation bar — desktop + mobile hamburger -->
+<!-- PNEC top navigation bar — desktop + mobile hamburger drawer -->
 
 <nav class="pnec-navbar" role="navigation" aria-label="Main navigation">
-  <div class="navbar-inner">
+  <div class="navbar-shell">
+    <div class="navbar-top">
+      <a href="{{ '/' | relative_url }}" class="navbar-brand" aria-label="PNEC Home">
+        <img src="{{ '/images/capstone/powaynec.png' | relative_url }}" alt="" class="brand-logo">
+        <div class="brand-text">
+          <span class="brand-name">Poway NEC &amp; FSC</span>
+          <span class="brand-tagline">Neighbors Helping Neighbors</span>
+        </div>
+      </a>
 
-    <a href="{{ '/' | relative_url }}" class="navbar-brand" aria-label="PNEC Home">
-      <img src="{{ '/images/capstone/powaynec.png' | relative_url }}" alt="" class="brand-logo">
-      <div class="brand-text">
-        <span class="brand-name">Poway NEC &amp; FSC</span>
-        <span class="brand-tagline">Neighbors Helping Neighbors</span>
-      </div>
-    </a>
+      <div class="navbar-actions">
+        <div class="user-menu" id="navbar-auth-logged-in" style="display:none">
+          <button class="user-menu-trigger" id="user-menu-trigger" aria-expanded="false" aria-haspopup="true">
+            <div class="user-avatar" id="user-avatar-initials">?</div>
+            <span id="navbar-display-name">User</span>
+            <span id="navbar-role-badge"></span>
+            <span>▾</span>
+          </button>
+          <ul class="user-menu-dropdown" id="user-menu-dropdown" role="menu">
+            <li class="user-menu-header">
+              <div class="user-name" id="user-menu-name">User</div>
+              <div id="user-menu-email"></div>
+            </li>
+            <li><a href="{{ '/pages/profile.html' | relative_url }}" class="user-menu-item" role="menuitem">My Profile</a></li>
+            <li id="nav-media-link" style="display:none"><a href="{{ '/pages/upload.html' | relative_url }}" class="user-menu-item" role="menuitem">Upload Media</a></li>
+            <li id="nav-events-link" style="display:none"><a href="{{ '/pages/manage-events.html' | relative_url }}" class="user-menu-item" role="menuitem">Manage Events</a></li>
+            <li id="nav-dashboard-link" style="display:none"><a href="{{ '/pages/dashboard.html' | relative_url }}" class="user-menu-item" role="menuitem">Staff Dashboard</a></li>
+            <li><button class="user-menu-item danger" id="navbar-logout-btn" role="menuitem">Sign Out</button></li>
+          </ul>
+        </div>
 
-    <ul class="navbar-nav" role="list">
-      <li class="nav-item">
-        <a href="{{ '/' | relative_url }}" class="nav-link{% if page.url == '/' or page.url == '/index.html' %} active{% endif %}">Home</a>
-      </li>
-      <li class="nav-item">
-        <a href="{{ '/pages/programs.html' | relative_url }}" class="nav-link{% if page.url contains '/programs' %} active{% endif %}">About</a>
-      </li>
-      <li class="nav-item">
-        <a href="{{ '/pages/programs.html' | relative_url }}" class="nav-link{% if page.url contains '/programs' %} active{% endif %}">Programs and Services</a>
-      </li>
-      <li class="nav-item">
-        <a href="{{ '/pages/resources.html' | relative_url }}" class="nav-link{% if page.url contains '/resources' %} active{% endif %}">Preparedness Resources</a>
-      </li>
-      <li class="nav-item">
-        <a href="{{ '/pages/events.html' | relative_url }}" class="nav-link{% if page.url contains '/events' %} active{% endif %}">Community Events</a>
-      </li>
-      <li class="nav-item">
-        <a href="{{ '/pages/neighborhood-map.html' | relative_url }}" class="nav-link{% if page.url contains '/neighborhood-map' %} active{% endif %}">Find Your Neighborhood</a>
-      </li>
-      <li class="nav-item">
-        <a href="{{ '/pages/statistics.html' | relative_url }}" class="nav-link{% if page.url contains '/statistics' %} active{% endif %}">Statistics and Information</a>
-      </li>
-      <li class="nav-item">
-        <a href="{{ '/pages/contact.html' | relative_url }}" class="nav-link{% if page.url contains '/contact' %} active{% endif %}">Contact</a>
-      </li>
-      <li class="nav-item" id="navbar-login-item">
-        <a href="{{ '/pages/login.html' | relative_url }}" class="nav-link{% if page.url contains '/login' %} active{% endif %}">Login</a>
-      </li>
-      <li class="nav-item" id="navbar-register-item">
-        <a href="{{ '/pages/register.html' | relative_url }}" class="nav-link{% if page.url contains '/register' %} active{% endif %}">Register</a>
-      </li>
-    </ul>
+        <a href="{{ '/pages/donate.html' | relative_url }}" class="btn-donate-nav">Donate Now</a>
 
-    <div class="navbar-actions">
-      <div class="user-menu" id="navbar-auth-logged-in" style="display:none">
-        <button class="user-menu-trigger" id="user-menu-trigger" aria-expanded="false" aria-haspopup="true">
-          <div class="user-avatar" id="user-avatar-initials">?</div>
-          <span id="navbar-display-name">User</span>
-          <span id="navbar-role-badge"></span>
-          <span>▾</span>
+        <button class="hamburger" id="hamburger-btn" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open navigation menu">
+          <span></span><span></span><span></span>
         </button>
-        <ul class="user-menu-dropdown" id="user-menu-dropdown" role="menu">
-          <li class="user-menu-header">
-            <div class="user-name" id="user-menu-name">User</div>
-            <div id="user-menu-email"></div>
-          </li>
-          <li><a href="{{ '/pages/profile.html' | relative_url }}" class="user-menu-item" role="menuitem">My Profile</a></li>
-          <li id="nav-media-link" style="display:none"><a href="{{ '/pages/upload.html' | relative_url }}" class="user-menu-item" role="menuitem">Upload Media</a></li>
-          <li id="nav-events-link" style="display:none"><a href="{{ '/pages/manage-events.html' | relative_url }}" class="user-menu-item" role="menuitem">Manage Events</a></li>
-          <li id="nav-dashboard-link" style="display:none"><a href="{{ '/pages/dashboard.html' | relative_url }}" class="user-menu-item" role="menuitem">Staff Dashboard</a></li>
-          <li><button class="user-menu-item danger" id="navbar-logout-btn" role="menuitem">Sign Out</button></li>
-        </ul>
       </div>
-
-      <a href="{{ '/pages/donate.html' | relative_url }}" class="btn-donate-nav">Donate Now</a>
-
-      <button class="hamburger" id="hamburger-btn" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open navigation menu">
-        <span></span><span></span><span></span>
-      </button>
     </div>
 
+    <div class="navbar-bottom">
+      <ul class="navbar-nav" role="list">
+        <li class="nav-item">
+          <a href="{{ '/' | relative_url }}" class="nav-link{% if page.url == '/' or page.url == '/index.html' %} active{% endif %}">Home</a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ '/pages/programs.html' | relative_url }}" class="nav-link{% if page.url contains '/programs' %} active{% endif %}">About</a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ '/pages/programs.html' | relative_url }}" class="nav-link{% if page.url contains '/programs' %} active{% endif %}">Programs and Services</a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ '/pages/resources.html' | relative_url }}" class="nav-link{% if page.url contains '/resources' %} active{% endif %}">Preparedness Resources</a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ '/pages/events.html' | relative_url }}" class="nav-link{% if page.url contains '/events' %} active{% endif %}">Community Events</a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ '/pages/neighborhood-map.html' | relative_url }}" class="nav-link{% if page.url contains '/neighborhood-map' %} active{% endif %}">Find Your Neighborhood</a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ '/pages/statistics.html' | relative_url }}" class="nav-link{% if page.url contains '/statistics' %} active{% endif %}">Statistics and Information</a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ '/pages/contact.html' | relative_url }}" class="nav-link{% if page.url contains '/contact' %} active{% endif %}">Contact</a>
+        </li>
+        <li class="nav-item" id="navbar-login-item">
+          <a href="{{ '/pages/login.html' | relative_url }}" class="nav-link{% if page.url contains '/login' %} active{% endif %}">Login</a>
+        </li>
+        <li class="nav-item" id="navbar-register-item">
+          <a href="{{ '/pages/register.html' | relative_url }}" class="nav-link{% if page.url contains '/register' %} active{% endif %}">Register</a>
+        </li>
+      </ul>
+    </div>
   </div>
 </nav>
 

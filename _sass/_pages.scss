@@ -105,6 +105,115 @@
   }
 }
 
+.auth-hero {
+  background-size: cover;
+  background-position: center;
+  border-bottom: 0;
+}
+
+.auth-shell {
+  background: linear-gradient(180deg, #f7f9fc 0%, #eef3f8 100%);
+  padding: $spacing-xl 0 $spacing-xxl;
+}
+
+.auth-shell__container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 $spacing-lg;
+  display: grid;
+  grid-template-columns: minmax(280px, 0.95fr) minmax(320px, 1.05fr);
+  gap: $spacing-xl;
+
+  @media (max-width: $bp-md) {
+    grid-template-columns: 1fr;
+    padding: 0 $spacing-md;
+  }
+}
+
+.auth-panel {
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow-lg;
+}
+
+.auth-panel--info {
+  background:
+    linear-gradient(160deg, rgba(11, 37, 66, 0.98) 0%, rgba(20, 60, 99, 0.96) 100%);
+  color: $color-white-pure;
+  padding: $spacing-xl;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+
+  p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.7;
+    font-size: $font-size-lg;
+  }
+
+  h2 {
+    margin: 0;
+    color: $color-white-pure;
+    font-size: 2rem;
+  }
+}
+
+.auth-panel__brand {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.auth-panel__logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.95);
+  object-fit: contain;
+  padding: 10px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+.auth-panel__eyebrow {
+  font-size: $font-size-sm;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.72);
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.auth-panel__list {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 10px;
+
+  li {
+    color: rgba(255, 255, 255, 0.84);
+    line-height: 1.6;
+  }
+}
+
+.auth-panel--form {
+  background: $color-white-pure;
+  padding: $spacing-xl;
+
+  h2 {
+    margin-top: 0;
+  }
+
+  .form-group {
+    margin-bottom: $spacing-lg;
+  }
+}
+
+.auth-panel__checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 // --- 72-Hour Kit checklist page -----------------------------------------------
 .kit-page {
   max-width: $max-width;

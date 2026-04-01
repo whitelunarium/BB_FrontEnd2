@@ -1,70 +1,191 @@
 ---
-layout: pnec-base
-title: "Create Account"
+layout: poway-clone-auth
+title: "Register"
 description: "Create a free PNEC community account."
-body_class: auth-page-body
+auth_nav: register
+head_extra: |
+  <style>
+    .auth-hero-section {
+      min-height: 320px;
+      background-image: linear-gradient(rgba(9, 25, 45, 0.56), rgba(9, 25, 45, 0.64)), url('{{ '/assets/images/Poway_Flood.webp' | relative_url }}');
+      background-position: center center;
+      background-size: cover;
+    }
+    .auth-hero-section .elementor-widget-raven-heading,
+    .auth-hero-section .elementor-widget-text-editor {
+      display: none;
+    }
+    .jupiterx-main-content > .container,
+    .jupiterx-main-content > .container > .row,
+    .jupiterx-main-content > .container > .row > .jupiterx-primary,
+    .jupiterx-post,
+    .jupiterx-post-body,
+    .jupiterx-post-content {
+      width: 100%;
+      max-width: none;
+      padding-left: 0;
+      padding-right: 0;
+      margin-left: 0;
+      margin-right: 0;
+    }
+    .jupiterx-header-custom .elementor-nav-menu .elementor-item {
+      color: #ffffff !important;
+    }
+    .jupiterx-header-custom .elementor-nav-menu .elementor-item:hover,
+    .jupiterx-header-custom .elementor-nav-menu .elementor-item.elementor-item-active,
+    .jupiterx-header-custom .elementor-nav-menu .current-menu-item > .elementor-item {
+      color: #72af2f !important;
+    }
+    .jupiterx-header-custom .raven-button-link {
+      background: #2cab55 !important;
+      border-radius: 22px 0 0 22px !important;
+      padding: 22px 44px !important;
+      box-shadow: none !important;
+    }
+    .jupiterx-header-custom .raven-button-text,
+    .jupiterx-header-custom .raven-button-icon {
+      color: #ffffff !important;
+    }
+    .auth-shell-section {
+      padding: 72px 0 90px;
+      background: #f6f3ed;
+    }
+    .auth-shell-card,
+    .auth-shell-copy {
+      background: #fff;
+      border-radius: 22px;
+      box-shadow: 0 20px 50px rgba(15, 33, 58, 0.12);
+      padding: 42px;
+      height: 100%;
+    }
+    .auth-shell-copy {
+      background: linear-gradient(180deg, #132a46 0%, #0a1628 100%);
+      color: #fff;
+    }
+    .auth-shell-copy h2,
+    .auth-shell-copy p,
+    .auth-shell-copy li {
+      color: #fff;
+    }
+    .auth-pill {
+      display: inline-block;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.14);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+    .auth-shell-card label {
+      display: block;
+      margin-bottom: 8px;
+      color: #0a1628;
+      font-weight: 700;
+    }
+    .auth-shell-card input[type="text"],
+    .auth-shell-card input[type="email"],
+    .auth-shell-card input[type="password"] {
+      width: 100%;
+      height: 58px;
+      border: 1px solid #d7dce3;
+      border-radius: 14px;
+      padding: 0 18px;
+      font-size: 18px;
+      color: #0a1628;
+      background: #fff;
+      margin-bottom: 20px;
+    }
+    .auth-button {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      min-height: 58px;
+      border: 0;
+      border-radius: 14px;
+      background: #72af2f;
+      color: #fff;
+      font-size: 20px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .auth-switch {
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid #e7ebf0;
+      text-align: center;
+    }
+    .auth-switch a {
+      color: #72af2f;
+      font-weight: 700;
+    }
+    .auth-error-box {
+      display: none;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: #fdf0ef;
+      border: 1px solid #e2b5af;
+      color: #8d2f25;
+    }
+    @media (max-width: 1024px) {
+      .auth-shell-copy,
+      .auth-shell-card {
+        padding: 32px;
+      }
+    }
+  </style>
+page_scripts: |
+  <script src="{{ '/assets/js/pages/register-page.js' | relative_url }}"></script>
 ---
+<div data-elementor-type="wp-page" data-elementor-id="9992" class="elementor elementor-9992" data-elementor-post-type="page">
+  <section class="elementor-section elementor-top-section elementor-element auth-hero-section elementor-section-height-min-height elementor-section-full_width elementor-section-stretched elementor-section-height-default elementor-section-items-middle" data-element_type="section" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;stretch_section&quot;:&quot;section-stretched&quot;}"></section>
+  <section class="elementor-section elementor-top-section elementor-element auth-shell-section elementor-section-boxed elementor-section-height-default elementor-section-height-default" data-element_type="section">
+    <div class="elementor-container elementor-column-gap-default">
+      <div class="elementor-column elementor-col-50 elementor-top-column elementor-element" data-element_type="column">
+        <div class="elementor-widget-wrap elementor-element-populated">
+          <div class="auth-shell-copy">
+            <span class="auth-pill">Community Access</span>
+            <h2>Join The Community</h2>
+            <p>Build your account once and use it to stay informed, connect with local activities, and keep your household emergency readiness organized.</p>
+            <ul>
+              <li>Track your household preparedness progress.</li>
+              <li>Connect with local programs, events, and resources.</li>
+              <li>Use one login for future member tools.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="elementor-column elementor-col-50 elementor-top-column elementor-element" data-element_type="column">
+        <div class="elementor-widget-wrap elementor-element-populated">
+          <div class="auth-shell-card">
+            <div id="register-error" class="auth-error-box" role="alert"></div>
+            <form id="register-form" novalidate>
+              <label for="register-name">Display Name</label>
+              <input id="register-name" type="text" placeholder="e.g. Jane S." autocomplete="nickname" required>
 
-<div class="auth-page">
-  <div class="auth-card">
+              <label for="register-email">Email Address</label>
+              <input id="register-email" type="email" placeholder="you@example.com" autocomplete="email" required>
 
-    <div class="auth-logo">
-      <img src="/assets/images/pnec-logo.png" alt="PNEC Logo" width="64" height="64"
-           onerror="this.style.display='none'">
-      <div class="auth-logo-title">PNEC</div>
-      <div class="auth-logo-sub">Poway Neighborhood Emergency Corps</div>
+              <label for="register-password">Password</label>
+              <input id="register-password" type="password" placeholder="At least 8 characters" autocomplete="new-password" required>
+
+              <label for="register-confirm-password">Confirm Password</label>
+              <input id="register-confirm-password" type="password" placeholder="Re-enter your password" autocomplete="new-password" required>
+
+              <button type="submit" class="auth-button">Create Account</button>
+            </form>
+            <div class="auth-switch">
+              <span>Already have an account?</span>
+              <a href="{{ '/pages/login.html' | relative_url }}">Sign in here</a>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-
-    <h2>Create Account</h2>
-    <p style="text-align:center;color:#5a5a5a;font-size:14px;margin-bottom:24px">
-      Free for all Poway residents. Track your 72-hour kit, RSVP to events, and connect with your neighborhood.
-    </p>
-
-    <div id="register-error" class="alert alert-error" style="display:none" role="alert"></div>
-
-    <form id="register-form" novalidate>
-      <div class="form-group">
-        <label class="form-label" for="register-name">Display Name</label>
-        <input id="register-name" type="text" class="form-input"
-               placeholder="e.g. Jane S." autocomplete="nickname" required>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="register-email">Email Address</label>
-        <input id="register-email" type="email" class="form-input"
-               placeholder="you@example.com" autocomplete="email" required>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="register-password">Password</label>
-        <input id="register-password" type="password" class="form-input"
-               placeholder="At least 8 characters" autocomplete="new-password" required>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="register-confirm-password">Confirm Password</label>
-        <input id="register-confirm-password" type="password" class="form-input"
-               placeholder="Re-enter your password" autocomplete="new-password" required>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="register-neighborhood-select">Poway Neighborhood <span style="font-weight:400;color:#9e9e9e">(optional)</span></label>
-        <select id="register-neighborhood-select" class="form-select">
-          <option value="">Loading neighborhoods…</option>
-        </select>
-        <p class="form-error" style="color:#5a5a5a;margin-top:4px">Helps connect you with your local coordinator.</p>
-      </div>
-
-      <button type="submit" class="btn btn-primary btn-block">Create Account</button>
-    </form>
-
-    <div class="auth-divider"><span>Already have an account?</span></div>
-
-    <div class="auth-footer-links">
-      <a href="/pages/login.html" class="btn btn-outline btn-block">Sign In</a>
-    </div>
-
-  </div>
+  </section>
 </div>
-
-<script src="{{ '/assets/js/pages/register-page.js' | relative_url }}"></script>

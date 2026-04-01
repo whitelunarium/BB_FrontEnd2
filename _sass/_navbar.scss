@@ -1,5 +1,5 @@
 // _navbar.scss
-// PNEC Navigation ? desktop + mobile hamburger drawer
+// PNEC Navigation — desktop + mobile hamburger drawer
 
 .pnec-navbar {
   position: sticky;
@@ -7,61 +7,80 @@
   z-index: $z-navbar;
   background-color: $color-white-pure;
   border-bottom: 1px solid #d8dde5;
-  box-shadow: 0 6px 22px rgba(13, 29, 53, 0.08);
+  box-shadow: 0 10px 28px rgba(13, 29, 53, 0.08);
 }
 
-.navbar-inner {
+.navbar-shell {
   max-width: $max-width;
   margin: 0 auto;
   padding: 0 $spacing-lg;
+}
+
+.navbar-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 82px;
+  min-height: 104px;
   gap: $spacing-md;
 }
 
-// --- Brand --------------------------------------------------------------------
+.navbar-bottom {
+  display: flex;
+  justify-content: center;
+  border-top: 1px solid #e8edf3;
+  min-height: 56px;
+}
+
 .navbar-brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   text-decoration: none;
   color: $color-navy;
   flex-shrink: 0;
 
-  &:hover { text-decoration: none; color: $color-navy; opacity: 0.92; }
+  &:hover {
+    text-decoration: none;
+    color: $color-navy;
+    opacity: 0.92;
+  }
 
   .brand-logo {
-    width: 48px;
-    height: 48px;
+    width: 80px;
+    height: 80px;
     object-fit: contain;
     border-radius: 50%;
     background: #fff;
-    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.16);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
   }
 
   .brand-text {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+
     .brand-name {
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       font-weight: 800;
       line-height: 1.1;
       letter-spacing: -0.02em;
     }
+
     .brand-tagline {
       font-size: 12px;
       opacity: 0.72;
-      line-height: 1;
+      line-height: 1.2;
       font-weight: 400;
     }
   }
 }
 
-// --- Desktop nav links --------------------------------------------------------
 .navbar-nav {
   display: flex;
   align-items: center;
-  gap: 2px;
+  justify-content: center;
+  gap: 6px;
   list-style: none;
   padding: 0;
   margin: 0;
@@ -83,7 +102,7 @@
 
 .nav-link {
   display: block;
-  padding: 10px 12px;
+  padding: 14px 10px;
   font-size: $font-size-sm;
   font-weight: 700;
   color: #244468;
@@ -92,14 +111,14 @@
   letter-spacing: 0.01em;
   white-space: nowrap;
 
-  &:hover, &.active {
+  &:hover,
+  &.active {
     color: $color-navy;
     background-color: #eef3f8;
     text-decoration: none;
   }
 }
 
-// --- Dropdown menus -----------------------------------------------------------
 .dropdown-menu {
   position: absolute;
   top: calc(100% + 8px);
@@ -139,33 +158,34 @@
   }
 }
 
-// --- Navbar right actions -----------------------------------------------------
 .navbar-actions {
   display: flex;
   align-items: center;
   gap: $spacing-sm;
-
-  @media (max-width: $bp-lg) {
-    .nav-user-menu { display: none; }
-  }
 }
 
 .btn-donate-nav {
-  padding: 10px 18px;
+  padding: 16px 28px;
   font-size: $font-size-sm;
   font-weight: 700;
-  background-color: $color-red;
+  background-color: $color-green;
   color: $color-white-pure;
-  border: 2px solid $color-red;
-  border-radius: 999px;
+  border: 2px solid $color-green;
+  border-radius: 10px;
   text-decoration: none;
   transition: background-color $transition-fast, border-color $transition-fast;
   white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
 
-  &:hover { background-color: $color-red-dark; border-color: $color-red-dark; color: $color-white-pure; text-decoration: none; }
+  &:hover {
+    background-color: $color-green-dark;
+    border-color: $color-green-dark;
+    color: $color-white-pure;
+    text-decoration: none;
+  }
 }
 
-// --- User menu dropdown -------------------------------------------------------
 .user-menu {
   position: relative;
 }
@@ -184,7 +204,9 @@
   font-weight: 600;
   transition: background-color $transition-fast;
 
-  &:hover { background-color: #ebf1f6; }
+  &:hover {
+    background-color: #ebf1f6;
+  }
 
   .user-avatar {
     width: 28px;
@@ -215,7 +237,9 @@
   margin: 0;
   display: none;
 
-  &.open { display: block; }
+  &.open {
+    display: block;
+  }
 
   .user-menu-header {
     padding: $spacing-sm $spacing-md;
@@ -224,7 +248,10 @@
     border-bottom: 1px solid $color-gray-200;
     margin-bottom: $spacing-xs;
 
-    .user-name { font-weight: 700; color: $color-navy; }
+    .user-name {
+      font-weight: 700;
+      color: $color-navy;
+    }
   }
 
   .user-menu-item {
@@ -235,14 +262,22 @@
     border-radius: $border-radius-sm;
     transition: background-color $transition-fast;
 
-    &:hover { background-color: $color-gray-100; color: $color-navy; text-decoration: none; }
+    &:hover {
+      background-color: $color-gray-100;
+      color: $color-navy;
+      text-decoration: none;
+    }
 
-    &.danger { color: $color-red; }
-    &.danger:hover { background-color: #fee2e2; }
+    &.danger {
+      color: $color-red;
+    }
+
+    &.danger:hover {
+      background-color: #fee2e2;
+    }
   }
 }
 
-// --- Mobile hamburger ---------------------------------------------------------
 .hamburger {
   display: none;
   flex-direction: column;
@@ -272,7 +307,6 @@
   }
 }
 
-// --- Mobile drawer ------------------------------------------------------------
 .mobile-nav {
   display: none;
   position: fixed;
@@ -287,7 +321,9 @@
   transition: right $transition-base;
   box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);
 
-  &.open { right: 0; }
+  &.open {
+    right: 0;
+  }
 
   @media (max-width: $bp-lg) {
     display: block;
@@ -340,8 +376,14 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     transition: color $transition-fast;
 
-    &:hover { color: $color-white-pure; text-decoration: none; }
-    &.active { color: $color-red-light; }
+    &:hover {
+      color: $color-white-pure;
+      text-decoration: none;
+    }
+
+    &.active {
+      color: $color-red-light;
+    }
   }
 }
 
@@ -352,5 +394,37 @@
   background: rgba(0, 0, 0, 0.5);
   z-index: calc(#{$z-modal} - 1);
 
-  &.open { display: block; }
+  &.open {
+    display: block;
+  }
+}
+
+@media (max-width: $bp-lg) {
+  .navbar-shell {
+    padding: 0 $spacing-md;
+  }
+
+  .navbar-top {
+    min-height: 88px;
+  }
+
+  .navbar-bottom {
+    display: none;
+  }
+
+  .navbar-brand {
+    .brand-logo {
+      width: 64px;
+      height: 64px;
+    }
+
+    .brand-text {
+      display: block;
+    }
+  }
+
+  .btn-donate-nav,
+  .user-menu {
+    display: none;
+  }
 }

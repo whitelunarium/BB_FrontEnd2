@@ -1,58 +1,207 @@
 ---
-layout: pnec-base
-title: "Sign In"
+layout: poway-clone-auth
+title: "Login"
 description: "Sign in to your PNEC account."
-body_class: auth-page-body
+auth_nav: login
+head_extra: |
+  <style>
+    .auth-hero-section {
+      min-height: 320px;
+      background-image: linear-gradient(rgba(9, 25, 45, 0.6), rgba(9, 25, 45, 0.6)), url('{{ '/images/360_F_224909144_NHNArff0sWb32XNzHbMvYFuUI1lQo4s1.jpg' | relative_url }}');
+      background-position: center center;
+      background-size: cover;
+    }
+    .auth-hero-section .elementor-widget-raven-heading,
+    .auth-hero-section .elementor-widget-text-editor {
+      display: none;
+    }
+    .jupiterx-main-content > .container,
+    .jupiterx-main-content > .container > .row,
+    .jupiterx-main-content > .container > .row > .jupiterx-primary,
+    .jupiterx-post,
+    .jupiterx-post-body,
+    .jupiterx-post-content {
+      width: 100%;
+      max-width: none;
+      padding-left: 0;
+      padding-right: 0;
+      margin-left: 0;
+      margin-right: 0;
+    }
+    .jupiterx-header-custom .elementor-nav-menu .elementor-item {
+      color: #ffffff !important;
+    }
+    .jupiterx-header-custom .elementor-nav-menu .elementor-item:hover,
+    .jupiterx-header-custom .elementor-nav-menu .elementor-item.elementor-item-active,
+    .jupiterx-header-custom .elementor-nav-menu .current-menu-item > .elementor-item {
+      color: #72af2f !important;
+    }
+    .jupiterx-header-custom .raven-button-link {
+      background: #2cab55 !important;
+      border-radius: 22px 0 0 22px !important;
+      padding: 22px 44px !important;
+      box-shadow: none !important;
+    }
+    .jupiterx-header-custom .raven-button-text,
+    .jupiterx-header-custom .raven-button-icon {
+      color: #ffffff !important;
+    }
+    .auth-shell-section {
+      padding: 72px 0 90px;
+      background: #f6f3ed;
+    }
+    .auth-shell-card,
+    .auth-shell-copy {
+      background: #fff;
+      border-radius: 22px;
+      box-shadow: 0 20px 50px rgba(15, 33, 58, 0.12);
+      padding: 42px;
+      height: 100%;
+    }
+    .auth-shell-copy {
+      background: linear-gradient(180deg, #132a46 0%, #0a1628 100%);
+      color: #fff;
+    }
+    .auth-shell-copy h2,
+    .auth-shell-copy p,
+    .auth-shell-copy li {
+      color: #fff;
+    }
+    .auth-pill {
+      display: inline-block;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.14);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+    .auth-shell-card label {
+      display: block;
+      margin-bottom: 8px;
+      color: #0a1628;
+      font-weight: 700;
+    }
+    .auth-shell-card input[type="email"],
+    .auth-shell-card input[type="password"] {
+      width: 100%;
+      height: 58px;
+      border: 1px solid #d7dce3;
+      border-radius: 14px;
+      padding: 0 18px;
+      font-size: 18px;
+      color: #0a1628;
+      background: #fff;
+      margin-bottom: 20px;
+    }
+    .auth-check-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 4px 0 22px;
+      color: #5b6470;
+      font-size: 14px;
+    }
+    .auth-check-row input {
+      width: auto;
+      margin: 0;
+    }
+    .auth-button {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      min-height: 58px;
+      border: 0;
+      border-radius: 14px;
+      background: #72af2f;
+      color: #fff;
+      font-size: 20px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .auth-secondary-link {
+      display: inline-block;
+      margin-top: 18px;
+      color: #0a1628;
+      font-weight: 600;
+    }
+    .auth-switch {
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid #e7ebf0;
+      text-align: center;
+    }
+    .auth-switch a {
+      color: #72af2f;
+      font-weight: 700;
+    }
+    .auth-error-box {
+      display: none;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: #fdf0ef;
+      border: 1px solid #e2b5af;
+      color: #8d2f25;
+    }
+    @media (max-width: 1024px) {
+      .auth-shell-copy,
+      .auth-shell-card {
+        padding: 32px;
+      }
+    }
+  </style>
+page_scripts: |
+  <script src="{{ '/assets/js/pages/login-page.js' | relative_url }}"></script>
 ---
-
-<div class="auth-page">
-  <div class="auth-card">
-
-    <div class="auth-logo">
-      <img src="/assets/images/pnec-logo.png" alt="PNEC Logo" width="64" height="64"
-           onerror="this.style.display='none'">
-      <div class="auth-logo-title">PNEC</div>
-      <div class="auth-logo-sub">Poway Neighborhood Emergency Corps</div>
-    </div>
-
-    <h2>Sign In</h2>
-
-    <div id="login-error" class="alert alert-error" style="display:none" role="alert"></div>
-
-    <form id="login-form" novalidate>
-      <div class="form-group">
-        <label class="form-label" for="login-email">Email Address</label>
-        <input id="login-email" type="email" class="form-input"
-               placeholder="you@example.com" autocomplete="email" required>
+<div data-elementor-type="wp-page" data-elementor-id="9991" class="elementor elementor-9991" data-elementor-post-type="page">
+  <section class="elementor-section elementor-top-section elementor-element auth-hero-section elementor-section-height-min-height elementor-section-full_width elementor-section-stretched elementor-section-height-default elementor-section-items-middle" data-element_type="section" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;stretch_section&quot;:&quot;section-stretched&quot;}"></section>
+  <section class="elementor-section elementor-top-section elementor-element auth-shell-section elementor-section-boxed elementor-section-height-default elementor-section-height-default" data-element_type="section">
+    <div class="elementor-container elementor-column-gap-default">
+      <div class="elementor-column elementor-col-50 elementor-top-column elementor-element" data-element_type="column">
+        <div class="elementor-widget-wrap elementor-element-populated">
+          <div class="auth-shell-copy">
+            <span class="auth-pill">Community Access</span>
+            <h2>Welcome Back</h2>
+            <p>Use your account to review your profile, stay informed about upcoming activities, and get back to the preparedness tools tied to your household.</p>
+            <ul>
+              <li>Track events, updates, and local resources.</li>
+              <li>Access member-only features as they become available.</li>
+              <li>Keep your emergency contact details current.</li>
+            </ul>
+          </div>
+        </div>
       </div>
+      <div class="elementor-column elementor-col-50 elementor-top-column elementor-element" data-element_type="column">
+        <div class="elementor-widget-wrap elementor-element-populated">
+          <div class="auth-shell-card">
+            <div id="login-error" class="auth-error-box" role="alert"></div>
+            <form id="login-form" novalidate>
+              <label for="login-email">Email Address</label>
+              <input id="login-email" type="email" placeholder="you@example.com" autocomplete="email" required>
 
-      <div class="form-group">
-        <label class="form-label" for="login-password">Password</label>
-        <input id="login-password" type="password" class="form-input"
-               placeholder="Enter your password" autocomplete="current-password" required>
+              <label for="login-password">Password</label>
+              <input id="login-password" type="password" placeholder="Enter your password" autocomplete="current-password" required>
+
+              <div class="auth-check-row">
+                <input id="login-remember" type="checkbox">
+                <label for="login-remember" style="margin:0;font-weight:400;color:inherit;">Remember me on this device</label>
+              </div>
+
+              <button id="login-submit-btn" type="submit" class="auth-button">Sign In</button>
+            </form>
+            <a class="auth-secondary-link" href="{{ '/pages/forgot-password.html' | relative_url }}">Forgot your password?</a>
+            <div class="auth-switch">
+              <span>Need an account?</span>
+              <a href="{{ '/pages/register.html' | relative_url }}">Create one here</a>
+            </div>
+          </div>
+        </div>
       </div>
-
-      <div class="form-group" style="display:flex;align-items:center;gap:8px">
-        <input id="login-remember" type="checkbox" style="width:auto">
-        <label for="login-remember" style="font-size:14px;color:#5a5a5a;margin:0">Remember me on this device</label>
-      </div>
-
-      <button id="login-submit-btn" type="submit" class="btn btn-primary btn-block">
-        Sign In
-      </button>
-    </form>
-
-    <div class="auth-footer-links">
-      <a href="/pages/forgot-password.html">Forgot your password?</a>
     </div>
-
-    <div class="auth-divider"><span>New to PNEC?</span></div>
-
-    <div class="auth-footer-links">
-      <a href="/pages/register.html" class="btn btn-outline btn-block">Create a Free Account</a>
-    </div>
-
-  </div>
+  </section>
 </div>
-
-<script src="{{ '/assets/js/pages/login-page.js' | relative_url }}"></script>
