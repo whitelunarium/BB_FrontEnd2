@@ -135,6 +135,13 @@ function bindCategoryButtons() {
   container.addEventListener('click', event => {
     const btn = event.target.closest('.chatbot-category-btn');
     if (!btn) return;
+    const shortcutQuery = btn.dataset.shortcutQuery;
+    if (shortcutQuery) {
+      const input = document.getElementById('chatbot-search-input');
+      if (input) input.value = shortcutQuery;
+      runSearch(shortcutQuery);
+      return;
+    }
     const categoryId   = parseInt(btn.dataset.categoryId, 10);
     const categoryName = btn.dataset.categoryName;
     selectCategory(categoryId, categoryName);
@@ -279,10 +286,25 @@ function bindSearchResultItems() {
   if (!container) return;
   container.addEventListener('click', event => {
     const result = event.target.closest('.search-result-item');
-    if (result) selectQuestion(parseInt(result.dataset.itemId, 10), result.querySelector('.result-question').textContent);
+    if (result) openSearchResult(result);
     const askBtn = event.target.closest('#no-results-ask-btn');
     if (askBtn) navigateToAskStaff();
   });
+  container.addEventListener('keydown', event => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    const result = event.target.closest('.search-result-item');
+    if (result) openSearchResult(result);
+  });
+}
+
+function openSearchResult(resultEl) {
+  const itemId = parseInt(resultEl.dataset.itemId, 10);
+  const categoryId = parseInt(resultEl.dataset.categoryId, 10);
+  const categoryName = resultEl.dataset.categoryName || 'Search Result';
+  const questionText = resultEl.querySelector('.result-question').textContent.trim();
+
+  if (categoryId) chatbotState.currentCategory = { id: categoryId, name: categoryName };
+  selectQuestion(itemId, questionText);
 }
 
 // ─── Navigation ───────────────────────────────────────────────────────────────

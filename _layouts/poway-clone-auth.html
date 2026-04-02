@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="https://powaynec.com/wp-content/plugins/elementor/assets/lib/eicons/css/elementor-icons.min.css?ver=5.47.0" />
   <link rel="stylesheet" href="https://powaynec.com/wp-content/plugins/elementor-pro/assets/css/widget-posts.min.css?ver=3.35.1" />
   <link rel="stylesheet" href="https://powaynec.com/wp-content/plugins/elementor/assets/css/widget-social-icons.min.css?ver=3.35.9" />
+  <link rel="stylesheet" href="{{ '/assets/css/chatbot.css' | relative_url }}" />
   <link rel="icon" href="https://powaynec.com/wp-content/uploads/2020/05/cropped-PNEC-init-32x32.jpg" sizes="32x32" />
   {% if page.head_extra %}{{ page.head_extra }}{% endif %}
 </head>
@@ -47,12 +48,16 @@
     </div>
   </main>
   {% include poway-auth-footer.html %}
+  {% include chatbot/chatbot-widget.html %}
   <script>
     (function() { document.body.className = document.body.className.replace('no-js', 'js'); }());
   </script>
   <script src="{{ '/assets/js/utils/errors.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/api/auth-api.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/api/faq-api.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/ui/auth-ui.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/ui/chatbot-ui.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/pages/chatbot.js' | relative_url }}"></script>
   {% if page.page_script_path %}<script src="{{ page.page_script_path }}"></script>{% endif %}
 </body>
 </html>

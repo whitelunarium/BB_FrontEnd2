@@ -164,9 +164,9 @@ function showRiskCardsError(message) {
 function buildFireConditions(conditions) {
   if (!conditions) return [];
   return [
-    { label: 'Temperature', value: conditions.temperature_f ? `${conditions.temperature_f}°F` : '—' },
-    { label: 'Humidity',    value: conditions.humidity ? `${conditions.humidity}%` : '—' },
-    { label: 'Wind Speed',  value: conditions.wind_mph ? `${conditions.wind_mph} mph` : '—' },
+    { label: 'Temperature', value: conditions.temperature_f != null ? `${conditions.temperature_f}°F` : '—' },
+    { label: 'Humidity',    value: conditions.humidity != null ? `${conditions.humidity}%` : '—' },
+    { label: 'Wind Speed',  value: conditions.wind_mph != null ? `${conditions.wind_mph} mph` : '—' },
   ];
 }
 
@@ -178,9 +178,9 @@ function buildFireConditions(conditions) {
 function buildFloodConditions(conditions) {
   if (!conditions) return [];
   return [
-    { label: 'Rain (1hr)',   value: conditions.precip_1hr_in ? `${conditions.precip_1hr_in}"` : '—' },
-    { label: 'Rain (48hr)', value: conditions.precip_48hr_in ? `${conditions.precip_48hr_in}"` : '—' },
-    { label: 'Temperature', value: conditions.temperature_f ? `${conditions.temperature_f}°F` : '—' },
+    { label: 'Rain (1hr)',   value: conditions.precip_1hr_in != null ? `${conditions.precip_1hr_in}"` : '—' },
+    { label: 'Rain (48hr)', value: conditions.precip_48hr_in != null ? `${conditions.precip_48hr_in}"` : '—' },
+    { label: 'Temperature', value: conditions.temperature_f != null ? `${conditions.temperature_f}°F` : '—' },
   ];
 }
 
@@ -192,9 +192,9 @@ function buildFloodConditions(conditions) {
 function buildHeatConditions(conditions) {
   if (!conditions) return [];
   return [
-    { label: 'Temperature', value: conditions.temperature_f ? `${conditions.temperature_f}°F` : '—' },
-    { label: 'Heat Index',  value: conditions.heat_index_f ? `${conditions.heat_index_f}°F` : '—' },
-    { label: 'Humidity',    value: conditions.humidity ? `${conditions.humidity}%` : '—' },
+    { label: 'Temperature', value: conditions.temperature_f != null ? `${conditions.temperature_f}°F` : '—' },
+    { label: 'Heat Index',  value: conditions.heat_index_f != null ? `${conditions.heat_index_f}°F` : '—' },
+    { label: 'Humidity',    value: conditions.humidity != null ? `${conditions.humidity}%` : '—' },
   ];
 }
 

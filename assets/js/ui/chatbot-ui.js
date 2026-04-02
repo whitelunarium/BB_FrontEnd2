@@ -120,6 +120,8 @@ function renderSearchResults(results, query) {
   container.innerHTML = results.map(result => `
     <div class="search-result-item"
          data-item-id="${result.id}"
+         data-category-id="${result.category_id || ''}"
+         data-category-name="${escapeHtml(result.category_name || '')}"
          role="button"
          tabindex="0"
          aria-label="${escapeHtml(result.question)}">

@@ -1,22 +1,22 @@
 <!-- _includes/chatbot/chatbot-widget.html -->
-<!-- PNEC FAQ Preparedness Assistant — floating chatbot widget -->
-<!-- Rendered on every page via pnec-base layout -->
+<!-- PNEC site helper widget -->
+<!-- Rendered on shared layouts -->
 
 <!-- Floating trigger button -->
-<button class="chatbot-trigger" id="chatbot-trigger-btn" aria-label="Open Preparedness Assistant" aria-expanded="false">
+<button class="chatbot-trigger" id="chatbot-trigger-btn" aria-label="Open PNEC helper" aria-expanded="false">
   <span class="chatbot-trigger-icon" aria-hidden="true">💬</span>
-  <span class="chatbot-unread-badge" id="chatbot-unread-badge" aria-hidden="true">1</span>
+  <span class="chatbot-trigger-label">Help</span>
 </button>
 
 <!-- Chat panel -->
-<div class="chatbot-panel" id="chatbot-panel" role="dialog" aria-modal="true" aria-label="PNEC Preparedness Assistant">
+<div class="chatbot-panel" id="chatbot-panel" role="dialog" aria-modal="true" aria-label="PNEC website helper">
 
   <!-- Header -->
   <div class="chatbot-header">
-    <div class="chatbot-header-logo" aria-hidden="true">🚨</div>
+    <div class="chatbot-header-logo" aria-hidden="true">💬</div>
     <div class="chatbot-header-title">
-      <div class="chatbot-name">Preparedness Assistant</div>
-      <div class="chatbot-subtitle">Poway Neighborhood Emergency Corps</div>
+      <div class="chatbot-name">PNEC Helper</div>
+      <div class="chatbot-subtitle">Questions about the site or PNEC</div>
     </div>
     <button class="chatbot-close" id="chatbot-close-btn" aria-label="Close assistant">✕</button>
   </div>
@@ -29,15 +29,15 @@
       <div class="chatbot-welcome">
         <div class="chatbot-greeting">
           <span class="greeting-emoji" aria-hidden="true">👋</span>
-          <h3>How can I help you prepare?</h3>
-          <p>Browse topics below or search for answers to emergency preparedness questions.</p>
+          <h3>How can I help?</h3>
+          <p>Ask about the website, local preparedness topics, or who to contact at PNEC.</p>
         </div>
 
         <div class="chatbot-search-bar">
           <input type="text"
                  id="chatbot-search-input"
-                 placeholder="Search questions..."
-                 aria-label="Search preparedness questions"
+                 placeholder="Ask a question..."
+                 aria-label="Search PNEC questions"
                  autocomplete="off">
           <span class="search-icon" aria-hidden="true">🔍</span>
         </div>
@@ -47,7 +47,22 @@
 
         <!-- Category grid (shown when not searching) -->
         <div class="chatbot-categories" id="chatbot-categories" aria-label="Question categories">
-          <!-- Populated by chatbot.js via faq-api.js -->
+          <button class="chatbot-category-btn chatbot-shortcut-btn" data-shortcut-query="What does PNEC do?">
+            <span class="cat-icon" aria-hidden="true">🏠</span>
+            <span class="cat-name">About PNEC</span>
+          </button>
+          <button class="chatbot-category-btn chatbot-shortcut-btn" data-shortcut-query="How do I find my coordinator?">
+            <span class="cat-icon" aria-hidden="true">📍</span>
+            <span class="cat-name">Find my coordinator</span>
+          </button>
+          <button class="chatbot-category-btn chatbot-shortcut-btn" data-shortcut-query="What goes in a 72-hour emergency kit?">
+            <span class="cat-icon" aria-hidden="true">📦</span>
+            <span class="cat-name">Emergency kit</span>
+          </button>
+          <button class="chatbot-category-btn chatbot-shortcut-btn" data-shortcut-query="How do I become a coordinator?">
+            <span class="cat-icon" aria-hidden="true">🤝</span>
+            <span class="cat-name">Volunteer</span>
+          </button>
           <div class="loading-overlay">
             <span class="spinner"></span> Loading topics…
           </div>
@@ -140,7 +155,7 @@
 
   <!-- Footer -->
   <div class="chatbot-footer">
-    <p>PNEC staff-reviewed answers • <a href="{{ '/pages/contact.html' | relative_url }}" style="color:#9e9e9e">Contact us directly</a></p>
+    <p><a href="{{ '/pages/contact.html' | relative_url }}">Need a person? Contact PNEC directly.</a></p>
   </div>
 
 </div><!-- /.chatbot-panel -->

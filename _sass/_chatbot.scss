@@ -163,6 +163,71 @@
   }
 }
 
+.chatbot-risk-summary {
+  margin-bottom: $spacing-md;
+  padding: 12px 14px;
+  border: 1px solid rgba($color-navy, 0.08);
+  border-radius: $border-radius-md;
+  background: linear-gradient(180deg, rgba($color-navy, 0.04) 0%, rgba($color-red, 0.03) 100%);
+
+  .status-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: $color-red;
+  }
+
+  .status-headline {
+    font-size: $font-size-sm;
+    font-weight: 700;
+    color: $color-navy;
+    margin-bottom: 6px;
+  }
+
+  .status-meta,
+  .status-alerts {
+    font-size: 12px;
+    line-height: 1.5;
+    color: $color-gray-600;
+  }
+
+  .status-alerts {
+    margin-top: 8px;
+    padding-left: 16px;
+  }
+}
+
+.chatbot-emergency-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-xs;
+  margin-bottom: $spacing-md;
+}
+
+.chatbot-emergency-btn {
+  border: 1px solid rgba($color-red, 0.18);
+  border-radius: $border-radius-md;
+  background: #fff7f5;
+  color: $color-navy;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition: transform $transition-fast, border-color $transition-fast, background-color $transition-fast;
+
+  &:hover {
+    transform: translateY(-1px);
+    border-color: rgba($color-red, 0.38);
+    background: #fff1ed;
+  }
+}
+
 .chatbot-search-bar {
   position: relative;
   margin-bottom: $spacing-md;
@@ -369,8 +434,10 @@
     padding: 10px 0;
     border-bottom: 1px solid $color-gray-200;
     cursor: pointer;
+    outline: none;
 
     &:last-child { border-bottom: none; }
+    &:focus .result-question { color: $color-red; }
 
     .result-question {
       font-size: $font-size-sm;

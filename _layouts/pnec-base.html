@@ -20,6 +20,7 @@
   {% unless page.use_poway_source_clone %}
   <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}">
   {% endunless %}
+  <link rel="stylesheet" href="{{ '/assets/css/chatbot.css' | relative_url }}">
 
   {% if page.use_poway_source_clone %}
   {% include poway-live-head.html %}
@@ -48,9 +49,15 @@
 
   {% if page.use_poway_source_clone %}
   {% include poway-live-body.html %}
+  {% unless page.use_poway_embed %}
+  {% include chatbot/chatbot-widget.html %}
+  {% endunless %}
   <script src="{{ '/assets/js/utils/errors.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/api/auth-api.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/api/faq-api.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/ui/auth-ui.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/ui/chatbot-ui.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/pages/chatbot.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/pages/navbar.js' | relative_url }}"></script>
   {% else %}
 
