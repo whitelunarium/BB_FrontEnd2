@@ -160,14 +160,18 @@ function bindUploadButton() {
 }
 
 /**
- * Purpose: Read the cached user object from sessionStorage.
+ * Purpose: Read the cached user object from localStorage.
  * @returns {Object|null} Parsed user object or null
  * Algorithm:
- * 1. Read pnec_user key from sessionStorage
+ * 1. Read pnec_user key from localStorage
  * 2. Parse JSON
  * 3. Return object or null on parse error
  */
 function _readSessionUser() {
-  try { return JSON.parse(sessionStorage.getItem('pnec_user')); }
-  catch { return null; }
+  try {
+    const cachedUser = localStorage.getItem('pnec_user') || sessionStorage.getItem('pnec_user');
+    return cachedUser ? JSON.parse(cachedUser) : null;
+  } catch {
+    return null;
+  }
 }

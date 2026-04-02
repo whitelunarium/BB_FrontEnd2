@@ -116,7 +116,9 @@ function validateRegisterInputs(name, email, pass, confirm) {
  * @returns {void}
  */
 function handleRegisterSuccess(user) {
-  sessionStorage.setItem('pnec_user', JSON.stringify(user));
+  cacheRegisteredAccount(user);
+  localStorage.setItem('pnec_user', JSON.stringify(user));
+  sessionStorage.removeItem('pnec_user');
   window.location.href = `${SITE_BASE}/`;
 }
 
@@ -158,4 +160,18 @@ function enableRegisterButton(btn, label) {
   if (!btn) return;
   btn.disabled = false;
   btn.textContent = label;
+}
+
+function cacheRegisteredAccount(user) {
+  if (!user || !user.email) return;
+
+  try {
+    const existingAccounts = JSON.parse(localStorage.getItem('pnec_accounts') || '[]');
+    const accounts = Array.isArray(existingAccounts) ? existingAccounts : [];
+    const nextAccounts = accounts.filter(account => account && account.email !== user.email);
+    nextAccounts.push(user);
+    localStorage.setItem('pnec_accounts', JSON.stringify(nextAccounts));
+  } catch (_) {
+    localStorage.setItem('pnec_accounts', JSON.stringify([user]));
+  }
 }

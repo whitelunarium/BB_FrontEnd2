@@ -464,7 +464,8 @@ function showEndScreen() {
  */
 function prefillLeaderboardName() {
   try {
-    const user = JSON.parse(sessionStorage.getItem('pnec_user') || 'null');
+    const cachedUser = localStorage.getItem('pnec_user') || sessionStorage.getItem('pnec_user');
+    const user = JSON.parse(cachedUser || 'null');
     const input = document.getElementById('leaderboard-name');
     if (user && input) input.value = user.display_name;
   } catch { /* Ignore */ }

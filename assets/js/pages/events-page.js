@@ -317,10 +317,14 @@ function renderEventsList(container, events) {
 }
 
 /**
- * Purpose: Read the cached user from sessionStorage.
+ * Purpose: Read the cached user from localStorage.
  * @returns {Object|null} Parsed user or null
  */
 function _readSessionUser() {
-  try { return JSON.parse(sessionStorage.getItem('pnec_user')); }
-  catch { return null; }
+  try {
+    const cachedUser = localStorage.getItem('pnec_user') || sessionStorage.getItem('pnec_user');
+    return cachedUser ? JSON.parse(cachedUser) : null;
+  } catch {
+    return null;
+  }
 }

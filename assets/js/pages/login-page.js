@@ -72,7 +72,8 @@ function validateLoginInputs(email, password) {
  * @returns {void}
  */
 function handleLoginSuccess(user) {
-  sessionStorage.setItem('pnec_user', JSON.stringify(user));
+  localStorage.setItem('pnec_user', JSON.stringify(user));
+  sessionStorage.removeItem('pnec_user');
   const redirect = new URLSearchParams(window.location.search).get('next') || `${SITE_BASE}/`;
   window.location.href = redirect;
 }
@@ -118,6 +119,10 @@ function enableSubmitButton(btn, label) {
 }
 
 function _readSessionUser() {
-  try { return JSON.parse(sessionStorage.getItem('pnec_user')); }
-  catch (_) { return null; }
+  try {
+    const cachedUser = localStorage.getItem('pnec_user') || sessionStorage.getItem('pnec_user');
+    return cachedUser ? JSON.parse(cachedUser) : null;
+  } catch (_) {
+    return null;
+  }
 }

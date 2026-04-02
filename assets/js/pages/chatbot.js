@@ -39,12 +39,12 @@ function initChatbot() {
 }
 
 /**
- * Purpose: Read cached user from sessionStorage (set by navbar.js).
+ * Purpose: Read cached user from localStorage (set by navbar.js).
  * @returns {void}
  */
 function loadUserFromSession() {
   try {
-    const stored = sessionStorage.getItem('pnec_user');
+    const stored = localStorage.getItem('pnec_user') || sessionStorage.getItem('pnec_user');
     chatbotState.currentUser = stored ? JSON.parse(stored) : null;
   } catch {
     chatbotState.currentUser = null;

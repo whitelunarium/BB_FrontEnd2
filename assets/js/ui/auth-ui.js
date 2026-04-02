@@ -241,7 +241,8 @@ function getUserLocationLabel(user) {
 
 function readCachedAuthUser() {
   try {
-    return JSON.parse(sessionStorage.getItem('pnec_user'));
+    const cachedUser = localStorage.getItem('pnec_user') || sessionStorage.getItem('pnec_user');
+    return cachedUser ? JSON.parse(cachedUser) : null;
   } catch (_) {
     return null;
   }

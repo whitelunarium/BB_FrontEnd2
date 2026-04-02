@@ -17,7 +17,7 @@
  * 1. Fetch current user from API
  * 2. If user exists: render logged-in navbar
  * 3. If not: render logged-out navbar
- * 4. Cache user in sessionStorage for other pages to read
+ * 4. Cache user in localStorage for other pages to read
  */
 function loadAuthState() {
   const cachedUser = readCachedNavbarUser();
@@ -30,10 +30,12 @@ function loadAuthState() {
   fetchCurrentUser()
     .then(user => {
       if (user) {
-        sessionStorage.setItem('pnec_user', JSON.stringify(user));
+        localStorage.setItem('pnec_user', JSON.stringify(user));
+        sessionStorage.removeItem('pnec_user');
         renderNavbarLoggedIn(user);
         if (typeof renderPowayAuthHeader === 'function') renderPowayAuthHeader(user);
       } else {
+        localStorage.removeItem('pnec_user');
         sessionStorage.removeItem('pnec_user');
         renderNavbarLoggedOut();
         if (typeof renderPowayAuthHeader === 'function') renderPowayAuthHeader(null);
@@ -49,7 +51,8 @@ function loadAuthState() {
 
 function readCachedNavbarUser() {
   try {
-    return JSON.parse(sessionStorage.getItem('pnec_user'));
+    const cachedUser = localStorage.getItem('pnec_user') || sessionStorage.getItem('pnec_user');
+    return cachedUser ? JSON.parse(cachedUser) : null;
   } catch (_) {
     return null;
   }
@@ -137,7 +140,7 @@ function bindUserMenuToggle() {
  * @returns {void}
  * Algorithm:
  * 1. Find both logout buttons
- * 2. On click: call logoutUser(), then clear session and redirect home
+ * 2. On click: call logoutUser(), then clear cached user and redirect home
  */
 function bindLogoutButtons() {
   ['navbar-logout-btn', 'mobile-logout-btn'].forEach(id => {
@@ -156,6 +159,7 @@ function handleLogout(event) {
   logoutUser()
     .catch(() => {/* Ignore server errors — clear session regardless */})
     .finally(() => {
+      localStorage.removeItem('pnec_user');
       sessionStorage.removeItem('pnec_user');
       window.location.href = `${window.PNEC_SITE_BASE}/`;
     });
