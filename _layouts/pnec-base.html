@@ -48,6 +48,10 @@
 
   {% if page.use_poway_source_clone %}
   {% include poway-live-body.html %}
+  <script src="{{ '/assets/js/utils/errors.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/api/auth-api.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/ui/auth-ui.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/pages/navbar.js' | relative_url }}"></script>
   {% else %}
 
   <!-- Skip to main content (accessibility) -->

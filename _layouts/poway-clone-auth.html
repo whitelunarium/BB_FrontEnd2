@@ -47,30 +47,12 @@
     </div>
   </main>
   {% include poway-auth-footer.html %}
-  <script src="https://powaynec.com/wp-includes/js/jquery/jquery.min.js?ver=3.7.1"></script>
-  <script src="https://powaynec.com/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1"></script>
-  <script src="https://powaynec.com/wp-content/themes/jupiterx/lib/admin/assets/lib/webfont/webfont.min.js?ver=1.6.26"></script>
   <script>
-    WebFont.load({ google: { families: ['Roboto:100,200,300,400,500,600,700,800,900'] } });
     (function() { document.body.className = document.body.className.replace('no-js', 'js'); }());
   </script>
-  <script src="https://powaynec.com/wp-content/themes/jupiterx/lib/assets/dist/js/utils.min.js?ver=4.9.2"></script>
-  <script>
-    var jupiterxOptions = {"smoothScroll":"0","videMedia":"0","quantityFieldSwitch":"undefined"};
-    var elementorFrontendConfig = {"is_rtl":false,"breakpoints":{"xs":0,"sm":480,"md":768,"lg":1026,"xl":1440,"xxl":1600},"swiperClass":"swiper","kit":{"viewport_tablet":1025,"active_breakpoints":["viewport_mobile","viewport_tablet"]},"post":{"id":0,"title":"{{ page.title | escape }}" }};
-  </script>
-  <script src="https://powaynec.com/wp-content/themes/jupiterx/lib/assets/dist/js/frontend.min.js?ver=4.9.2"></script>
-  <script src="https://powaynec.com/wp-content/plugins/elementor/assets/js/webpack.runtime.min.js?ver=3.35.9"></script>
-  <script src="https://powaynec.com/wp-content/plugins/elementor/assets/js/frontend-modules.min.js?ver=3.35.9"></script>
-  <script src="https://powaynec.com/wp-content/plugins/elementor/assets/js/frontend.min.js?ver=3.35.9"></script>
-  <script src="https://powaynec.com/wp-content/plugins/elementor-pro/assets/lib/smartmenus/jquery.smartmenus.min.js?ver=1.2.1"></script>
-  <script src="https://powaynec.com/wp-content/plugins/elementor-pro/assets/js/webpack-pro.runtime.min.js?ver=3.35.1"></script>
-  <script src="https://powaynec.com/wp-content/plugins/elementor-pro/assets/js/frontend.min.js?ver=3.35.1"></script>
-  <script src="https://powaynec.com/wp-content/plugins/elementor-pro/assets/js/elements-handlers.min.js?ver=3.35.1"></script>
-  <script src="https://powaynec.com/wp-content/plugins/jupiterx-core/includes/extensions/raven/assets/js/frontend.min.js?ver=6.9.4"></script>
   <script src="{{ '/assets/js/utils/errors.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/api/auth-api.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/ui/auth-ui.js' | relative_url }}"></script>
-  {% if page.page_scripts %}{{ page.page_scripts }}{% endif %}
+  {% if page.page_script_path %}<script src="{{ page.page_script_path }}"></script>{% endif %}
 </body>
 </html>

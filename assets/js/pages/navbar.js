@@ -20,17 +20,39 @@
  * 4. Cache user in sessionStorage for other pages to read
  */
 function loadAuthState() {
+  const cachedUser = readCachedNavbarUser();
+
+  if (cachedUser) {
+    renderNavbarLoggedIn(cachedUser);
+    if (typeof renderPowayAuthHeader === 'function') renderPowayAuthHeader(cachedUser);
+  }
+
   fetchCurrentUser()
     .then(user => {
       if (user) {
         sessionStorage.setItem('pnec_user', JSON.stringify(user));
         renderNavbarLoggedIn(user);
+        if (typeof renderPowayAuthHeader === 'function') renderPowayAuthHeader(user);
       } else {
         sessionStorage.removeItem('pnec_user');
         renderNavbarLoggedOut();
+        if (typeof renderPowayAuthHeader === 'function') renderPowayAuthHeader(null);
       }
     })
-    .catch(() => renderNavbarLoggedOut());
+    .catch(() => {
+      if (!cachedUser) {
+        renderNavbarLoggedOut();
+        if (typeof renderPowayAuthHeader === 'function') renderPowayAuthHeader(null);
+      }
+    });
+}
+
+function readCachedNavbarUser() {
+  try {
+    return JSON.parse(sessionStorage.getItem('pnec_user'));
+  } catch (_) {
+    return null;
+  }
 }
 
 /**

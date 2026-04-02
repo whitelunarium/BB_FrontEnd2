@@ -17,6 +17,7 @@
           <button class="user-menu-trigger" id="user-menu-trigger" aria-expanded="false" aria-haspopup="true">
             <div class="user-avatar" id="user-avatar-initials">?</div>
             <span id="navbar-display-name">User</span>
+            <span id="navbar-display-location" class="navbar-display-location" style="display:none;"></span>
             <span id="navbar-role-badge"></span>
             <span>▾</span>
           </button>
@@ -111,6 +112,7 @@
     </li>
     <li class="mobile-nav-section" id="mobile-auth-logged-in" style="display:none">
       <div class="mobile-nav-section-label">Account</div>
+      <div id="mobile-auth-user-summary" style="color:#fff;padding:0.25rem 0 0.85rem 0;font-weight:600;"></div>
       <a href="{{ '/pages/profile.html' | relative_url }}">My Profile</a>
       <a href="{{ '/pages/dashboard.html' | relative_url }}" id="mobile-dashboard-link" style="display:none">Staff Dashboard</a>
       <a href="#" id="mobile-logout-btn" style="color: #fc8181;">Sign Out</a>

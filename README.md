@@ -12,7 +12,7 @@ bundle install
 bundle exec jekyll serve --port 4000
 ```
 
-Site available at `http://localhost:4000`. API calls hit the Flask backend at `http://localhost:8587` (set in `assets/js/utils/errors.js`).
+Site available at `http://localhost:4000`. API calls hit the Flask backend at `http://127.0.0.1:8425` (set in `assets/js/utils/errors.js`).
 
 ## Directory Structure
 
