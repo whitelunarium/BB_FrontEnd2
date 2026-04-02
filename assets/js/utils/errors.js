@@ -2,7 +2,11 @@
 // Responsibility: Centralized error type definitions and user-facing error messages.
 // All JS files reference these constants — never scatter error strings elsewhere.
 
-const API_BASE = 'http://127.0.0.1:8425';
+const API_BASE = (
+  location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+)
+  ? 'http://127.0.0.1:8425'
+  : 'https://beasts.opencodingsociety.com';
 
 // ─── Error type enum ──────────────────────────────────────────────────────────
 const ERROR_TYPES = Object.freeze({
