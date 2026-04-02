@@ -21,16 +21,24 @@ function loginUser(email, password, remember = false) {
 }
 
 /**
- * Purpose: Register a new resident account in the backend database.
+ * Purpose: Register a new resident account through the legacy-compatible Flask route.
  * @param {Object} userData - { display_name, email, password, neighborhood_id }
  * @returns {Promise<Object>} Created user data
  */
 function registerUser(userData) {
-  return fetch(`${API_BASE}/api/auth/register`, {
+  const legacyPayload = {
+    name: userData.display_name,
+    display_name: userData.display_name,
+    email: userData.email,
+    password: userData.password,
+    neighborhood_id: userData.neighborhood_id,
+  };
+
+  return fetch(`${API_BASE}/api/user`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(userData),
+    body: JSON.stringify(legacyPayload),
   })
     .then(validateResponse)
     .then(response => response.json());
