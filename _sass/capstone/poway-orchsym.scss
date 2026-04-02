@@ -3,9 +3,9 @@
 // Located in _sass/capstone/
 
 // Variables - Dark security/terminal theme
-$dd-primary: #00e5ff;        // Cyan — data/monitoring accent
-$dd-secondary: #69f0ae;      // Green — healthy/safe state
-$dd-warning: #ff6e40;        // Orange-red — alert/anomaly state
+$dd-primary: #00e5ff;        // Cyan -- data/monitoring accent
+$dd-secondary: #69f0ae;      // Green -- healthy/safe state
+$dd-warning: #ff6e40;        // Orange-red -- alert/anomaly state
 $dd-dark-bg: #050d1a;        // Deep navy black background
 $dd-card-bg: #0a1628;        // Slightly lighter navy for cards
 $dd-text-muted: #8fa3c0;
@@ -335,7 +335,7 @@ $dd-text-light: #d0e4f7;
 }
 
 
-// PSO: no image column — two-column grid
+// PSO: no image column -- two-column grid
 .pso-infograph .sip-card-grid {
   grid-template-columns: 1fr 1fr;
 
