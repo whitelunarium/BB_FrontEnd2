@@ -353,7 +353,14 @@ layout: opencs
         </div>
 </div>
 
-<script>
+<script type="module">
+        import { sendChatCompletion } from '{{ site.baseurl }}/assets/js/api/llm-chat.js';
+
+        const CHAT_PROVIDER = {{ page.chat_provider | default: "gemini" | jsonify }};
+        const CHAT_API_KEY = {{ page.chat_api_key | default: "AIzaSyBEBGbw7HfOZPhKHd2T3JJT0Vz1ZIYlAD0" | jsonify }};
+        const CHAT_MODEL = {{ page.chat_model | default: "gemini-1.5-flash-latest" | jsonify }};
+        const CHAT_API_BASE = {{ page.chat_api_base | default: "" | jsonify }};
+
         // Modal functionality
         const chatToggle = document.getElementById('chatToggle');
         const chatModal = document.getElementById('chatModal');
@@ -401,31 +408,19 @@ layout: opencs
             }, 500);
         }
 
-        // Gemini API integration
-        async function sendToGeminiAPI(userMessage) {
-            const apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=AIzaSyBEBGbw7HfOZPhKHd2T3JJT0Vz1ZIYlAD0";
-
+        // Provider-aware chat integration
+        async function sendToChatAPI(userMessage) {
             try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [{ text: `You are a chat bot named Pyre, you are an experienced fire fighter, emergency responder, and expert on fires. Some people in danger have come to you asking for help, you are pretending to be a fire responder, you are in a room where the other person is asking you for help. Your goal is answer their question while sounding natural, experienced, and while providing the best answer. Make sure all of your information is from credible sources, and when possible cite the source. Keep responses conversational and make sure your responses can be understood by a panicked person, using casual language, avoiding filler words, and slight grammatical quirks, just like real people do in digital conversation. Be friendly but not overly formal, and if you're unsure of something, just say so naturally, while maintaining your respect as a first responder. Use a few simple contractions, colloquial expressions, and everyday knowledge. If asked something complex, admit you might not know the full answer. Use wrong spelling or punctuation. Remember your name is Pyre. Avoid sentences that are narrating what your actions are, just talk to the user. Keep the messages short, and avoid sudden pauses in the responses. Avoid excessive breaks. Avoid being repetitive in the responses, if you say something there is no need to say it in multiple different ways. If you encounter situations where you need to provide a lengthy response, use bulleted lists to make it easier for the user to understand. ${userMessage}` }]
-                        }]
-                    })
+                return await sendChatCompletion({
+                    provider: CHAT_PROVIDER,
+                    apiKey: CHAT_API_KEY,
+                    model: CHAT_MODEL,
+                    apiBase: CHAT_API_BASE,
+                    systemPrompt: `You are a chat bot named Pyre, you are an experienced fire fighter, emergency responder, and expert on fires. Some people in danger have come to you asking for help, you are pretending to be a fire responder, you are in a room where the other person is asking you for help. Your goal is answer their question while sounding natural, experienced, and while providing the best answer. Make sure all of your information is from credible sources, and when possible cite the source. Keep responses conversational and make sure your responses can be understood by a panicked person, using casual language, avoiding filler words, and slight grammatical quirks, just like real people do in digital conversation. Be friendly but not overly formal, and if you're unsure of something, just say so naturally, while maintaining your respect as a first responder. Use a few simple contractions, colloquial expressions, and everyday knowledge. If asked something complex, admit you might not know the full answer. Use wrong spelling or punctuation. Remember your name is Pyre. Avoid sentences that are narrating what your actions are, just talk to the user. Keep the messages short, and avoid sudden pauses in the responses. Avoid excessive breaks. Avoid being repetitive in the responses, if you say something there is no need to say it in multiple different ways. If you encounter situations where you need to provide a lengthy response, use bulleted lists to make it easier for the user to understand.`,
+                    userMessage
                 });
-
-                if (!response.ok) {
-                    throw new Error(`Error: ${response.status}`);
-                }
-
-                const data = await response.json();
-                return data.candidates[0].content.parts[0].text;
             } catch (error) {
-                console.error('Error communicating with Gemini API:', error);
+                console.error(`Error communicating with ${CHAT_PROVIDER}:`, error);
                 return "Sorry, I'm having trouble connecting right now. Please try again in a moment.";
             }
         }
@@ -487,7 +482,7 @@ layout: opencs
                 
                 try {
                     // Get AI response
-                    const aiResponse = await sendToGeminiAPI(userMessage);
+                    const aiResponse = await sendToChatAPI(userMessage);
                     
                     // Hide typing indicator and add AI response
                     hideTypingIndicator(typingIndicator);
@@ -514,6 +509,9 @@ layout: opencs
                 displayFileMessage(file);
             }
         }
+
+        window.triggerFileUpload = triggerFileUpload;
+        window.handleFileUpload = handleFileUpload;
 
         function displayFileMessage(file) {
             const messageElement = document.createElement('div');

@@ -163,11 +163,14 @@ function showRiskCardsError(message) {
  */
 function buildFireConditions(conditions) {
   if (!conditions) return [];
-  return [
+  const rows = [
     { label: 'Temperature', value: conditions.temperature_f != null ? `${conditions.temperature_f}°F` : '—' },
     { label: 'Humidity',    value: conditions.humidity != null ? `${conditions.humidity}%` : '—' },
     { label: 'Wind Speed',  value: conditions.wind_mph != null ? `${conditions.wind_mph} mph` : '—' },
   ];
+  const airQuality = conditions.air_quality_index ?? conditions.aqi;
+  if (airQuality != null) rows.push({ label: 'Air Quality', value: String(airQuality) });
+  return rows;
 }
 
 /**
@@ -191,11 +194,14 @@ function buildFloodConditions(conditions) {
  */
 function buildHeatConditions(conditions) {
   if (!conditions) return [];
-  return [
+  const rows = [
     { label: 'Temperature', value: conditions.temperature_f != null ? `${conditions.temperature_f}°F` : '—' },
     { label: 'Heat Index',  value: conditions.heat_index_f != null ? `${conditions.heat_index_f}°F` : '—' },
     { label: 'Humidity',    value: conditions.humidity != null ? `${conditions.humidity}%` : '—' },
   ];
+  const airQuality = conditions.air_quality_index ?? conditions.aqi;
+  if (airQuality != null) rows.push({ label: 'Air Quality', value: String(airQuality) });
+  return rows;
 }
 
 // ─── Private helpers ──────────────────────────────────────────────────────────

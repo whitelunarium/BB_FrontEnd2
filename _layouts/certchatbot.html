@@ -314,8 +314,13 @@ layout: cs-portfolio-lesson
     </div>
 </div>
 
-<script>
-    const API_KEY = 'AIzaSyAwUorzifmPEIX6M74Kd_as-C-7Ih6UyLs';
+<script type="module">
+    import { sendChatCompletion } from '{{ site.baseurl }}/assets/js/api/llm-chat.js';
+
+    const CHAT_PROVIDER = {{ page.chat_provider | default: "gemini" | jsonify }};
+    const CHAT_API_KEY = {{ page.chat_api_key | default: "AIzaSyAwUorzifmPEIX6M74Kd_as-C-7Ih6UyLs" | jsonify }};
+    const CHAT_MODEL = {{ page.chat_model | default: "gemini-2.5-flash" | jsonify }};
+    const CHAT_API_BASE = {{ page.chat_api_base | default: "" | jsonify }};
 
     // Modal functionality
     const chatToggle = document.getElementById('chatToggle');
@@ -362,9 +367,7 @@ CERTIFICATE FEATURES:
 - Certificates are suitable for sharing on LinkedIn, portfolios, and resumes
 `;
 
-    async function sendToGeminiAPI(userMessage) {
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
-
+    async function sendToChatAPI(userMessage) {
         const systemPrompt = `You are the Certification Guide Bot, a helpful assistant that explains certifications, badges, and how to add them to LinkedIn. Your role is to:
 
 1. Explain the different certificates available (Frontend, Backend, Data Viz, Resume, AI Usage)
@@ -389,34 +392,16 @@ Keep responses:
 Your name is Certification Guide Bot. Help users showcase their achievements!`;
 
         try {
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{ text: `${systemPrompt}\n\nUser question: ${userMessage}` }]
-                    }]
-                })
+            return await sendChatCompletion({
+                provider: CHAT_PROVIDER,
+                apiKey: CHAT_API_KEY,
+                model: CHAT_MODEL,
+                apiBase: CHAT_API_BASE,
+                systemPrompt,
+                userMessage
             });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error('API Error:', errorData);
-                throw new Error(`API Error: ${response.status}`);
-            }
-
-            const data = await response.json();
-            
-            if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-                return data.candidates[0].content.parts[0].text;
-            } else {
-                console.error('Unexpected response structure:', data);
-                return "I received an unexpected response. Please try asking your question again.";
-            }
         } catch (error) {
-            console.error('Error communicating with Gemini API:', error);
+            console.error(`Error communicating with ${CHAT_PROVIDER}:`, error);
             return "I'm having trouble connecting right now. Please try again in a moment.";
         }
     }
@@ -509,7 +494,7 @@ Your name is Certification Guide Bot. Help users showcase their achievements!`;
             const typingIndicator = showTypingIndicator();
             
             try {
-                const aiResponse = await sendToGeminiAPI(userMessage);
+                const aiResponse = await sendToChatAPI(userMessage);
                 hideTypingIndicator(typingIndicator);
                 
                 setTimeout(() => {

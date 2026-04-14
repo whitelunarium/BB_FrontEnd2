@@ -52,12 +52,28 @@
   {% unless page.use_poway_embed %}
   {% include chatbot/chatbot-widget.html %}
   {% endunless %}
+  <script>
+    const pnecApiBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+      ? 'http://127.0.0.1:8425'
+      : 'https://beasts.opencodingsociety.com';
+    window.PNEC_CHATBOT_CONFIG = {
+      provider: {{ page.chat_provider | default: "gemini" | jsonify }},
+      apiKey: {{ page.chat_api_key | default: "" | jsonify }},
+      model: {{ page.chat_model | default: "gemini-2.5-flash" | jsonify }},
+      apiBase: {{ page.chat_api_base | default: "" | jsonify }},
+      endpoint: {{ page.chat_endpoint | default: "" | jsonify }} || `${pnecApiBase}/api/gemini`,
+      llmModuleUrl: {{ '/assets/js/api/llm-chat.js' | relative_url | jsonify }}
+    };
+  </script>
   <script src="{{ '/assets/js/utils/errors.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/api/auth-api.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/api/faq-api.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/api/risk-api.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/ui/auth-ui.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/ui/chatbot-ui.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/ui/risk-ui.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/pages/chatbot.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/pages/risk-widget.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/pages/navbar.js' | relative_url }}"></script>
   {% else %}
 
@@ -84,12 +100,28 @@
 
   {% unless page.use_poway_embed %}
   <!-- Core scripts -->
+  <script>
+    const pnecApiBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+      ? 'http://127.0.0.1:8425'
+      : 'https://beasts.opencodingsociety.com';
+    window.PNEC_CHATBOT_CONFIG = {
+      provider: {{ page.chat_provider | default: "gemini" | jsonify }},
+      apiKey: {{ page.chat_api_key | default: "" | jsonify }},
+      model: {{ page.chat_model | default: "gemini-2.5-flash" | jsonify }},
+      apiBase: {{ page.chat_api_base | default: "" | jsonify }},
+      endpoint: {{ page.chat_endpoint | default: "" | jsonify }} || `${pnecApiBase}/api/gemini`,
+      llmModuleUrl: {{ '/assets/js/api/llm-chat.js' | relative_url | jsonify }}
+    };
+  </script>
   <script src="{{ '/assets/js/utils/errors.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/api/auth-api.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/ui/auth-ui.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/api/faq-api.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/api/risk-api.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/ui/chatbot-ui.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/ui/risk-ui.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/pages/chatbot.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/pages/risk-widget.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/pages/navbar.js' | relative_url }}"></script>
 
   {% if page.use_leaflet %}
