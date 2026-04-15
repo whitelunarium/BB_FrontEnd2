@@ -59,6 +59,16 @@ let tutorialTimer      = 8;   // seconds to show tutorial overlay at act start
 let raf;
 let ctx, canvas;
 
+// ─── CLICK CHALLENGE STATE ────────────────────────────────────────────────────
+const clickChallenge = {
+  active:   false,
+  dots:     [],   // [{x, y, r, hit}]
+  timeLeft: 0,
+  needed:   0,
+  clicked:  0,
+  type:     ''    // 'fire' | 'water'
+};
+
 // ─── ENTRY POINT ─────────────────────────────────────────────────────────────
 
 window.addEventListener('DOMContentLoaded', function() {
@@ -247,6 +257,7 @@ function runGameLoop(timestamp) {
     _checkItemCollection();
     _checkNPCInteraction();
     _checkDangerTile();            // runs every phase — catches water/fire always
+    _updateClickChallenge(delta); // tick click challenge countdown
     if (ph === 'survive') _updateDisaster(timestamp);
     _updateCamera();
   }
@@ -282,8 +293,9 @@ function _updateTimer(delta) {
 // ─── UPDATE: MOVEMENT ────────────────────────────────────────────────────────
 
 function _processMovement(delta) {
-  if (isDialogueActive()) { player.moving = false; return; }
-  if (showMessage)         { player.moving = false; return; }
+  if (isDialogueActive())      { player.moving = false; return; }
+  if (showMessage)              { player.moving = false; return; }
+  if (clickChallenge.active)   { player.moving = false; return; }
 
   let dx = 0, dy = 0;
   if (INPUT.left)  { dx = -1; player.dir = 'left'; }
@@ -438,18 +450,18 @@ function _triggerDisaster() {
 
 // Standalone danger check — runs every active frame so water hurts in ALL phases
 function _checkDangerTile() {
-  if (player.invincible > 0) return;
+  if (player.invincible > 0)    return;
+  if (clickChallenge.active)    return;  // already responding to a hazard
   if (!isOnDangerTile(player.x, player.y)) return;
-  gameState.lives--;
-  player.damageFlash = 0.6;
-  player.invincible  = 2.0;
-  const safe = _findNearestSafeTile(player.x, player.y);
-  player.x = safe.x;
-  player.y = safe.y;
-  if (gameState.lives <= 0) {
-    const name = DISASTER_DEFS[gameState.act] ? DISASTER_DEFS[gameState.act].name.toLowerCase() : 'hazard';
-    _triggerGameOver('You were caught in the ' + name + '!');
-  }
+
+  // Determine which hazard triggered the challenge
+  const col  = Math.floor(player.x / TILE_SIZE);
+  const row  = Math.floor(player.y / TILE_SIZE);
+  const tile = getTile(row, col);
+  const type = tile === TILES.FIRE ? 'fire' : 'water';
+
+  _startClickChallenge(type);
+  player.invincible = 0.2;  // brief grace so the check doesn't fire again instantly
 }
 
 function _updateDisaster(timestamp) {
@@ -556,6 +568,12 @@ function _handleClick(e) {
   const lx = e.offsetX / CANVAS_SCALE;
   const ly = e.offsetY / CANVAS_SCALE;
   const ph = gameState.phase;
+
+  // Click challenge — takes priority over all other click handling
+  if (clickChallenge.active) {
+    _handleChallengeClick(lx, ly);
+    return;
+  }
 
   // Skip round button (active during prepare / survive / transition)
   if (lx >= SKIP_BTN.x && lx <= SKIP_BTN.x + SKIP_BTN.w &&
@@ -760,6 +778,9 @@ function _renderFrame(delta, timestamp) {
     ctx.fillText(label, LOGICAL_WIDTH/2, LOGICAL_HEIGHT/2 + 6);
     ctx.textAlign = 'left';
   }
+
+  // Click challenge overlay (above everything except pause)
+  _renderClickChallenge(ctx);
 
   // Pause overlay
   if (ph === 'paused') {
