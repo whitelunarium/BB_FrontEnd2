@@ -20,7 +20,7 @@ function extractGeminiProxyText(data) {
   return '';
 }
 
-async function requestGeminiProxy({ endpoint, systemPrompt, userMessage, fetchOptions = {} }) {
+async function requestGeminiProxy({ endpoint, systemPrompt, userMessage, history = [], fetchOptions = {} }) {
   const response = await fetch(endpoint, {
     ...fetchOptions,
     method: 'POST',
@@ -30,13 +30,14 @@ async function requestGeminiProxy({ endpoint, systemPrompt, userMessage, fetchOp
     },
     body: JSON.stringify({
       prompt: systemPrompt,
-      text: userMessage
+      text: userMessage,
+      history
     })
   });
 
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const details = data?.error || data?.message || `Gemini proxy request failed with ${response.status}`;
+    const details = data?.detail || data?.message || data?.error || `Gemini proxy request failed with ${response.status}`;
     throw new Error(details);
   }
 

@@ -135,12 +135,21 @@
   line-height: 1.5;
 }
 
-.chatbot-search-bar {
+.chatbot-search-bar,
+.chatbot-conversation-input {
   position: relative;
+}
+
+.chatbot-search-bar {
   margin-bottom: 14px;
 }
 
+.chatbot-conversation-input {
+  margin-top: 14px;
+}
+
 .chatbot-search-bar input,
+.chatbot-conversation-input input,
 .form-input,
 .form-textarea {
   width: 100%;
@@ -152,11 +161,13 @@
   background: #fff;
 }
 
-.chatbot-search-bar input {
-  padding-right: 38px;
+.chatbot-search-bar input,
+.chatbot-conversation-input input {
+  padding-right: 48px;
 }
 
 .chatbot-search-bar input:focus,
+.chatbot-conversation-input input:focus,
 .form-input:focus,
 .form-textarea:focus {
   outline: none;
@@ -164,12 +175,31 @@
   box-shadow: 0 0 0 3px rgba(77, 115, 157, 0.12);
 }
 
-.search-icon {
+.chatbot-send-btn {
   position: absolute;
   top: 50%;
-  right: 12px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 10px;
+  background: #10263f;
+  color: #fff;
   transform: translateY(-50%);
-  color: #6a788a;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.chatbot-send-btn:hover,
+.chatbot-send-btn:focus-visible {
+  background: #c84738;
+}
+
+.chatbot-send-btn:disabled {
+  background: #9aa7b5;
+  cursor: not-allowed;
 }
 
 .chatbot-categories {
@@ -274,6 +304,51 @@
 
 .chatbot-answer-text p:first-child {
   margin-top: 0;
+}
+
+.chatbot-transcript {
+  display: grid;
+  gap: 12px;
+}
+
+.chatbot-message {
+  max-width: 92%;
+  border: 1px solid #e1e7ed;
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: #fff;
+}
+
+.chatbot-message-user {
+  justify-self: end;
+  background: #eef4fb;
+  border-color: #cfdeee;
+}
+
+.chatbot-message-assistant {
+  justify-self: start;
+}
+
+.chatbot-message-unavailable {
+  border-color: #f0c8c2;
+  background: #fff5f3;
+}
+
+.chatbot-message-label {
+  margin-bottom: 4px;
+  color: #66778b;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.chatbot-message-body p {
+  margin: 0;
+}
+
+.chatbot-message-body p + p,
+.chatbot-message-body ul {
+  margin-top: 8px;
 }
 
 .chatbot-feedback {

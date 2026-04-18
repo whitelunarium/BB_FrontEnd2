@@ -62,6 +62,7 @@
       model: {{ page.chat_model | default: "gemini-2.5-flash" | jsonify }},
       apiBase: {{ page.chat_api_base | default: "" | jsonify }},
       endpoint: {{ page.chat_endpoint | default: "" | jsonify }} || `${pnecApiBase}/api/gemini`,
+      newsEndpoint: `${pnecApiBase}/api/news/search`,
       llmModuleUrl: {{ '/assets/js/api/llm-chat.js' | relative_url | jsonify }}
     };
   </script>
@@ -110,6 +111,7 @@
       model: {{ page.chat_model | default: "gemini-2.5-flash" | jsonify }},
       apiBase: {{ page.chat_api_base | default: "" | jsonify }},
       endpoint: {{ page.chat_endpoint | default: "" | jsonify }} || `${pnecApiBase}/api/gemini`,
+      newsEndpoint: `${pnecApiBase}/api/news/search`,
       llmModuleUrl: {{ '/assets/js/api/llm-chat.js' | relative_url | jsonify }}
     };
   </script>

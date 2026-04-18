@@ -12,7 +12,7 @@ const RISK_LEVELS = [
 
 /**
  * Purpose: Render all three risk cards (fire, flood, heat) from API data.
- * @param {Object} riskData - { fire_score, flood_score, heat_score, conditions, updated_at }
+ * @param {Object} riskData - { fire_score, flood_score, heat_score, conditions, updated_at, fetched_at }
  * @returns {void}
  * Algorithm:
  * 1. Render fire risk card
@@ -42,7 +42,7 @@ function renderRiskCards(riskData) {
     conditions: buildHeatConditions(riskData.conditions),
   });
 
-  updateRiskTimestamp(riskData.updated_at);
+  updateRiskTimestamp(riskData);
 }
 
 /**
@@ -120,15 +120,27 @@ function classifyRiskLevel(score) {
 
 /**
  * Purpose: Update the "last updated" timestamp element.
- * @param {string} updatedAt - ISO timestamp string
+ * @param {Object|string} riskDataOrTimestamp - API payload or timestamp string
  * @returns {void}
  */
-function updateRiskTimestamp(updatedAt) {
+function updateRiskTimestamp(riskDataOrTimestamp) {
   const el = document.getElementById('risk-updated-time');
   if (!el) return;
+
+  const updatedAt = resolveRiskTimestamp(riskDataOrTimestamp);
   const date = new Date(updatedAt);
+  if (!updatedAt || Number.isNaN(date.getTime())) {
+    el.textContent = 'Updated just now';
+    return;
+  }
+
   const minutesAgo = Math.round((Date.now() - date.getTime()) / 60000);
-  el.textContent = minutesAgo < 2 ? 'Just updated' : `Updated ${minutesAgo} minutes ago`;
+  if (minutesAgo < 0) {
+    el.textContent = 'Updated just now';
+    return;
+  }
+
+  el.textContent = minutesAgo < 2 ? 'Updated just now' : `Updated ${minutesAgo} minutes ago`;
 }
 
 /**
@@ -214,4 +226,21 @@ function getRiskLabelBg(label) {
 function getRiskLabelColor(label) {
   const map = { Low: '#065f46', Moderate: '#92400e', High: '#9a3412', Critical: '#991b1b' };
   return map[label] || '#333';
+}
+
+function resolveRiskTimestamp(riskDataOrTimestamp) {
+  if (typeof riskDataOrTimestamp === 'string' || typeof riskDataOrTimestamp === 'number') {
+    return riskDataOrTimestamp;
+  }
+
+  if (!riskDataOrTimestamp || typeof riskDataOrTimestamp !== 'object') {
+    return null;
+  }
+
+  return riskDataOrTimestamp.fetched_at
+    || riskDataOrTimestamp.generated_at
+    || riskDataOrTimestamp.updated_at
+    || riskDataOrTimestamp.timestamp
+    || riskDataOrTimestamp.observed_at
+    || null;
 }
