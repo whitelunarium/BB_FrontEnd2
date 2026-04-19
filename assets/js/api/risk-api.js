@@ -12,8 +12,13 @@
  * 3. Return parsed risk data
  */
 function fetchRiskAssessment(neighborhoodId = null) {
-  const query = neighborhoodId ? `?neighborhood_id=${encodeURIComponent(neighborhoodId)}` : '';
-  return fetch(`${API_BASE}/api/risk${query}`, { credentials: 'include' })
+  const params = new URLSearchParams();
+  if (neighborhoodId) params.set('neighborhood_id', neighborhoodId);
+  params.set('_', Date.now());
+  return fetch(`${API_BASE}/api/risk?${params.toString()}`, {
+    credentials: 'include',
+    cache: 'no-store',
+  })
     .then(validateResponse)
     .then(response => response.json());
 }

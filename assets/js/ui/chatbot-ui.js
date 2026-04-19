@@ -75,17 +75,101 @@ function renderQuestionList(items, categoryName) {
  * 3. Reset feedback buttons to neutral state
  */
 function renderAnswerView(item) {
+  setAnswerViewState(item.question, item.answer, { itemId: item.id, showFeedback: true, badge: 'FAQ answer' });
+}
+
+/**
+ * Purpose: Render a freeform assistant answer in the answer screen.
+ * @param {string} question - User question text
+ * @param {string} answer - Assistant answer text
+ * @returns {void}
+ */
+function renderAssistantAnswerView(question, answer) {
+  replaceAssistantLoadingMessage(answer);
+  setFeedbackVisibility(false);
+}
+
+/**
+ * Purpose: Show the answer screen in a loading state while the assistant thinks.
+ * @param {string} question - User question text
+ * @returns {void}
+ */
+function renderAssistantLoadingView(question) {
   const questionEl = document.getElementById('answer-question-text');
   const answerEl   = document.getElementById('answer-body');
   if (!questionEl || !answerEl) return;
 
-  questionEl.textContent = item.question;
-  answerEl.innerHTML = renderMarkdown(item.answer);
+  questionEl.textContent = 'PNEC Helper';
+  ensureAssistantTranscript(answerEl);
+  appendTranscriptMessage(answerEl, 'user', question);
+  appendTranscriptMessage(answerEl, 'assistant', '<span class="spinner"></span> Thinking...', { isLoading: true, isHtml: true });
+  delete answerEl.dataset.itemId;
+  setFeedbackVisibility(false);
+}
 
-  // Store item ID for feedback submission
-  answerEl.dataset.itemId = item.id;
+function renderAssistantUnavailableView(message) {
+  replaceAssistantLoadingMessage(message, { unavailable: true });
+  setFeedbackVisibility(false);
+}
 
-  resetFeedbackButtons();
+function setAnswerViewState(question, answer, options = {}) {
+  const questionEl = document.getElementById('answer-question-text');
+  const answerEl   = document.getElementById('answer-body');
+  if (!questionEl || !answerEl) return;
+
+  questionEl.textContent = question;
+  answerEl.innerHTML = `
+    ${options.badge ? `<div class="chatbot-answer-note">${escapeHtml(options.badge)}</div>` : ''}
+    ${renderMarkdown(answer)}`;
+
+  if (options.itemId) answerEl.dataset.itemId = options.itemId;
+  else delete answerEl.dataset.itemId;
+
+  setFeedbackVisibility(Boolean(options.showFeedback));
+  if (options.showFeedback) resetFeedbackButtons();
+}
+
+function ensureAssistantTranscript(answerEl) {
+  if (answerEl.querySelector('.chatbot-transcript')) return;
+  answerEl.innerHTML = `
+    <div class="chatbot-answer-note">PNEC helper</div>
+    <div class="chatbot-transcript" aria-live="polite"></div>`;
+}
+
+function appendTranscriptMessage(answerEl, role, content, options = {}) {
+  const transcript = answerEl.querySelector('.chatbot-transcript');
+  if (!transcript) return;
+
+  const messageEl = document.createElement('div');
+  messageEl.className = `chatbot-message chatbot-message-${role}${options.isLoading ? ' assistant-loading' : ''}${options.unavailable ? ' chatbot-message-unavailable' : ''}`;
+  messageEl.innerHTML = `
+    <div class="chatbot-message-label">${role === 'user' ? 'You' : 'PNEC Helper'}</div>
+    <div class="chatbot-message-body"></div>`;
+
+  const bodyEl = messageEl.querySelector('.chatbot-message-body');
+  if (options.isHtml) bodyEl.innerHTML = content;
+  else bodyEl.innerHTML = renderMarkdown(content);
+
+  transcript.appendChild(messageEl);
+  messageEl.scrollIntoView({ block: 'end', behavior: 'smooth' });
+}
+
+function replaceAssistantLoadingMessage(content, options = {}) {
+  const answerEl = document.getElementById('answer-body');
+  if (!answerEl) return;
+
+  const loadingEl = answerEl.querySelector('.assistant-loading');
+  if (!loadingEl) {
+    ensureAssistantTranscript(answerEl);
+    appendTranscriptMessage(answerEl, 'assistant', content, options);
+    return;
+  }
+
+  loadingEl.classList.remove('assistant-loading');
+  if (options.unavailable) loadingEl.classList.add('chatbot-message-unavailable');
+  const bodyEl = loadingEl.querySelector('.chatbot-message-body');
+  if (bodyEl) bodyEl.innerHTML = renderMarkdown(content);
+  loadingEl.scrollIntoView({ block: 'end', behavior: 'smooth' });
 }
 
 /**
@@ -105,19 +189,29 @@ function renderSearchResults(results, query) {
   if (categoriesEl) categoriesEl.style.display = 'none';
   container.style.display = 'block';
 
+  const helperAction = `
+    <div class="chatbot-search-actions">
+      <button class="btn btn-primary btn-sm ask-assistant-btn" data-query="${escapeHtml(query)}">
+        Ask PNEC Helper
+      </button>
+    </div>`;
+
   if (!results.length) {
     container.innerHTML = `
+      ${helperAction}
       <div class="no-results">
         <p>No results for "<strong>${escapeHtml(query)}</strong>"</p>
         <p>Can't find what you need?</p>
-        <button class="btn btn-outline-red btn-sm" id="no-results-ask-btn">
-          Ask a Staff Member
+        <button class="btn btn-outline-red btn-sm" id="no-results-ask-btn" data-query="${escapeHtml(query)}">
+          Ask PNEC Helper
         </button>
       </div>`;
     return;
   }
 
-  container.innerHTML = results.map(result => `
+  container.innerHTML = `
+    ${helperAction}
+    ${results.map(result => `
     <div class="search-result-item"
          data-item-id="${result.id}"
          data-category-id="${result.category_id || ''}"
@@ -128,7 +222,7 @@ function renderSearchResults(results, query) {
       <div class="result-question">${escapeHtml(result.question)}</div>
       <div class="result-category">${escapeHtml(result.category_name || '')}</div>
     </div>`
-  ).join('');
+  ).join('')}`;
 }
 
 /**
@@ -232,6 +326,12 @@ function resetFeedbackButtons() {
   const noBtn  = document.getElementById('feedback-no-btn');
   if (yesBtn) yesBtn.classList.remove('active-yes');
   if (noBtn)  noBtn.classList.remove('active-no');
+}
+
+function setFeedbackVisibility(visible) {
+  const feedbackEl = document.querySelector('.chatbot-feedback');
+  if (!feedbackEl) return;
+  feedbackEl.style.display = visible ? 'flex' : 'none';
 }
 
 /**

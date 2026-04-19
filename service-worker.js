@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ocs-pwa-v1';
+const CACHE_NAME = 'ocs-pwa-v2';
 const OFFLINE_URL = '/mobile/';
 
 const PRECACHE_ASSETS = [
@@ -33,6 +33,16 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const request = event.request;
   if (request.method !== 'GET') return;
+  const url = new URL(request.url);
+
+  if (url.origin !== self.location.origin) return;
+
+  if (request.mode === 'navigate') {
+    event.respondWith(fetch(request).catch(() => caches.match(OFFLINE_URL)));
+    return;
+  }
+
+  if (!PRECACHE_ASSETS.includes(url.pathname)) return;
 
   event.respondWith(
     caches.match(request).then((cached) => {

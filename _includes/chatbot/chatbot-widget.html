@@ -37,9 +37,9 @@
           <input type="text"
                  id="chatbot-search-input"
                  placeholder="Ask a question..."
-                 aria-label="Search PNEC questions"
+                 aria-label="Ask PNEC Helper a question"
                  autocomplete="off">
-          <span class="search-icon" aria-hidden="true">🔍</span>
+          <button type="button" class="chatbot-send-btn" id="chatbot-send-btn" aria-label="Send question">➤</button>
         </div>
 
         <!-- Search results (hidden until typing) -->
@@ -90,6 +90,15 @@
 
       <div class="chatbot-answer-text" id="answer-body" aria-live="polite">
         <!-- Populated dynamically -->
+      </div>
+
+      <div class="chatbot-conversation-input">
+        <input type="text"
+               id="chatbot-followup-input"
+               placeholder="Ask a follow-up..."
+               aria-label="Ask PNEC Helper a follow-up question"
+               autocomplete="off">
+        <button type="button" class="chatbot-send-btn" id="chatbot-followup-send-btn" aria-label="Send follow-up">➤</button>
       </div>
 
       <div class="chatbot-feedback">
