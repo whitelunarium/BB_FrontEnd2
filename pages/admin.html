@@ -1,0 +1,923 @@
+---
+layout: pnec-base
+title: "Admin Dashboard"
+use_poway_live_styles: false
+---
+
+<style>
+/* ── Admin Dashboard Styles ─────────────────────────────────────────────── */
+:root {
+  --adm-bg:        #0a1628;
+  --adm-surface:   #0f1e36;
+  --adm-surface2:  #152540;
+  --adm-border:    rgba(255,255,255,0.10);
+  --adm-text:      #e8f0fb;
+  --adm-muted:     #8ba3c7;
+  --adm-navy:      #0a1628;
+  --adm-red:       #c0392b;
+  --adm-green:     #27ae60;
+  --adm-amber:     #e67e22;
+  --adm-blue:      #2980b9;
+  --adm-accent:    #3b82f6;
+}
+
+* { box-sizing: border-box; }
+
+body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--adm-bg); color: var(--adm-text); }
+
+#adm-gate  { display: none; min-height: 100vh; place-items: center; padding: 24px; }
+#adm-gate.visible { display: grid; }
+#adm-shell { display: none; }
+#adm-shell.visible { display: block; }
+
+/* Gate card */
+.adm-gate-card { width: min(420px,100%); background: var(--adm-surface); border: 1px solid var(--adm-border); border-radius: 20px; padding: 36px; box-shadow: 0 32px 64px rgba(0,0,0,.35); }
+.adm-gate-card h1 { margin: 0 0 6px; font-size: 1.6rem; }
+.adm-gate-card p  { margin: 0 0 20px; color: var(--adm-muted); font-size: .95rem; }
+
+/* Layout */
+.adm-layout { display: flex; min-height: 100vh; }
+
+.adm-sidebar {
+  width: 240px; flex-shrink: 0; background: var(--adm-surface);
+  border-right: 1px solid var(--adm-border); padding: 20px 0;
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  display: flex; flex-direction: column;
+}
+.adm-sidebar-logo { padding: 0 20px 20px; border-bottom: 1px solid var(--adm-border); margin-bottom: 12px; }
+.adm-sidebar-logo .adm-logo-title { font-weight: 800; font-size: 1.1rem; color: var(--adm-text); }
+.adm-sidebar-logo .adm-logo-sub   { font-size: .78rem; color: var(--adm-muted); margin-top: 2px; }
+
+.adm-nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 20px; cursor: pointer; border-radius: 0;
+  color: var(--adm-muted); font-size: .93rem; font-weight: 500;
+  transition: all .15s; border-left: 3px solid transparent;
+  user-select: none;
+}
+.adm-nav-item:hover   { color: var(--adm-text); background: rgba(255,255,255,.05); }
+.adm-nav-item.active  { color: var(--adm-text); background: rgba(59,130,246,.12); border-left-color: var(--adm-accent); }
+.adm-nav-item .adm-nav-icon { font-size: 1rem; width: 20px; text-align: center; }
+.adm-sidebar-footer   { margin-top: auto; padding: 16px 20px; border-top: 1px solid var(--adm-border); }
+.adm-sidebar-user     { font-size: .82rem; color: var(--adm-muted); }
+.adm-sidebar-user strong { color: var(--adm-text); display: block; font-size: .9rem; }
+
+.adm-main   { flex: 1; min-width: 0; padding: 28px; overflow-x: hidden; }
+.adm-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.adm-topbar h2 { margin: 0; font-size: 1.5rem; font-weight: 700; }
+.adm-topbar p  { margin: 4px 0 0; font-size: .88rem; color: var(--adm-muted); }
+
+/* Tabs */
+.adm-tab { display: none; }
+.adm-tab.active { display: block; }
+
+/* Cards / panels */
+.adm-panel { background: var(--adm-surface); border: 1px solid var(--adm-border); border-radius: 14px; overflow: hidden; margin-bottom: 20px; }
+.adm-panel-head { padding: 16px 20px; border-bottom: 1px solid var(--adm-border); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.adm-panel-head h3 { margin: 0; font-size: 1rem; }
+.adm-panel-body { padding: 20px; }
+
+/* Stats grid */
+.adm-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); gap: 16px; margin-bottom: 24px; }
+.adm-stat  { background: var(--adm-surface); border: 1px solid var(--adm-border); border-radius: 14px; padding: 20px; }
+.adm-stat .adm-stat-val { font-size: 2rem; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+.adm-stat .adm-stat-lbl { font-size: .82rem; color: var(--adm-muted); }
+
+/* Table */
+.adm-table-wrap { overflow-x: auto; }
+table.adm-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+table.adm-table th { padding: 10px 14px; text-align: left; color: var(--adm-muted); font-size: .8rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; border-bottom: 1px solid var(--adm-border); white-space: nowrap; }
+table.adm-table td { padding: 12px 14px; border-bottom: 1px solid var(--adm-border); vertical-align: middle; }
+table.adm-table tr:last-child td { border-bottom: 0; }
+table.adm-table tr:hover td { background: rgba(255,255,255,.03); }
+
+/* Chips */
+.chip { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: .76rem; font-weight: 700; }
+.chip-admin       { background: rgba(192,57,43,.18);  color: #e57373; border: 1px solid rgba(192,57,43,.35); }
+.chip-staff       { background: rgba(41,128,185,.18); color: #64b5f6; border: 1px solid rgba(41,128,185,.35); }
+.chip-coordinator { background: rgba(230,126,34,.18); color: #ffb74d; border: 1px solid rgba(230,126,34,.35); }
+.chip-resident    { background: rgba(39,174,96,.18);  color: #81c784; border: 1px solid rgba(39,174,96,.35); }
+.chip-active   { background: rgba(39,174,96,.18);  color: #81c784; border: 1px solid rgba(39,174,96,.35); }
+.chip-inactive { background: rgba(192,57,43,.18);  color: #e57373; border: 1px solid rgba(192,57,43,.35); }
+.chip-info    { background: rgba(41,128,185,.18); color: #64b5f6; border: 1px solid rgba(41,128,185,.35); }
+.chip-warning { background: rgba(230,126,34,.18); color: #ffb74d; border: 1px solid rgba(230,126,34,.35); }
+.chip-danger  { background: rgba(192,57,43,.18);  color: #e57373; border: 1px solid rgba(192,57,43,.35); }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; border: 0; cursor: pointer; font-size: .88rem; font-weight: 600; transition: opacity .15s, transform .1s; }
+.btn:hover { opacity: .85; transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+.btn-primary  { background: var(--adm-accent);  color: #fff; }
+.btn-danger   { background: var(--adm-red);    color: #fff; }
+.btn-ghost    { background: rgba(255,255,255,.08); color: var(--adm-text); }
+.btn-sm       { padding: 5px 10px; font-size: .8rem; }
+.btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+/* Forms */
+.adm-form-row   { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.adm-form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.adm-form-group label { font-size: .83rem; font-weight: 600; color: var(--adm-muted); }
+.adm-input, .adm-select, .adm-textarea {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--adm-border);
+  border-radius: 8px; background: var(--adm-surface2); color: var(--adm-text);
+  font-size: .9rem; outline: none; transition: border-color .15s;
+}
+.adm-input:focus, .adm-select:focus, .adm-textarea:focus { border-color: var(--adm-accent); }
+.adm-textarea { resize: vertical; min-height: 80px; }
+.adm-select option { background: var(--adm-surface2); }
+
+/* Modal */
+.adm-modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 1000; place-items: center; padding: 20px; }
+.adm-modal-backdrop.open { display: grid; }
+.adm-modal { background: var(--adm-surface); border: 1px solid var(--adm-border); border-radius: 16px; padding: 28px; width: min(520px,100%); max-height: 90vh; overflow-y: auto; }
+.adm-modal h3 { margin: 0 0 18px; font-size: 1.1rem; }
+.adm-modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+/* Inline edit row */
+.adm-config-row { display: flex; align-items: center; gap: 10px; padding: 14px 0; border-bottom: 1px solid var(--adm-border); }
+.adm-config-row:last-child { border-bottom: 0; }
+.adm-config-label { flex: 0 0 200px; }
+.adm-config-label strong { display: block; font-size: .9rem; }
+.adm-config-label span   { font-size: .78rem; color: var(--adm-muted); }
+.adm-config-input { flex: 1; }
+.adm-config-save  { flex-shrink: 0; }
+
+/* Announcement level select */
+.ann-level-info    { color: #64b5f6; }
+.ann-level-warning { color: #ffb74d; }
+.ann-level-danger  { color: #e57373; }
+
+/* Toast */
+.adm-toast { position: fixed; bottom: 24px; right: 24px; background: var(--adm-surface2); border: 1px solid var(--adm-border); padding: 12px 18px; border-radius: 10px; font-size: .88rem; z-index: 9999; box-shadow: 0 8px 24px rgba(0,0,0,.3); opacity: 0; transform: translateY(8px); transition: all .25s; pointer-events: none; }
+.adm-toast.show { opacity: 1; transform: translateY(0); }
+.adm-toast.success { border-color: rgba(39,174,96,.4); }
+.adm-toast.error   { border-color: rgba(192,57,43,.4); }
+
+/* Empty state */
+.adm-empty { text-align: center; padding: 40px 20px; color: var(--adm-muted); font-size: .9rem; }
+.adm-empty .adm-empty-icon { font-size: 2.5rem; margin-bottom: 10px; }
+
+/* Config group header */
+.adm-config-group-title { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--adm-muted); padding: 14px 0 8px; }
+
+/* Mobile */
+@media (max-width: 768px) {
+  .adm-layout { flex-direction: column; }
+  .adm-sidebar { width: 100%; height: auto; position: static; flex-direction: row; overflow-x: auto; padding: 8px 0; border-right: 0; border-bottom: 1px solid var(--adm-border); }
+  .adm-sidebar-logo, .adm-sidebar-footer { display: none; }
+  .adm-nav-item { border-left: 0; border-bottom: 3px solid transparent; white-space: nowrap; padding: 8px 14px; }
+  .adm-nav-item.active { border-left-color: transparent; border-bottom-color: var(--adm-accent); }
+  .adm-main   { padding: 16px; }
+  .adm-form-row { grid-template-columns: 1fr; }
+  .adm-config-row { flex-wrap: wrap; }
+  .adm-config-label { flex: 0 0 100%; }
+}
+</style>
+
+<!-- Access-denied gate -->
+<div id="adm-gate">
+  <div class="adm-gate-card">
+    <h1>🔒 Admin Only</h1>
+    <p>You need to be signed in with an admin account to access this page.</p>
+    <a href="{{ '/pages/login.html' | relative_url }}" class="btn btn-primary" style="width:100%;justify-content:center;text-decoration:none;">Go to Login</a>
+  </div>
+</div>
+
+<!-- Main shell -->
+<div id="adm-shell">
+  <div class="adm-layout">
+
+    <!-- Sidebar -->
+    <nav class="adm-sidebar">
+      <div class="adm-sidebar-logo">
+        <div class="adm-logo-title">PNEC Admin</div>
+        <div class="adm-logo-sub">Poway NEC Control Panel</div>
+      </div>
+      <div class="adm-nav-item active" data-tab="overview">
+        <span class="adm-nav-icon">📊</span> Overview
+      </div>
+      <div class="adm-nav-item" data-tab="alerts">
+        <span class="adm-nav-icon">🚨</span> Alerts &amp; Banners
+      </div>
+      <div class="adm-nav-item" data-tab="events">
+        <span class="adm-nav-icon">📅</span> Events
+      </div>
+      <div class="adm-nav-item" data-tab="users">
+        <span class="adm-nav-icon">👥</span> Users
+      </div>
+      <div class="adm-nav-item" data-tab="faq">
+        <span class="adm-nav-icon">❓</span> FAQ
+      </div>
+      <div class="adm-nav-item" data-tab="media">
+        <span class="adm-nav-icon">🖼️</span> Media / Gallery
+      </div>
+      <div class="adm-nav-item" data-tab="settings">
+        <span class="adm-nav-icon">⚙️</span> Site Settings
+      </div>
+      <div class="adm-sidebar-footer">
+        <div class="adm-sidebar-user">
+          Signed in as<br>
+          <strong id="adm-user-name">—</strong>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="adm-main">
+
+      <!-- ── OVERVIEW ───────────────────────────────────────────────────── -->
+      <div id="tab-overview" class="adm-tab active">
+        <div class="adm-topbar">
+          <div>
+            <h2>Dashboard Overview</h2>
+            <p>Your command center for the PNEC website.</p>
+          </div>
+        </div>
+        <div class="adm-stats" id="adm-stats-grid">
+          <div class="adm-stat"><div class="adm-stat-val" id="stat-users">—</div><div class="adm-stat-lbl">Total Users</div></div>
+          <div class="adm-stat"><div class="adm-stat-val" id="stat-events">—</div><div class="adm-stat-lbl">Events</div></div>
+          <div class="adm-stat"><div class="adm-stat-val" id="stat-faqs">—</div><div class="adm-stat-lbl">FAQ Entries</div></div>
+          <div class="adm-stat"><div class="adm-stat-val" id="stat-media">—</div><div class="adm-stat-lbl">Media Posts</div></div>
+          <div class="adm-stat"><div class="adm-stat-val" id="stat-alerts">—</div><div class="adm-stat-lbl">Active Alerts</div></div>
+        </div>
+
+        <div class="adm-panel">
+          <div class="adm-panel-head"><h3>Quick Actions</h3></div>
+          <div class="adm-panel-body" style="display:flex;flex-wrap:wrap;gap:10px;">
+            <button class="btn btn-primary" onclick="admSwitchTab('events');document.getElementById('adm-new-event-btn').click()">➕ New Event</button>
+            <button class="btn btn-primary" onclick="admSwitchTab('alerts');document.getElementById('adm-new-alert-btn').click()">🚨 Post Alert</button>
+            <button class="btn btn-ghost" onclick="admSwitchTab('users')">👥 Manage Users</button>
+            <button class="btn btn-ghost" onclick="admSwitchTab('settings')">⚙️ Edit Site Info</button>
+            <a href="{{ '/' | relative_url }}" target="_blank" class="btn btn-ghost" style="text-decoration:none;">🌐 View Site</a>
+          </div>
+        </div>
+
+        <div class="adm-panel">
+          <div class="adm-panel-head"><h3>Users by Role</h3></div>
+          <div class="adm-panel-body">
+            <div id="adm-role-breakdown" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ALERTS ─────────────────────────────────────────────────────── -->
+      <div id="tab-alerts" class="adm-tab">
+        <div class="adm-topbar">
+          <div>
+            <h2>Alerts &amp; Banners</h2>
+            <p>Post urgent messages visible on every page of the site.</p>
+          </div>
+          <button id="adm-new-alert-btn" class="btn btn-primary" onclick="admOpenAlertModal()">🚨 New Alert</button>
+        </div>
+        <div class="adm-panel">
+          <div class="adm-panel-head"><h3>All Announcements</h3></div>
+          <div class="adm-table-wrap">
+            <table class="adm-table">
+              <thead><tr>
+                <th>Message</th><th>Level</th><th>Status</th><th>Expires</th><th>Actions</th>
+              </tr></thead>
+              <tbody id="alerts-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── EVENTS ─────────────────────────────────────────────────────── -->
+      <div id="tab-events" class="adm-tab">
+        <div class="adm-topbar">
+          <div>
+            <h2>Events</h2>
+            <p>Create, edit, and remove community events.</p>
+          </div>
+          <button id="adm-new-event-btn" class="btn btn-primary" onclick="admOpenEventModal()">➕ New Event</button>
+        </div>
+        <div class="adm-panel">
+          <div class="adm-panel-head"><h3>All Events</h3></div>
+          <div class="adm-table-wrap">
+            <table class="adm-table">
+              <thead><tr>
+                <th>Title</th><th>Date</th><th>Location</th><th>Actions</th>
+              </tr></thead>
+              <tbody id="events-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── USERS ──────────────────────────────────────────────────────── -->
+      <div id="tab-users" class="adm-tab">
+        <div class="adm-topbar">
+          <div>
+            <h2>Users</h2>
+            <p>View accounts, change roles, and deactivate members.</p>
+          </div>
+        </div>
+        <div class="adm-panel">
+          <div class="adm-panel-head">
+            <h3>All Accounts</h3>
+            <input id="user-search" class="adm-input" style="width:220px;" placeholder="Search name or email…" oninput="admFilterUsers(this.value)">
+          </div>
+          <div class="adm-table-wrap">
+            <table class="adm-table">
+              <thead><tr>
+                <th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th>
+              </tr></thead>
+              <tbody id="users-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── FAQ ────────────────────────────────────────────────────────── -->
+      <div id="tab-faq" class="adm-tab">
+        <div class="adm-topbar">
+          <div>
+            <h2>FAQ</h2>
+            <p>Review and remove FAQ entries submitted by the community.</p>
+          </div>
+        </div>
+        <div class="adm-panel">
+          <div class="adm-panel-head"><h3>All FAQ Entries</h3></div>
+          <div class="adm-table-wrap">
+            <table class="adm-table">
+              <thead><tr>
+                <th>Question</th><th>Answer</th><th>Actions</th>
+              </tr></thead>
+              <tbody id="faq-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── MEDIA ──────────────────────────────────────────────────────── -->
+      <div id="tab-media" class="adm-tab">
+        <div class="adm-topbar">
+          <div>
+            <h2>Media / Gallery</h2>
+            <p>Review and remove uploaded photos and videos.</p>
+          </div>
+          <a href="{{ '/pages/upload.html' | relative_url }}" class="btn btn-primary" style="text-decoration:none;">⬆️ Upload New</a>
+        </div>
+        <div class="adm-panel">
+          <div class="adm-panel-head"><h3>Recent Uploads</h3></div>
+          <div class="adm-table-wrap">
+            <table class="adm-table">
+              <thead><tr>
+                <th>Preview</th><th>Title</th><th>Uploaded</th><th>Actions</th>
+              </tr></thead>
+              <tbody id="media-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SETTINGS ───────────────────────────────────────────────────── -->
+      <div id="tab-settings" class="adm-tab">
+        <div class="adm-topbar">
+          <div>
+            <h2>Site Settings</h2>
+            <p>Edit your organization's contact info, social links, and site text.</p>
+          </div>
+        </div>
+        <div id="adm-settings-panels"></div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ── Event Modal ──────────────────────────────────────────────────────────── -->
+<div class="adm-modal-backdrop" id="event-modal">
+  <div class="adm-modal">
+    <h3 id="event-modal-title">New Event</h3>
+    <input type="hidden" id="event-modal-id">
+    <div class="adm-form-group">
+      <label>Title *</label>
+      <input id="event-title" class="adm-input" placeholder="e.g. Community Preparedness Drill">
+    </div>
+    <div class="adm-form-row">
+      <div class="adm-form-group">
+        <label>Date &amp; Time *</label>
+        <input id="event-date" class="adm-input" type="datetime-local">
+      </div>
+      <div class="adm-form-group">
+        <label>Location</label>
+        <input id="event-location" class="adm-input" placeholder="e.g. Poway Community Park">
+      </div>
+    </div>
+    <div class="adm-form-group">
+      <label>Description</label>
+      <textarea id="event-description" class="adm-textarea" placeholder="What is this event about?"></textarea>
+    </div>
+    <div class="adm-form-group">
+      <label>Image URL (optional)</label>
+      <input id="event-image" class="adm-input" placeholder="https://…">
+    </div>
+    <div class="adm-modal-footer">
+      <button class="btn btn-ghost" onclick="admCloseModal('event-modal')">Cancel</button>
+      <button class="btn btn-primary" id="event-save-btn" onclick="admSaveEvent()">Save Event</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Alert Modal ──────────────────────────────────────────────────────────── -->
+<div class="adm-modal-backdrop" id="alert-modal">
+  <div class="adm-modal">
+    <h3 id="alert-modal-title">New Alert</h3>
+    <input type="hidden" id="alert-modal-id">
+    <div class="adm-form-group">
+      <label>Message *</label>
+      <textarea id="alert-message" class="adm-textarea" placeholder="e.g. ⚠️ Fire evacuation Zone A is in effect. Residents should evacuate immediately."></textarea>
+    </div>
+    <div class="adm-form-row">
+      <div class="adm-form-group">
+        <label>Alert Level</label>
+        <select id="alert-level" class="adm-select">
+          <option value="info">ℹ️ Info — General notice</option>
+          <option value="warning">⚠️ Warning — Elevated concern</option>
+          <option value="danger">🔴 Danger — Immediate action needed</option>
+        </select>
+      </div>
+      <div class="adm-form-group">
+        <label>Expires At (optional)</label>
+        <input id="alert-expires" class="adm-input" type="datetime-local">
+      </div>
+    </div>
+    <div class="adm-form-group" style="flex-direction:row;align-items:center;gap:8px;">
+      <input type="checkbox" id="alert-active" checked style="width:18px;height:18px;cursor:pointer;">
+      <label for="alert-active" style="margin:0;cursor:pointer;color:var(--adm-text);font-size:.9rem;">Active (visible on site right now)</label>
+    </div>
+    <div class="adm-modal-footer">
+      <button class="btn btn-ghost" onclick="admCloseModal('alert-modal')">Cancel</button>
+      <button class="btn btn-primary" id="alert-save-btn" onclick="admSaveAlert()">Post Alert</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── User Role Modal ──────────────────────────────────────────────────────── -->
+<div class="adm-modal-backdrop" id="user-role-modal">
+  <div class="adm-modal">
+    <h3>Change User Role</h3>
+    <input type="hidden" id="role-modal-user-id">
+    <p id="role-modal-desc" style="color:var(--adm-muted);font-size:.9rem;margin:0 0 16px;"></p>
+    <div class="adm-form-group">
+      <label>New Role</label>
+      <select id="role-modal-select" class="adm-select">
+        <option value="resident">Resident — standard community member</option>
+        <option value="coordinator">Coordinator — can create events &amp; upload media</option>
+        <option value="staff">Staff — coordinator + FAQ management</option>
+        <option value="admin">Admin — full control</option>
+      </select>
+    </div>
+    <div class="adm-modal-footer">
+      <button class="btn btn-ghost" onclick="admCloseModal('user-role-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="admSaveRole()">Save Role</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="adm-toast" id="adm-toast"></div>
+
+<script src="{{ '/assets/js/utils/errors.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/api/admin-api.js' | relative_url }}"></script>
+<script>
+/* ── Admin Dashboard Orchestrator ─────────────────────────────────────────── */
+
+let admCurrentUser   = null;
+let admUsersCache    = [];
+let admEventsCache   = [];
+let admAlertsCache   = [];
+let admFaqCache      = [];
+let admMediaCache    = [];
+let admConfigEntries = [];
+
+// ── Boot ─────────────────────────────────────────────────────────────────────
+
+(function boot() {
+  const u = JSON.parse(sessionStorage.getItem('pnec_user') || 'null');
+  if (!u || u.role !== 'admin') {
+    document.getElementById('adm-gate').classList.add('visible');
+    return;
+  }
+  admCurrentUser = u;
+  document.getElementById('adm-shell').classList.add('visible');
+  document.getElementById('adm-user-name').textContent = u.display_name || u.email;
+
+  admLoadOverview();
+  admBindNav();
+})();
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+
+function admBindNav() {
+  document.querySelectorAll('.adm-nav-item[data-tab]').forEach(el => {
+    el.addEventListener('click', () => admSwitchTab(el.dataset.tab));
+  });
+}
+
+function admSwitchTab(name) {
+  document.querySelectorAll('.adm-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.adm-nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(`tab-${name}`)?.classList.add('active');
+  document.querySelector(`.adm-nav-item[data-tab="${name}"]`)?.classList.add('active');
+
+  const loaders = {
+    overview: admLoadOverview,
+    alerts:   admLoadAlerts,
+    events:   admLoadEvents,
+    users:    admLoadUsers,
+    faq:      admLoadFaq,
+    media:    admLoadMedia,
+    settings: admLoadSettings,
+  };
+  loaders[name]?.();
+}
+
+// ── Overview ─────────────────────────────────────────────────────────────────
+
+function admLoadOverview() {
+  adminFetchStats().then(stats => {
+    document.getElementById('stat-users').textContent  = stats.totalUsers;
+    document.getElementById('stat-events').textContent = stats.totalEvents;
+    document.getElementById('stat-faqs').textContent   = stats.totalFaqs;
+    document.getElementById('stat-media').textContent  = stats.totalMedia;
+    document.getElementById('stat-alerts').textContent = stats.activeAnnouncements;
+
+    const rb = document.getElementById('adm-role-breakdown');
+    rb.innerHTML = '';
+    Object.entries(stats.usersByRole).sort().forEach(([role, count]) => {
+      const chip = document.createElement('span');
+      chip.className = `chip chip-${role}`;
+      chip.textContent = `${role}: ${count}`;
+      rb.appendChild(chip);
+    });
+  }).catch(() => {});
+}
+
+// ── Alerts ────────────────────────────────────────────────────────────────────
+
+function admLoadAlerts() {
+  const tbody = document.getElementById('alerts-tbody');
+  tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;color:var(--adm-muted);">Loading…</td></tr>';
+  adminFetchAnnouncements().then(alerts => {
+    admAlertsCache = alerts;
+    admRenderAlerts(alerts);
+  }).catch(() => { tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;color:#e57373;">Failed to load alerts.</td></tr>'; });
+}
+
+function admRenderAlerts(alerts) {
+  const tbody = document.getElementById('alerts-tbody');
+  if (!alerts.length) { tbody.innerHTML = `<tr><td colspan="5"><div class="adm-empty"><div class="adm-empty-icon">📢</div>No announcements yet. Post your first alert!</div></td></tr>`; return; }
+  tbody.innerHTML = alerts.map(a => `
+    <tr>
+      <td style="max-width:320px;">${escHtml(a.message)}</td>
+      <td><span class="chip chip-${a.level}">${a.level.toUpperCase()}</span></td>
+      <td><span class="chip ${a.is_active ? 'chip-active' : 'chip-inactive'}">${a.is_active ? 'Active' : 'Off'}</span></td>
+      <td style="color:var(--adm-muted);font-size:.82rem;">${a.expires_at ? new Date(a.expires_at).toLocaleDateString() : '—'}</td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-ghost btn-sm" onclick="admEditAlert(${a.id})">Edit</button>
+        <button class="btn btn-ghost btn-sm" onclick="admToggleAlert(${a.id},${!a.is_active})">${a.is_active ? 'Deactivate' : 'Activate'}</button>
+        <button class="btn btn-danger btn-sm" onclick="admConfirmDeleteAlert(${a.id})">Delete</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function admOpenAlertModal(existingId) {
+  document.getElementById('alert-modal-title').textContent = existingId ? 'Edit Alert' : 'New Alert';
+  document.getElementById('alert-modal-id').value   = existingId || '';
+  document.getElementById('alert-message').value    = '';
+  document.getElementById('alert-level').value      = 'info';
+  document.getElementById('alert-expires').value    = '';
+  document.getElementById('alert-active').checked   = true;
+
+  if (existingId) {
+    const a = admAlertsCache.find(x => x.id === existingId);
+    if (a) {
+      document.getElementById('alert-message').value  = a.message;
+      document.getElementById('alert-level').value    = a.level;
+      document.getElementById('alert-active').checked = a.is_active;
+      if (a.expires_at) document.getElementById('alert-expires').value = a.expires_at.slice(0,16);
+    }
+  }
+  document.getElementById('alert-modal').classList.add('open');
+}
+
+function admEditAlert(id) { admOpenAlertModal(id); }
+
+function admSaveAlert() {
+  const id      = document.getElementById('alert-modal-id').value;
+  const message = document.getElementById('alert-message').value.trim();
+  const level   = document.getElementById('alert-level').value;
+  const expires = document.getElementById('alert-expires').value;
+  const active  = document.getElementById('alert-active').checked;
+
+  if (!message) { admToast('Message is required.', 'error'); return; }
+
+  const btn = document.getElementById('alert-save-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  const payload = { message, level, is_active: active, expires_at: expires ? new Date(expires).toISOString() : null };
+  const call = id ? adminUpdateAnnouncement(parseInt(id), payload) : adminCreateAnnouncement(payload);
+
+  call.then(() => {
+    admCloseModal('alert-modal');
+    admToast(id ? 'Alert updated.' : 'Alert posted!', 'success');
+    admLoadAlerts();
+  }).catch(e => admToast(e.message || 'Failed to save alert.', 'error'))
+    .finally(() => { btn.disabled = false; btn.textContent = 'Post Alert'; });
+}
+
+function admToggleAlert(id, newActive) {
+  adminUpdateAnnouncement(id, { is_active: newActive })
+    .then(() => { admToast(newActive ? 'Alert activated.' : 'Alert deactivated.', 'success'); admLoadAlerts(); })
+    .catch(e => admToast(e.message || 'Failed.', 'error'));
+}
+
+function admConfirmDeleteAlert(id) {
+  if (!confirm('Delete this alert? It will disappear from the site immediately.')) return;
+  adminDeleteAnnouncement(id).then(() => { admToast('Alert deleted.', 'success'); admLoadAlerts(); })
+    .catch(e => admToast(e.message || 'Failed.', 'error'));
+}
+
+// ── Events ────────────────────────────────────────────────────────────────────
+
+function admLoadEvents() {
+  const tbody = document.getElementById('events-tbody');
+  tbody.innerHTML = '<tr><td colspan="4" style="padding:20px;color:var(--adm-muted);">Loading…</td></tr>';
+  adminFetchEvents().then(events => {
+    admEventsCache = events;
+    admRenderEvents(events);
+  }).catch(() => { tbody.innerHTML = '<tr><td colspan="4" style="padding:20px;color:#e57373;">Failed to load events.</td></tr>'; });
+}
+
+function admRenderEvents(events) {
+  const tbody = document.getElementById('events-tbody');
+  if (!events.length) { tbody.innerHTML = `<tr><td colspan="4"><div class="adm-empty"><div class="adm-empty-icon">📅</div>No events yet. Create your first one!</div></td></tr>`; return; }
+  tbody.innerHTML = events.map(e => `
+    <tr>
+      <td><strong>${escHtml(e.title)}</strong><br><span style="font-size:.8rem;color:var(--adm-muted);">${escHtml(e.description || '').slice(0,80)}${(e.description||'').length>80?'…':''}</span></td>
+      <td style="white-space:nowrap;color:var(--adm-muted);font-size:.85rem;">${formatDate(e.date)}</td>
+      <td style="color:var(--adm-muted);font-size:.85rem;">${escHtml(e.location || '—')}</td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-ghost btn-sm" onclick="admEditEvent(${e.id})">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="admConfirmDeleteEvent(${e.id})">Delete</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function admOpenEventModal(existingId) {
+  document.getElementById('event-modal-title').textContent = existingId ? 'Edit Event' : 'New Event';
+  document.getElementById('event-modal-id').value      = existingId || '';
+  document.getElementById('event-title').value         = '';
+  document.getElementById('event-date').value          = '';
+  document.getElementById('event-location').value      = '';
+  document.getElementById('event-description').value   = '';
+  document.getElementById('event-image').value         = '';
+
+  if (existingId) {
+    const ev = admEventsCache.find(x => x.id === existingId);
+    if (ev) {
+      document.getElementById('event-title').value       = ev.title;
+      document.getElementById('event-date').value        = ev.date ? ev.date.slice(0,16) : '';
+      document.getElementById('event-location').value    = ev.location || '';
+      document.getElementById('event-description').value = ev.description || '';
+      document.getElementById('event-image').value       = ev.image_url || '';
+    }
+  }
+  document.getElementById('event-modal').classList.add('open');
+}
+
+function admEditEvent(id) { admOpenEventModal(id); }
+
+function admSaveEvent() {
+  const id    = document.getElementById('event-modal-id').value;
+  const title = document.getElementById('event-title').value.trim();
+  const date  = document.getElementById('event-date').value;
+
+  if (!title) { admToast('Title is required.', 'error'); return; }
+  if (!date)  { admToast('Date is required.', 'error'); return; }
+
+  const btn = document.getElementById('event-save-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  const payload = {
+    title,
+    date:        new Date(date).toISOString(),
+    location:    document.getElementById('event-location').value.trim(),
+    description: document.getElementById('event-description').value.trim(),
+    image_url:   document.getElementById('event-image').value.trim() || null,
+  };
+
+  const call = id ? adminUpdateEvent(parseInt(id), payload) : adminCreateEvent(payload);
+  call.then(() => {
+    admCloseModal('event-modal');
+    admToast(id ? 'Event updated.' : 'Event created!', 'success');
+    admLoadEvents();
+  }).catch(e => admToast(e.message || 'Failed to save event.', 'error'))
+    .finally(() => { btn.disabled = false; btn.textContent = 'Save Event'; });
+}
+
+function admConfirmDeleteEvent(id) {
+  if (!confirm('Delete this event? This cannot be undone.')) return;
+  adminDeleteEvent(id).then(() => { admToast('Event deleted.', 'success'); admLoadEvents(); })
+    .catch(e => admToast(e.message || 'Failed.', 'error'));
+}
+
+// ── Users ─────────────────────────────────────────────────────────────────────
+
+function admLoadUsers() {
+  const tbody = document.getElementById('users-tbody');
+  tbody.innerHTML = '<tr><td colspan="6" style="padding:20px;color:var(--adm-muted);">Loading…</td></tr>';
+  adminFetchUsers().then(users => {
+    admUsersCache = users;
+    admRenderUsers(users);
+  }).catch(() => { tbody.innerHTML = '<tr><td colspan="6" style="padding:20px;color:#e57373;">Failed to load users.</td></tr>'; });
+}
+
+function admRenderUsers(users) {
+  const tbody = document.getElementById('users-tbody');
+  if (!users.length) { tbody.innerHTML = `<tr><td colspan="6"><div class="adm-empty"><div class="adm-empty-icon">👥</div>No users found.</div></td></tr>`; return; }
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td><strong>${escHtml(u.display_name)}</strong></td>
+      <td style="color:var(--adm-muted);font-size:.85rem;">${escHtml(u.email)}</td>
+      <td><span class="chip chip-${u.role}">${u.role}</span></td>
+      <td><span class="chip ${u.is_active ? 'chip-active' : 'chip-inactive'}">${u.is_active ? 'Active' : 'Inactive'}</span></td>
+      <td style="color:var(--adm-muted);font-size:.82rem;">${u.created_at ? new Date(u.created_at).toLocaleDateString() : '—'}</td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-ghost btn-sm" onclick="admOpenRoleModal(${u.id},'${escHtml(u.display_name)}','${u.role}')">Change Role</button>
+        ${!u.is_active ? '' : `<button class="btn btn-danger btn-sm" onclick="admConfirmDeactivate(${u.id})">Deactivate</button>`}
+      </td>
+    </tr>
+  `).join('');
+}
+
+function admFilterUsers(query) {
+  const q = query.toLowerCase();
+  const filtered = admUsersCache.filter(u =>
+    u.display_name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
+  );
+  admRenderUsers(filtered);
+}
+
+function admOpenRoleModal(userId, name, currentRole) {
+  document.getElementById('role-modal-user-id').value = userId;
+  document.getElementById('role-modal-desc').textContent = `Updating role for: ${name}`;
+  document.getElementById('role-modal-select').value = currentRole;
+  document.getElementById('user-role-modal').classList.add('open');
+}
+
+function admSaveRole() {
+  const userId = document.getElementById('role-modal-user-id').value;
+  const role   = document.getElementById('role-modal-select').value;
+  adminUpdateUserRole(parseInt(userId), role)
+    .then(() => { admCloseModal('user-role-modal'); admToast('Role updated.', 'success'); admLoadUsers(); })
+    .catch(e => admToast(e.message || 'Failed.', 'error'));
+}
+
+function admConfirmDeactivate(userId) {
+  if (!confirm('Deactivate this user? They will no longer be able to log in.')) return;
+  adminDeactivateUser(userId).then(() => { admToast('User deactivated.', 'success'); admLoadUsers(); })
+    .catch(e => admToast(e.message || 'Failed.', 'error'));
+}
+
+// ── FAQ ───────────────────────────────────────────────────────────────────────
+
+function admLoadFaq() {
+  const tbody = document.getElementById('faq-tbody');
+  tbody.innerHTML = '<tr><td colspan="3" style="padding:20px;color:var(--adm-muted);">Loading…</td></tr>';
+  adminFetchFaqs().then(faqs => {
+    admFaqCache = faqs;
+    admRenderFaq(faqs);
+  }).catch(() => { tbody.innerHTML = '<tr><td colspan="3" style="padding:20px;color:#e57373;">Failed to load FAQ.</td></tr>'; });
+}
+
+function admRenderFaq(faqs) {
+  const tbody = document.getElementById('faq-tbody');
+  if (!faqs.length) { tbody.innerHTML = `<tr><td colspan="3"><div class="adm-empty"><div class="adm-empty-icon">❓</div>No FAQ entries yet.</div></td></tr>`; return; }
+  tbody.innerHTML = faqs.map(f => `
+    <tr>
+      <td style="max-width:240px;"><strong>${escHtml(f.question || f.query || '')}</strong></td>
+      <td style="max-width:320px;color:var(--adm-muted);font-size:.85rem;">${escHtml((f.answer || '').slice(0,120))}${(f.answer||'').length>120?'…':''}</td>
+      <td>
+        <button class="btn btn-danger btn-sm" onclick="admConfirmDeleteFaq(${f.id})">Delete</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function admConfirmDeleteFaq(id) {
+  if (!confirm('Delete this FAQ entry?')) return;
+  adminDeleteFaq(id).then(() => { admToast('FAQ entry deleted.', 'success'); admLoadFaq(); })
+    .catch(e => admToast(e.message || 'Failed.', 'error'));
+}
+
+// ── Media ─────────────────────────────────────────────────────────────────────
+
+function admLoadMedia() {
+  const tbody = document.getElementById('media-tbody');
+  tbody.innerHTML = '<tr><td colspan="4" style="padding:20px;color:var(--adm-muted);">Loading…</td></tr>';
+  adminFetchMedia().then(data => {
+    admMediaCache = data.items || data.media || [];
+    admRenderMedia(admMediaCache);
+  }).catch(() => { tbody.innerHTML = '<tr><td colspan="4" style="padding:20px;color:#e57373;">Failed to load media.</td></tr>'; });
+}
+
+function admRenderMedia(items) {
+  const tbody = document.getElementById('media-tbody');
+  if (!items.length) { tbody.innerHTML = `<tr><td colspan="4"><div class="adm-empty"><div class="adm-empty-icon">🖼️</div>No media uploaded yet.</div></td></tr>`; return; }
+  tbody.innerHTML = items.map(m => `
+    <tr>
+      <td>${m.url ? `<img src="${escHtml(m.url)}" style="width:64px;height:48px;object-fit:cover;border-radius:6px;">` : '—'}</td>
+      <td><strong>${escHtml(m.title || '—')}</strong><br><span style="font-size:.8rem;color:var(--adm-muted);">${escHtml(m.caption || '')}</span></td>
+      <td style="color:var(--adm-muted);font-size:.82rem;">${m.created_at ? new Date(m.created_at).toLocaleDateString() : '—'}</td>
+      <td>
+        <button class="btn btn-danger btn-sm" onclick="admConfirmDeleteMedia(${m.id})">Delete</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function admConfirmDeleteMedia(id) {
+  if (!confirm('Delete this media post? This cannot be undone.')) return;
+  adminDeleteMedia(id).then(() => { admToast('Media deleted.', 'success'); admLoadMedia(); })
+    .catch(e => admToast(e.message || 'Failed.', 'error'));
+}
+
+// ── Settings ──────────────────────────────────────────────────────────────────
+
+function admLoadSettings() {
+  adminFetchSiteConfig().then(data => {
+    admConfigEntries = data.entries || [];
+    admRenderSettings(admConfigEntries);
+  }).catch(() => { document.getElementById('adm-settings-panels').innerHTML = '<p style="color:#e57373;">Failed to load settings.</p>'; });
+}
+
+function admRenderSettings(entries) {
+  const container = document.getElementById('adm-settings-panels');
+  const byGroup = {};
+  entries.forEach(e => { (byGroup[e.group] = byGroup[e.group] || []).push(e); });
+
+  const groupLabels = { contact: 'Contact Information', social: 'Social Media Links', content: 'Site Text & Content', org: 'Organization Details' };
+
+  container.innerHTML = Object.entries(byGroup).map(([group, items]) => `
+    <div class="adm-panel" style="margin-bottom:20px;">
+      <div class="adm-panel-head"><h3>${groupLabels[group] || group}</h3></div>
+      <div class="adm-panel-body">
+        ${items.map(e => `
+          <div class="adm-config-row" id="cfg-row-${e.key}">
+            <div class="adm-config-label">
+              <strong>${escHtml(e.label)}</strong>
+              ${e.description ? `<span>${escHtml(e.description)}</span>` : ''}
+            </div>
+            <div class="adm-config-input">
+              <input class="adm-input" id="cfg-${e.key}" value="${escHtml(e.value)}" placeholder="—">
+            </div>
+            <div class="adm-config-save">
+              <button class="btn btn-primary btn-sm" onclick="admSaveConfigEntry('${e.key}')">Save</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function admSaveConfigEntry(key) {
+  const input = document.getElementById(`cfg-${key}`);
+  if (!input) return;
+  const value = input.value;
+  adminUpdateConfigEntry(key, value)
+    .then(() => admToast('Setting saved.', 'success'))
+    .catch(e => admToast(e.message || 'Failed to save.', 'error'));
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function admCloseModal(id) { document.getElementById(id)?.classList.remove('open'); }
+
+function admToast(msg, type) {
+  const t = document.getElementById('adm-toast');
+  t.textContent = msg;
+  t.className = `adm-toast show ${type || ''}`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function escHtml(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatDate(iso) {
+  if (!iso) return '—';
+  try { return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
+  catch { return iso; }
+}
+
+// Close modals on backdrop click
+document.querySelectorAll('.adm-modal-backdrop').forEach(bd => {
+  bd.addEventListener('click', e => { if (e.target === bd) bd.classList.remove('open'); });
+});
+</script>

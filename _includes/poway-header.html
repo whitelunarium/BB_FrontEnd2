@@ -1,101 +1,178 @@
 <style>
-.jupiterx-header-custom { position: relative !important; z-index: 100; }
-.jupiterx-header-custom .elementor-element-6ff5748 { background-color: #1a2b4a !important; }
-.jupiterx-header-custom .elementor-element-b000349 { background-color: #1a2b4a !important; }
-.elementor-nav-menu .elementor-item { color: #fff !important; }
-#jupiterx-main { margin-top: 0 !important; }
+.pnec-unified-header {
+  position: relative;
+  width: 100%;
+  height: 500px;
+  overflow: hidden;
+}
+.pnec-header-track {
+  display: flex;
+  height: 100%;
+  transition: transform 0.8s ease;
+}
+.pnec-header-track > div {
+  min-width: 100%;
+  height: 100%;
+}
+.pnec-header-track img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.pnec-header-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 22, 40, 0.50);
+}
+.pnec-header-ui {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 28px 36px 0;
+}
+.pnec-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.pnec-header-logo img {
+  height: 90px;
+  width: auto;
+}
+.pnec-header-donate {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #27ae60;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 10px 22px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+.pnec-header-donate:hover { background: #219150; }
+.pnec-header-title {
+  text-align: center;
+  color: #fff;
+  font-size: clamp(2.4rem, 6vw, 4.2rem);
+  font-weight: 300;
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pnec-header-nav {
+  background: rgba(10, 22, 40, 0.45);
+  padding: 0 36px;
+  margin: 0 -36px;
+}
+.pnec-header-nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  justify-content: center;
+  gap: 0;
+}
+.pnec-header-nav li a {
+  display: block;
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 500;
+  padding: 14px 14px;
+  white-space: nowrap;
+  transition: color 0.15s;
+  border-bottom: 2px solid transparent;
+}
+.pnec-header-nav li a:hover,
+.pnec-header-nav li a.active {
+  color: #7ed956;
+  border-bottom-color: #7ed956;
+}
 </style>
-<a class="jupiterx-a11y jupiterx-a11y-skip-navigation-link" href="#jupiterx-main">Skip to content</a><div class="jupiterx-site"><header class="jupiterx-header jupiterx-header-custom" data-jupiterx-settings="{&quot;breakpoint&quot;:&quot;767.98&quot;,&quot;template&quot;:&quot;6&quot;,&quot;overlap&quot;:&quot;desktop,tablet,mobile&quot;}" role="banner" itemscope="itemscope" itemtype="http://schema.org/WPHeader">		<header data-elementor-type="header" data-elementor-id="6" class="elementor elementor-6" data-elementor-post-type="elementor_library">
-					<section class="elementor-section elementor-top-section elementor-element elementor-element-b000349 elementor-section-content-top elementor-section-boxed elementor-section-height-default elementor-section-height-default" data-id="b000349" data-element_type="section" data-e-type="section" style="background-color:#1a2b4a;">
-						<div class="elementor-container elementor-column-gap-default">
-					<div class="elementor-column elementor-col-100 elementor-top-column elementor-element elementor-element-703b493" data-id="703b493" data-element_type="column" data-e-type="column">
-			<div class="elementor-widget-wrap elementor-element-populated">
-						<div class="elementor-element elementor-element-77d46ab elementor-nav-menu__align-center elementor-nav-menu--dropdown-tablet elementor-nav-menu__text-align-aside elementor-nav-menu--toggle elementor-nav-menu--burger elementor-widget elementor-widget-nav-menu" data-id="77d46ab" data-element_type="widget" data-e-type="widget" data-settings="{&quot;submenu_icon&quot;:{&quot;value&quot;:&quot;&lt;i class=\&quot;\&quot; aria-hidden=\&quot;true\&quot;&gt;&lt;\/i&gt;&quot;,&quot;library&quot;:&quot;&quot;},&quot;toggle_icon_hover_animation&quot;:&quot;pulse&quot;,&quot;layout&quot;:&quot;horizontal&quot;,&quot;toggle&quot;:&quot;burger&quot;}" data-widget_type="nav-menu.default">
-				<div class="elementor-widget-container">
-								<nav aria-label="Menu" class="elementor-nav-menu--main elementor-nav-menu__container elementor-nav-menu--layout-horizontal e--pointer-underline e--animation-none">
-				<ul id="menu-1-77d46ab" class="elementor-nav-menu"><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-home"><a href="{{ '/' | relative_url }}" class="elementor-item">Home</a></li>
-<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1243"><a href="{{ '/pages/programs.html' | relative_url }}" class="elementor-item">About</a></li>
-<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1242"><a href="{{ '/pages/programs.html' | relative_url }}" class="elementor-item">Programs and Services</a></li>
-<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1241"><a href="{{ '/pages/resources.html' | relative_url }}" class="elementor-item">Preparedness Resources</a></li>
-<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1240"><a href="{{ '/pages/events.html' | relative_url }}" class="elementor-item">Community Events</a></li>
-<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1239"><a href="{{ '/pages/neighborhood-map.html' | relative_url }}" class="elementor-item">Find Your Neighborhood</a></li>
-<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1238"><a href="{{ '/pages/statistics.html' | relative_url }}" class="elementor-item">Statistics and Information</a></li>
-<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1297"><a href="{{ '/pages/connect.html' | relative_url }}" class="elementor-item">Contact</a></li>
-<li class="menu-item menu-item-type-custom"><a href="{{ '/rpg/latest' | relative_url }}" class="elementor-item">🎮 Play RPG</a></li>
-<li class="menu-item menu-item-type-custom"><a href="{{ '/role-quiz/' | relative_url }}" class="elementor-item">🧭 Find Your Role</a></li>
-<li id="poway-auth-display-item" class="menu-item menu-item-type-custom poway-auth-display" style="display:none;"><a href="{{ '/pages/profile.html' | relative_url }}" class="elementor-item" id="poway-auth-display-link" aria-label="My Profile"><span id="poway-auth-display-name"></span><span id="poway-auth-display-location" class="poway-auth-display-location" style="display:none;"></span></a></li>
-<li id="poway-auth-login-item" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-login"><a href="{{ '/pages/login.html' | relative_url }}" class="elementor-item">Login</a></li>
-<li id="poway-auth-register-item" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-register"><a href="{{ '/pages/register.html' | relative_url }}" class="elementor-item">Register</a></li>
-</ul>			</nav>
-					<div class="elementor-menu-toggle" role="button" tabindex="0" aria-label="Menu Toggle" aria-expanded="false">
-			<i aria-hidden="true" role="presentation" class="elementor-menu-toggle__icon--open elementor-animation-pulse fas fa-bars"></i><i aria-hidden="true" role="presentation" class="elementor-menu-toggle__icon--close elementor-animation-pulse eicon-close"></i>		</div>
-					<nav class="elementor-nav-menu--dropdown elementor-nav-menu__container" aria-hidden="true">
-				<ul id="menu-2-77d46ab" class="elementor-nav-menu"><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-home"><a href="{{ '/' | relative_url }}" class="elementor-item" tabindex="-1">Home</a></li>
-<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1243"><a href="{{ '/pages/programs.html' | relative_url }}" class="elementor-item" tabindex="-1">About</a></li>
-<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1242"><a href="{{ '/pages/programs.html' | relative_url }}" class="elementor-item" tabindex="-1">Programs and Services</a></li>
-<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1241"><a href="{{ '/pages/resources.html' | relative_url }}" class="elementor-item" tabindex="-1">Preparedness Resources</a></li>
-<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1240"><a href="{{ '/pages/events.html' | relative_url }}" class="elementor-item" tabindex="-1">Community Events</a></li>
-<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1239"><a href="{{ '/pages/neighborhood-map.html' | relative_url }}" class="elementor-item" tabindex="-1">Find Your Neighborhood</a></li>
-<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1238"><a href="{{ '/pages/statistics.html' | relative_url }}" class="elementor-item" tabindex="-1">Statistics and Information</a></li>
-<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1297"><a href="{{ '/pages/connect.html' | relative_url }}" class="elementor-item" tabindex="-1">Contact</a></li>
-<li class="menu-item menu-item-type-custom"><a href="{{ '/rpg/latest' | relative_url }}" class="elementor-item" tabindex="-1">🎮 Play RPG</a></li>
-<li class="menu-item menu-item-type-custom"><a href="{{ '/role-quiz/' | relative_url }}" class="elementor-item" tabindex="-1">🧭 Find Your Role</a></li>
-<li id="poway-auth-display-item-mobile" class="menu-item menu-item-type-custom poway-auth-display" style="display:none;"><a href="{{ '/pages/profile.html' | relative_url }}" class="elementor-item" id="poway-auth-display-link-mobile" tabindex="-1" aria-label="My Profile"><span id="poway-auth-display-name-mobile"></span><span id="poway-auth-display-location-mobile" class="poway-auth-display-location" style="display:none;"></span></a></li>
-<li id="poway-auth-login-item-mobile" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-login"><a href="{{ '/pages/login.html' | relative_url }}" class="elementor-item" tabindex="-1">Login</a></li>
-<li id="poway-auth-register-item-mobile" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-register"><a href="{{ '/pages/register.html' | relative_url }}" class="elementor-item" tabindex="-1">Register</a></li>
-</ul>			</nav>
-						</div>
-				</div>
-					</div>
-		</div>
-					</div>
-		</section>
-				<section class="elementor-section elementor-top-section elementor-element elementor-element-6ff5748 elementor-section-height-min-height elementor-section-items-top elementor-section-content-top elementor-section-boxed elementor-section-height-default" data-id="6ff5748" data-element_type="section" data-e-type="section" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}" style="background-color:#1a2b4a;">
-						<div class="elementor-container elementor-column-gap-default">
-					<div class="elementor-column elementor-col-16 elementor-top-column elementor-element elementor-element-2bd9215" data-id="2bd9215" data-element_type="column" data-e-type="column">
-			<div class="elementor-widget-wrap">
-							</div>
-		</div>
-				<div class="raven-column-link elementor-column elementor-col-66 elementor-top-column elementor-element elementor-element-ee3fd57 elementor-hidden-phone" data-raven-link="https://powaynec.com" data-raven-link-target="_self" data-id="ee3fd57" data-element_type="column" data-e-type="column">
-			<div class="elementor-widget-wrap elementor-element-populated">
-						<div class="elementor-element elementor-element-e445511 elementor-hidden-tablet elementor-hidden-mobile elementor-widget elementor-widget-image" data-id="e445511" data-element_type="widget" data-e-type="widget" data-widget_type="image.default">
-				<div class="elementor-widget-container">
-																<a href="{{ '/' | relative_url }}">
-							<img fetchpriority="high" width="768" height="307" src="https://powaynec.com/wp-content/uploads/2020/05/Poway-NEC-Logo-White@600x-768x307.png" class="attachment-medium_large size-medium_large wp-image-1029" alt="" srcset="https://powaynec.com/wp-content/uploads/2020/05/Poway-NEC-Logo-White@600x-768x307.png 768w, https://powaynec.com/wp-content/uploads/2020/05/Poway-NEC-Logo-White@600x-600x240.png 600w, https://powaynec.com/wp-content/uploads/2020/05/Poway-NEC-Logo-White@600x-300x120.png 300w, https://powaynec.com/wp-content/uploads/2020/05/Poway-NEC-Logo-White@600x-1024x410.png 1024w, https://powaynec.com/wp-content/uploads/2020/05/Poway-NEC-Logo-White@600x-1536x614.png 1536w, https://powaynec.com/wp-content/uploads/2020/05/Poway-NEC-Logo-White@600x-2048x819.png 2048w" sizes="(max-width: 768px) 100vw, 768px" />								</a>
-															</div>
-				</div>
-					</div>
-		</div>
-				<div class="elementor-column elementor-col-16 elementor-top-column elementor-element elementor-element-dc098ee" data-id="dc098ee" data-element_type="column" data-e-type="column">
-			<div class="elementor-widget-wrap elementor-element-populated">
-						<div class="elementor-element elementor-element-ad2dbd9 elementor-align-right donatepopup elementor-mobile-align-center elementor-widget elementor-widget-raven-button" data-id="ad2dbd9" data-element_type="widget" data-e-type="widget" data-settings="{&quot;turn_to_popup_action_button&quot;:&quot;no&quot;}" data-widget_type="raven-button.default">
-				<div class="elementor-widget-container">
-							<div class="raven-widget-wrapper">
-			<a class="raven-button raven-button-widget-normal-effect-none  raven-button-text-align-center raven-button-link elementor-animation-shrink" href="{{ '/pages/donate.html' | relative_url }}">				<div class="raven-button-overlay" ></div>
-				<span class="raven-button-content">
-					
-					<div class="button-text-container">
-												<div class="raven-button-texts-wrapper">
-							<div class="button-text">
-								<span class="raven-button-text">
-									donate now								</span>
-							</div>
-													</div>
-									<span class="raven-button-icon raven-button-icon-position-right raven-button-mobile-align-icon-left">
-				<i aria-hidden="true" class="fas fa-heart"></i>			</span>
-							</div>
-					
-									</span>
-			</a>		</div>
-						</div>
-				</div>
-				<div class="elementor-element elementor-element-3020c46 elementor-hidden-desktop elementor-widget elementor-widget-image" data-id="3020c46" data-element_type="widget" data-e-type="widget" data-widget_type="image.default">
-				<div class="elementor-widget-container">
-															<img width="1024" height="410" src="https://powaynec.com/wp-content/uploads/2020/05/Poway-NEC-Logo-White@600x-1024x410.png" class="attachment-large size-large wp-image-1029" alt="" srcset="https://powaynec.com/wp-content/uploads/2020/05/Poway-NEC-Logo-White@600x-1024x410.png 1024w, https://powaynec.com/wp-content/uploads/2020/05/Poway-NEC-Logo-White@600x-600x240.png 600w, https://powaynec.com/wp-content/uploads/2020/05/Poway-NEC-Logo-White@600x-300x120.png 300w, https://powaynec.com/wp-content/uploads/2020/05/Poway-NEC-Logo-White@600x-768x307.png 768w, https://powaynec.com/wp-content/uploads/2020/05/Poway-NEC-Logo-White@600x-1536x614.png 1536w, https://powaynec.com/wp-content/uploads/2020/05/Poway-NEC-Logo-White@600x-2048x819.png 2048w" sizes="(max-width: 1024px) 100vw, 1024px" />															</div>
-				</div>
-					</div>
-		</div>
-					</div>
-		</section>
-				
-				</header>
+
+<a class="jupiterx-a11y jupiterx-a11y-skip-navigation-link" href="#jupiterx-main">Skip to content</a>
+<div class="jupiterx-site">
+
+<div class="pnec-unified-header">
+  <!-- Carousel background -->
+  <div id="pnec-header-slides" class="pnec-header-track">
+    <div><img src="{{ '/assets/images/Poway_Lake.jpg' | relative_url }}" alt=""></div>
+    <div><img src="{{ '/assets/images/Poway_Fire.webp' | relative_url }}" alt=""></div>
+    <div><img src="{{ '/assets/images/Poway_Flood.webp' | relative_url }}" alt=""></div>
+    <div><img src="{{ '/assets/images/Poway_Lightning.webp' | relative_url }}" alt=""></div>
+    <div><img src="{{ '/assets/images/Poway_Image.webp' | relative_url }}" alt=""></div>
+  </div>
+
+  <!-- Dark overlay -->
+  <div class="pnec-header-overlay"></div>
+
+  <!-- UI layer -->
+  <div class="pnec-header-ui">
+    <!-- Top row: logo + donate -->
+    <div class="pnec-header-top">
+      <a href="{{ '/' | relative_url }}" class="pnec-header-logo">
+        <img src="https://powaynec.com/wp-content/uploads/2020/05/Poway-NEC-Logo-White@600x-768x307.png" alt="Poway NEC">
+      </a>
+      <a href="{{ '/pages/donate.html' | relative_url }}" class="pnec-header-donate">
+        Donate Now <i class="fas fa-heart"></i>
+      </a>
+    </div>
+
+    <!-- Page title -->
+    <div class="pnec-header-title">{{ page.title }}</div>
+
+    <!-- Nav bar -->
+    <nav class="pnec-header-nav" aria-label="Main navigation">
+      <ul>
+        <li><a href="{{ '/' | relative_url }}"{% if page.url == '/' %} class="active"{% endif %}>Home</a></li>
+        <li><a href="{{ '/pages/programs.html' | relative_url }}"{% if page.url contains '/programs' %} class="active"{% endif %}>About</a></li>
+        <li><a href="{{ '/pages/programs.html' | relative_url }}"{% if page.url contains '/programs' %} class="active"{% endif %}>Programs and Services</a></li>
+        <li><a href="{{ '/pages/resources.html' | relative_url }}"{% if page.url contains '/resources' %} class="active"{% endif %}>Preparedness Resources</a></li>
+        <li><a href="{{ '/pages/events.html' | relative_url }}"{% if page.url contains '/events' %} class="active"{% endif %}>Community Events</a></li>
+        <li><a href="{{ '/pages/neighborhood-map.html' | relative_url }}"{% if page.url contains '/neighborhood-map' %} class="active"{% endif %}>Find Your Neighborhood</a></li>
+        <li><a href="{{ '/pages/statistics.html' | relative_url }}"{% if page.url contains '/statistics' %} class="active"{% endif %}>Statistics and Information</a></li>
+        <li><a href="{{ '/pages/connect.html' | relative_url }}"{% if page.url contains '/connect' %} class="active"{% endif %}>Contact</a></li>
+        <li id="poway-auth-display-item" style="display:none;">
+          <a href="{{ '/pages/profile.html' | relative_url }}" id="poway-auth-display-link" aria-label="My Profile">
+            <span id="poway-auth-display-name"></span><span id="poway-auth-display-location" style="display:none;"></span>
+          </a>
+        </li>
+        <li id="poway-auth-login-item"><a href="{{ '/pages/login.html' | relative_url }}"{% if page.url contains '/login' %} class="active"{% endif %}>Login</a></li>
+        <li id="poway-auth-register-item"><a href="{{ '/pages/register.html' | relative_url }}"{% if page.url contains '/register' %} class="active"{% endif %}>Register</a></li>
+      </ul>
+    </nav>
+  </div>
+</div>
+
+<!-- Hidden mobile auth elements (required by auth-ui.js) -->
+<span id="poway-auth-display-item-mobile" style="display:none;">
+  <a href="{{ '/pages/profile.html' | relative_url }}" id="poway-auth-display-link-mobile">
+    <span id="poway-auth-display-name-mobile"></span>
+    <span id="poway-auth-display-location-mobile" style="display:none;"></span>
+  </a>
+</span>
+<span id="poway-auth-login-item-mobile" style="display:none;"></span>
+<span id="poway-auth-register-item-mobile" style="display:none;"></span>
+
+<script>
+(function() {
+  var idx = 0, total = 5;
+  var track = document.getElementById('pnec-header-slides');
+  setInterval(function() {
+    idx = (idx + 1) % total;
+    track.style.transform = 'translateX(-' + (idx * 100) + '%)';
+  }, 4000);
+})();
+</script>

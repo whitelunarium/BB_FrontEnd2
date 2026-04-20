@@ -116,11 +116,14 @@ function renderRoleBadge(badgeEl, role) {
 function showRoleGatedNavItems(role) {
   const isCoordinatorPlus = ['coordinator', 'staff', 'admin'].includes(role);
   const isStaffPlus       = ['staff', 'admin'].includes(role);
+  const isAdmin           = role === 'admin';
 
   toggleNavItem('nav-media-link',     isCoordinatorPlus);
   toggleNavItem('nav-events-link',    isCoordinatorPlus);
   toggleNavItem('nav-dashboard-link', isStaffPlus);
   toggleNavItem('mobile-dashboard-link', isStaffPlus);
+  toggleNavItem('nav-admin-link',        isAdmin);
+  toggleNavItem('mobile-admin-link',     isAdmin);
 }
 
 /**
@@ -212,19 +215,6 @@ function renderPowayAuthHeader(user) {
     if (loginItemMobile) loginItemMobile.style.display = 'none';
     if (registerItemMobile) registerItemMobile.style.display = 'none';
     if (logoutItemMobile) logoutItemMobile.style.display = 'list-item';
-
-    // Update homepage personalization bar with resolved location
-    const personalBar = document.getElementById('pnec-personal-bar');
-    const personalName = document.getElementById('pnec-personal-name');
-    const personalNeighborhood = document.getElementById('pnec-personal-neighborhood');
-    if (personalBar) {
-      personalBar.style.display = 'flex';
-      if (personalName) personalName.textContent = displayNameLabel.split(' ')[0];
-      if (personalNeighborhood) {
-        personalNeighborhood.textContent = locationLabel ? '\uD83D\uDCCD ' + locationLabel : '';
-        personalNeighborhood.style.display = locationLabel ? 'inline' : 'none';
-      }
-    }
 
     return;
   }

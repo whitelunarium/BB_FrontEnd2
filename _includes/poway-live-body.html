@@ -133,107 +133,6 @@
 		</div>
 					</div>
 		</section>
-				<!-- ── Personalized greeting (shown when logged in) ──────────────── -->
-				<div id="pnec-personal-bar" style="display:none; background:#1a3a5c; color:#fff; padding:18px 32px; display:none; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
-					<div style="flex:1; min-width:0;">
-						<div style="font-size:1.1rem; font-weight:700; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-							<span id="pnec-greeting-icon">👋</span>
-							<span id="pnec-greeting-text">Welcome back,</span>
-							<span id="pnec-personal-name" style="color:#4cc9f0;">neighbor</span>!
-						</div>
-						<div style="margin-top:4px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-							<span id="pnec-personal-neighborhood" style="font-size:0.88rem; color:#a8c8e8;"></span>
-							<span id="pnec-streak-display" style="font-size:0.85rem; color:#ffd166; display:none;"></span>
-						</div>
-					</div>
-					<div style="display:flex; gap:10px; flex-wrap:wrap; flex-shrink:0;">
-						<button id="pnec-checkin-btn" onclick="pnecCheckIn()" style="background:#27ae60; color:#fff; padding:8px 16px; border-radius:99px; font-weight:700; font-size:0.82rem; border:none; cursor:pointer; white-space:nowrap; display:none;">✓ I'm prepared today</button>
-						<a href="{{ '/pages/checklist.html' | relative_url }}" style="background:rgba(255,255,255,0.12); color:#fff; padding:8px 16px; border-radius:99px; font-weight:600; font-size:0.82rem; text-decoration:none; border:1px solid rgba(255,255,255,0.25); white-space:nowrap;">📋 My Kit</a>
-						<a href="{{ '/rpg/latest' | relative_url }}" style="background:#4cc9f0; color:#081524; padding:8px 16px; border-radius:99px; font-weight:700; font-size:0.82rem; text-decoration:none; white-space:nowrap;">🎮 Play RPG</a>
-						<a href="{{ '/pages/profile.html' | relative_url }}" style="background:rgba(255,255,255,0.12); color:#fff; padding:8px 16px; border-radius:99px; font-weight:600; font-size:0.82rem; text-decoration:none; border:1px solid rgba(255,255,255,0.25); white-space:nowrap;">My Profile</a>
-					</div>
-				</div>
-				<script>
-				(function() {
-					try {
-						var stored = localStorage.getItem('pnec_user') || sessionStorage.getItem('pnec_user');
-						if (!stored) return;
-						var user = JSON.parse(stored);
-						if (!user || !user.display_name) return;
-						var bar = document.getElementById('pnec-personal-bar');
-						if (!bar) return;
-						bar.style.display = 'flex';
-
-						// Time-aware greeting
-						var h = new Date().getHours();
-						var greetIcon = h < 12 ? '🌅' : h < 17 ? '☀️' : h < 21 ? '🌆' : '🌙';
-						var greetText = h < 12 ? 'Good morning,' : h < 17 ? 'Good afternoon,' : h < 21 ? 'Good evening,' : 'Good night,';
-						var iconEl = document.getElementById('pnec-greeting-icon');
-						var textEl = document.getElementById('pnec-greeting-text');
-						if (iconEl) iconEl.textContent = greetIcon;
-						if (textEl) textEl.textContent = greetText;
-
-						var nameEl = document.getElementById('pnec-personal-name');
-						if (nameEl) nameEl.textContent = user.display_name.split(' ')[0];
-						var nhEl = document.getElementById('pnec-personal-neighborhood');
-						if (nhEl && user.neighborhood) nhEl.textContent = '📍 ' + user.neighborhood;
-
-						// Streak display
-						var today = new Date().toISOString().slice(0, 10);
-						var streakData = null;
-						try { streakData = JSON.parse(localStorage.getItem('pnec_checkin_' + user.id) || 'null'); } catch(e2) {}
-						var streakCount = 0;
-						var checkedToday = false;
-						if (streakData) {
-							streakCount = streakData.count || 0;
-							checkedToday = streakData.last === today;
-							var yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-							if (streakData.last !== today && streakData.last !== yesterday) streakCount = 0;
-						}
-						var streakEl = document.getElementById('pnec-streak-display');
-						if (streakEl && streakCount > 0) {
-							streakEl.textContent = '🔥 ' + streakCount + '-day streak';
-							streakEl.style.display = 'inline';
-						}
-
-						// Check-in button
-						var checkinBtn = document.getElementById('pnec-checkin-btn');
-						if (checkinBtn) {
-							checkinBtn.style.display = 'inline-block';
-							if (checkedToday) {
-								checkinBtn.textContent = '✓ Checked in today';
-								checkinBtn.style.background = '#1a7a44';
-								checkinBtn.style.cursor = 'default';
-								checkinBtn.setAttribute('onclick', '');
-							}
-						}
-
-						// Store user id for check-in function
-						window._pnecUserId = user.id;
-					} catch(e) {}
-				})();
-
-				function pnecCheckIn() {
-					var userId = window._pnecUserId;
-					if (!userId) return;
-					var today = new Date().toISOString().slice(0, 10);
-					var yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-					var key = 'pnec_checkin_' + userId;
-					var streakData = null;
-					try { streakData = JSON.parse(localStorage.getItem(key) || 'null'); } catch(e) {}
-					var count = 1;
-					if (streakData && streakData.last === yesterday) count = (streakData.count || 0) + 1;
-					else if (streakData && streakData.last === today) return; // already checked in
-					localStorage.setItem(key, JSON.stringify({ last: today, count: count }));
-					var btn = document.getElementById('pnec-checkin-btn');
-					if (btn) { btn.textContent = '✓ Checked in today'; btn.style.background = '#1a7a44'; btn.style.cursor = 'default'; btn.setAttribute('onclick', ''); }
-					var streakEl = document.getElementById('pnec-streak-display');
-					if (streakEl) { streakEl.textContent = '🔥 ' + count + '-day streak'; streakEl.style.display = 'inline'; }
-
-					// Trigger badge refresh if on profile page
-					if (typeof pnecRefreshBadges === 'function') pnecRefreshBadges();
-				}
-				</script>
 				<!-- ── Kit teaser strip (shown when logged in) ─────────────────── -->
 				<div id="pnec-kit-strip" style="display:none; background:#f0fff4; border-top:1px solid #c3e6cb; padding:10px 32px; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
 					<div style="display:flex; align-items:center; gap:12px;">
@@ -307,6 +206,226 @@
 				})();
 				</script>
 				<!-- ────────────────────────────────────────────────────────────── -->
+		<style>
+			.pnec-risk-band {
+				background: #ffffff;
+				padding: 56px 24px;
+				border-bottom: 1px solid #e6edf4;
+			}
+
+			.pnec-risk-shell {
+				max-width: 1120px;
+				margin: 0 auto;
+			}
+
+			.pnec-risk-eyebrow {
+				margin: 0 0 10px;
+				color: #c84738;
+				font-size: 0.78rem;
+				font-weight: 800;
+				letter-spacing: 0.14em;
+				text-transform: uppercase;
+			}
+
+			.pnec-risk-head {
+				display: grid;
+				grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
+				gap: 24px;
+				align-items: end;
+				margin-bottom: 28px;
+			}
+
+			.pnec-risk-title {
+				margin: 0 0 12px;
+				color: #10263f;
+				font-size: clamp(1.8rem, 3.2vw, 2.8rem);
+				line-height: 1.08;
+				font-weight: 800;
+			}
+
+			.pnec-risk-copy {
+				margin: 0;
+				max-width: 680px;
+				color: #546274;
+				font-size: 1rem;
+				line-height: 1.7;
+			}
+
+			.pnec-risk-meta {
+				display: grid;
+				gap: 10px;
+				justify-items: start;
+				padding: 18px 20px;
+				border: 1px solid #dbe4ec;
+				border-radius: 18px;
+				background: #f7fafc;
+			}
+
+			.pnec-risk-meta-label {
+				color: #10263f;
+				font-size: 0.95rem;
+				font-weight: 700;
+			}
+
+			.pnec-risk-meta-copy {
+				color: #5f7084;
+				font-size: 0.88rem;
+				line-height: 1.55;
+			}
+
+			#risk-updated-time {
+				color: #c84738;
+				font-size: 0.82rem;
+				font-weight: 700;
+				letter-spacing: 0.04em;
+				text-transform: uppercase;
+			}
+
+			.pnec-risk-grid {
+				display: grid;
+				grid-template-columns: repeat(3, minmax(0, 1fr));
+				gap: 18px;
+			}
+
+			.risk-card {
+				min-height: 215px;
+				padding: 22px 20px;
+				border-radius: 20px;
+				border: 1px solid rgba(255,255,255,0.12);
+				background: rgba(255,255,255,0.97);
+				box-shadow: 0 18px 42px rgba(0,0,0,0.18);
+				transition: transform 0.18s ease, box-shadow 0.18s ease;
+			}
+
+			.risk-card:hover {
+				transform: translateY(-3px);
+				box-shadow: 0 24px 52px rgba(0,0,0,0.22);
+			}
+
+			.risk-card.risk-low { border-color: rgba(16, 185, 129, 0.28); }
+			.risk-card.risk-moderate { border-color: rgba(245, 158, 11, 0.32); }
+			.risk-card.risk-high { border-color: rgba(249, 115, 22, 0.34); }
+			.risk-card.risk-critical { border-color: rgba(220, 38, 38, 0.36); }
+
+			.risk-card-header,
+			.risk-score-row,
+			.condition-row {
+				display: flex;
+				align-items: center;
+			}
+
+			.risk-card-header {
+				gap: 10px;
+				margin-bottom: 18px;
+			}
+
+			.risk-icon {
+				font-size: 1.35rem;
+			}
+
+			.risk-type {
+				color: #10263f;
+				font-size: 0.82rem;
+				font-weight: 800;
+				letter-spacing: 0.12em;
+			}
+
+			.risk-score-row {
+				gap: 8px;
+				margin-bottom: 18px;
+				flex-wrap: wrap;
+			}
+
+			.risk-score {
+				color: #0a1628;
+				font-size: 3rem;
+				line-height: 1;
+				font-weight: 900;
+			}
+
+			.risk-max {
+				color: #607285;
+				font-size: 1rem;
+				font-weight: 700;
+			}
+
+			.risk-label {
+				display: inline-flex;
+				align-items: center;
+				height: 30px;
+				padding: 0 10px;
+				border-radius: 999px;
+				font-size: 0.76rem;
+				font-weight: 800;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+			}
+
+			.risk-conditions {
+				display: grid;
+				gap: 10px;
+			}
+
+			.condition-row {
+				justify-content: space-between;
+				gap: 10px;
+				padding-top: 10px;
+				border-top: 1px solid #ecf1f5;
+			}
+
+			.condition-label {
+				color: #607285;
+				font-size: 0.84rem;
+				font-weight: 600;
+			}
+
+			.condition-value {
+				color: #0f2237;
+				font-size: 0.86rem;
+				font-weight: 800;
+			}
+
+			.pulse-amber,
+			.pulse-red {
+				animation: pnec-risk-pulse 1.8s ease-in-out infinite;
+			}
+
+			@keyframes pnec-risk-pulse {
+				0%, 100% { box-shadow: 0 18px 42px rgba(0,0,0,0.18); }
+				50% { box-shadow: 0 20px 50px rgba(200, 71, 56, 0.32); }
+			}
+
+			@media (max-width: 900px) {
+				.pnec-risk-head,
+				.pnec-risk-grid {
+					grid-template-columns: 1fr;
+				}
+			}
+		</style>
+
+		<section class="pnec-risk-band" id="risk-widget" aria-labelledby="pnec-risk-title">
+			<div class="pnec-risk-shell">
+				<p class="pnec-risk-eyebrow">Risk Watch</p>
+				<div class="pnec-risk-head">
+					<div>
+						<h2 class="pnec-risk-title" id="pnec-risk-title">Live warnings for possible natural disaster risk in Poway</h2>
+						<p class="pnec-risk-copy">This section uses live environmental data from the risk API to estimate short-term wildfire, flood, and extreme heat danger. Scores are based on current conditions such as temperature, humidity, wind, rainfall, and heat index to help residents see when local risk may be rising.</p>
+					</div>
+					<div class="pnec-risk-meta">
+						<div class="pnec-risk-meta-label">What this means</div>
+						<div class="pnec-risk-meta-copy">Higher scores indicate a stronger likelihood that weather conditions could contribute to dangerous events. Use this as an early warning signal and review your preparedness plan when risk climbs.</div>
+						<div id="risk-updated-time" aria-live="polite">Loading latest conditions…</div>
+					</div>
+				</div>
+
+				<div class="pnec-risk-grid" aria-label="Current natural disaster risk estimates">
+					<div class="risk-card" id="fire-risk-card" aria-live="polite"></div>
+					<div class="risk-card" id="flood-risk-card" aria-live="polite"></div>
+					<div class="risk-card" id="heat-risk-card" aria-live="polite"></div>
+				</div>
+			</div>
+		</section>
+
 				<section class="elementor-section elementor-top-section elementor-element elementor-element-7d4d78a elementor-section-boxed elementor-section-height-default elementor-section-height-default" data-id="7d4d78a" data-element_type="section" data-e-type="section">
 						<div class="elementor-container elementor-column-gap-wide">
 					<div class="elementor-column elementor-col-50 elementor-top-column elementor-element elementor-element-3d4666f" data-id="3d4666f" data-element_type="column" data-e-type="column">
@@ -591,226 +710,6 @@
 					</div>
 		</div>
 					</div>
-		</section>
-
-		<style>
-			.pnec-risk-band {
-				background: #ffffff;
-				padding: 56px 24px;
-				border-bottom: 1px solid #e6edf4;
-			}
-
-			.pnec-risk-shell {
-				max-width: 1120px;
-				margin: 0 auto;
-			}
-
-			.pnec-risk-eyebrow {
-				margin: 0 0 10px;
-				color: #c84738;
-				font-size: 0.78rem;
-				font-weight: 800;
-				letter-spacing: 0.14em;
-				text-transform: uppercase;
-			}
-
-			.pnec-risk-head {
-				display: grid;
-				grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
-				gap: 24px;
-				align-items: end;
-				margin-bottom: 28px;
-			}
-
-			.pnec-risk-title {
-				margin: 0 0 12px;
-				color: #10263f;
-				font-size: clamp(1.8rem, 3.2vw, 2.8rem);
-				line-height: 1.08;
-				font-weight: 800;
-			}
-
-			.pnec-risk-copy {
-				margin: 0;
-				max-width: 680px;
-				color: #546274;
-				font-size: 1rem;
-				line-height: 1.7;
-			}
-
-			.pnec-risk-meta {
-				display: grid;
-				gap: 10px;
-				justify-items: start;
-				padding: 18px 20px;
-				border: 1px solid #dbe4ec;
-				border-radius: 18px;
-				background: #f7fafc;
-			}
-
-			.pnec-risk-meta-label {
-				color: #10263f;
-				font-size: 0.95rem;
-				font-weight: 700;
-			}
-
-			.pnec-risk-meta-copy {
-				color: #5f7084;
-				font-size: 0.88rem;
-				line-height: 1.55;
-			}
-
-			#risk-updated-time {
-				color: #c84738;
-				font-size: 0.82rem;
-				font-weight: 700;
-				letter-spacing: 0.04em;
-				text-transform: uppercase;
-			}
-
-			.pnec-risk-grid {
-				display: grid;
-				grid-template-columns: repeat(3, minmax(0, 1fr));
-				gap: 18px;
-			}
-
-			.risk-card {
-				min-height: 215px;
-				padding: 22px 20px;
-				border-radius: 20px;
-				border: 1px solid rgba(255,255,255,0.12);
-				background: rgba(255,255,255,0.97);
-				box-shadow: 0 18px 42px rgba(0,0,0,0.18);
-				transition: transform 0.18s ease, box-shadow 0.18s ease;
-			}
-
-			.risk-card:hover {
-				transform: translateY(-3px);
-				box-shadow: 0 24px 52px rgba(0,0,0,0.22);
-			}
-
-			.risk-card.risk-low { border-color: rgba(16, 185, 129, 0.28); }
-			.risk-card.risk-moderate { border-color: rgba(245, 158, 11, 0.32); }
-			.risk-card.risk-high { border-color: rgba(249, 115, 22, 0.34); }
-			.risk-card.risk-critical { border-color: rgba(220, 38, 38, 0.36); }
-
-			.risk-card-header,
-			.risk-score-row,
-			.condition-row {
-				display: flex;
-				align-items: center;
-			}
-
-			.risk-card-header {
-				gap: 10px;
-				margin-bottom: 18px;
-			}
-
-			.risk-icon {
-				font-size: 1.35rem;
-			}
-
-			.risk-type {
-				color: #10263f;
-				font-size: 0.82rem;
-				font-weight: 800;
-				letter-spacing: 0.12em;
-			}
-
-			.risk-score-row {
-				gap: 8px;
-				margin-bottom: 18px;
-				flex-wrap: wrap;
-			}
-
-			.risk-score {
-				color: #0a1628;
-				font-size: 3rem;
-				line-height: 1;
-				font-weight: 900;
-			}
-
-			.risk-max {
-				color: #607285;
-				font-size: 1rem;
-				font-weight: 700;
-			}
-
-			.risk-label {
-				display: inline-flex;
-				align-items: center;
-				height: 30px;
-				padding: 0 10px;
-				border-radius: 999px;
-				font-size: 0.76rem;
-				font-weight: 800;
-				letter-spacing: 0.08em;
-				text-transform: uppercase;
-			}
-
-			.risk-conditions {
-				display: grid;
-				gap: 10px;
-			}
-
-			.condition-row {
-				justify-content: space-between;
-				gap: 10px;
-				padding-top: 10px;
-				border-top: 1px solid #ecf1f5;
-			}
-
-			.condition-label {
-				color: #607285;
-				font-size: 0.84rem;
-				font-weight: 600;
-			}
-
-			.condition-value {
-				color: #0f2237;
-				font-size: 0.86rem;
-				font-weight: 800;
-			}
-
-			.pulse-amber,
-			.pulse-red {
-				animation: pnec-risk-pulse 1.8s ease-in-out infinite;
-			}
-
-			@keyframes pnec-risk-pulse {
-				0%, 100% { box-shadow: 0 18px 42px rgba(0,0,0,0.18); }
-				50% { box-shadow: 0 20px 50px rgba(200, 71, 56, 0.32); }
-			}
-
-			@media (max-width: 900px) {
-				.pnec-risk-head,
-				.pnec-risk-grid {
-					grid-template-columns: 1fr;
-				}
-			}
-		</style>
-
-		<section class="pnec-risk-band" id="risk-widget" aria-labelledby="pnec-risk-title">
-			<div class="pnec-risk-shell">
-				<p class="pnec-risk-eyebrow">Risk Watch</p>
-				<div class="pnec-risk-head">
-					<div>
-						<h2 class="pnec-risk-title" id="pnec-risk-title">Live warnings for possible natural disaster risk in Poway</h2>
-						<p class="pnec-risk-copy">This section uses live environmental data from the risk API to estimate short-term wildfire, flood, and extreme heat danger. Scores are based on current conditions such as temperature, humidity, wind, rainfall, and heat index to help residents see when local risk may be rising.</p>
-					</div>
-					<div class="pnec-risk-meta">
-						<div class="pnec-risk-meta-label">What this means</div>
-						<div class="pnec-risk-meta-copy">Higher scores indicate a stronger likelihood that weather conditions could contribute to dangerous events. Use this as an early warning signal and review your preparedness plan when risk climbs.</div>
-						<div id="risk-updated-time" aria-live="polite">Loading latest conditions…</div>
-					</div>
-				</div>
-
-				<div class="pnec-risk-grid" aria-label="Current natural disaster risk estimates">
-					<div class="risk-card" id="fire-risk-card" aria-live="polite"></div>
-					<div class="risk-card" id="flood-risk-card" aria-live="polite"></div>
-					<div class="risk-card" id="heat-risk-card" aria-live="polite"></div>
-				</div>
-			</div>
 		</section>
 
 				<section class="elementor-section elementor-top-section elementor-element elementor-element-79f6066 elementor-section-boxed elementor-section-height-default elementor-section-height-default" data-id="79f6066" data-element_type="section" data-e-type="section">
@@ -1214,83 +1113,7 @@ February 25 | 6:30PM
 		</section>
 				</div>
 
-		<!-- ── Story: 3-Panel Mission ─────────────────────────────────────────── -->
-		<section style="background:#f8f5f0; padding:64px 24px;">
-			<div style="max-width:1100px; margin:0 auto; text-align:center;">
-				<p style="font-size:0.78rem; font-weight:700; color:#c0392b; text-transform:uppercase; letter-spacing:0.1em; margin:0 0 10px;">How We Prepare Poway</p>
-				<h2 style="font-size:clamp(1.6rem,3vw,2.4rem); font-weight:800; color:#0a1628; margin:0 0 48px; line-height:1.2;">Three Hazards. One Mission.</h2>
-				<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:24px; text-align:left;">
-					<div style="background:#fff; border-radius:20px; padding:28px; border-top:4px solid #c0392b; box-shadow:0 4px 16px rgba(0,0,0,0.06);">
-						<div style="font-size:2.2rem; margin-bottom:16px;">🔥</div>
-						<h3 style="font-size:1.1rem; font-weight:800; color:#0a1628; margin:0 0 10px;">Wildfire</h3>
-						<p style="color:#5a5a5a; font-size:0.88rem; line-height:1.65; margin:0 0 16px;">Poway sits in one of California's highest fire-risk zones. The 2007 Witch Creek Fire destroyed 90 homes here. PNEC trains every neighborhood to prepare, evacuate, and recover.</p>
-						<a href="{{ '/pages/preparedness-resources.html' | relative_url }}" style="color:#c0392b; font-weight:700; font-size:0.85rem; text-decoration:none;">Fire Prep Resources →</a>
-					</div>
-					<div style="background:#fff; border-radius:20px; padding:28px; border-top:4px solid #2980b9; box-shadow:0 4px 16px rgba(0,0,0,0.06);">
-						<div style="font-size:2.2rem; margin-bottom:16px;">🌊</div>
-						<h3 style="font-size:1.1rem; font-weight:800; color:#0a1628; margin:0 0 10px;">Flood</h3>
-						<p style="color:#5a5a5a; font-size:0.88rem; line-height:1.65; margin:0 0 16px;">Poway Creek can rise 10 feet in under an hour. Flash floods close roads and cut off neighborhoods with little warning. Know your flood zone and have a plan before the rain arrives.</p>
-						<a href="{{ '/pages/preparedness-resources.html' | relative_url }}" style="color:#2980b9; font-weight:700; font-size:0.85rem; text-decoration:none;">Flood Prep Resources →</a>
-					</div>
-					<div style="background:#fff; border-radius:20px; padding:28px; border-top:4px solid #27ae60; box-shadow:0 4px 16px rgba(0,0,0,0.06);">
-						<div style="font-size:2.2rem; margin-bottom:16px;">🤝</div>
-						<h3 style="font-size:1.1rem; font-weight:800; color:#0a1628; margin:0 0 10px;">Community</h3>
-						<p style="color:#5a5a5a; font-size:0.88rem; line-height:1.65; margin:0 0 16px;">500+ trained volunteers across 60+ Poway neighborhoods. PNEC connects you with your local Emergency Coordinator — your first call when disaster strikes, before emergency services arrive.</p>
-						<a href="{{ '/pages/community-events-and-activities.html' | relative_url }}" style="color:#27ae60; font-weight:700; font-size:0.85rem; text-decoration:none;">Community Events →</a>
-					</div>
-				</div>
-			</div>
-		</section>
 
-
-		<!-- ── Story: Leaderboard Preview ───────────────────────────────────────── -->
-		<section style="background:#fff; padding:64px 24px; border-top:1px solid #f0ede8;">
-			<div style="max-width:640px; margin:0 auto; text-align:center;">
-				<p style="font-size:0.78rem; font-weight:700; color:#c0392b; text-transform:uppercase; letter-spacing:0.1em; margin:0 0 10px;">Neighborhood Rankings</p>
-				<h2 style="font-size:clamp(1.4rem,3vw,2rem); font-weight:800; color:#0a1628; margin:0 0 8px;">Top Prepared Neighbors</h2>
-				<p style="color:#5a5a5a; font-size:0.9rem; margin:0 0 32px;">This week's top preparedness scores from across Poway.</p>
-				<div id="pnec-leaderboard-preview" style="background:#f8f5f0; border-radius:16px; overflow:hidden; border:1px solid #e8e6e1;">
-					<div style="padding:16px 20px; display:flex; align-items:center; justify-content:center; color:#9e9e9e; font-size:0.85rem;" id="pnec-lb-loading">Loading leaderboard…</div>
-				</div>
-				<a href="{{ '/rpg/latest' | relative_url }}" style="display:inline-block; margin-top:20px; color:#c0392b; font-weight:700; font-size:0.88rem; text-decoration:none;">Play to earn your spot on the leaderboard →</a>
-			</div>
-		</section>
-		<script>
-		(function() {
-			var apiBase = (window.API_BASE || 'http://localhost:8425');
-			fetch(apiBase + '/api/leaderboard?limit=5', { credentials: 'include' })
-				.then(function(r) { return r.ok ? r.json() : null; })
-				.then(function(data) {
-					var container = document.getElementById('pnec-leaderboard-preview');
-					var loadingEl = document.getElementById('pnec-lb-loading');
-					if (!container || !data) return;
-					var entries = Array.isArray(data) ? data : (data.entries || data.leaderboard || []);
-					if (!entries.length) {
-						if (loadingEl) loadingEl.textContent = 'No scores yet — be the first to play!';
-						return;
-					}
-					var medals = ['🥇', '🥈', '🥉', '4.', '5.'];
-					var html = entries.slice(0, 5).map(function(e, i) {
-						var name = e.display_name || e.name || e.username || 'Anonymous';
-						var score = e.score || e.preparedness_score || e.high_score || 0;
-						var neighborhood = e.neighborhood || '';
-						return '<div style="display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #e8e6e1;gap:14px;">' +
-							'<span style="font-size:1.3rem;width:28px;text-align:center;flex-shrink:0;">' + medals[i] + '</span>' +
-							'<div style="flex:1;text-align:left;min-width:0;">' +
-								'<div style="font-weight:700;color:#0a1628;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + name.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>' +
-								(neighborhood ? '<div style="font-size:0.78rem;color:#9e9e9e;">📍 ' + neighborhood.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>' : '') +
-							'</div>' +
-							'<span style="font-weight:800;color:#c0392b;font-size:0.95rem;flex-shrink:0;">' + Number(score).toLocaleString() + ' pts</span>' +
-						'</div>';
-					}).join('');
-					container.innerHTML = html;
-				})
-				.catch(function() {
-					var el = document.getElementById('pnec-lb-loading');
-					if (el) el.textContent = 'Leaderboard unavailable right now.';
-				});
-		})();
-		</script>
 		<!-- ── End Story Sections ────────────────────────────────────────────────── -->
 
 		<!-- ── Daily personalized toast ────────────────────────────────────── -->

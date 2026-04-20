@@ -1,0 +1,71 @@
+<!-- _includes/poway-alert-banner.html -->
+<!-- Displays active sitewide announcements fetched from the Flask backend. -->
+<!-- Inlined API_BASE logic so this works before the JS utils load. -->
+
+<div id="pnec-alert-banner" style="display:none;"></div>
+
+<style>
+.pnec-alert {
+  width: 100%;
+  padding: 11px 16px;
+  font-size: .9rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  position: relative;
+  z-index: 500;
+}
+.pnec-alert-info    { background: #1a3a5c; border-bottom: 2px solid #2980b9; color: #cce5ff; }
+.pnec-alert-warning { background: #4a2c0a; border-bottom: 2px solid #e67e22; color: #ffe0b2; }
+.pnec-alert-danger  { background: #4a0e0e; border-bottom: 2px solid #c0392b; color: #ffcdd2; }
+.pnec-alert-text    { flex: 1; }
+.pnec-alert-dismiss {
+  background: transparent; border: 0; cursor: pointer;
+  color: inherit; opacity: .7; font-size: 1.1rem; padding: 0 4px; line-height: 1;
+  flex-shrink: 0;
+}
+.pnec-alert-dismiss:hover { opacity: 1; }
+</style>
+
+<script>
+(function () {
+  const base = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+    ? 'http://127.0.0.1:8425'
+    : 'https://beasts.opencodingsociety.com';
+
+  const dismissed = JSON.parse(localStorage.getItem('pnec_dismissed_alerts') || '[]');
+
+  fetch(base + '/api/announcements')
+    .then(r => r.ok ? r.json() : { announcements: [] })
+    .then(data => {
+      const banner = document.getElementById('pnec-alert-banner');
+      const active = (data.announcements || []).filter(a => !dismissed.includes(a.id));
+      if (!active.length) return;
+
+      const levelIcon = { info: 'ℹ️', warning: '⚠️', danger: '🔴' };
+      banner.style.display = 'block';
+      banner.innerHTML = active.map(a => `
+        <div class="pnec-alert pnec-alert-${a.level}" id="pnec-ann-${a.id}">
+          <span class="pnec-alert-text">${levelIcon[a.level] || '📢'} ${escBannerHtml(a.message)}</span>
+          <button class="pnec-alert-dismiss" onclick="pnecDismissAlert(${a.id})" title="Dismiss" aria-label="Dismiss alert">✕</button>
+        </div>
+      `).join('');
+    })
+    .catch(() => {});
+
+  function escBannerHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  window.pnecDismissAlert = function(id) {
+    const el = document.getElementById('pnec-ann-' + id);
+    if (el) el.remove();
+    const list = JSON.parse(localStorage.getItem('pnec_dismissed_alerts') || '[]');
+    if (!list.includes(id)) { list.push(id); localStorage.setItem('pnec_dismissed_alerts', JSON.stringify(list)); }
+    const banner = document.getElementById('pnec-alert-banner');
+    if (banner && !banner.querySelector('.pnec-alert')) banner.style.display = 'none';
+  };
+})();
+</script>

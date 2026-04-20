@@ -47,6 +47,8 @@
 </head>
 <body{% if page.body_class or page.use_poway_live_styles %} class="{% if page.use_poway_live_styles and page.use_poway_source_clone != true %}home wp-singular page-template page-template-elementor_header_footer page page-id-22 wp-theme-jupiterx no-js ctct-jupiterx elementor-default elementor-template-full-width elementor-kit-771 elementor-page elementor-page-22 {% endif %}{{ page.body_class }}"{% endif %}{% if page.body_attributes %} {{ page.body_attributes }}{% endif %}>
 
+  {% include poway-alert-banner.html %}
+
   {% if page.use_poway_source_clone %}
   {% include poway-live-body.html %}
   {% unless page.use_poway_embed %}
