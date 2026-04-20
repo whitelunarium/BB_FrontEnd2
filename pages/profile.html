@@ -304,6 +304,62 @@ document.addEventListener('DOMContentLoaded', function() {
     if (saveBtn) { saveBtn.disabled = true; saveBtn.style.background = '#9e9e9e'; saveBtn.title = 'Log in to save changes'; }
   }
 
+  function calcCompletion(user) {
+    var score = 0;
+    var missing = [];
+    if (user.avatar_url) { score += 25; } else { missing.push({ label: 'Add a profile photo', pct: 25, action: 'avatar' }); }
+    if (user.bio && user.bio.trim().length > 10) { score += 25; } else { missing.push({ label: 'Write a short bio', pct: 25, action: 'bio' }); }
+    if (user.phone && user.phone.trim()) { score += 20; } else { missing.push({ label: 'Add your phone number', pct: 20, action: 'phone' }); }
+    if (user.neighborhood_id) { score += 30; } else { missing.push({ label: 'Set your neighborhood', pct: 30, action: 'neighborhood' }); }
+    return { score: score, missing: missing };
+  }
+
+  function buildBadges(user) {
+    var today = new Date().toISOString().slice(0, 10);
+    var streakData = null;
+    try { streakData = JSON.parse(localStorage.getItem('pnec_checkin_' + user.id) || 'null'); } catch(e) {}
+    var streakCount = 0;
+    if (streakData) {
+      var yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+      if (streakData.last === today || streakData.last === yesterday) streakCount = streakData.count || 0;
+    }
+    var kitData = null;
+    try { kitData = JSON.parse(localStorage.getItem('pnec_kit_' + user.id) || 'null'); } catch(e) {}
+    var kitCount = kitData ? Object.keys(kitData).filter(function(k) { return kitData[k]; }).length : 0;
+
+    var comp = calcCompletion(user);
+    var badges = [
+      { icon: '🏠', label: 'Neighbor', desc: 'Created your account', earned: true },
+      { icon: '📸', label: 'Photo Ready', desc: 'Uploaded a profile photo', earned: !!user.avatar_url },
+      { icon: '✍️', label: 'Storyteller', desc: 'Wrote a bio', earned: !!(user.bio && user.bio.trim().length > 10) },
+      { icon: '📞', label: 'Connected', desc: 'Added your phone number', earned: !!(user.phone && user.phone.trim()) },
+      { icon: '📍', label: 'Local', desc: 'Set your neighborhood', earned: !!user.neighborhood_id },
+      { icon: '⭐', label: 'All In', desc: 'Completed your full profile (100%)', earned: comp.score === 100 },
+      { icon: '🔥', label: 'Daily Prep', desc: 'Checked in 3 days in a row', earned: streakCount >= 3 },
+      { icon: '💎', label: 'Week Warrior', desc: '7-day check-in streak', earned: streakCount >= 7 },
+      { icon: '🎒', label: 'Kit Starter', desc: 'Checked 5+ emergency kit items', earned: kitCount >= 5 },
+      { icon: '✅', label: 'Kit Builder', desc: 'Checked 15+ emergency kit items', earned: kitCount >= 15 },
+      { icon: '🛡️', label: 'Fully Prepared', desc: 'Completed your full emergency kit', earned: kitCount >= 20 },
+    ];
+    return badges;
+  }
+
+  window.pnecRefreshBadges = function() {
+    var stored = localStorage.getItem('pnec_user') || sessionStorage.getItem('pnec_user');
+    if (!stored) return;
+    try {
+      var user = JSON.parse(stored);
+      var badgesEl = document.getElementById('profile-badges-grid');
+      if (!badgesEl) return;
+      badgesEl.innerHTML = buildBadges(user).map(function(b) {
+        return '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 10px;border-radius:14px;border:1px solid ' + (b.earned ? '#d4edda' : '#f0ede8') + ';background:' + (b.earned ? '#f0fff4' : '#fafaf8') + ';min-width:80px;text-align:center;" title="' + escapeHtml(b.desc) + '">' +
+          '<span style="font-size:1.6rem;' + (b.earned ? '' : 'filter:grayscale(1);opacity:0.35;') + '">' + b.icon + '</span>' +
+          '<span style="font-size:0.72rem;font-weight:700;color:' + (b.earned ? '#1a7a44' : '#9e9e9e') + ';line-height:1.2;">' + escapeHtml(b.label) + '</span>' +
+        '</div>';
+      }).join('');
+    } catch(e) {}
+  };
+
   function renderProfile(user) {
     var roleLabels = { coordinator: 'Coordinator', staff: 'Staff', admin: 'Admin' };
     var roleClasses = { coordinator: 'badge-coordinator', staff: 'badge-staff', admin: 'badge-admin' };
@@ -312,14 +368,57 @@ document.addEventListener('DOMContentLoaded', function() {
       : '';
 
     var joined = user.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : '';
+    var joinedDays = user.created_at ? Math.floor((Date.now() - new Date(user.created_at).getTime()) / 86400000) : null;
 
     var avatarHtml = user.avatar_url
       ? '<img src="' + escapeHtml(user.avatar_url) + '" alt="Profile photo" onerror="this.style.display=\'none\';this.parentNode.dataset.initials=\'true\';">'
       : escapeHtml(getInitials(user.display_name));
 
-    // Remove session-expired banner if server confirmed user is logged in
     var oldBanner = document.getElementById('session-expired-banner');
     if (oldBanner) oldBanner.remove();
+
+    // Completion meter
+    var comp = calcCompletion(user);
+    var barColor = comp.score < 40 ? '#e74c3c' : comp.score < 70 ? '#f39c12' : comp.score < 100 ? '#27ae60' : '#1a7a44';
+    var missingHtml = comp.missing.length
+      ? '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">' +
+          comp.missing.map(function(m) {
+            var anchor = m.action === 'avatar' ? '#avatar-change-btn' : m.action === 'bio' ? '#edit-bio' : m.action === 'phone' ? '#edit-phone' : '#edit-display-name';
+            return '<a href="' + anchor + '" onclick="document.querySelector(\'' + anchor + '\')&&document.querySelector(\'' + anchor + '\').focus?document.querySelector(\'' + anchor + '\').focus():null" style="font-size:0.76rem;color:#0a1628;background:#f0ede8;padding:3px 10px;border-radius:99px;text-decoration:none;border:1px solid #d8d5d0;">+ ' + escapeHtml(m.label) + ' <span style=\'color:#9e9e9e\'>(' + m.pct + '%)</span></a>';
+          }).join('') +
+        '</div>'
+      : '<div style="margin-top:8px;font-size:0.82rem;color:#1a7a44;font-weight:700;">🎉 Profile fully complete!</div>';
+
+    var completionSection =
+      '<div style="background:#fff;border:1px solid #e8e6e1;border-radius:16px;padding:20px 24px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,0.05);">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">' +
+          '<span style="font-size:0.82rem;font-weight:700;color:#0a1628;text-transform:uppercase;letter-spacing:0.06em;">Profile Strength</span>' +
+          '<span style="font-size:1.1rem;font-weight:800;color:' + barColor + ';">' + comp.score + '%</span>' +
+        '</div>' +
+        '<div style="background:#f0ede8;border-radius:99px;height:10px;overflow:hidden;">' +
+          '<div style="background:' + barColor + ';width:' + comp.score + '%;height:100%;border-radius:99px;transition:width 0.6s ease;"></div>' +
+        '</div>' +
+        missingHtml +
+      '</div>';
+
+    // Badges section
+    var badges = buildBadges(user);
+    var badgesSection =
+      '<div style="background:#fff;border:1px solid #e8e6e1;border-radius:16px;padding:20px 24px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,0.05);">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">' +
+          '<span style="font-size:0.82rem;font-weight:700;color:#0a1628;text-transform:uppercase;letter-spacing:0.06em;">Preparedness Badges</span>' +
+          '<span style="font-size:0.78rem;color:#9e9e9e;">' + badges.filter(function(b){ return b.earned; }).length + ' / ' + badges.length + ' earned</span>' +
+        '</div>' +
+        '<div id="profile-badges-grid" style="display:flex;flex-wrap:wrap;gap:10px;">' +
+          badges.map(function(b) {
+            return '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 10px;border-radius:14px;border:1px solid ' + (b.earned ? '#d4edda' : '#f0ede8') + ';background:' + (b.earned ? '#f0fff4' : '#fafaf8') + ';min-width:80px;text-align:center;" title="' + escapeHtml(b.desc) + '">' +
+              '<span style="font-size:1.6rem;' + (b.earned ? '' : 'filter:grayscale(1);opacity:0.35;') + '">' + b.icon + '</span>' +
+              '<span style="font-size:0.72rem;font-weight:700;color:' + (b.earned ? '#1a7a44' : '#9e9e9e') + ';line-height:1.2;">' + escapeHtml(b.label) + '</span>' +
+            '</div>';
+          }).join('') +
+        '</div>' +
+        '<p style="margin:12px 0 0;font-size:0.78rem;color:#9e9e9e;">Hover a badge to see how to earn it. Keep checking in and building your kit!</p>' +
+      '</div>';
 
     container.innerHTML =
       '<div class="profile-card">' +
@@ -327,13 +426,18 @@ document.addEventListener('DOMContentLoaded', function() {
           '<div class="profile-avatar" id="profile-avatar-display">' + avatarHtml + '</div>' +
           '<button class="avatar-change-btn" id="avatar-change-btn" title="Change photo" aria-label="Change profile picture">✎</button>' +
         '</div>' +
-        '<div class="profile-meta">' +
+        '<div class="profile-meta" style="flex:1;">' +
           '<h1 class="profile-name">' + escapeHtml(user.display_name) + ' ' + roleBadge + '</h1>' +
           '<p class="profile-email">' + escapeHtml(user.email) + '</p>' +
           (user.bio ? '<p class="profile-bio-display">' + escapeHtml(user.bio) + '</p>' : '') +
-          (joined ? '<p class="profile-joined">Member since ' + joined + '</p>' : '') +
+          '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:6px;">' +
+            (joined ? '<span style="font-size:0.8rem;color:#9e9e9e;">🗓 Member since ' + joined + (joinedDays !== null ? ' (' + joinedDays + ' days)' : '') + '</span>' : '') +
+          '</div>' +
         '</div>' +
       '</div>' +
+
+      completionSection +
+      badgesSection +
 
       '<div class="profile-edit-section">' +
         '<h3>Edit Profile</h3>' +

@@ -135,14 +135,22 @@
 		</section>
 				<!-- ── Personalized greeting (shown when logged in) ──────────────── -->
 				<div id="pnec-personal-bar" style="display:none; background:#1a3a5c; color:#fff; padding:18px 32px; display:none; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
-					<div>
-						<span style="font-size:1.1rem; font-weight:700;">👋 Welcome back, <span id="pnec-personal-name">neighbor</span>!</span>
-						<span id="pnec-personal-neighborhood" style="margin-left:12px; font-size:0.9rem; color:#a8c8e8;"></span>
+					<div style="flex:1; min-width:0;">
+						<div style="font-size:1.1rem; font-weight:700; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+							<span id="pnec-greeting-icon">👋</span>
+							<span id="pnec-greeting-text">Welcome back,</span>
+							<span id="pnec-personal-name" style="color:#4cc9f0;">neighbor</span>!
+						</div>
+						<div style="margin-top:4px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+							<span id="pnec-personal-neighborhood" style="font-size:0.88rem; color:#a8c8e8;"></span>
+							<span id="pnec-streak-display" style="font-size:0.85rem; color:#ffd166; display:none;"></span>
+						</div>
 					</div>
-					<div style="display:flex; gap:12px; flex-wrap:wrap;">
-						<a href="{{ '/rpg/latest' | relative_url }}" style="background:#4cc9f0; color:#081524; padding:8px 18px; border-radius:99px; font-weight:700; font-size:0.85rem; text-decoration:none;">🎮 Play RPG</a>
-						<a href="{{ '/role-quiz/' | relative_url }}" style="background:rgba(255,255,255,0.12); color:#fff; padding:8px 18px; border-radius:99px; font-weight:600; font-size:0.85rem; text-decoration:none; border:1px solid rgba(255,255,255,0.25);">🧭 Find Your Role</a>
-						<a href="{{ '/pages/profile.html' | relative_url }}" style="background:rgba(255,255,255,0.12); color:#fff; padding:8px 18px; border-radius:99px; font-weight:600; font-size:0.85rem; text-decoration:none; border:1px solid rgba(255,255,255,0.25);">My Profile</a>
+					<div style="display:flex; gap:10px; flex-wrap:wrap; flex-shrink:0;">
+						<button id="pnec-checkin-btn" onclick="pnecCheckIn()" style="background:#27ae60; color:#fff; padding:8px 16px; border-radius:99px; font-weight:700; font-size:0.82rem; border:none; cursor:pointer; white-space:nowrap; display:none;">✓ I'm prepared today</button>
+						<a href="{{ '/pages/checklist.html' | relative_url }}" style="background:rgba(255,255,255,0.12); color:#fff; padding:8px 16px; border-radius:99px; font-weight:600; font-size:0.82rem; text-decoration:none; border:1px solid rgba(255,255,255,0.25); white-space:nowrap;">📋 My Kit</a>
+						<a href="{{ '/rpg/latest' | relative_url }}" style="background:#4cc9f0; color:#081524; padding:8px 16px; border-radius:99px; font-weight:700; font-size:0.82rem; text-decoration:none; white-space:nowrap;">🎮 Play RPG</a>
+						<a href="{{ '/pages/profile.html' | relative_url }}" style="background:rgba(255,255,255,0.12); color:#fff; padding:8px 16px; border-radius:99px; font-weight:600; font-size:0.82rem; text-decoration:none; border:1px solid rgba(255,255,255,0.25); white-space:nowrap;">My Profile</a>
 					</div>
 				</div>
 				<script>
@@ -153,12 +161,108 @@
 						var user = JSON.parse(stored);
 						if (!user || !user.display_name) return;
 						var bar = document.getElementById('pnec-personal-bar');
-						if (bar) {
-							bar.style.display = 'flex';
-							var nameEl = document.getElementById('pnec-personal-name');
-							if (nameEl) nameEl.textContent = user.display_name.split(' ')[0];
-							var nhEl = document.getElementById('pnec-personal-neighborhood');
-							if (nhEl && user.neighborhood) nhEl.textContent = '📍 ' + user.neighborhood;
+						if (!bar) return;
+						bar.style.display = 'flex';
+
+						// Time-aware greeting
+						var h = new Date().getHours();
+						var greetIcon = h < 12 ? '🌅' : h < 17 ? '☀️' : h < 21 ? '🌆' : '🌙';
+						var greetText = h < 12 ? 'Good morning,' : h < 17 ? 'Good afternoon,' : h < 21 ? 'Good evening,' : 'Good night,';
+						var iconEl = document.getElementById('pnec-greeting-icon');
+						var textEl = document.getElementById('pnec-greeting-text');
+						if (iconEl) iconEl.textContent = greetIcon;
+						if (textEl) textEl.textContent = greetText;
+
+						var nameEl = document.getElementById('pnec-personal-name');
+						if (nameEl) nameEl.textContent = user.display_name.split(' ')[0];
+						var nhEl = document.getElementById('pnec-personal-neighborhood');
+						if (nhEl && user.neighborhood) nhEl.textContent = '📍 ' + user.neighborhood;
+
+						// Streak display
+						var today = new Date().toISOString().slice(0, 10);
+						var streakData = null;
+						try { streakData = JSON.parse(localStorage.getItem('pnec_checkin_' + user.id) || 'null'); } catch(e2) {}
+						var streakCount = 0;
+						var checkedToday = false;
+						if (streakData) {
+							streakCount = streakData.count || 0;
+							checkedToday = streakData.last === today;
+							var yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+							if (streakData.last !== today && streakData.last !== yesterday) streakCount = 0;
+						}
+						var streakEl = document.getElementById('pnec-streak-display');
+						if (streakEl && streakCount > 0) {
+							streakEl.textContent = '🔥 ' + streakCount + '-day streak';
+							streakEl.style.display = 'inline';
+						}
+
+						// Check-in button
+						var checkinBtn = document.getElementById('pnec-checkin-btn');
+						if (checkinBtn) {
+							checkinBtn.style.display = 'inline-block';
+							if (checkedToday) {
+								checkinBtn.textContent = '✓ Checked in today';
+								checkinBtn.style.background = '#1a7a44';
+								checkinBtn.style.cursor = 'default';
+								checkinBtn.setAttribute('onclick', '');
+							}
+						}
+
+						// Store user id for check-in function
+						window._pnecUserId = user.id;
+					} catch(e) {}
+				})();
+
+				function pnecCheckIn() {
+					var userId = window._pnecUserId;
+					if (!userId) return;
+					var today = new Date().toISOString().slice(0, 10);
+					var yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+					var key = 'pnec_checkin_' + userId;
+					var streakData = null;
+					try { streakData = JSON.parse(localStorage.getItem(key) || 'null'); } catch(e) {}
+					var count = 1;
+					if (streakData && streakData.last === yesterday) count = (streakData.count || 0) + 1;
+					else if (streakData && streakData.last === today) return; // already checked in
+					localStorage.setItem(key, JSON.stringify({ last: today, count: count }));
+					var btn = document.getElementById('pnec-checkin-btn');
+					if (btn) { btn.textContent = '✓ Checked in today'; btn.style.background = '#1a7a44'; btn.style.cursor = 'default'; btn.setAttribute('onclick', ''); }
+					var streakEl = document.getElementById('pnec-streak-display');
+					if (streakEl) { streakEl.textContent = '🔥 ' + count + '-day streak'; streakEl.style.display = 'inline'; }
+
+					// Trigger badge refresh if on profile page
+					if (typeof pnecRefreshBadges === 'function') pnecRefreshBadges();
+				}
+				</script>
+				<!-- ── Kit teaser strip (shown when logged in) ─────────────────── -->
+				<div id="pnec-kit-strip" style="display:none; background:#f0fff4; border-top:1px solid #c3e6cb; padding:10px 32px; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+					<div style="display:flex; align-items:center; gap:12px;">
+						<span style="font-size:0.88rem; font-weight:700; color:#155724;">📦 Emergency Kit:</span>
+						<div style="background:#c3e6cb; border-radius:99px; height:7px; width:140px; overflow:hidden;">
+							<div id="pnec-kit-bar-fill" style="background:#27ae60; height:100%; width:0%; border-radius:99px; transition:width 0.4s;"></div>
+						</div>
+						<span id="pnec-kit-count-label" style="font-size:0.82rem; color:#1a7a44; font-weight:700;"></span>
+					</div>
+					<a href="{{ '/pages/checklist.html' | relative_url }}" style="font-size:0.8rem; color:#155724; font-weight:700; text-decoration:underline; white-space:nowrap;">Update my kit →</a>
+				</div>
+				<script>
+				(function() {
+					try {
+						var stored = localStorage.getItem('pnec_user') || sessionStorage.getItem('pnec_user');
+						if (!stored) return;
+						var user = JSON.parse(stored);
+						if (!user || !user.display_name) return;
+						var kit = {};
+						try { kit = JSON.parse(localStorage.getItem('pnec_kit_' + user.id) || '{}'); } catch(e) {}
+						var checked = Object.keys(kit).filter(function(k) { return kit[k]; }).length;
+						var total = 20;
+						var strip = document.getElementById('pnec-kit-strip');
+						if (strip) {
+							strip.style.display = 'flex';
+							var fill = document.getElementById('pnec-kit-bar-fill');
+							if (fill) fill.style.width = Math.round(checked / total * 100) + '%';
+							var label = document.getElementById('pnec-kit-count-label');
+							if (label) label.textContent = checked + ' / ' + total + ' items';
 						}
 					} catch(e) {}
 				})();
@@ -1189,6 +1293,83 @@ February 25 | 6:30PM
 		</script>
 		<!-- ── End Story Sections ────────────────────────────────────────────────── -->
 
+		<!-- ── Daily personalized toast ────────────────────────────────────── -->
+		<div id="pnec-daily-toast" style="display:none;position:fixed;bottom:28px;right:28px;z-index:9000;max-width:340px;background:#fff;border-radius:18px;box-shadow:0 12px 48px rgba(0,0,0,0.18);border:1px solid #e8e6e1;overflow:hidden;animation:toastSlideIn 0.4s ease;">
+			<div id="pnec-toast-header" style="background:#0a1628;color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+				<span id="pnec-toast-title" style="font-size:0.88rem;font-weight:700;"></span>
+				<button onclick="pnecDismissToast()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:1rem;cursor:pointer;padding:0;line-height:1;">✕</button>
+			</div>
+			<div id="pnec-toast-body" style="padding:14px 16px;"></div>
+		</div>
+		<style>
+		@keyframes toastSlideIn {
+			from { opacity:0; transform: translateY(20px); }
+			to   { opacity:1; transform: translateY(0); }
+		}
+		</style>
+		<script>
+		(function() {
+			try {
+				var stored = localStorage.getItem('pnec_user') || sessionStorage.getItem('pnec_user');
+				if (!stored) return;
+				var user = JSON.parse(stored);
+				if (!user || !user.display_name) return;
+
+				var today = new Date().toISOString().slice(0, 10);
+				var lastToast = localStorage.getItem('pnec_toast_date');
+				if (lastToast === today) return; // already shown today
+
+				var firstName = user.display_name.split(' ')[0];
+				var h = new Date().getHours();
+				var greeting = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+
+				var kit = {};
+				try { kit = JSON.parse(localStorage.getItem('pnec_kit_' + user.id) || '{}'); } catch(e2) {}
+				var kitCount = Object.keys(kit).filter(function(k) { return kit[k]; }).length;
+				var kitTotal = 20;
+
+				var streakData = null;
+				try { streakData = JSON.parse(localStorage.getItem('pnec_checkin_' + user.id) || 'null'); } catch(e3) {}
+				var streak = streakData ? (streakData.count || 0) : 0;
+
+				var messages = [];
+				if (kitCount === 0) {
+					messages.push('Your emergency kit checklist is empty. <a href="/pages/checklist.html" style="color:#c0392b;font-weight:700;">Start building it →</a>');
+				} else if (kitCount < kitTotal) {
+					messages.push('You have ' + kitCount + '/' + kitTotal + ' kit items ready. <a href="/pages/checklist.html" style="color:#c0392b;font-weight:700;">Add more →</a>');
+				} else {
+					messages.push('Your emergency kit is fully stocked. Great job staying prepared!');
+				}
+				if (streak >= 7) {
+					messages.push('🏆 ' + streak + '-day check-in streak! You\'re a Week Warrior.');
+				} else if (streak >= 3) {
+					messages.push('🔥 ' + streak + '-day streak — keep it going!');
+				} else {
+					messages.push('Don\'t forget to <strong>check in today</strong> to build your streak.');
+				}
+
+				var toast = document.getElementById('pnec-daily-toast');
+				var title = document.getElementById('pnec-toast-title');
+				var body = document.getElementById('pnec-toast-body');
+				if (!toast || !title || !body) return;
+
+				title.textContent = greeting + ', ' + firstName + '! 👋';
+				body.innerHTML = '<div style="font-size:0.85rem;color:#0a1628;line-height:1.6;">' +
+					messages.map(function(m) { return '<p style="margin:0 0 8px;">' + m + '</p>'; }).join('') +
+				'</div>';
+				toast.style.display = 'block';
+
+				localStorage.setItem('pnec_toast_date', today);
+				// Auto-dismiss after 10s
+				setTimeout(pnecDismissToast, 10000);
+			} catch(e) {}
+		})();
+
+		function pnecDismissToast() {
+			var toast = document.getElementById('pnec-daily-toast');
+			if (toast) { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(function() { toast.style.display = 'none'; }, 300); }
+		}
+		</script>
 		</main><footer class="jupiterx-footer" role="contentinfo" itemscope="itemscope" itemtype="http://schema.org/WPFooter">		<footer data-elementor-type="footer" data-elementor-id="238" class="elementor elementor-238" data-elementor-post-type="elementor_library">
 					<section class="elementor-section elementor-top-section elementor-element elementor-element-81b1d56 elementor-section-height-min-height elementor-section-items-stretch elementor-section-boxed elementor-section-height-default" data-id="81b1d56" data-element_type="section" data-e-type="section" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}">
 						<div class="elementor-container elementor-column-gap-default">
