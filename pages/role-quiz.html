@@ -1,0 +1,559 @@
+---
+layout: pnec-base
+title: Find Your PNEC Role
+permalink: /role-quiz/
+---
+
+<style>
+/* ── Quiz shell ─────────────────────────────────────────────────── */
+#quiz-shell {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0b1d33 0%, #122340 50%, #0d1f38 100%);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  color: #e6eefc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 40px 20px 80px;
+}
+
+/* ── Progress bar ───────────────────────────────────────────────── */
+#progress-wrap {
+  width: min(640px, 100%);
+  margin-bottom: 32px;
+}
+
+#progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #7ea8d4;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+#progress-track {
+  height: 6px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+#progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4cc9f0, #80ed99);
+  border-radius: 99px;
+  transition: width 0.5s cubic-bezier(.4,0,.2,1);
+  width: 0%;
+}
+
+/* ── Scenario card ──────────────────────────────────────────────── */
+#scenario-card {
+  width: min(640px, 100%);
+  background: rgba(16, 34, 61, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 24px;
+  padding: 36px 32px 28px;
+  box-shadow: 0 28px 60px rgba(0,0,0,0.4);
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+#scenario-card.exit {
+  opacity: 0;
+  transform: translateY(-20px);
+  pointer-events: none;
+}
+
+#scenario-card.enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.scenario-emoji {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.scenario-headline {
+  font-size: clamp(1.15rem, 2.5vw, 1.4rem);
+  font-weight: 700;
+  text-align: center;
+  margin: 0 0 8px;
+  line-height: 1.35;
+}
+
+.scenario-context {
+  font-size: 0.9rem;
+  color: #94a9c9;
+  text-align: center;
+  margin: 0 0 28px;
+  line-height: 1.6;
+}
+
+/* ── Choice grid ────────────────────────────────────────────────── */
+.choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .choices { grid-template-columns: 1fr; }
+  #scenario-card { padding: 24px 18px 20px; }
+}
+
+.choice-btn {
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(148, 163, 184, 0.2);
+  border-radius: 16px;
+  padding: 16px 14px;
+  cursor: pointer;
+  transition: all 0.18s;
+  text-align: left;
+  color: #e6eefc;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.choice-btn:hover {
+  border-color: #4cc9f0;
+  background: rgba(76, 201, 240, 0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(76,201,240,0.12);
+}
+
+.choice-btn:active {
+  transform: scale(0.98);
+}
+
+.choice-icon { font-size: 1.6rem; }
+.choice-text { font-size: 0.88rem; line-height: 1.45; font-weight: 500; }
+
+/* ── Intro screen ───────────────────────────────────────────────── */
+#intro-screen {
+  text-align: center;
+  max-width: 540px;
+}
+
+#intro-screen h1 {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  margin: 0 0 12px;
+  background: linear-gradient(135deg, #4cc9f0, #80ed99);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+#intro-screen p {
+  color: #94a9c9;
+  line-height: 1.7;
+  margin: 0 0 32px;
+  font-size: 1rem;
+}
+
+.start-btn, .retake-btn {
+  display: inline-block;
+  padding: 16px 40px;
+  background: linear-gradient(135deg, #4cc9f0, #5ea0ef);
+  color: #081524;
+  border: none;
+  border-radius: 99px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  text-decoration: none;
+}
+
+.start-btn:hover, .retake-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(76,201,240,0.35);
+}
+
+/* ── Result card ────────────────────────────────────────────────── */
+#result-screen { display: none; width: min(680px, 100%); text-align: center; }
+
+.result-badge {
+  font-size: 5rem;
+  display: block;
+  margin-bottom: 8px;
+  animation: pop 0.5s cubic-bezier(.17,.67,.45,1.5) both;
+}
+
+@keyframes pop {
+  from { transform: scale(0.3); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+.result-role-name {
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-weight: 800;
+  margin: 12px 0 4px;
+  background: linear-gradient(135deg, #4cc9f0, #80ed99);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.result-tagline {
+  font-size: 0.95rem;
+  color: #94a9c9;
+  margin: 0 0 28px;
+  font-style: italic;
+}
+
+.result-description {
+  background: rgba(16, 34, 61, 0.92);
+  border: 1px solid rgba(148,163,184,0.18);
+  border-radius: 20px;
+  padding: 24px 28px;
+  text-align: left;
+  line-height: 1.75;
+  color: #c8dcf0;
+  margin-bottom: 24px;
+  min-height: 80px;
+  position: relative;
+}
+
+.result-description.loading::after {
+  content: '';
+  display: block;
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(76,201,240,0.3);
+  border-top-color: #4cc9f0;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin: 16px auto 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.result-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.result-actions a {
+  padding: 12px 26px;
+  border-radius: 99px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.15s, box-shadow 0.15s;
+  border: 1.5px solid rgba(148,163,184,0.25);
+  color: #e6eefc;
+}
+
+.result-actions a:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  border-color: #4cc9f0;
+}
+
+.result-actions a.primary {
+  background: linear-gradient(135deg, #4cc9f0, #5ea0ef);
+  color: #081524;
+  border-color: transparent;
+}
+
+/* ── Step tracker dots ──────────────────────────────────────────── */
+.step-dots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  transition: background 0.3s;
+}
+
+.step-dot.active { background: #4cc9f0; }
+.step-dot.done { background: #80ed99; }
+</style>
+
+<div id="quiz-shell">
+
+  <!-- Intro -->
+  <div id="intro-screen">
+    <span style="font-size:4rem; display:block; margin-bottom:16px;">🧭</span>
+    <h1>Find Your PNEC Calling</h1>
+    <p>
+      Every neighbor brings different strengths to emergency preparedness.
+      Take this 5-question scenario challenge — no right or wrong answers —
+      and discover which PNEC role fits you best.
+    </p>
+    <button class="start-btn" onclick="startQuiz()">Let's Find Out →</button>
+  </div>
+
+  <!-- Progress (hidden until quiz starts) -->
+  <div id="progress-wrap" style="display:none">
+    <div id="progress-label">
+      <span id="progress-text">Question 1 of 5</span>
+      <span id="progress-pct">0%</span>
+    </div>
+    <div id="progress-track"><div id="progress-fill"></div></div>
+    <div class="step-dots" id="step-dots"></div>
+  </div>
+
+  <!-- Scenario card (hidden until quiz starts) -->
+  <div id="scenario-card" style="display:none">
+    <span class="scenario-emoji" id="q-emoji"></span>
+    <h2 class="scenario-headline" id="q-headline"></h2>
+    <p class="scenario-context" id="q-context"></p>
+    <div class="choices" id="choices-grid"></div>
+  </div>
+
+  <!-- Result screen -->
+  <div id="result-screen">
+    <span class="result-badge" id="result-emoji"></span>
+    <div class="result-role-name" id="result-role"></div>
+    <div class="result-tagline" id="result-tagline"></div>
+    <div class="result-description" id="result-description"></div>
+    <div class="result-actions">
+      <a href="/rpg/latest" class="primary">🎮 Play the Preparedness RPG</a>
+      <a href="/pages/volunteer.html">Join PNEC</a>
+      <button class="retake-btn" onclick="resetQuiz()" style="padding:12px 26px; font-size:0.9rem;">↺ Retake</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// queryGemini loaded lazily on result screen so quiz start is never blocked
+async function _loadQueryGemini() {
+  try {
+    const mod = await import('{{ "/assets/js/api/gemini.js" | relative_url }}');
+    return mod.queryGemini;
+  } catch { return null; }
+}
+
+// ── Scenarios ──────────────────────────────────────────────────────────────
+const SCENARIOS = [
+  {
+    emoji: '🌙',
+    headline: 'It\'s 3 AM. Your phone screams an emergency alert.',
+    context: 'A wildfire is spreading fast 2 miles away. What\'s the first thing you do?',
+    choices: [
+      { icon: '📞', text: 'Call elderly neighbors to make sure they\'re awake and mobile', tag: 'community' },
+      { icon: '🗺️', text: 'Check the evacuation map and pre-load your go-bag in the car', tag: 'fire' },
+      { icon: '📱', text: 'Monitor official channels and relay real-time updates to your group chat', tag: 'comm' },
+      { icon: '🩺', text: 'Grab first aid supplies — someone might need help on the road out', tag: 'medical' },
+    ]
+  },
+  {
+    emoji: '🌧️',
+    headline: 'A storm turns your street into a river.',
+    context: 'Water is rising fast outside. Your neighbor\'s car is blocking their driveway.',
+    choices: [
+      { icon: '🚧', text: 'Place warning barriers so no one drives into the flooded section', tag: 'flood' },
+      { icon: '🤝', text: 'Knock on doors and help neighbors move valuables upstairs', tag: 'community' },
+      { icon: '📡', text: 'Contact emergency services with precise water depth estimates', tag: 'comm' },
+      { icon: '🏊', text: 'Stay back and guide others from a safe vantage point', tag: 'flood' },
+    ]
+  },
+  {
+    emoji: '☀️',
+    headline: 'The heat index hits 108°F on a Wednesday afternoon.',
+    context: 'You notice an elderly man sitting outside who looks disoriented.',
+    choices: [
+      { icon: '💧', text: 'Bring him water and cold cloths immediately, check his pulse', tag: 'medical' },
+      { icon: '🏠', text: 'Help him inside your home\'s A/C and call family', tag: 'heat' },
+      { icon: '🚑', text: 'Call 911 — heat stroke is a medical emergency', tag: 'medical' },
+      { icon: '📢', text: 'Alert the neighborhood about the cooling center opening downtown', tag: 'heat' },
+    ]
+  },
+  {
+    emoji: '📦',
+    headline: 'You have a free Saturday and want to prep Poway.',
+    context: 'The neighborhood coordinator just posted a call for help. What sounds most YOU?',
+    choices: [
+      { icon: '🔧', text: 'Build defensible space: clear brush from neighbors\' homes', tag: 'fire' },
+      { icon: '🎒', text: 'Run a free "build your go-bag" workshop at the library', tag: 'community' },
+      { icon: '🗂️', text: 'Update the neighborhood emergency contact directory', tag: 'comm' },
+      { icon: '🏥', text: 'Take a CERT first-aid refresher and train two friends', tag: 'medical' },
+    ]
+  },
+  {
+    emoji: '🏘️',
+    headline: 'A new family moves onto your street.',
+    context: 'They\'ve never lived in a fire/flood-prone area. What do you do first?',
+    choices: [
+      { icon: '🗺️', text: 'Walk them through the neighborhood evacuation routes personally', tag: 'fire' },
+      { icon: '🤗', text: 'Introduce them to the block captain and PNEC Slack group', tag: 'community' },
+      { icon: '🌊', text: 'Show them the flood zone map and where sandbags are stored', tag: 'flood' },
+      { icon: '☀️', text: 'Share the heat advisory guide and nearest cooling center address', tag: 'heat' },
+    ]
+  }
+];
+
+// ── Role definitions (fallback) ────────────────────────────────────────────
+const ROLES = {
+  fire:      { name: 'Fire Prevention Specialist', emoji: '🔥', tagline: 'You run toward the smoke so others can run away.' },
+  flood:     { name: 'Flood Response Coordinator', emoji: '🌊', tagline: 'Calm under pressure when the water rises.' },
+  heat:      { name: 'Heat Safety Advocate',        emoji: '☀️', tagline: 'You look out for the most vulnerable when it\'s scorching.' },
+  community: { name: 'Community Organizer',          emoji: '🤝', tagline: 'The glue that holds a neighborhood together in crisis.' },
+  comm:      { name: 'Emergency Communications Lead', emoji: '📡', tagline: 'Information is your superpower when chaos hits.' },
+  medical:   { name: 'CERT First Responder',         emoji: '🩺', tagline: 'You stay calm, assess fast, and act when it counts.' },
+};
+
+// ── State ──────────────────────────────────────────────────────────────────
+let current = 0;
+let answers = [];
+
+function startQuiz() {
+  document.getElementById('intro-screen').style.display = 'none';
+  document.getElementById('progress-wrap').style.display = 'block';
+  document.getElementById('scenario-card').style.display = 'block';
+
+  // Build step dots
+  const dotsEl = document.getElementById('step-dots');
+  for (let i = 0; i < SCENARIOS.length; i++) {
+    const d = document.createElement('div');
+    d.className = 'step-dot';
+    d.id = `dot-${i}`;
+    dotsEl.appendChild(d);
+  }
+
+  renderQuestion(0);
+}
+
+function renderQuestion(idx) {
+  const s = SCENARIOS[idx];
+  document.getElementById('q-emoji').textContent = s.emoji;
+  document.getElementById('q-headline').textContent = s.headline;
+  document.getElementById('q-context').textContent = s.context;
+
+  const grid = document.getElementById('choices-grid');
+  grid.innerHTML = '';
+  s.choices.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.innerHTML = `<span class="choice-icon">${c.icon}</span><span class="choice-text">${c.text}</span>`;
+    btn.addEventListener('click', () => pick(c.tag, idx));
+    grid.appendChild(btn);
+  });
+
+  updateProgress(idx);
+}
+
+function updateProgress(idx) {
+  const pct = Math.round((idx / SCENARIOS.length) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = `Question ${idx + 1} of ${SCENARIOS.length}`;
+  document.getElementById('progress-pct').textContent = pct + '%';
+
+  for (let i = 0; i < SCENARIOS.length; i++) {
+    const d = document.getElementById(`dot-${i}`);
+    if (d) {
+      d.className = 'step-dot' + (i < idx ? ' done' : i === idx ? ' active' : '');
+    }
+  }
+}
+
+function pick(tag, idx) {
+  answers.push(tag);
+
+  const card = document.getElementById('scenario-card');
+  card.classList.add('exit');
+
+  setTimeout(() => {
+    card.classList.remove('exit');
+    card.classList.add('enter');
+
+    if (idx + 1 < SCENARIOS.length) {
+      renderQuestion(idx + 1);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => { card.classList.remove('enter'); });
+      });
+    } else {
+      card.classList.remove('enter');
+      showResult();
+    }
+  }, 300);
+}
+
+function topRole(answers) {
+  const tally = {};
+  answers.forEach(a => { tally[a] = (tally[a] || 0) + 1; });
+  return Object.entries(tally).sort((a, b) => b[1] - a[1])[0][0];
+}
+
+async function showResult() {
+  document.getElementById('progress-wrap').style.display = 'none';
+  document.getElementById('scenario-card').style.display = 'none';
+
+  const result = document.getElementById('result-screen');
+  result.style.display = 'block';
+
+  const role = topRole(answers);
+  const r = ROLES[role] || ROLES.community;
+
+  document.getElementById('result-emoji').textContent = r.emoji;
+  document.getElementById('result-role').textContent = r.name;
+  document.getElementById('result-tagline').textContent = r.tagline;
+
+  const descEl = document.getElementById('result-description');
+  descEl.classList.add('loading');
+  descEl.textContent = '';
+
+  // Build a summary of choices for Gemini
+  const choiceSummary = answers.map((tag, i) => {
+    const chosen = SCENARIOS[i].choices.find(c => c.tag === tag);
+    return `Scenario ${i+1}: "${chosen ? chosen.text : tag}"`;
+  }).join('; ');
+
+  const prompt = `You are a Poway Neighborhood Emergency Corps (PNEC) volunteer advisor.
+Based on someone's emergency preparedness quiz choices, write a 3-sentence personalized message telling them why they would be an incredible ${r.name} for their Poway neighborhood.
+Be warm, specific, encouraging, and mention one concrete first step they can take to get involved with PNEC.
+Write in second person ("You..."). Keep it under 80 words. No bullet points.`;
+
+  try {
+    const queryGemini = await _loadQueryGemini();
+    if (!queryGemini) throw new Error('gemini unavailable');
+    const data = await queryGemini({ prompt, text: choiceSummary });
+    descEl.classList.remove('loading');
+    descEl.textContent = data.text || buildFallback(r.name, role);
+  } catch {
+    descEl.classList.remove('loading');
+    descEl.textContent = buildFallback(r.name, role);
+  }
+}
+
+function buildFallback(roleName, roleKey) {
+  const fallbacks = {
+    fire:      `Your instinct to clear danger zones and map evacuation routes makes you exactly the kind of volunteer who saves lives before a fire starts. As a ${roleName}, you'd lead defensible space workshops and neighborhood fire drills. Start by contacting your PNEC block captain to schedule a brush-clearing day on your street.`,
+    flood:     `When water rises, you stay focused and keep others safe — that's rare and valuable. As a ${roleName}, you'd manage sandbag stations and guide neighbors away from danger. Your first step: attend a free PNEC flood preparedness workshop at Poway City Hall.`,
+    heat:      `Your immediate instinct to protect vulnerable neighbors from heat shows deep community care. As a ${roleName}, you'd run wellness check programs and promote cooling centers during heat events. Connect with PNEC today to get on the heat wave volunteer response list.`,
+    community: `You're the neighbor everyone trusts in a crisis — the one who makes sure no one is left behind. As a ${roleName}, you'd build the social fabric that makes PNEC work. Start by introducing yourself to your block captain and joining the neighborhood emergency contact tree.`,
+    comm:      `Your ability to gather information and share it clearly is exactly what a neighborhood needs when everything is chaotic. As an ${roleName}, you'd manage the emergency broadcast tree and coordinate with city officials. Register as a neighborhood radio operator or join PNEC's communications team.`,
+    medical:   `You don't hesitate when someone needs help — you assess, act, and save. As a ${roleName}, you'd be on the front line of every PNEC response. Sign up for the next free CERT training in Poway to get certified and join the first-responder volunteer roster.`,
+  };
+  return fallbacks[roleKey] || fallbacks.community;
+}
+
+function resetQuiz() {
+  current = 0;
+  answers = [];
+  document.getElementById('result-screen').style.display = 'none';
+  document.getElementById('step-dots').innerHTML = '';
+  document.getElementById('intro-screen').style.display = 'block';
+}
+
+window.startQuiz = startQuiz;
+window.resetQuiz = resetQuiz;
+</script>

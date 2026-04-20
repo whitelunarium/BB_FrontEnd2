@@ -68,6 +68,12 @@
         <li class="nav-item">
           <a href="{{ '/pages/contact.html' | relative_url }}" class="nav-link{% if page.url contains '/contact' %} active{% endif %}">Contact</a>
         </li>
+        <li class="nav-item">
+          <a href="{{ '/rpg/latest' | relative_url }}" class="nav-link{% if page.url contains '/rpg' %} active{% endif %}">🎮 Play RPG</a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ '/role-quiz/' | relative_url }}" class="nav-link{% if page.url contains '/role-quiz' %} active{% endif %}">🧭 Find Your Role</a>
+        </li>
         <li class="nav-item" id="navbar-login-item">
           <a href="{{ '/pages/login.html' | relative_url }}" class="nav-link{% if page.url contains '/login' %} active{% endif %}">Login</a>
         </li>
@@ -104,6 +110,8 @@
       <a href="{{ '/pages/statistics.html' | relative_url }}">Statistics &amp; Info</a>
       <a href="{{ '/pages/contact.html' | relative_url }}">Contact</a>
       <a href="{{ '/pages/volunteer.html' | relative_url }}">Volunteer / Apply</a>
+      <a href="{{ '/rpg/latest' | relative_url }}">🎮 Play RPG</a>
+      <a href="{{ '/role-quiz/' | relative_url }}">🧭 Find Your Role</a>
     </li>
     <li class="mobile-nav-section" id="mobile-auth-logged-out">
       <div class="mobile-nav-section-label">Account</div>

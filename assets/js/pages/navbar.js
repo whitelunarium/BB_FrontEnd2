@@ -8,7 +8,17 @@
   bindHamburger();
   bindUserMenuToggle();
   bindLogoutButtons();
+  markDuplicateNavHidden();
 })();
+
+// Marks Elementor mobile nav as aria-hidden when it is visually closed,
+// preventing screen readers from announcing duplicate navigation links.
+function markDuplicateNavHidden() {
+  const dropdownNav = document.querySelector('.elementor-nav-menu--dropdown');
+  if (dropdownNav && !dropdownNav.hasAttribute('aria-hidden')) {
+    dropdownNav.setAttribute('aria-hidden', 'true');
+  }
+}
 
 /**
  * Purpose: Load the current auth state and render the appropriate navbar.

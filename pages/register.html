@@ -300,16 +300,16 @@ page_script_path: /assets/js/pages/register-page.js
             <div id="register-error" class="auth-error-box" role="alert"></div>
             <form id="register-form" novalidate>
               <label for="register-name">Display Name</label>
-              <input id="register-name" type="text" placeholder="e.g. Jane S." autocomplete="nickname" required>
+              <input id="register-name" name="display_name" type="text" placeholder="e.g. Jane S." autocomplete="nickname" required>
 
               <label for="register-email">Email Address</label>
-              <input id="register-email" type="email" placeholder="you@example.com" autocomplete="email" required>
+              <input id="register-email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
 
               <label for="register-password">Password</label>
-              <input id="register-password" type="password" placeholder="At least 8 characters" autocomplete="new-password" required>
+              <input id="register-password" name="password" type="password" placeholder="At least 8 characters" autocomplete="new-password" required>
 
               <label for="register-confirm-password">Confirm Password</label>
-              <input id="register-confirm-password" type="password" placeholder="Re-enter your password" autocomplete="new-password" required>
+              <input id="register-confirm-password" name="confirm_password" type="password" placeholder="Re-enter your password" autocomplete="new-password" required>
 
               <label for="register-neighborhood-select">Neighborhood</label>
               <div class="auth-inline-row">

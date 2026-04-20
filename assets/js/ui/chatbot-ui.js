@@ -357,43 +357,27 @@ function markFeedbackNo() {
 }
 
 // ─── Private helpers ─────────────────────────────────────────────────────────
+// escapeHtml() is provided by assets/js/utils/errors.js (loaded before this file)
 
-/**
- * Purpose: Convert basic markdown to safe HTML for answer display.
- * @param {string} text - Markdown text (bold, paragraphs, bullets)
- * @returns {string} Safe HTML string
- * Algorithm:
- * 1. Escape raw HTML to prevent XSS
- * 2. Convert **bold** → <strong>
- * 3. Convert lines starting with - to list items
- * 4. Wrap double newlines as paragraph breaks
- */
+// Purpose: Convert basic markdown to safe HTML.
+// Splits the text into blocks first so <ul> never nests inside <p>.
 function renderMarkdown(text) {
   if (!text) return '';
-  let html = escapeHtml(text);
-  // Bold
-  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-  // Bullet lists (lines starting with - or *)
-  html = html.replace(/(^|\n)(- .+)/g, (match, newline, item) => `${newline}<li>${item.slice(2)}</li>`);
-  // Wrap list items in ul
-  html = html.replace(/(<li>.*<\/li>(\n|$))+/g, '<ul>$&</ul>');
-  // Paragraphs
-  html = html.replace(/\n{2,}/g, '</p><p>');
-  html = `<p>${html}</p>`;
-  return html;
-}
 
-/**
- * Purpose: Escape HTML special characters to prevent XSS injection.
- * @param {string} str - Raw string to escape
- * @returns {string} HTML-safe string
- */
-function escapeHtml(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+  // Split on blank lines to get blocks
+  const blocks = escapeHtml(text).split(/\n{2,}/);
+
+  return blocks.map(block => {
+    const lines = block.split('\n');
+    const isList = lines.every(l => /^- /.test(l.trim()) || l.trim() === '');
+    if (isList && lines.some(l => /^- /.test(l.trim()))) {
+      const items = lines
+        .filter(l => /^- /.test(l.trim()))
+        .map(l => `<li>${l.trim().slice(2).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</li>`)
+        .join('');
+      return `<ul>${items}</ul>`;
+    }
+    const para = block.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    return `<p>${para}</p>`;
+  }).join('');
 }

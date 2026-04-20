@@ -1,7 +1,8 @@
 ---
-layout: opencs
-title: RPG
+layout: pnec-base
+title: "Emergency Preparedness RPG"
 permalink: /rpg/latest
+use_poway_live_styles: true
 ---
 
 <style>

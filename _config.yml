@@ -72,7 +72,9 @@ defaults:
       type: "pages"
     values:
       layout: "pnec-base"
+      use_poway_live_styles: true
   - scope:
       path: "pages"
     values:
       layout: "pnec-base"
+      use_poway_live_styles: true

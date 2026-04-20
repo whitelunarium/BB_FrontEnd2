@@ -208,6 +208,20 @@ function renderPowayAuthHeader(user) {
     }
     if (loginItemMobile) loginItemMobile.style.display = 'none';
     if (registerItemMobile) registerItemMobile.style.display = 'none';
+
+    // Update homepage personalization bar with resolved location
+    const personalBar = document.getElementById('pnec-personal-bar');
+    const personalName = document.getElementById('pnec-personal-name');
+    const personalNeighborhood = document.getElementById('pnec-personal-neighborhood');
+    if (personalBar) {
+      personalBar.style.display = 'flex';
+      if (personalName) personalName.textContent = displayNameLabel.split(' ')[0];
+      if (personalNeighborhood) {
+        personalNeighborhood.textContent = locationLabel ? '\uD83D\uDCCD ' + locationLabel : '';
+        personalNeighborhood.style.display = locationLabel ? 'inline' : 'none';
+      }
+    }
+
     return;
   }
 
