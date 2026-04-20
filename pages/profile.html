@@ -384,10 +384,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         var apiBase = (typeof API_BASE !== 'undefined' ? API_BASE : 'http://localhost:8425');
+        var token = localStorage.getItem('pnec_token');
+        var headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = 'Bearer ' + token;
         fetch(apiBase + '/api/auth/profile', {
           method: 'PATCH',
           credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
+          headers: headers,
           body: JSON.stringify(payload),
         })
           .then(function(r) {

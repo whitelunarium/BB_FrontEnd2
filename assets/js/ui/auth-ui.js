@@ -180,11 +180,13 @@ function renderPowayAuthHeader(user) {
   const displayLocation = document.getElementById('poway-auth-display-location');
   const loginItem = document.getElementById('poway-auth-login-item');
   const registerItem = document.getElementById('poway-auth-register-item');
+  const logoutItem = document.getElementById('poway-auth-logout-item');
   const displayItemMobile = document.getElementById('poway-auth-display-item-mobile');
   const displayNameMobile = document.getElementById('poway-auth-display-name-mobile');
   const displayLocationMobile = document.getElementById('poway-auth-display-location-mobile');
   const loginItemMobile = document.getElementById('poway-auth-login-item-mobile');
   const registerItemMobile = document.getElementById('poway-auth-register-item-mobile');
+  const logoutItemMobile = document.getElementById('poway-auth-logout-item-mobile');
   const displayNameLabel = getUserDisplayName(user);
   const locationLabel = getUserLocationLabel(user);
 
@@ -199,6 +201,7 @@ function renderPowayAuthHeader(user) {
     }
     if (loginItem) loginItem.style.display = 'none';
     if (registerItem) registerItem.style.display = 'none';
+    if (logoutItem) logoutItem.style.display = 'list-item';
 
     if (displayItemMobile) displayItemMobile.style.display = 'list-item';
     if (displayNameMobile) displayNameMobile.textContent = displayNameLabel;
@@ -208,6 +211,7 @@ function renderPowayAuthHeader(user) {
     }
     if (loginItemMobile) loginItemMobile.style.display = 'none';
     if (registerItemMobile) registerItemMobile.style.display = 'none';
+    if (logoutItemMobile) logoutItemMobile.style.display = 'list-item';
 
     // Update homepage personalization bar with resolved location
     const personalBar = document.getElementById('pnec-personal-bar');
@@ -229,10 +233,19 @@ function renderPowayAuthHeader(user) {
   if (displayLocation) displayLocation.style.display = 'none';
   if (loginItem) loginItem.style.display = 'list-item';
   if (registerItem) registerItem.style.display = 'list-item';
+  if (logoutItem) logoutItem.style.display = 'none';
   if (displayItemMobile) displayItemMobile.style.display = 'none';
   if (displayLocationMobile) displayLocationMobile.style.display = 'none';
   if (loginItemMobile) loginItemMobile.style.display = 'list-item';
   if (registerItemMobile) registerItemMobile.style.display = 'list-item';
+  if (logoutItemMobile) logoutItemMobile.style.display = 'none';
+}
+
+function pnecLogout(e) {
+  if (e) e.preventDefault();
+  logoutUser().finally(function() {
+    window.location.href = (window.siteBase || '') + '/';
+  });
 }
 
 function getUserDisplayName(user) {
