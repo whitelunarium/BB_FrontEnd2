@@ -37,6 +37,9 @@ function initLeafletMap(mapContainerId) {
     maxZoom: 19,
   }).addTo(leafletMap);
 
+  // Force Leaflet to recalculate container size after CSS/layout settles
+  setTimeout(() => leafletMap.invalidateSize(), 150);
+
   return leafletMap;
 }
 
