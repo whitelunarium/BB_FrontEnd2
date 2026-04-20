@@ -5,89 +5,577 @@ description: "Local disaster statistics, PNEC program metrics, and risk context 
 body_class: inner-page
 ---
 
-<div class="page-hero page-hero--navy">
-  <div class="container">
-    <h1>Poway Risk &amp; Preparedness Statistics</h1>
-    <p>Understanding local risk helps our community prepare. Here's what the data shows.</p>
+<style>
+/* ── Stats page design system ──────────────────────────────────────────── */
+.stats-hero {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0a1628 0%, #1a0a0a 50%, #0a1628 100%);
+  padding: 72px 24px 80px;
+  text-align: center;
+}
+.stats-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 0%, rgba(192,57,43,0.22), transparent),
+    radial-gradient(ellipse 50% 60% at 80% 100%, rgba(22,32,53,0.8), transparent);
+  pointer-events: none;
+}
+.stats-hero-inner { position: relative; max-width: 760px; margin: 0 auto; }
+.stats-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: rgba(192,57,43,0.18);
+  border: 1px solid rgba(192,57,43,0.32);
+  color: #e88;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.stats-hero-badge::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #c0392b;
+  box-shadow: 0 0 10px #c0392b;
+  animation: pulse-dot 1.8s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.stats-hero h1 {
+  color: #fff;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 900;
+  margin: 0 0 16px;
+  line-height: 1.1;
+}
+.stats-hero p {
+  color: rgba(255,255,255,0.6);
+  font-size: 1.05rem;
+  margin: 0;
+  max-width: 560px;
+  margin: 0 auto;
+  line-height: 1.65;
+}
+
+/* ── Section containers ─────────────────────────────────────────────────── */
+.stats-page { max-width: 1160px; margin: 0 auto; padding: 0 24px 80px; }
+.stats-section {
+  padding: 64px 0 0;
+}
+.stats-section-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 36px;
+}
+.stats-section-icon {
+  font-size: 2.2rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.stats-section-text h2 {
+  color: #0a1628;
+  font-size: 1.55rem;
+  font-weight: 800;
+  margin: 0 0 6px;
+}
+.stats-section-text p {
+  color: #5a5a5a;
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+/* ── Animated big number cards ──────────────────────────────────────────── */
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  margin-bottom: 20px;
+}
+.stat-card {
+  background: #fff;
+  border: 1px solid #e8e6e1;
+  border-radius: 16px;
+  padding: 28px 24px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  cursor: default;
+}
+.stat-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: 16px 16px 0 0;
+}
+.stat-card--fire::before  { background: linear-gradient(90deg, #c0392b, #e74c3c); }
+.stat-card--flood::before { background: linear-gradient(90deg, #2980b9, #3498db); }
+.stat-card--quake::before { background: linear-gradient(90deg, #8e44ad, #9b59b6); }
+.stat-card--pnec::before  { background: linear-gradient(90deg, #27ae60, #2ecc71); }
+.stat-card--amber::before { background: linear-gradient(90deg, #e67e22, #f39c12); }
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.13);
+}
+.stat-big {
+  display: block;
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #0a1628;
+  line-height: 1;
+  margin-bottom: 8px;
+  transition: all 0.3s ease;
+  font-variant-numeric: tabular-nums;
+}
+.stat-card--fire .stat-big  { color: #c0392b; }
+.stat-card--flood .stat-big { color: #2980b9; }
+.stat-card--quake .stat-big { color: #8e44ad; }
+.stat-card--pnec .stat-big  { color: #27ae60; }
+.stat-card--amber .stat-big { color: #e67e22; }
+
+.stat-caption {
+  color: #5a5a5a;
+  font-size: 0.85rem;
+  line-height: 1.55;
+}
+.stat-source-note {
+  color: #9e9e9e;
+  font-size: 0.78rem;
+  margin-top: 16px;
+  font-style: italic;
+}
+
+/* ── Progress bar visualization ─────────────────────────────────────────── */
+.stat-bar-list { display: grid; gap: 20px; }
+.stat-bar-item {}
+.stat-bar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+.stat-bar-label { font-size: 0.88rem; font-weight: 600; color: #0a1628; }
+.stat-bar-value { font-size: 0.88rem; color: #5a5a5a; }
+.stat-bar-track {
+  height: 10px;
+  background: #f0ede8;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.stat-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  width: 0;
+  transition: width 1.2s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.stat-bar-fill--fire  { background: linear-gradient(90deg, #c0392b, #e74c3c); }
+.stat-bar-fill--amber { background: linear-gradient(90deg, #e67e22, #f39c12); }
+.stat-bar-fill--blue  { background: linear-gradient(90deg, #2980b9, #3498db); }
+.stat-bar-fill--green { background: linear-gradient(90deg, #27ae60, #2ecc71); }
+.stat-bar-fill--purple { background: linear-gradient(90deg, #8e44ad, #9b59b6); }
+
+/* ── Timeline ───────────────────────────────────────────────────────────── */
+.timeline { position: relative; padding-left: 32px; }
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: linear-gradient(to bottom, #c0392b 0%, #e67e22 50%, #2980b9 100%);
+  border-radius: 2px;
+}
+.timeline-item {
+  position: relative;
+  margin-bottom: 28px;
+  opacity: 0;
+  transform: translateX(-12px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.timeline-item.in-view {
+  opacity: 1;
+  transform: translateX(0);
+}
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  left: -27px;
+  top: 6px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px #c0392b;
+  background: #c0392b;
+}
+.timeline-year {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #c0392b;
+  margin-bottom: 4px;
+}
+.timeline-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0a1628;
+  margin-bottom: 4px;
+}
+.timeline-detail {
+  font-size: 0.85rem;
+  color: #5a5a5a;
+  line-height: 1.55;
+}
+
+/* ── Two-column layout ──────────────────────────────────────────────────── */
+.stats-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+/* ── Dark callout ───────────────────────────────────────────────────────── */
+.stats-callout {
+  background: #0a1628;
+  border-radius: 20px;
+  padding: 36px 32px;
+  margin-top: 64px;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+.stats-callout-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.stats-callout h4 {
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+.stats-callout p {
+  color: rgba(255,255,255,0.6);
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+.stats-callout a {
+  color: #e88;
+  text-decoration: underline;
+}
+
+/* ── Divider ────────────────────────────────────────────────────────────── */
+.stats-divider {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #e8e6e1, transparent);
+  margin: 56px 0 0;
+}
+
+/* ── Fade-in animation ──────────────────────────────────────────────────── */
+.fade-in-up {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.fade-in-up.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (max-width: 700px) {
+  .stats-split { grid-template-columns: 1fr; }
+}
+</style>
+
+<!-- ── Hero ────────────────────────────────────────────────────────────── -->
+<div class="stats-hero">
+  <div class="stats-hero-inner">
+    <div class="stats-hero-badge">Live Data</div>
+    <h1>Poway Risk &amp; Preparedness</h1>
+    <p>Understanding local risk helps our community prepare. Here's what the numbers show about Poway's exposure to fire, earthquake, and flood hazards.</p>
   </div>
 </div>
 
-<div class="container section">
+<div class="stats-page">
 
-  <div class="stat-section">
-    <h2>🔥 Wildfire Risk in Poway</h2>
-    <div class="stats-grid">
-      <div class="stat-item">
-        <span class="stat-big">High</span>
-        <span class="stat-caption">CAL FIRE Hazard Severity Zone designation for most of Poway</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-big">2007</span>
-        <span class="stat-caption">Witch Creek Fire destroyed 1,100+ homes in Poway and nearby areas</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-big">60+</span>
-        <span class="stat-caption">Neighborhoods in Poway that need a trained Emergency Coordinator</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-big">72 hrs</span>
-        <span class="stat-caption">FEMA recommendation for household self-sufficiency after a major disaster</span>
+  <!-- ── Wildfire ─────────────────────────────────────────────────────── -->
+  <div class="stats-section fade-in-up">
+    <div class="stats-section-header">
+      <div class="stats-section-icon">🔥</div>
+      <div class="stats-section-text">
+        <h2>Wildfire Risk in Poway</h2>
+        <p>Poway sits in one of California's highest fire-risk zones. CAL FIRE designates most of the city as Very High Fire Hazard Severity, reflecting the region's dry brush, steep terrain, and Santa Ana winds.</p>
       </div>
     </div>
-    <p class="stat-note">Source: CAL FIRE, FEMA, San Diego County OES. Data updated 2024.</p>
+
+    <div class="stats-split">
+      <div>
+        <div class="stat-cards" style="grid-template-columns: 1fr 1fr;">
+          <div class="stat-card stat-card--fire">
+            <span class="stat-big count-up" data-target="90">0</span>
+            <span class="stat-caption">homes destroyed in Poway during the 2007 Witch Creek Fire</span>
+          </div>
+          <div class="stat-card stat-card--fire">
+            <span class="stat-big count-up" data-target="7247">0</span>
+            <span class="stat-caption">acres burned in Poway by Witch Creek (2007)</span>
+          </div>
+          <div class="stat-card stat-card--fire">
+            <span class="stat-big count-up" data-target="53">0</span>
+            <span class="stat-caption">residential units destroyed in Poway during 2003 Cedar Fire</span>
+          </div>
+          <div class="stat-card stat-card--fire">
+            <span class="stat-big">72 hrs</span>
+            <span class="stat-caption">FEMA recommended household self-sufficiency window after a major disaster</span>
+          </div>
+        </div>
+        <p class="stat-source-note">Source: PNEC historical records, CAL FIRE, FEMA. Data updated 2024.</p>
+      </div>
+
+      <div>
+        <p style="font-size:0.9rem;font-weight:700;color:#0a1628;margin:0 0 16px;">Recent incidents — Poway area</p>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-year">May 2025</div>
+            <div class="timeline-title">Springhurst Fire</div>
+            <div class="timeline-detail">~3–4 acres burned near Poway Road and Springhurst Drive. Evacuations along Cobblestone Creek Road; forward progress stopped the same evening. No home losses reported.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-year">Jan 2025</div>
+            <div class="timeline-title">Ted Williams Fire</div>
+            <div class="timeline-detail">~3 acres near Ted Williams Parkway and Pomerado Road. Temporary evacuation warnings; stopped by 3 p.m. No injuries or structural damage reported.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-year">Oct 2007</div>
+            <div class="timeline-title">Witch Creek Fire</div>
+            <div class="timeline-detail">7,247 acres and 90 homes destroyed within the City of Poway. Major infrastructure impact across the region.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-year">Oct 2003</div>
+            <div class="timeline-title">Cedar Fire</div>
+            <div class="timeline-detail">53 residential units and one business lost in Poway. ~7,000 acres burned in the city.</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <hr class="section-divider">
+  <hr class="stats-divider">
 
-  <div class="stat-section">
-    <h2>🌍 Earthquake Context</h2>
-    <div class="stats-grid">
-      <div class="stat-item">
-        <span class="stat-big">Rose Canyon</span>
-        <span class="stat-caption">Active fault system running through San Diego County, capable of M6.9+</span>
+  <!-- ── Earthquake ───────────────────────────────────────────────────── -->
+  <div class="stats-section fade-in-up">
+    <div class="stats-section-header">
+      <div class="stats-section-icon">🌍</div>
+      <div class="stats-section-text">
+        <h2>Earthquake Hazard</h2>
+        <p>San Diego County sits near several active fault systems. While less frequent than wildfires, a major rupture could affect hundreds of thousands of residents simultaneously.</p>
       </div>
-      <div class="stat-item">
-        <span class="stat-big">~200</span>
-        <span class="stat-caption">Minor earthquakes felt in San Diego County each year</span>
+    </div>
+
+    <div class="stat-cards">
+      <div class="stat-card stat-card--quake">
+        <span class="stat-big">M6.9+</span>
+        <span class="stat-caption">Estimated maximum magnitude for the Rose Canyon fault running through San Diego County</span>
       </div>
-      <div class="stat-item">
+      <div class="stat-card stat-card--quake">
+        <span class="stat-big count-up" data-target="200">0</span>
+        <span class="stat-caption">minor earthquakes felt in San Diego County each year on average</span>
+      </div>
+      <div class="stat-card stat-card--quake">
         <span class="stat-big">M5.1</span>
-        <span class="stat-caption">Largest recent earthquake near Poway (Anza area, 2020)</span>
+        <span class="stat-caption">Largest recent earthquake felt near Poway — Anza area, 2020</span>
       </div>
     </div>
-    <p class="stat-note">Source: USGS, Southern California Seismic Network. Data updated 2024.</p>
+
+    <div class="stat-bar-list" style="max-width: 520px; margin-top: 28px;">
+      <div class="stat-bar-item">
+        <div class="stat-bar-header">
+          <span class="stat-bar-label">Shaking Hazard Level (PGA, 2% in 50 yr)</span>
+          <span class="stat-bar-value">Moderate-High</span>
+        </div>
+        <div class="stat-bar-track"><div class="stat-bar-fill stat-bar-fill--purple" data-width="68"></div></div>
+      </div>
+      <div class="stat-bar-item">
+        <div class="stat-bar-header">
+          <span class="stat-bar-label">Likelihood within 50 years (M6.7+)</span>
+          <span class="stat-bar-value">~60%</span>
+        </div>
+        <div class="stat-bar-track"><div class="stat-bar-fill stat-bar-fill--purple" data-width="60"></div></div>
+      </div>
+      <div class="stat-bar-item">
+        <div class="stat-bar-header">
+          <span class="stat-bar-label">Liquefaction Risk in Poway</span>
+          <span class="stat-bar-value">Low</span>
+        </div>
+        <div class="stat-bar-track"><div class="stat-bar-fill stat-bar-fill--green" data-width="15"></div></div>
+      </div>
+    </div>
+    <p class="stat-source-note">Source: USGS National Seismic Hazard Maps, Southern California Seismic Network. Data updated 2024.</p>
   </div>
 
-  <hr class="section-divider">
+  <hr class="stats-divider">
 
-  <div class="stat-section">
-    <h2>🏘️ PNEC Program Metrics</h2>
-    <div class="stats-grid">
-      <div class="stat-item">
+  <!-- ── Flood ────────────────────────────────────────────────────────── -->
+  <div class="stats-section fade-in-up">
+    <div class="stats-section-header">
+      <div class="stats-section-icon">🌊</div>
+      <div class="stats-section-text">
+        <h2>Flood &amp; Heat Risk</h2>
+        <p>Poway's canyon geography creates localized flash flood risk during heavy rain events. Extreme heat episodes are also increasing in frequency across inland San Diego County.</p>
+      </div>
+    </div>
+
+    <div class="stat-cards">
+      <div class="stat-card stat-card--flood">
+        <span class="stat-big">Zone X</span>
+        <span class="stat-caption">FEMA flood map designation for most of Poway — moderate to low risk, but flash flooding can occur outside mapped zones</span>
+      </div>
+      <div class="stat-card stat-card--amber">
+        <span class="stat-big">110°F+</span>
+        <span class="stat-caption">Peak heat recorded in Poway area during recent inland heat events</span>
+      </div>
+      <div class="stat-card stat-card--flood">
+        <span class="stat-big">15–40 min</span>
+        <span class="stat-caption">Flash flood warning lead time — far shorter than wildfire evacuation windows</span>
+      </div>
+    </div>
+
+    <div class="stat-bar-list" style="max-width: 520px; margin-top: 28px;">
+      <div class="stat-bar-item">
+        <div class="stat-bar-header">
+          <span class="stat-bar-label">Flash Flood Susceptibility</span>
+          <span class="stat-bar-value">Moderate</span>
+        </div>
+        <div class="stat-bar-track"><div class="stat-bar-fill stat-bar-fill--blue" data-width="42"></div></div>
+      </div>
+      <div class="stat-bar-item">
+        <div class="stat-bar-header">
+          <span class="stat-bar-label">Days above 95°F per year (trend)</span>
+          <span class="stat-bar-value">Increasing</span>
+        </div>
+        <div class="stat-bar-track"><div class="stat-bar-fill stat-bar-fill--amber" data-width="55"></div></div>
+      </div>
+    </div>
+    <p class="stat-source-note">Source: FEMA Flood Map Service Center, NOAA. Data updated 2024.</p>
+  </div>
+
+  <hr class="stats-divider">
+
+  <!-- ── PNEC Program Metrics ─────────────────────────────────────────── -->
+  <div class="stats-section fade-in-up">
+    <div class="stats-section-header">
+      <div class="stats-section-icon">🏘️</div>
+      <div class="stats-section-text">
+        <h2>PNEC by the Numbers</h2>
+        <p>Since 1995, PNEC has worked to build a neighbor-to-neighbor safety net across Poway. These numbers reflect the reach of that mission.</p>
+      </div>
+    </div>
+
+    <div class="stat-cards">
+      <div class="stat-card stat-card--pnec">
         <span class="stat-big">1995</span>
         <span class="stat-caption">Year PNEC was founded as a neighbor-to-neighbor preparedness organization</span>
       </div>
-      <div class="stat-item">
-        <span class="stat-big">500+</span>
-        <span class="stat-caption">Trained volunteers and household members reached through PNEC programs</span>
+      <div class="stat-card stat-card--pnec">
+        <span class="stat-big">2018</span>
+        <span class="stat-caption">Year PNEC achieved 501(c)(3) nonprofit status</span>
       </div>
-      <div class="stat-item">
-        <span class="stat-big">60+</span>
-        <span class="stat-caption">Poway neighborhoods covered by PNEC's coordinator network</span>
+      <div class="stat-card stat-card--pnec">
+        <span class="stat-big count-up" data-target="500">0</span>
+        <span class="stat-caption">Volunteers and household members reached through PNEC training programs</span>
       </div>
-      <div class="stat-item">
+      <div class="stat-card stat-card--pnec">
+        <span class="stat-big count-up" data-target="60">0</span>
+        <span class="stat-caption">Poway neighborhoods in the PNEC coordinator network</span>
+      </div>
+      <div class="stat-card stat-card--pnec">
         <span class="stat-big">PACT</span>
-        <span class="stat-caption">Licensed ham radio team providing backup communications when infrastructure fails</span>
+        <span class="stat-caption">Licensed ham radio team providing backup communications when cell infrastructure fails</span>
+      </div>
+      <div class="stat-card stat-card--amber">
+        <span class="stat-big">100%</span>
+        <span class="stat-caption">Volunteer-run organization — every PNEC program is powered by community members</span>
       </div>
     </div>
   </div>
 
-  <div class="callout-box">
-    <div class="callout-icon">💡</div>
+  <!-- ── Callout ──────────────────────────────────────────────────────── -->
+  <div class="stats-callout fade-in-up">
+    <div class="stats-callout-icon">🛰️</div>
     <div>
-      <h4>Want real-time conditions?</h4>
-      <p>Our <a href="{{ '/' | relative_url }}">homepage risk widget</a> shows live fire, flood, and heat risk scores for Poway — updated every 30 minutes from weather data.</p>
+      <h4>See Poway's live risk right now</h4>
+      <p>Our <a href="{{ '/' | relative_url }}#risk-widget">homepage risk widget</a> pulls live weather data to show current fire, flood, and heat risk scores — updated every 30 minutes. When conditions are elevated, you'll see it there first.</p>
     </div>
   </div>
 
 </div>
+
+<script>
+(function() {
+  function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+
+  function animateCount(el) {
+    const target = parseInt(el.dataset.target, 10);
+    const duration = 1400;
+    const start = performance.now();
+    function step(now) {
+      const elapsed = Math.min(now - start, duration);
+      const val = Math.round(easeOut(elapsed / duration) * target);
+      el.textContent = val.toLocaleString();
+      if (elapsed < duration) requestAnimationFrame(step);
+      else el.textContent = target.toLocaleString();
+    }
+    requestAnimationFrame(step);
+  }
+
+  function animateBars() {
+    document.querySelectorAll('.stat-bar-fill[data-width]').forEach(function(bar) {
+      bar.style.width = bar.dataset.width + '%';
+    });
+  }
+
+  var io = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (!entry.isIntersecting) return;
+      var el = entry.target;
+
+      if (el.classList.contains('fade-in-up') || el.classList.contains('timeline-item')) {
+        el.classList.add('in-view');
+      }
+      if (el.classList.contains('count-up')) {
+        animateCount(el);
+      }
+      if (el.classList.contains('stats-split') || el.closest('.stats-split')) {
+        animateBars();
+      }
+      io.unobserve(el);
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.fade-in-up').forEach(function(el) { io.observe(el); });
+  document.querySelectorAll('.timeline-item').forEach(function(el) { io.observe(el); });
+  document.querySelectorAll('.count-up').forEach(function(el) { io.observe(el); });
+  document.querySelectorAll('.stat-bar-fill[data-width]').forEach(function(el) { io.observe(el); });
+})();
+</script>

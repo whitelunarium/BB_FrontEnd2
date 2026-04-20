@@ -1,0 +1,251 @@
+---
+layout: pnec-base
+title: "Welcome to PNEC"
+description: "Get started with your new PNEC account."
+body_class: inner-page
+---
+
+<style>
+/* ── Onboarding tour ─────────────────────────────────────────────────────── */
+.onboard-shell {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px 80px;
+}
+.onboard-card {
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 16px 60px rgba(10,22,40,0.14);
+  max-width: 560px;
+  width: 100%;
+  overflow: hidden;
+}
+.onboard-progress-bar {
+  height: 5px;
+  background: #f0ede8;
+}
+.onboard-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #0a1628, #c0392b);
+  border-radius: 0 3px 3px 0;
+  transition: width 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.onboard-body { padding: 40px; }
+.onboard-step { display: none; }
+.onboard-step.active { display: block; }
+
+.onboard-icon {
+  font-size: 3rem;
+  margin-bottom: 18px;
+  line-height: 1;
+}
+.onboard-step h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0a1628;
+  margin: 0 0 10px;
+  line-height: 1.2;
+}
+.onboard-step p {
+  color: #5a5a5a;
+  font-size: 0.92rem;
+  line-height: 1.65;
+  margin: 0 0 14px;
+}
+.onboard-step ul {
+  margin: 0 0 14px;
+  padding-left: 20px;
+}
+.onboard-step ul li {
+  color: #5a5a5a;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  margin-bottom: 6px;
+}
+.onboard-step ul li strong { color: #0a1628; }
+
+.onboard-highlight-box {
+  background: #f6f3ed;
+  border-left: 4px solid #c0392b;
+  border-radius: 0 12px 12px 0;
+  padding: 14px 16px;
+  margin: 16px 0;
+}
+.onboard-highlight-box p {
+  margin: 0;
+  font-size: 0.88rem;
+  font-style: italic;
+}
+
+.onboard-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 40px 32px;
+  gap: 12px;
+}
+.onboard-step-indicator {
+  font-size: 0.78rem;
+  color: #9e9e9e;
+  font-weight: 600;
+}
+.onboard-btns { display: flex; gap: 10px; }
+.onboard-btn-next {
+  background: #0a1628;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 11px 24px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.onboard-btn-next:hover { background: #c0392b; }
+.onboard-btn-skip {
+  background: none;
+  border: none;
+  color: #9e9e9e;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 11px 8px;
+}
+.onboard-btn-skip:hover { color: #0a1628; }
+</style>
+
+<div class="onboard-shell">
+  <div class="onboard-card">
+    <div class="onboard-progress-bar">
+      <div class="onboard-progress-fill" id="onboard-progress" style="width:14%"></div>
+    </div>
+
+    <div class="onboard-body">
+      <!-- Step 1: Welcome -->
+      <div class="onboard-step active" id="step-1">
+        <div class="onboard-icon">👋</div>
+        <h2>Welcome to PNEC<span id="onboard-name-suffix"></span>!</h2>
+        <p>You've just joined the Poway Neighborhood Emergency Corps community. This takes about 60 seconds — let's show you what's here.</p>
+        <div class="onboard-highlight-box">
+          <p>PNEC is an all-volunteer nonprofit that helps Poway residents prepare for wildfires, earthquakes, and floods. Your account unlocks personalized tools.</p>
+        </div>
+      </div>
+
+      <!-- Step 2: Risk Widget -->
+      <div class="onboard-step" id="step-2">
+        <div class="onboard-icon">🛰️</div>
+        <h2>Live Risk Watch</h2>
+        <p>The homepage shows a <strong>live risk panel</strong> that updates every 30 minutes with real weather data. You'll see scores for:</p>
+        <ul>
+          <li><strong>Wildfire risk</strong> — based on temperature, humidity, wind</li>
+          <li><strong>Flood risk</strong> — based on recent rainfall and saturation</li>
+          <li><strong>Heat risk</strong> — based on current heat index</li>
+        </ul>
+        <p>When risk is elevated, prepare early. Don't wait for an official alert.</p>
+      </div>
+
+      <!-- Step 3: Neighborhood -->
+      <div class="onboard-step" id="step-3">
+        <div class="onboard-icon">🏘️</div>
+        <h2>Your Neighborhood</h2>
+        <p>Each Poway neighborhood has a trained <strong>Emergency Coordinator</strong> — a volunteer who connects you to local preparedness activities and resources.</p>
+        <p>If you didn't set your neighborhood during registration, you can update it anytime on your <a href="{{ '/pages/profile.html' | relative_url }}" style="color:#c0392b;">profile page</a>.</p>
+        <div class="onboard-highlight-box">
+          <p>60+ Poway neighborhoods are in the PNEC network. Finding yours connects you to the right local resources.</p>
+        </div>
+      </div>
+
+      <!-- Step 4: PNEC Helper -->
+      <div class="onboard-step" id="step-4">
+        <div class="onboard-icon">💬</div>
+        <h2>PNEC Helper Chatbot</h2>
+        <p>See the chat bubble in the bottom-right corner of every page? That's the <strong>PNEC Helper</strong> — an AI assistant trained on PNEC's preparedness resources.</p>
+        <ul>
+          <li>Ask about emergency kits, evacuation routes, or wildfire history</li>
+          <li>Get instant answers from PNEC's FAQ database</li>
+          <li>If it can't help, send a direct question to PNEC staff</li>
+        </ul>
+      </div>
+
+      <!-- Step 5: Games -->
+      <div class="onboard-step" id="step-5">
+        <div class="onboard-icon">🎮</div>
+        <h2>Train Through Play</h2>
+        <p>PNEC has interactive training games built on real preparedness guidelines:</p>
+        <ul>
+          <li><strong>Preparedness Challenge</strong> — quiz your emergency knowledge</li>
+          <li><strong>Escape Room RPG</strong> — navigate a simulated disaster scenario</li>
+          <li><strong>Emergency RPG</strong> — explore Poway neighborhoods and talk to AI-powered NPCs about disaster prep</li>
+        </ul>
+        <p>Games are free and open to all residents.</p>
+      </div>
+
+      <!-- Step 6: Done -->
+      <div class="onboard-step" id="step-6">
+        <div class="onboard-icon">✅</div>
+        <h2>You're all set!</h2>
+        <p>Here's what to do next:</p>
+        <ul>
+          <li>Check the <strong>live risk panel</strong> on the homepage</li>
+          <li>Visit <a href="{{ '/pages/programs.html' | relative_url }}" style="color:#c0392b;">Programs &amp; Services</a> to explore CERT training and volunteering</li>
+          <li>Complete your <a href="{{ '/pages/profile.html' | relative_url }}" style="color:#c0392b;">profile</a> with a bio and photo</li>
+          <li>Try the <a href="{{ '/pages/game.html' | relative_url }}" style="color:#c0392b;">Preparedness Challenge</a> game</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="onboard-footer">
+      <span class="onboard-step-indicator" id="onboard-step-label">Step 1 of 6</span>
+      <div class="onboard-btns">
+        <button class="onboard-btn-skip" id="onboard-skip">Skip tour</button>
+        <button class="onboard-btn-next" id="onboard-next">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var siteBase = window.PNEC_SITE_BASE || (window.location.pathname.startsWith('/Beasts_FrontEnd') ? '/Beasts_FrontEnd' : '');
+  var totalSteps = 6;
+  var currentStep = 1;
+
+  // Personalize with user name
+  try {
+    var raw = localStorage.getItem('pnec_user') || sessionStorage.getItem('pnec_user');
+    var user = raw ? JSON.parse(raw) : null;
+    if (user && user.display_name) {
+      var suffix = document.getElementById('onboard-name-suffix');
+      if (suffix) suffix.textContent = ', ' + user.display_name.split(' ')[0];
+    }
+  } catch (_) {}
+
+  function goToStep(n) {
+    if (n < 1) n = 1;
+    if (n > totalSteps) {
+      finish();
+      return;
+    }
+    document.getElementById('step-' + currentStep).classList.remove('active');
+    currentStep = n;
+    document.getElementById('step-' + currentStep).classList.add('active');
+    document.getElementById('onboard-progress').style.width = Math.round((currentStep / totalSteps) * 100) + '%';
+    document.getElementById('onboard-step-label').textContent = 'Step ' + currentStep + ' of ' + totalSteps;
+    var nextBtn = document.getElementById('onboard-next');
+    if (nextBtn) nextBtn.textContent = currentStep === totalSteps ? 'Go to homepage →' : 'Next →';
+  }
+
+  function finish() {
+    localStorage.removeItem('pnec_new_user');
+    window.location.href = siteBase + '/';
+  }
+
+  document.getElementById('onboard-next').addEventListener('click', function() {
+    goToStep(currentStep + 1);
+  });
+  document.getElementById('onboard-skip').addEventListener('click', function() {
+    finish();
+  });
+})();
+</script>

@@ -44,9 +44,11 @@ function loadAuthState() {
         sessionStorage.removeItem('pnec_user');
         renderNavbarLoggedIn(user);
         if (typeof renderPowayAuthHeader === 'function') renderPowayAuthHeader(user);
-      } else {
-        localStorage.removeItem('pnec_user');
-        sessionStorage.removeItem('pnec_user');
+      } else if (!cachedUser) {
+        // Only show logged-out state if there's also no cached user.
+        // If there IS a cached user but the server returned null (e.g. session
+        // cookie expired), keep showing the logged-in navbar — explicit logout
+        // is the only action that should clear the cache and flip to logged-out.
         renderNavbarLoggedOut();
         if (typeof renderPowayAuthHeader === 'function') renderPowayAuthHeader(null);
       }

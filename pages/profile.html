@@ -5,60 +5,412 @@ description: "Manage your PNEC account."
 body_class: inner-page
 ---
 
-<div class="container section">
+<style>
+.profile-page { max-width: 740px; margin: 0 auto; padding: 48px 24px 80px; }
+
+/* ── Avatar ─────────────────────────────────────────────────────────────── */
+.profile-avatar-wrap {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+}
+.profile-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0a1628 0%, #c0392b 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #fff;
+  text-transform: uppercase;
+  overflow: hidden;
+}
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.avatar-change-btn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #0a1628;
+  border: 2px solid #fff;
+  color: #fff;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.avatar-change-btn:hover { background: #c0392b; }
+
+/* ── Profile header card ─────────────────────────────────────────────────── */
+.profile-card {
+  background: #fff;
+  border: 1px solid #e8e6e1;
+  border-radius: 20px;
+  padding: 32px;
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.profile-meta {}
+.profile-name {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #0a1628;
+  margin: 0 0 4px;
+}
+.profile-email {
+  color: #5a5a5a;
+  font-size: 0.9rem;
+  margin: 0 0 8px;
+}
+.profile-bio-display {
+  color: #5a5a5a;
+  font-size: 0.88rem;
+  margin: 0 0 8px;
+  font-style: italic;
+}
+.profile-joined {
+  color: #9e9e9e;
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+/* ── Edit form ────────────────────────────────────────────────────────────── */
+.profile-edit-section {
+  background: #fff;
+  border: 1px solid #e8e6e1;
+  border-radius: 20px;
+  padding: 28px 32px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.profile-edit-section h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0a1628;
+  margin: 0 0 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #f0ede8;
+}
+.form-field { margin-bottom: 18px; }
+.form-field label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #0a1628;
+  margin-bottom: 6px;
+}
+.form-field input,
+.form-field textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #d8d5d0;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  color: #0a1628;
+  background: #fafaf8;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+.form-field input:focus,
+.form-field textarea:focus {
+  outline: none;
+  border-color: #0a1628;
+  background: #fff;
+}
+.form-field textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+.form-field small {
+  display: block;
+  margin-top: 5px;
+  color: #9e9e9e;
+  font-size: 0.77rem;
+}
+.profile-save-btn {
+  background: #0a1628;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 11px 24px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.profile-save-btn:hover { background: #c0392b; }
+.profile-save-btn:disabled { background: #9e9e9e; cursor: not-allowed; }
+.profile-success { color: #27ae60; font-size: 0.85rem; margin-top: 12px; display: none; }
+.profile-error   { color: #c0392b; font-size: 0.85rem; margin-top: 12px; display: none; }
+
+/* ── Avatar URL modal ────────────────────────────────────────────────────── */
+.avatar-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+}
+.avatar-modal-overlay.open { display: flex; }
+.avatar-modal {
+  background: #fff;
+  border-radius: 20px;
+  padding: 28px;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.avatar-modal h4 { font-size: 1rem; font-weight: 700; margin: 0 0 16px; }
+.avatar-modal input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #d8d5d0;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  box-sizing: border-box;
+  margin-bottom: 12px;
+}
+.avatar-modal-btns { display: flex; gap: 10px; }
+.btn-modal-save, .btn-modal-cancel {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-modal-save { background: #0a1628; color: #fff; }
+.btn-modal-cancel { background: #f0ede8; color: #0a1628; }
+
+.spinner-sm {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<!-- Avatar URL modal -->
+<div class="avatar-modal-overlay" id="avatar-modal-overlay">
+  <div class="avatar-modal">
+    <h4>Change Profile Picture</h4>
+    <p style="font-size:0.85rem;color:#5a5a5a;margin:0 0 12px">Paste a URL to any image (HTTPS required).</p>
+    <input type="url" id="avatar-url-input" placeholder="https://example.com/my-photo.jpg">
+    <div class="avatar-modal-btns">
+      <button class="btn-modal-cancel" id="avatar-modal-cancel">Cancel</button>
+      <button class="btn-modal-save" id="avatar-modal-save">Apply</button>
+    </div>
+  </div>
+</div>
+
+<div class="profile-page">
   <div id="profile-content">
-    <div class="loading-overlay" style="position:relative;height:200px;">
+    <div style="display:flex;align-items:center;justify-content:center;height:180px;">
       <span class="spinner"></span>
     </div>
   </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+(function() {
   var siteBase = window.PNEC_SITE_BASE || (window.location.pathname.startsWith('/Beasts_FrontEnd') ? '/Beasts_FrontEnd' : '');
   var container = document.getElementById('profile-content');
+  var pendingAvatarUrl = null;
 
+  // Show cached user immediately
+  var cachedUser = null;
+  try {
+    var raw = localStorage.getItem('pnec_user') || sessionStorage.getItem('pnec_user');
+    cachedUser = raw ? JSON.parse(raw) : null;
+  } catch (_) {}
+  if (cachedUser) renderProfile(cachedUser);
+
+  // Verify and refresh from server
   fetchCurrentUser()
     .then(function(user) {
-      if (!user) {
+      if (user) {
+        localStorage.setItem('pnec_user', JSON.stringify(user));
+        renderProfile(user);
+      } else if (!cachedUser) {
         window.location.href = siteBase + '/pages/login.html?next=' + encodeURIComponent(siteBase + '/pages/profile.html');
-        return;
       }
-      renderProfile(user, container);
     })
     .catch(function() {
-      container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><h3>Unable to load profile</h3><p>Please <a href="' + siteBase + '/pages/login.html">sign in</a> to view your profile.</p></div>';
+      if (!cachedUser) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><h3>Unable to load profile</h3><p>Please <a href="' + siteBase + '/pages/login.html">sign in</a>.</p></div>';
+      }
     });
-});
 
-function renderProfile(user, container) {
-  var roleBadgeHtml = '';
-  var roleLabels = { coordinator: 'Coordinator', staff: 'Staff', admin: 'Admin' };
-  var roleClasses = { coordinator: 'badge-coordinator', staff: 'badge-staff', admin: 'badge-admin' };
-  if (user.role && user.role !== 'resident') {
-    roleBadgeHtml = '<span class="badge ' + (roleClasses[user.role] || '') + '">' + (roleLabels[user.role] || user.role) + '</span>';
+  function renderProfile(user) {
+    var roleLabels = { coordinator: 'Coordinator', staff: 'Staff', admin: 'Admin' };
+    var roleClasses = { coordinator: 'badge-coordinator', staff: 'badge-staff', admin: 'badge-admin' };
+    var roleBadge = (user.role && user.role !== 'resident')
+      ? '<span class="badge ' + (roleClasses[user.role] || '') + '">' + (roleLabels[user.role] || user.role) + '</span>'
+      : '';
+
+    var joined = user.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : '';
+
+    var avatarHtml = user.avatar_url
+      ? '<img src="' + escapeHtml(user.avatar_url) + '" alt="Profile photo" onerror="this.style.display=\'none\';this.parentNode.dataset.initials=\'true\';">'
+      : escapeHtml(getInitials(user.display_name));
+
+    container.innerHTML =
+      '<div class="profile-card">' +
+        '<div class="profile-avatar-wrap">' +
+          '<div class="profile-avatar" id="profile-avatar-display">' + avatarHtml + '</div>' +
+          '<button class="avatar-change-btn" id="avatar-change-btn" title="Change photo" aria-label="Change profile picture">✎</button>' +
+        '</div>' +
+        '<div class="profile-meta">' +
+          '<h1 class="profile-name">' + escapeHtml(user.display_name) + ' ' + roleBadge + '</h1>' +
+          '<p class="profile-email">' + escapeHtml(user.email) + '</p>' +
+          (user.bio ? '<p class="profile-bio-display">' + escapeHtml(user.bio) + '</p>' : '') +
+          (joined ? '<p class="profile-joined">Member since ' + joined + '</p>' : '') +
+        '</div>' +
+      '</div>' +
+
+      '<div class="profile-edit-section">' +
+        '<h3>Edit Profile</h3>' +
+        '<div class="form-field">' +
+          '<label for="edit-display-name">Display Name</label>' +
+          '<input type="text" id="edit-display-name" value="' + escapeHtml(user.display_name) + '" maxlength="100">' +
+        '</div>' +
+        '<div class="form-field">' +
+          '<label for="edit-bio">Bio</label>' +
+          '<textarea id="edit-bio" maxlength="500" placeholder="Tell your neighbors a bit about yourself...">' + escapeHtml(user.bio || '') + '</textarea>' +
+          '<small>Max 500 characters</small>' +
+        '</div>' +
+        '<div class="form-field">' +
+          '<label for="edit-phone">Phone <span style="font-weight:400;color:#9e9e9e">(optional)</span></label>' +
+          '<input type="tel" id="edit-phone" value="' + escapeHtml(user.phone || '') + '" placeholder="+1 (555) 000-0000" maxlength="20">' +
+        '</div>' +
+        '<button class="profile-save-btn" id="profile-save-btn">Save Changes</button>' +
+        '<div class="profile-success" id="profile-success">✓ Profile updated successfully.</div>' +
+        '<div class="profile-error" id="profile-error"></div>' +
+      '</div>' +
+
+      '<div style="margin-top:8px;">' +
+        '<a href="' + siteBase + '/" class="btn btn-outline">← Back to Home</a>' +
+      '</div>';
+
+    bindProfileActions(user);
   }
 
-  var joined = user.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : '';
+  function bindProfileActions(user) {
+    // Save button
+    var saveBtn = document.getElementById('profile-save-btn');
+    var successEl = document.getElementById('profile-success');
+    var errorEl = document.getElementById('profile-error');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', function() {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner-sm"></span>Saving…';
+        successEl.style.display = 'none';
+        errorEl.style.display = 'none';
 
-  container.innerHTML =
-    '<div class="profile-card">' +
-      '<div class="profile-avatar" aria-hidden="true">' + getInitials(user.display_name) + '</div>' +
-      '<div class="profile-info">' +
-        '<h1 class="profile-name">' + escapeHtml(user.display_name) + ' ' + roleBadgeHtml + '</h1>' +
-        '<p class="profile-email">' + escapeHtml(user.email) + '</p>' +
-        (joined ? '<p class="profile-joined">Member since ' + joined + '</p>' : '') +
-      '</div>' +
-    '</div>' +
-    '<div class="profile-actions">' +
-      '<a href="' + (window.PNEC_SITE_BASE || '') + '/" class="btn btn-outline">← Back to Home</a>' +
-    '</div>';
-}
+        var payload = {
+          display_name: document.getElementById('edit-display-name').value.trim(),
+          bio: document.getElementById('edit-bio').value.trim() || null,
+          phone: document.getElementById('edit-phone').value.trim() || null,
+        };
+        if (pendingAvatarUrl !== null) {
+          payload.avatar_url = pendingAvatarUrl || null;
+        }
 
-function getInitials(name) {
-  if (!name) return '?';
-  var words = name.trim().split(/\s+/);
-  if (words.length === 1) return words[0][0].toUpperCase();
-  return (words[0][0] + words[words.length - 1][0]).toUpperCase();
-}
+        fetch((window.API_BASE || 'http://localhost:8425') + '/api/auth/profile', {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (data.user) {
+              localStorage.setItem('pnec_user', JSON.stringify(data.user));
+              pendingAvatarUrl = null;
+              renderProfile(data.user);
+              // Re-show success since renderProfile replaces DOM
+              setTimeout(function() {
+                var s = document.getElementById('profile-success');
+                if (s) { s.style.display = 'block'; setTimeout(function() { s.style.display = 'none'; }, 3000); }
+              }, 50);
+            } else {
+              var e = document.getElementById('profile-error');
+              if (e) { e.textContent = data.detail || data.message || 'Failed to save.'; e.style.display = 'block'; }
+              var b = document.getElementById('profile-save-btn');
+              if (b) { b.disabled = false; b.textContent = 'Save Changes'; }
+            }
+          })
+          .catch(function() {
+            var e = document.getElementById('profile-error');
+            if (e) { e.textContent = 'Network error — please try again.'; e.style.display = 'block'; }
+            var b = document.getElementById('profile-save-btn');
+            if (b) { b.disabled = false; b.textContent = 'Save Changes'; }
+          });
+      });
+    }
+
+    // Avatar change button
+    var avatarBtn = document.getElementById('avatar-change-btn');
+    if (avatarBtn) {
+      avatarBtn.addEventListener('click', function() {
+        var input = document.getElementById('avatar-url-input');
+        if (input) input.value = user.avatar_url || '';
+        document.getElementById('avatar-modal-overlay').classList.add('open');
+      });
+    }
+  }
+
+  // Avatar modal bindings (attached once)
+  document.getElementById('avatar-modal-cancel').addEventListener('click', function() {
+    document.getElementById('avatar-modal-overlay').classList.remove('open');
+  });
+  document.getElementById('avatar-modal-save').addEventListener('click', function() {
+    var url = document.getElementById('avatar-url-input').value.trim();
+    pendingAvatarUrl = url || '';
+    // Preview immediately
+    var display = document.getElementById('profile-avatar-display');
+    if (display) {
+      display.innerHTML = url
+        ? '<img src="' + escapeHtml(url) + '" alt="Profile photo">'
+        : escapeHtml(getInitials((cachedUser || {}).display_name || '?'));
+    }
+    document.getElementById('avatar-modal-overlay').classList.remove('open');
+  });
+  document.getElementById('avatar-modal-overlay').addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('open');
+  });
+
+  function getInitials(name) {
+    if (!name) return '?';
+    var words = name.trim().split(/\s+/);
+    if (words.length === 1) return words[0][0].toUpperCase();
+    return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+  }
+})();
 </script>

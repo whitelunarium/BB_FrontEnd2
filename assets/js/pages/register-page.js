@@ -330,8 +330,9 @@ function validateRegisterInputs(name, email, pass, confirm) {
 function handleRegisterSuccess(user) {
   cacheRegisteredAccount(user);
   localStorage.setItem('pnec_user', JSON.stringify(user));
+  localStorage.setItem('pnec_new_user', '1');
   sessionStorage.removeItem('pnec_user');
-  window.location.href = `${SITE_BASE}/`;
+  window.location.href = `${SITE_BASE}/pages/onboarding.html`;
 }
 
 /**
