@@ -829,7 +829,7 @@ February 25 | 6:30PM
 			#pnec-game-close:hover { background:#a93226; }
 		</style>
 
-		<div class="quick-link-card game-cta" onclick="pnecOpenGame('/assets/games/disaster-survival.html')">
+		<div id="disaster-game" class="quick-link-card game-cta" onclick="pnecOpenGame('/assets/games/disaster-survival.html')">
   				<span class="game-cta-badge">PLAY NOW</span>
   				<span class="game-cta-icon">🎮</span>
   				<span class="game-cta-title">Disaster Survival</span>
@@ -861,6 +861,15 @@ February 25 | 6:30PM
 			document.getElementById('pnec-game-modal').addEventListener('click', function(e) {
 				if (e.target === this) pnecCloseGame();
 			});
+		</script>
+
+		<script>
+			if (window.location.hash === '#disaster-game') {
+				window.addEventListener('DOMContentLoaded', function() {
+				document.getElementById('disaster-game').scrollIntoView();
+				pnecOpenGame('/assets/games/disaster-survival.html');
+				});
+			}
 		</script>
 		<!-- ── End Games Banner ───────────────────────────────────────────── -->
 
