@@ -2,7 +2,7 @@
 // Responsibility: Register page orchestrator — loads neighborhood dropdown,
 //                 validates form, submits registration, redirects on success.
 
-document.addEventListener('DOMContentLoaded', initRegisterPage);
+document.addEventListener('DOMContentLoaded', initAccountPage);
 
 const SITE_BASE = window.location.pathname.startsWith('/Beasts_FrontEnd') ? '/Beasts_FrontEnd' : '';
 const neighborhoodState = {
@@ -10,17 +10,68 @@ const neighborhoodState = {
 };
 
 /**
- * Purpose: Initialize the register page — load neighborhoods, bind submit.
+ * Purpose: Initialize the combined account page.
  * @returns {void}
- * Algorithm:
- * 1. Load neighborhoods into dropdown
- * 2. Bind form submit event
  */
+function initAccountPage() {
+  initLoginPage();
+  initRegisterPage();
+}
+
+function initLoginPage() {
+  const existingUser = _readSessionUser();
+  if (existingUser) { window.location.href = `${SITE_BASE}/`; return; }
+
+  const form = document.getElementById('login-form');
+  if (form) form.addEventListener('submit', handleLoginSubmit);
+}
+
 function initRegisterPage() {
   loadNeighborhoodDropdown();
   bindFindNeighborhoodButton();
   const form = document.getElementById('register-form');
   if (form) form.addEventListener('submit', handleRegisterSubmit);
+}
+
+function handleLoginSubmit(event) {
+  event.preventDefault();
+  hideLoginError();
+
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const remember = document.getElementById('login-remember').checked;
+  const submitBtn = document.getElementById('login-submit-btn');
+
+  if (!validateLoginInputs(email, password)) return;
+
+  disableAuthButton(submitBtn, 'Signing in...');
+
+  loginUser(email, password, remember)
+    .then(data => handleLoginSuccess(data.user))
+    .catch(error => handleLoginError(error, submitBtn));
+}
+
+function validateLoginInputs(email, password) {
+  if (!email || !password) {
+    showLoginError('Please enter your email and password.');
+    return false;
+  }
+  return true;
+}
+
+function handleLoginSuccess(user) {
+  localStorage.setItem('pnec_user', JSON.stringify(user));
+  sessionStorage.removeItem('pnec_user');
+  const redirect = new URLSearchParams(window.location.search).get('next') || `${SITE_BASE}/`;
+  window.location.href = redirect;
+}
+
+function handleLoginError(error, submitBtn) {
+  const message = error.type === ERROR_TYPES.AUTH_REQUIRED
+    ? 'Incorrect email or password. Please try again.'
+    : getErrorMessage(error.type);
+  showLoginError(message);
+  enableAuthButton(submitBtn, 'Sign In');
 }
 
 /**
@@ -358,21 +409,50 @@ function showRegisterError(message) {
   el.style.display = 'block';
 }
 
+function showLoginError(message) {
+  const el = document.getElementById('login-error');
+  if (!el) return;
+  el.textContent = message;
+  el.style.display = 'block';
+}
+
+function hideLoginError() {
+  const el = document.getElementById('login-error');
+  if (el) el.style.display = 'none';
+}
+
 function hideRegisterError() {
   const el = document.getElementById('register-error');
   if (el) el.style.display = 'none';
 }
 
 function disableRegisterButton(btn, label) {
+  disableAuthButton(btn, label);
+}
+
+function enableRegisterButton(btn, label) {
+  enableAuthButton(btn, label);
+}
+
+function disableAuthButton(btn, label) {
   if (!btn) return;
   btn.disabled = true;
   btn.textContent = label;
 }
 
-function enableRegisterButton(btn, label) {
+function enableAuthButton(btn, label) {
   if (!btn) return;
   btn.disabled = false;
   btn.textContent = label;
+}
+
+function _readSessionUser() {
+  try {
+    const cachedUser = localStorage.getItem('pnec_user') || sessionStorage.getItem('pnec_user');
+    return cachedUser ? JSON.parse(cachedUser) : null;
+  } catch (_) {
+    return null;
+  }
 }
 
 function cacheRegisteredAccount(user) {

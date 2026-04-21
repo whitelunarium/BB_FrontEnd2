@@ -276,7 +276,7 @@ document.addEventListener('DOMContentLoaded', function() {
       } else {
         // Server says not logged in
         if (!cachedUser) {
-          window.location.href = siteBase + '/pages/login.html?next=' + encodeURIComponent(siteBase + '/pages/profile.html');
+          window.location.href = siteBase + '/pages/register.html?next=' + encodeURIComponent(siteBase + '/pages/profile.html') + '#login';
         } else {
           // Show cached profile but disable saving — session is gone
           showSessionBanner();
@@ -285,14 +285,14 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     .catch(function() {
       if (!cachedUser) {
-        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><h3>Unable to load profile</h3><p>Please <a href="' + siteBase + '/pages/login.html">sign in</a>.</p></div>';
+        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><h3>Unable to load profile</h3><p>Please <a href="' + siteBase + '/pages/register.html#login">sign in</a>.</p></div>';
       }
       // If cached user exists, leave profile visible but show banner
       else { showSessionBanner(); }
     });
 
   function showSessionBanner() {
-    var loginUrl = siteBase + '/pages/login.html?next=' + encodeURIComponent(siteBase + '/pages/profile.html');
+    var loginUrl = siteBase + '/pages/register.html?next=' + encodeURIComponent(siteBase + '/pages/profile.html') + '#login';
     var banner = document.createElement('div');
     banner.id = 'session-expired-banner';
     banner.style.cssText = 'background:#fff3cd;border:1px solid #ffc107;border-radius:12px;padding:14px 18px;margin-bottom:16px;font-size:0.88rem;color:#856404;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;';
@@ -503,7 +503,7 @@ document.addEventListener('DOMContentLoaded', function() {
               if (b) { b.disabled = false; b.textContent = 'Save Changes'; }
               var e = document.getElementById('profile-error');
               if (e) {
-                e.innerHTML = 'Your session expired. <a href="' + siteBase + '/pages/login.html?next=' + encodeURIComponent(siteBase + '/pages/profile.html') + '" style="color:#c0392b;font-weight:700;">Log in again</a> to save.';
+                e.innerHTML = 'Your session expired. <a href="' + siteBase + '/pages/register.html?next=' + encodeURIComponent(siteBase + '/pages/profile.html') + '#login" style="color:#c0392b;font-weight:700;">Log in again</a> to save.';
                 e.style.display = 'block';
               }
               return null;

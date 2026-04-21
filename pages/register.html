@@ -1,7 +1,7 @@
 ---
 layout: poway-clone-auth
-title: "Register"
-description: "Create a free PNEC community account."
+title: "Login / Register"
+description: "Sign in or create a free PNEC community account."
 auth_nav: register
 head_extra: |
   <style>
@@ -35,7 +35,7 @@ head_extra: |
       z-index: 1;
     }
     .auth-hero-section {
-      min-height: 520px;
+      min-height: 500px;
       background-position: center center;
       background-size: cover;
       background-repeat: no-repeat;
@@ -43,7 +43,7 @@ head_extra: |
       position: relative;
     }
     .auth-hero-section .elementor-background-overlay {
-      background: rgba(9, 25, 45, 0.44);
+      background: rgba(9, 25, 45, 0.46);
     }
     .auth-hero-title-wrap {
       position: relative;
@@ -55,10 +55,17 @@ head_extra: |
     .auth-hero-title {
       margin: 0;
       color: #ffffff;
-      font-size: clamp(3.5rem, 7vw, 5.6rem);
+      font-size: clamp(3.2rem, 7vw, 5.4rem);
       font-weight: 300;
       line-height: 1.05;
       letter-spacing: 0.01em;
+    }
+    .auth-hero-subtitle {
+      max-width: 720px;
+      margin: 18px auto 0;
+      color: #ffffff;
+      font-size: 20px;
+      line-height: 1.6;
     }
     .auth-hero-section .elementor-widget-raven-heading,
     .auth-hero-section .elementor-widget-text-editor {
@@ -103,29 +110,37 @@ head_extra: |
       padding: 72px 0 90px;
       background: #f6f3ed;
     }
-    .auth-shell-card,
-    .auth-shell-copy {
+    .auth-dual-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+      gap: 28px;
+      width: min(1180px, calc(100vw - 48px));
+      margin: 0 auto;
+      align-items: start;
+    }
+    .auth-shell-card {
       background: #fff;
-      border-radius: 22px;
+      border-radius: 18px;
       box-shadow: 0 20px 50px rgba(15, 33, 58, 0.12);
-      padding: 42px;
+      padding: 38px;
       height: 100%;
     }
-    .auth-shell-copy {
-      background: linear-gradient(180deg, #132a46 0%, #0a1628 100%);
-      color: #fff;
+    .auth-shell-card h2 {
+      margin: 0 0 12px;
+      color: #0a1628;
+      font-size: 32px;
+      line-height: 1.15;
     }
-    .auth-shell-copy h2,
-    .auth-shell-copy p,
-    .auth-shell-copy li {
-      color: #fff;
+    .auth-shell-card p {
+      color: #445469;
+      line-height: 1.6;
     }
     .auth-pill {
       display: inline-block;
       padding: 8px 14px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.14);
-      color: #fff;
+      background: #eef6e8;
+      color: #356f18;
       font-size: 12px;
       font-weight: 700;
       letter-spacing: 0.12em;
@@ -151,6 +166,19 @@ head_extra: |
       color: #0a1628;
       background: #fff;
       margin-bottom: 20px;
+      box-sizing: border-box;
+    }
+    .auth-check-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 4px 0 22px;
+      color: #5b6470;
+      font-size: 14px;
+    }
+    .auth-check-row input {
+      width: auto;
+      margin: 0;
     }
     .auth-inline-row {
       display: flex;
@@ -184,9 +212,6 @@ head_extra: |
       line-height: 1.5;
       color: #445469;
     }
-    .auth-field-help strong {
-      color: #0a1628;
-    }
     .auth-button {
       display: inline-flex;
       justify-content: center;
@@ -201,6 +226,12 @@ head_extra: |
       font-weight: 700;
       cursor: pointer;
       margin-top: 8px;
+    }
+    .auth-secondary-link {
+      display: inline-block;
+      margin-top: 18px;
+      color: #0a1628;
+      font-weight: 600;
     }
     .auth-switch {
       margin-top: 28px;
@@ -234,7 +265,10 @@ head_extra: |
       .auth-hero-title-wrap {
         padding-top: 54px;
       }
-      .auth-shell-copy,
+      .auth-dual-grid {
+        grid-template-columns: 1fr;
+        width: min(760px, calc(100vw - 36px));
+      }
       .auth-shell-card {
         padding: 32px;
       }
@@ -256,10 +290,19 @@ head_extra: |
         min-height: 320px;
       }
       .auth-hero-title-wrap {
-        padding-top: 34px;
+        padding: 34px 18px 0;
       }
       .auth-hero-title {
         font-size: clamp(2.4rem, 11vw, 3.4rem);
+      }
+      .auth-hero-subtitle {
+        font-size: 17px;
+      }
+      .auth-shell-section {
+        padding: 48px 0 64px;
+      }
+      .auth-shell-card {
+        padding: 26px;
       }
     }
   </style>
@@ -272,63 +315,75 @@ page_script_path: /assets/js/pages/register-page.js
       <div class="elementor-column elementor-col-100 elementor-top-column elementor-element" data-element_type="column">
         <div class="elementor-widget-wrap elementor-element-populated">
           <div class="auth-hero-title-wrap">
-            <h2 class="auth-hero-title">Register</h2>
+            <h2 class="auth-hero-title">Login / Register</h2>
+            <p class="auth-hero-subtitle">Access your PNEC account or create one to keep your neighborhood readiness tools in one place.</p>
           </div>
         </div>
       </div>
     </div>
   </section>
   <section class="elementor-section elementor-top-section elementor-element auth-shell-section elementor-section-boxed elementor-section-height-default elementor-section-height-default" data-element_type="section">
-    <div class="elementor-container elementor-column-gap-default">
-      <div class="elementor-column elementor-col-50 elementor-top-column elementor-element" data-element_type="column">
-        <div class="elementor-widget-wrap elementor-element-populated">
-          <div class="auth-shell-copy">
-            <span class="auth-pill">Community Access</span>
-            <h2>Join The Community</h2>
-            <p>Build your account once and use it to stay informed, connect with local activities, and keep your household emergency readiness organized.</p>
-            <ul>
-              <li>Track your household preparedness progress.</li>
-              <li>Connect with local programs, events, and resources.</li>
-              <li>Use one login for future member tools.</li>
-            </ul>
+    <div class="auth-dual-grid">
+      <div class="auth-shell-card" id="login">
+        <span class="auth-pill">Returning Member</span>
+        <h2>Sign In</h2>
+        <p>Use your account to review your profile, local resources, and member tools.</p>
+        <div id="login-error" class="auth-error-box" role="alert"></div>
+        <form id="login-form" novalidate>
+          <label for="login-email">Email Address</label>
+          <input id="login-email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
+
+          <label for="login-password">Password</label>
+          <input id="login-password" name="password" type="password" placeholder="Enter your password" autocomplete="current-password" required>
+
+          <div class="auth-check-row">
+            <input id="login-remember" type="checkbox">
+            <label for="login-remember" style="margin:0;font-weight:400;color:inherit;">Remember me on this device</label>
           </div>
+
+          <button id="login-submit-btn" type="submit" class="auth-button">Sign In</button>
+        </form>
+        <a class="auth-secondary-link" href="{{ '/pages/forgot-password.html' | relative_url }}">Forgot your password?</a>
+        <div class="auth-switch">
+          <span>Need an account?</span>
+          <a href="#register">Create one here</a>
         </div>
       </div>
-      <div class="elementor-column elementor-col-50 elementor-top-column elementor-element" data-element_type="column">
-        <div class="elementor-widget-wrap elementor-element-populated">
-          <div class="auth-shell-card">
-            <div id="register-error" class="auth-error-box" role="alert"></div>
-            <form id="register-form" novalidate>
-              <label for="register-name">Display Name</label>
-              <input id="register-name" name="display_name" type="text" placeholder="e.g. Jane S." autocomplete="nickname" required>
 
-              <label for="register-email">Email Address</label>
-              <input id="register-email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
+      <div class="auth-shell-card" id="register">
+        <span class="auth-pill">New Member</span>
+        <h2>Create Account</h2>
+        <p>Build your account once and use it to connect with local programs, events, resources, and future member tools.</p>
+        <div id="register-error" class="auth-error-box" role="alert"></div>
+        <form id="register-form" novalidate>
+          <label for="register-name">Display Name</label>
+          <input id="register-name" name="display_name" type="text" placeholder="e.g. Jane S." autocomplete="nickname" required>
 
-              <label for="register-password">Password</label>
-              <input id="register-password" name="password" type="password" placeholder="At least 8 characters" autocomplete="new-password" required>
+          <label for="register-email">Email Address</label>
+          <input id="register-email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
 
-              <label for="register-confirm-password">Confirm Password</label>
-              <input id="register-confirm-password" name="confirm_password" type="password" placeholder="Re-enter your password" autocomplete="new-password" required>
+          <label for="register-password">Password</label>
+          <input id="register-password" name="password" type="password" placeholder="At least 8 characters" autocomplete="new-password" required>
 
-              <label for="register-neighborhood-select">Neighborhood</label>
-              <div class="auth-inline-row">
-                <select id="register-neighborhood-select" autocomplete="address-level2">
-                  <option value="">Loading neighborhoods…</option>
-                </select>
-                <button type="button" class="auth-find-btn" id="register-find-neighborhood">Find your neighborhood</button>
-              </div>
-              <p class="auth-field-help" id="register-neighborhood-help">
-                Use your device location to try to match your neighborhood automatically, or choose it manually from the list.
-              </p>
+          <label for="register-confirm-password">Confirm Password</label>
+          <input id="register-confirm-password" name="confirm_password" type="password" placeholder="Re-enter your password" autocomplete="new-password" required>
 
-              <button type="submit" class="auth-button">Create Account</button>
-            </form>
-            <div class="auth-switch">
-              <span>Already have an account?</span>
-              <a href="{{ '/pages/login.html' | relative_url }}">Sign in here</a>
-            </div>
+          <label for="register-neighborhood-select">Neighborhood</label>
+          <div class="auth-inline-row">
+            <select id="register-neighborhood-select" autocomplete="address-level2">
+              <option value="">Loading neighborhoods...</option>
+            </select>
+            <button type="button" class="auth-find-btn" id="register-find-neighborhood">Find your neighborhood</button>
           </div>
+          <p class="auth-field-help" id="register-neighborhood-help">
+            Use your device location to try to match your neighborhood automatically, or choose it manually from the list.
+          </p>
+
+          <button type="submit" class="auth-button">Create Account</button>
+        </form>
+        <div class="auth-switch">
+          <span>Already have an account?</span>
+          <a href="#login">Sign in here</a>
         </div>
       </div>
     </div>

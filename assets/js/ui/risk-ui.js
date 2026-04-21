@@ -162,7 +162,7 @@ function showRiskCardsLoading() {
 function showRiskCardsError(message) {
   ['fire-risk-card', 'flood-risk-card', 'heat-risk-card'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.innerHTML = `<p style="font-size:13px;color:#c0392b;text-align:center;padding:16px">${message}</p>`;
+    if (el) el.innerHTML = `<p style="font-size:13px;color:#176a3a;text-align:center;padding:16px">${message}</p>`;
   });
 }
 
@@ -219,12 +219,12 @@ function buildHeatConditions(conditions) {
 // ─── Private helpers ──────────────────────────────────────────────────────────
 
 function getRiskLabelBg(label) {
-  const map = { Low: '#d1fae5', Moderate: '#fef3c7', High: '#ffedd5', Critical: '#fee2e2' };
+  const map = { Low: '#d1fae5', Moderate: '#fef3c7', High: '#eaf8ef', Critical: '#eaf8ef' };
   return map[label] || '#f5f5f5';
 }
 
 function getRiskLabelColor(label) {
-  const map = { Low: '#065f46', Moderate: '#92400e', High: '#9a3412', Critical: '#991b1b' };
+  const map = { Low: '#065f46', Moderate: '#92400e', High: '#176a3a', Critical: '#176a3a' };
   return map[label] || '#333';
 }
 

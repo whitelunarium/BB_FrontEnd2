@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="https://powaynec.com/wp-content/plugins/elementor/assets/lib/eicons/css/elementor-icons.min.css?ver=5.47.0" />
   <link rel="stylesheet" href="https://powaynec.com/wp-content/plugins/elementor-pro/assets/css/widget-posts.min.css?ver=3.35.1" />
   <link rel="stylesheet" href="https://powaynec.com/wp-content/plugins/elementor/assets/css/widget-social-icons.min.css?ver=3.35.9" />
+  <link rel="stylesheet" href="{{ '/assets/css/poway-unified-ui.css' | relative_url }}" />
   <link rel="stylesheet" href="{{ '/assets/css/chatbot.css' | relative_url }}" />
   <link rel="icon" href="https://powaynec.com/wp-content/uploads/2020/05/cropped-PNEC-init-32x32.jpg" sizes="32x32" />
   {% if page.head_extra %}{{ page.head_extra }}{% endif %}
@@ -58,6 +59,13 @@
   <script src="{{ '/assets/js/ui/auth-ui.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/ui/chatbot-ui.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/pages/chatbot.js' | relative_url }}"></script>
-  {% if page.page_script_path %}<script src="{{ page.page_script_path }}"></script>{% endif %}
+  <script src="{{ '/assets/js/poway-page-enhancements.js' | relative_url }}"></script>
+  {% if page.page_script_paths %}
+    {% for script_path in page.page_script_paths %}
+  <script src="{{ script_path | relative_url }}"></script>
+    {% endfor %}
+  {% elsif page.page_script_path %}
+  <script src="{{ page.page_script_path | relative_url }}"></script>
+  {% endif %}
 </body>
 </html>

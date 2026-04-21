@@ -44,7 +44,7 @@ description: "Create and manage PNEC events for the community calendar."
           </div>
           <div id="event-form-status" class="alert" style="display:none" role="alert"></div>
           <div style="display:flex;gap:12px;justify-content:flex-end">
-            <a href="/pages/events.html" class="btn btn-ghost">Cancel</a>
+            <a href="/pages/community-events-and-activities.html" class="btn btn-ghost">Cancel</a>
             <button id="event-submit-btn" type="submit" class="btn btn-primary">Create Event</button>
           </div>
         </form>
@@ -52,7 +52,7 @@ description: "Create and manage PNEC events for the community calendar."
     </div>
 
     <div style="margin-top:24px;text-align:center">
-      <a href="/pages/events.html" class="btn btn-outline">View All Events →</a>
+      <a href="/pages/community-events-and-activities.html" class="btn btn-outline">View All Events →</a>
     </div>
   </div>
 
@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
         statusEl.style.display = 'flex';
         statusEl.textContent = 'Event created! Redirecting to calendar…';
         document.getElementById('event-form').reset();
-        setTimeout(function() { window.location.href = '/pages/events.html'; }, 1500);
+        setTimeout(function() { window.location.href = '/pages/community-events-and-activities.html'; }, 1500);
       })
       .catch(function() {
         statusEl.className = 'alert alert-error';

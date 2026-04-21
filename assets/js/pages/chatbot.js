@@ -34,7 +34,11 @@ const POWAY_WILDFIRE_CONTEXT = `Curated Poway wildfire history and recent incide
 These notes are curated context, not a full live incident log. For active emergencies, users should check official alerts and emergency services.`;
 
 // ─── Initialization ───────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', initChatbot);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initChatbot);
+} else {
+  initChatbot();
+}
 
 /**
  * Purpose: Initialize the chatbot — bind UI events, load categories, get user state.
