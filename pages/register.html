@@ -16,10 +16,10 @@ head_extra: |
       background: transparent !important;
     }
     .jupiterx-header-custom .elementor-element-090b3a9 {
-      padding-top: 26px;
+      padding-top: 72px;
     }
     .jupiterx-header-custom .elementor-element-c8c3c8c {
-      margin-top: 22px;
+      margin-top: 14px;
     }
     .jupiterx-header-custom .elementor-container,
     .jupiterx-header-custom .elementor-widget-wrap,
@@ -50,7 +50,7 @@ head_extra: |
       z-index: 2;
       width: 100%;
       text-align: center;
-      padding-top: 72px;
+      padding-top: 132px;
     }
     .auth-hero-title {
       margin: 0;
@@ -206,6 +206,31 @@ head_extra: |
       opacity: 0.7;
       cursor: wait;
     }
+    .auth-address-fallback {
+      display: flex;
+      gap: 10px;
+      margin: 0 0 12px;
+    }
+    .auth-address-fallback input {
+      flex: 1 1 auto;
+      min-width: 0;
+      margin-bottom: 0;
+    }
+    .auth-address-search-btn {
+      flex: 0 0 auto;
+      border: 0;
+      border-radius: 12px;
+      background: #0a1628;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 0 18px;
+      cursor: pointer;
+    }
+    .auth-address-search-btn[disabled] {
+      opacity: 0.65;
+      cursor: wait;
+    }
     .auth-field-help {
       margin: 0 0 18px;
       font-size: 13px;
@@ -254,16 +279,16 @@ head_extra: |
     }
     @media (max-width: 1024px) {
       .jupiterx-header-custom .elementor-element-090b3a9 {
-        padding-top: 20px;
+        padding-top: 66px;
       }
       .jupiterx-header-custom .elementor-element-c8c3c8c {
-        margin-top: 18px;
+        margin-top: 12px;
       }
       .auth-hero-section {
         min-height: 420px;
       }
       .auth-hero-title-wrap {
-        padding-top: 54px;
+        padding-top: 110px;
       }
       .auth-dual-grid {
         grid-template-columns: 1fr;
@@ -275,13 +300,19 @@ head_extra: |
       .auth-inline-row {
         flex-direction: column;
       }
+      .auth-address-fallback {
+        flex-direction: column;
+      }
+      .auth-address-search-btn {
+        min-height: 50px;
+      }
       .auth-find-btn {
         min-height: 52px;
       }
     }
     @media (max-width: 767px) {
       .jupiterx-header-custom .elementor-element-090b3a9 {
-        padding-top: 12px;
+        padding-top: 58px;
       }
       .jupiterx-header-custom .elementor-element-c8c3c8c {
         margin-top: 10px;
@@ -290,7 +321,7 @@ head_extra: |
         min-height: 320px;
       }
       .auth-hero-title-wrap {
-        padding: 34px 18px 0;
+        padding: 98px 18px 0;
       }
       .auth-hero-title {
         font-size: clamp(2.4rem, 11vw, 3.4rem);
@@ -375,8 +406,12 @@ page_script_path: /assets/js/pages/register-page.js
             </select>
             <button type="button" class="auth-find-btn" id="register-find-neighborhood">Find your neighborhood</button>
           </div>
+          <div class="auth-address-fallback" id="register-address-fallback">
+            <input id="register-address-query" type="text" placeholder="Street address or neighborhood number" autocomplete="street-address">
+            <button type="button" class="auth-address-search-btn" id="register-address-search">Search</button>
+          </div>
           <p class="auth-field-help" id="register-neighborhood-help">
-            Use your device location to try to match your neighborhood automatically, or choose it manually from the list.
+            Use your device location, search by address or neighborhood number, or choose manually from the list.
           </p>
 
           <button type="submit" class="auth-button">Create Account</button>

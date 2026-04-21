@@ -1,5 +1,7 @@
 .pnec-top-green-nav {
-  background: #27ae60 !important;
+  background: rgba(39, 174, 96, 0.65) !important;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
   margin: 0 !important;
   position: absolute !important;
   top: 0 !important;
@@ -7,6 +9,16 @@
   right: 0 !important;
   width: 100% !important;
   z-index: 9999 !important;
+}
+
+.jupiterx-header-custom .elementor-2820 > .elementor-element-c8c3c8c {
+  background: rgba(39, 174, 96, 0.65) !important;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+body.pnec-enhanced-raw-page .jupiterx-header-custom .elementor-2820 > .elementor-element-090b3a9 {
+  padding-top: 72px !important;
 }
 
 .pnec-top-green-nav .elementor-container {
@@ -56,7 +68,7 @@ body.pnec-enhanced-raw-page .jupiterx-main {
 
 body.pnec-enhanced-raw-page .jupiterx-main .elementor[data-elementor-type="wp-page"] > .elementor-section:first-child {
   min-height: clamp(440px, 36vw, 540px) !important;
-  padding: 210px 32px 96px !important;
+  padding: 268px 32px 96px !important;
   box-sizing: border-box;
 }
 
@@ -74,7 +86,7 @@ body.pnec-enhanced-raw-page .jupiterx-main .elementor[data-elementor-type="wp-pa
 @media (max-width: 900px) {
   body.pnec-enhanced-raw-page .jupiterx-main .elementor[data-elementor-type="wp-page"] > .elementor-section:first-child {
     min-height: 420px !important;
-    padding: 230px 18px 72px !important;
+    padding: 292px 18px 72px !important;
   }
 }
 
@@ -86,6 +98,6 @@ body.pnec-enhanced-raw-page .jupiterx-main .elementor[data-elementor-type="wp-pa
 
   body.pnec-enhanced-raw-page .jupiterx-main .elementor[data-elementor-type="wp-page"] > .elementor-section:first-child {
     min-height: 460px !important;
-    padding-top: 250px !important;
+    padding-top: 304px !important;
   }
 }

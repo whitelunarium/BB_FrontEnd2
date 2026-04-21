@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', initAccountPage);
 const SITE_BASE = window.location.pathname.startsWith('/Beasts_FrontEnd') ? '/Beasts_FrontEnd' : '';
 const neighborhoodState = {
   neighborhoods: [],
+  loadPromise: null,
 };
 
 /**
@@ -29,6 +30,7 @@ function initLoginPage() {
 function initRegisterPage() {
   loadNeighborhoodDropdown();
   bindFindNeighborhoodButton();
+  bindAddressFallbackSearch();
   const form = document.getElementById('register-form');
   if (form) form.addEventListener('submit', handleRegisterSubmit);
 }
@@ -87,15 +89,19 @@ function loadNeighborhoodDropdown() {
   const select = document.getElementById('register-neighborhood-select');
   if (!select) return;
 
-  fetchNeighborhoodsForSelect()
+  neighborhoodState.loadPromise = fetchNeighborhoodsForSelect()
     .then(neighborhoods => {
       neighborhoodState.neighborhoods = Array.isArray(neighborhoods) ? neighborhoods : [];
       populateNeighborhoodSelect(select, neighborhoodState.neighborhoods);
+      return neighborhoodState.neighborhoods;
     })
     .catch(() => {
       select.innerHTML = '<option value="">Neighborhood (unavailable)</option>';
       updateNeighborhoodHelp('We could not load neighborhoods right now. You can still register and set it later.', true);
+      return [];
     });
+
+  return neighborhoodState.loadPromise;
 }
 
 /**
@@ -123,54 +129,69 @@ function bindFindNeighborhoodButton() {
 }
 
 function handleFindNeighborhoodClick() {
-  if (!navigator.geolocation) {
-    updateNeighborhoodHelp('Your browser does not support geolocation. Please choose your neighborhood manually.', true);
-    return;
-  }
-
   const button = document.getElementById('register-find-neighborhood');
   setFindNeighborhoodLoading(button, true);
-  updateNeighborhoodHelp('Requesting your location…');
+  updateNeighborhoodHelp('Preparing neighborhood lookup...');
 
-  navigator.geolocation.getCurrentPosition(
-    position => resolveNeighborhoodFromLocation(position, button),
-    error => handleNeighborhoodLocationError(error, button),
-    { enableHighAccuracy: true, timeout: 10000, maximumAge: 120000 }
-  );
+  ensureNeighborhoodsLoaded()
+    .then(() => {
+      if (!navigator.geolocation) {
+        updateNeighborhoodHelp('Your browser does not support location lookup. Type an address below and press Search.');
+        focusAddressSearch();
+        setFindNeighborhoodLoading(button, false);
+        return;
+      }
+
+      updateNeighborhoodHelp('Requesting your location...');
+
+      navigator.geolocation.getCurrentPosition(
+        position => resolveNeighborhoodFromLocation(position, button),
+        error => handleNeighborhoodLocationError(error, button),
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 120000 }
+      );
+    })
+    .catch(() => {
+      setFindNeighborhoodLoading(button, false);
+      showAddressFallback('Neighborhood data is not available right now. Try an address or choose from the list.');
+    });
+}
+
+function ensureNeighborhoodsLoaded() {
+  if (neighborhoodState.neighborhoods.length) {
+    return Promise.resolve(neighborhoodState.neighborhoods);
+  }
+  return neighborhoodState.loadPromise || loadNeighborhoodDropdown() || Promise.resolve([]);
 }
 
 function resolveNeighborhoodFromLocation(position, button) {
   const { latitude, longitude } = position.coords;
   const neighborhoods = neighborhoodState.neighborhoods || [];
 
-  const polygonMatch = findNeighborhoodByPolygon(latitude, longitude, neighborhoods);
-  if (polygonMatch) {
-    applyDetectedNeighborhood(polygonMatch, 'Matched from your current location.');
-    setFindNeighborhoodLoading(button, false);
-    return;
-  }
+  lookupNeighborhoodFromCoordinates(latitude, longitude)
+    .then(neighborhood => {
+      if (neighborhood) {
+        applyDetectedNeighborhood(neighborhood, 'Matched from your current location.');
+        return;
+      }
 
-  reverseGeocodeCoordinates(latitude, longitude)
-    .then(addressData => {
-      const heuristicMatch = findNeighborhoodByAddressParts(addressData, neighborhoods);
-      if (heuristicMatch) {
-        applyDetectedNeighborhood(
-          heuristicMatch,
-          'Matched from your nearby street/location. Please confirm it looks correct.'
-        );
+      const polygonMatch = findNeighborhoodByPolygon(latitude, longitude, neighborhoods);
+      if (polygonMatch) {
+        applyDetectedNeighborhood(polygonMatch, 'Matched from your current location.');
         return;
       }
 
       updateNeighborhoodHelp(
-        'We found your location, but exact neighborhood boundaries are not configured yet. Please choose your neighborhood manually from the list.',
+        'We found your location, but exact neighborhood boundaries are not configured yet. Search by address, neighborhood number/name, or choose from the list.',
         true
       );
+      showAddressFallback();
     })
     .catch(() => {
       updateNeighborhoodHelp(
-        'We found your location, but could not translate it into a neighborhood automatically. Please choose from the list.',
+        'We found your location, but could not search neighborhoods right now. Type an address below or choose from the list.',
         true
       );
+      showAddressFallback();
     })
     .finally(() => setFindNeighborhoodLoading(button, false));
 }
@@ -179,15 +200,18 @@ function handleNeighborhoodLocationError(error, button) {
   setFindNeighborhoodLoading(button, false);
 
   if (error && error.code === error.PERMISSION_DENIED) {
-    updateNeighborhoodHelp('Location access was denied. Please choose your neighborhood manually.', true);
+    updateNeighborhoodHelp('Location access was denied. Type an address below and press Search.');
+    focusAddressSearch();
     return;
   }
   if (error && error.code === error.TIMEOUT) {
-    updateNeighborhoodHelp('Location lookup timed out. Please try again or choose your neighborhood manually.', true);
+    updateNeighborhoodHelp('Location lookup timed out. Type an address below or press Find your neighborhood again.');
+    focusAddressSearch();
     return;
   }
 
-  updateNeighborhoodHelp('We could not determine your location. Please choose your neighborhood manually.', true);
+  updateNeighborhoodHelp('We could not determine your location. Type an address below and press Search.');
+  focusAddressSearch();
 }
 
 function setFindNeighborhoodLoading(button, isLoading) {
@@ -199,11 +223,130 @@ function setFindNeighborhoodLoading(button, isLoading) {
 function applyDetectedNeighborhood(neighborhood, message) {
   const select = document.getElementById('register-neighborhood-select');
   if (select && neighborhood && neighborhood.id) {
+    if (!select.querySelector(`option[value="${String(neighborhood.id)}"]`)) {
+      const option = document.createElement('option');
+      option.value = String(neighborhood.id);
+      option.textContent = `#${neighborhood.number || neighborhood.id} - ${neighborhood.name}`;
+      select.appendChild(option);
+    }
     select.value = String(neighborhood.id);
   }
   updateNeighborhoodHelp(
     `${message} Selected #${neighborhood.number || neighborhood.id} ${neighborhood.name}.`
   );
+}
+
+function bindAddressFallbackSearch() {
+  const input = document.getElementById('register-address-query');
+  const button = document.getElementById('register-address-search');
+  if (!input || !button) return;
+
+  const runSearch = () => lookupNeighborhoodFromAddressInput();
+  button.addEventListener('click', runSearch);
+  input.addEventListener('keydown', event => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      runSearch();
+    }
+  });
+}
+
+function showAddressFallback(message) {
+  const fallback = document.getElementById('register-address-fallback');
+  if (fallback) fallback.hidden = false;
+  updateNeighborhoodHelp(message || 'Type an address below and press Search, or choose from the list.', true);
+}
+
+function focusAddressSearch() {
+  const input = document.getElementById('register-address-query');
+  if (input) input.focus();
+}
+
+function lookupNeighborhoodFromAddressInput() {
+  const input = document.getElementById('register-address-query');
+  const button = document.getElementById('register-address-search');
+  const query = input ? input.value.trim() : '';
+
+  if (!query) {
+    updateNeighborhoodHelp('Enter a street address or neighborhood number first.', true);
+    if (input) input.focus();
+    return;
+  }
+
+  setAddressSearchLoading(button, true);
+  updateNeighborhoodHelp('Searching for your neighborhood...');
+
+  lookupNeighborhoodForRegister(query)
+    .then(neighborhood => {
+      if (!neighborhood) {
+        updateNeighborhoodHelp('No neighborhood matched that search. Search currently supports neighborhood numbers or neighborhood names. For a street address, choose from the list until address boundaries are configured.', true);
+        return;
+      }
+      applyDetectedNeighborhood(neighborhood, 'Matched from your search.');
+    })
+    .catch(() => {
+      updateNeighborhoodHelp('We could not search neighborhoods right now. Please choose from the list.', true);
+    })
+    .finally(() => setAddressSearchLoading(button, false));
+}
+
+function setAddressSearchLoading(button, isLoading) {
+  if (!button) return;
+  button.disabled = isLoading;
+  button.textContent = isLoading ? 'Searching...' : 'Search';
+}
+
+function lookupNeighborhoodForRegister(query) {
+  const localMatch = findNeighborhoodByNumberOrName(query, neighborhoodState.neighborhoods || []);
+  if (localMatch) return Promise.resolve(localMatch);
+
+  return fetch(`${API_BASE}/api/neighborhoods/lookup?address=${encodeURIComponent(query)}`, {
+    credentials: 'include',
+  })
+    .then(response => {
+      if (response.status === 404) return null;
+      return validateResponse(response).then(r => r.json());
+    })
+    .then(data => {
+      if (!data) return null;
+      if (data.id) return data;
+      if (data.neighborhood) return data.neighborhood;
+      if (Array.isArray(data.results) && data.results.length) return data.results[0];
+      return null;
+    });
+}
+
+function lookupNeighborhoodFromCoordinates(latitude, longitude) {
+  const query = `lat=${encodeURIComponent(latitude)}&lng=${encodeURIComponent(longitude)}`;
+  return fetch(`${API_BASE}/api/neighborhoods/lookup?${query}`, {
+    credentials: 'include',
+  })
+    .then(response => {
+      if (response.status === 404) return null;
+      return validateResponse(response).then(r => r.json());
+    })
+    .then(data => {
+      if (!data) return null;
+      if (data.neighborhood) return data.neighborhood;
+      if (Array.isArray(data.results) && data.results.length) return data.results[0];
+      return null;
+    });
+}
+
+function findNeighborhoodByNumberOrName(query, neighborhoods) {
+  const normalizedQuery = String(query || '').trim().toLowerCase();
+  if (!normalizedQuery) return null;
+
+  const numericQuery = normalizedQuery.match(/^#?\s*(\d{1,2})$/);
+  if (numericQuery) {
+    const number = parseInt(numericQuery[1], 10);
+    return neighborhoods.find(neighborhood => Number(neighborhood.number) === number || Number(neighborhood.id) === number) || null;
+  }
+
+  return neighborhoods.find(neighborhood => {
+    const name = String(neighborhood.name || '').toLowerCase();
+    return name === normalizedQuery || name.includes(normalizedQuery);
+  }) || null;
 }
 
 function updateNeighborhoodHelp(message, isError = false) {
@@ -249,71 +392,6 @@ function isPointInPolygon(point, polygon) {
   }
 
   return inside;
-}
-
-function reverseGeocodeCoordinates(latitude, longitude) {
-  const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(latitude)}&lon=${encodeURIComponent(longitude)}`;
-  return fetch(url, {
-    headers: {
-      Accept: 'application/json',
-    },
-  })
-    .then(response => {
-      if (!response.ok) throw new Error('Reverse geocode failed');
-      return response.json();
-    });
-}
-
-function findNeighborhoodByAddressParts(addressData, neighborhoods) {
-  const address = addressData && addressData.address ? addressData.address : {};
-  const searchText = [
-    address.road,
-    address.neighbourhood,
-    address.suburb,
-    address.quarter,
-    address.city_district,
-    address.hamlet,
-    address.village,
-    address.town,
-    addressData && addressData.display_name,
-  ].filter(Boolean).join(' ').toLowerCase();
-
-  if (!searchText) return null;
-
-  const aliasMatchers = [
-    { pattern: /\bold poway\b/, name: 'Old Poway Village' },
-    { pattern: /\bpoway road\b/, name: 'Poway Road Corridor' },
-    { pattern: /\btwin peaks\b/, name: 'Twin Peaks Area' },
-    { pattern: /\bcommunity road\b/, name: 'Community Road' },
-    { pattern: /\bgarden road\b/, name: 'Garden Road' },
-    { pattern: /\bespola\b/, name: searchText.includes('south') ? 'Espola Road South' : 'Espola Road North' },
-    { pattern: /\bhilleary\b/, name: 'Hilleary Park Area' },
-    { pattern: /\bmidland\b/, name: 'Midland Road' },
-    { pattern: /\bscripps poway\b/, name: searchText.includes('east') ? 'Scripps Poway Parkway East' : 'Scripps Poway Parkway West' },
-    { pattern: /\bstowe\b/, name: 'Stowe Drive Area' },
-    { pattern: /\bmartincoit\b/, name: 'Martincoit Road' },
-    { pattern: /\bkirkham\b/, name: 'Kirkham Road' },
-    { pattern: /\bpoway valley\b/, name: 'Poway Valley Road' },
-    { pattern: /\bcrestridge\b/, name: 'Crestridge Road' },
-    { pattern: /\blake poway\b/, name: 'Lake Poway Recreation Area' },
-    { pattern: /\bblue sky\b/, name: searchText.includes('south') ? 'Blue Sky Reserve South' : 'Blue Sky Reserve North' },
-    { pattern: /\bindustrial\b/, name: searchText.includes('south') ? 'South Poway Industrial' : 'Poway Industrial Area' },
-    { pattern: /\boak knoll\b/, name: 'Oak Knoll Area' },
-    { pattern: /\bpoway park\b/, name: 'Poway Park Area' },
-    { pattern: /\bwelton\b/, name: 'Welton Drive Area' },
-  ];
-
-  for (const matcher of aliasMatchers) {
-    if (!matcher.pattern.test(searchText)) continue;
-    const exact = neighborhoods.find(neighborhood => neighborhood.name === matcher.name);
-    if (exact) return exact;
-  }
-
-  return neighborhoods.find(neighborhood => {
-    const normalizedName = String(neighborhood.name || '').toLowerCase();
-    const simplified = normalizedName.replace(/\b(area|road|north|south|west|east|village)\b/g, '').trim();
-    return normalizedName && (searchText.includes(normalizedName) || (simplified && searchText.includes(simplified)));
-  }) || null;
 }
 
 /**
