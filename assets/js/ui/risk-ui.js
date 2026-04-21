@@ -42,7 +42,6 @@ function renderRiskCards(riskData) {
     conditions: buildHeatConditions(riskData.conditions),
   });
 
-  updateRiskTimestamp(riskData);
 }
 
 /**
@@ -123,25 +122,7 @@ function classifyRiskLevel(score) {
  * @param {Object|string} riskDataOrTimestamp - API payload or timestamp string
  * @returns {void}
  */
-function updateRiskTimestamp(riskDataOrTimestamp) {
-  const el = document.getElementById('risk-updated-time');
-  if (!el) return;
 
-  const updatedAt = resolveRiskTimestamp(riskDataOrTimestamp);
-  const date = new Date(updatedAt);
-  if (!updatedAt || Number.isNaN(date.getTime())) {
-    el.textContent = 'Updated just now';
-    return;
-  }
-
-  const minutesAgo = Math.round((Date.now() - date.getTime()) / 60000);
-  if (minutesAgo < 0) {
-    el.textContent = 'Updated just now';
-    return;
-  }
-
-  el.textContent = minutesAgo < 2 ? 'Updated just now' : `Updated ${minutesAgo} minutes ago`;
-}
 
 /**
  * Purpose: Show a loading skeleton in all risk card slots.
