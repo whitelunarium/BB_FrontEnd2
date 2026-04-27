@@ -167,4 +167,14 @@
     <p><a href="{{ '/pages/contact.html' | relative_url }}">Need a person? Contact PNEC directly.</a></p>
   </div>
 
+<script>
+  (function () {
+    setTimeout(function () {
+      var panel = document.getElementById('chatbot-panel');
+      var trigger = document.getElementById('chatbot-trigger-btn');
+      if (panel) panel.classList.add('open');
+      if (trigger) trigger.setAttribute('aria-expanded', 'true');
+    }, 1500); // 1.5 seconds after page load
+  })();
+</script>
 </div><!-- /.chatbot-panel -->
