@@ -67,9 +67,9 @@
       '        <div class="chatbot-search-results" id="chatbot-search-results" aria-live="polite" style="display:none"></div>',
       '        <div class="chatbot-categories" id="chatbot-categories" aria-label="Question categories">',
       '          <button class="chatbot-category-btn chatbot-shortcut-btn" data-shortcut-query="What does PNEC do?"><span class="cat-icon" aria-hidden="true">🏠</span><span class="cat-name">About PNEC</span></button>',
-      '          <button class="chatbot-category-btn chatbot-shortcut-btn" data-shortcut-query="How do I find my coordinator?"><span class="cat-icon" aria-hidden="true">📍</span><span class="cat-name">Find my coordinator</span></button>',
-      '          <button class="chatbot-category-btn chatbot-shortcut-btn" data-shortcut-query="What goes in a 72-hour emergency kit?"><span class="cat-icon" aria-hidden="true">📦</span><span class="cat-name">Emergency kit</span></button>',
-      '          <button class="chatbot-category-btn chatbot-shortcut-btn" data-shortcut-query="How do I become a coordinator?"><span class="cat-icon" aria-hidden="true">🤝</span><span class="cat-name">Volunteer</span></button>',
+      '          <button class="chatbot-category-btn chatbot-shortcut-btn" data-shortcut-query="How do I find my neighborhood coordinator?"><span class="cat-icon" aria-hidden="true">📍</span><span class="cat-name">Neighborhood help</span></button>',
+      '          <button class="chatbot-category-btn chatbot-shortcut-btn" data-shortcut-query="What should I prepare before a wildfire or evacuation?"><span class="cat-icon" aria-hidden="true">📦</span><span class="cat-name">Preparedness checklist</span></button>',
+      '          <button class="chatbot-category-btn chatbot-shortcut-btn" data-shortcut-query="How do I volunteer or contact PNEC?"><span class="cat-icon" aria-hidden="true">🤝</span><span class="cat-name">Volunteer or contact</span></button>',
       '          <div class="loading-overlay"><span class="spinner"></span> Loading topics...</div>',
       '        </div>',
       '      </div>',
@@ -141,9 +141,43 @@
       });
   }
 
+  function ensurePreparednessActionBand() {
+    if (document.querySelector('.pnec-preparedness-band')) return;
+    if (/register\.html|login|profile\.html|onboarding\.html/.test(window.location.pathname)) return;
+
+    var content = document.querySelector('.jupiterx-post-content');
+    if (!content) return;
+
+    var firstSection = content.querySelector('.elementor-section');
+    var band = document.createElement('section');
+    band.className = 'pnec-preparedness-band';
+    band.innerHTML = [
+      '<div class="pnec-preparedness-band-inner">',
+      '  <div class="pnec-preparedness-band-copy">',
+      '    <span class="pnec-preparedness-kicker">Preparedness first</span>',
+      '    <h2>Take one practical step before the next emergency.</h2>',
+      '    <p>Find your neighborhood, build a household kit, review evacuation readiness, or contact PNEC about volunteering and local resources.</p>',
+      '  </div>',
+      '  <div class="pnec-preparedness-band-actions">',
+      '    <a href="/pages/find-your-neighborhood.html">Find Your Neighborhood</a>',
+      '    <a href="/pages/preparedness-resources.html">Preparedness Resources</a>',
+      '    <a href="/pages/programs-and-services.html">Volunteer Programs</a>',
+      '    <a href="/pages/contact.html">Contact PNEC</a>',
+      '  </div>',
+      '</div>'
+    ].join('');
+
+    if (firstSection && firstSection.nextSibling) {
+      content.insertBefore(band, firstSection.nextSibling);
+    } else {
+      content.appendChild(band);
+    }
+  }
+
   onReady(function () {
     document.body.classList.add('pnec-enhanced-raw-page');
     moveFullNavToTop();
+    ensurePreparednessActionBand();
     ensureChatbot();
   });
 }());

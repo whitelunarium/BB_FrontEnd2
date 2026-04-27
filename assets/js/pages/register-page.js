@@ -21,7 +21,7 @@ function initAccountPage() {
 
 function initLoginPage() {
   const existingUser = _readSessionUser();
-  if (existingUser) { window.location.href = `${SITE_BASE}/`; return; }
+  if (existingUser) { window.location.href = `${SITE_BASE}/pages/profile.html`; return; }
 
   const form = document.getElementById('login-form');
   if (form) form.addEventListener('submit', handleLoginSubmit);
@@ -64,7 +64,7 @@ function validateLoginInputs(email, password) {
 function handleLoginSuccess(user) {
   localStorage.setItem('pnec_user', JSON.stringify(user));
   sessionStorage.removeItem('pnec_user');
-  const redirect = new URLSearchParams(window.location.search).get('next') || `${SITE_BASE}/`;
+  const redirect = new URLSearchParams(window.location.search).get('next') || `${SITE_BASE}/pages/profile.html`;
   window.location.href = redirect;
 }
 
@@ -459,9 +459,10 @@ function validateRegisterInputs(name, email, pass, confirm) {
 function handleRegisterSuccess(user) {
   cacheRegisteredAccount(user);
   localStorage.setItem('pnec_user', JSON.stringify(user));
-  localStorage.setItem('pnec_new_user', '1');
+  localStorage.removeItem('pnec_new_user');
   sessionStorage.removeItem('pnec_user');
-  window.location.href = `${SITE_BASE}/pages/onboarding.html`;
+  const redirect = new URLSearchParams(window.location.search).get('next') || `${SITE_BASE}/pages/profile.html`;
+  window.location.href = redirect;
 }
 
 /**

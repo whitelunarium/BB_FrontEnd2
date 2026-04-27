@@ -83,10 +83,77 @@ body.pnec-enhanced-raw-page .jupiterx-main .elementor[data-elementor-type="wp-pa
   text-align: center !important;
 }
 
+.pnec-preparedness-band {
+  background: #f7fbf8;
+  border-top: 1px solid rgba(39, 174, 96, 0.22);
+  border-bottom: 1px solid rgba(39, 174, 96, 0.22);
+  padding: 30px 24px;
+}
+
+.pnec-preparedness-band-inner {
+  max-width: 1140px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+  gap: 24px;
+  align-items: center;
+}
+
+.pnec-preparedness-kicker {
+  display: block;
+  color: #1e7d48;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.pnec-preparedness-band h2 {
+  color: #0a1628;
+  font-size: 1.45rem;
+  line-height: 1.2;
+  margin: 0 0 8px;
+}
+
+.pnec-preparedness-band p {
+  color: #42515f;
+  font-size: 0.94rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.pnec-preparedness-band-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.pnec-preparedness-band-actions a {
+  background: #ffffff;
+  border: 1px solid #cfe6d7;
+  border-radius: 8px;
+  color: #0a1628;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.25;
+  padding: 12px 14px;
+  text-decoration: none;
+}
+
+.pnec-preparedness-band-actions a:hover {
+  background: #eaf6ee;
+  color: #1e7d48;
+}
+
 @media (max-width: 900px) {
   body.pnec-enhanced-raw-page .jupiterx-main .elementor[data-elementor-type="wp-page"] > .elementor-section:first-child {
     min-height: 420px !important;
     padding: 292px 18px 72px !important;
+  }
+
+  .pnec-preparedness-band-inner {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -99,5 +166,17 @@ body.pnec-enhanced-raw-page .jupiterx-main .elementor[data-elementor-type="wp-pa
   body.pnec-enhanced-raw-page .jupiterx-main .elementor[data-elementor-type="wp-page"] > .elementor-section:first-child {
     min-height: 460px !important;
     padding-top: 304px !important;
+  }
+
+  .pnec-preparedness-band {
+    padding: 24px 18px;
+  }
+
+  .pnec-preparedness-band h2 {
+    font-size: 1.22rem;
+  }
+
+  .pnec-preparedness-band-actions {
+    grid-template-columns: 1fr;
   }
 }
