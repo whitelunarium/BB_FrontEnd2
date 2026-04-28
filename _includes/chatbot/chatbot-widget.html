@@ -3,21 +3,24 @@
 <!-- Rendered on shared layouts -->
 
 <!-- Floating trigger button -->
-<button class="chatbot-trigger" id="chatbot-trigger-btn" aria-label="Open PNEC helper" aria-expanded="false">
+<button class="chatbot-trigger" id="chatbot-trigger-btn" aria-label="Open Helper Bot" aria-expanded="false">
   <span class="chatbot-trigger-icon" aria-hidden="true">💬</span>
   <span class="chatbot-trigger-label">Help</span>
 </button>
 
 <!-- Chat panel -->
-<div class="chatbot-panel" id="chatbot-panel" role="dialog" aria-modal="true" aria-label="PNEC website helper">
+<div class="chatbot-backdrop" id="chatbot-backdrop" hidden></div>
+<div class="chatbot-panel" id="chatbot-panel" role="dialog" aria-modal="true" aria-label="Helper Bot">
 
   <!-- Header -->
   <div class="chatbot-header">
     <div class="chatbot-header-logo" aria-hidden="true">💬</div>
     <div class="chatbot-header-title">
-      <div class="chatbot-name">PNEC Helper</div>
+      <div class="chatbot-name">Helper Bot</div>
       <div class="chatbot-subtitle">Questions about the site or PNEC</div>
     </div>
+    <button class="chatbot-expand" id="chatbot-expand-btn" aria-label="Expand assistant" aria-pressed="false">⤢</button>
+    <button class="chatbot-modal-toggle" id="chatbot-modal-btn" aria-label="Open assistant in overlay" aria-pressed="false" hidden>▣</button>
     <button class="chatbot-close" id="chatbot-close-btn" aria-label="Close assistant">✕</button>
   </div>
 
@@ -37,7 +40,7 @@
           <input type="text"
                  id="chatbot-search-input"
                  placeholder="Ask a question..."
-                 aria-label="Ask PNEC Helper a question"
+                 aria-label="Ask Helper Bot a question"
                  autocomplete="off">
           <button type="button" class="chatbot-send-btn" id="chatbot-send-btn" aria-label="Send question">➤</button>
         </div>
@@ -66,6 +69,10 @@
           <div class="loading-overlay">
             <span class="spinner"></span> Loading topics…
           </div>
+        </div>
+        <div class="chatbot-utility-links">
+          <a class="chatbot-utility-link" href="{{ '/pages/find-your-neighborhood.html' | relative_url }}">Find Your Neighborhood</a>
+          <a class="chatbot-utility-link" href="{{ '/pages/contact.html' | relative_url }}">Contact PNEC</a>
         </div>
       </div>
     </div>
@@ -96,7 +103,7 @@
         <input type="text"
                id="chatbot-followup-input"
                placeholder="Ask a follow-up..."
-               aria-label="Ask PNEC Helper a follow-up question"
+               aria-label="Ask Helper Bot a follow-up question"
                autocomplete="off">
         <button type="button" class="chatbot-send-btn" id="chatbot-followup-send-btn" aria-label="Send follow-up">➤</button>
       </div>
@@ -166,15 +173,4 @@
   <div class="chatbot-footer">
     <p><a href="{{ '/pages/contact.html' | relative_url }}">Need a person? Contact PNEC directly.</a></p>
   </div>
-
-<script>
-  (function () {
-    setTimeout(function () {
-      var panel = document.getElementById('chatbot-panel');
-      var trigger = document.getElementById('chatbot-trigger-btn');
-      if (panel) panel.classList.add('open');
-      if (trigger) trigger.setAttribute('aria-expanded', 'true');
-    }, 900); // 1.5 seconds after page load
-  })();
-</script>
 </div><!-- /.chatbot-panel -->

@@ -99,7 +99,7 @@ function renderAssistantLoadingView(question) {
   const answerEl   = document.getElementById('answer-body');
   if (!questionEl || !answerEl) return;
 
-  questionEl.textContent = 'PNEC Helper';
+  questionEl.textContent = 'Helper Bot';
   ensureAssistantTranscript(answerEl);
   appendTranscriptMessage(answerEl, 'user', question);
   appendTranscriptMessage(answerEl, 'assistant', '<span class="spinner"></span> Thinking...', { isLoading: true, isHtml: true });
@@ -132,7 +132,7 @@ function setAnswerViewState(question, answer, options = {}) {
 function ensureAssistantTranscript(answerEl) {
   if (answerEl.querySelector('.chatbot-transcript')) return;
   answerEl.innerHTML = `
-    <div class="chatbot-answer-note">PNEC helper</div>
+    <div class="chatbot-answer-note">Helper Bot</div>
     <div class="chatbot-transcript" aria-live="polite"></div>`;
 }
 
@@ -143,7 +143,7 @@ function appendTranscriptMessage(answerEl, role, content, options = {}) {
   const messageEl = document.createElement('div');
   messageEl.className = `chatbot-message chatbot-message-${role}${options.isLoading ? ' assistant-loading' : ''}${options.unavailable ? ' chatbot-message-unavailable' : ''}`;
   messageEl.innerHTML = `
-    <div class="chatbot-message-label">${role === 'user' ? 'You' : 'PNEC Helper'}</div>
+    <div class="chatbot-message-label">${role === 'user' ? 'You' : 'Helper Bot'}</div>
     <div class="chatbot-message-body"></div>`;
 
   const bodyEl = messageEl.querySelector('.chatbot-message-body');
@@ -192,7 +192,7 @@ function renderSearchResults(results, query) {
   const helperAction = `
     <div class="chatbot-search-actions">
       <button class="btn btn-primary btn-sm ask-assistant-btn" data-query="${escapeHtml(query)}">
-        Ask PNEC Helper
+        Ask Helper Bot
       </button>
     </div>`;
 
@@ -203,7 +203,7 @@ function renderSearchResults(results, query) {
         <p>No results for "<strong>${escapeHtml(query)}</strong>"</p>
         <p>Can't find what you need?</p>
         <button class="btn btn-outline-red btn-sm" id="no-results-ask-btn" data-query="${escapeHtml(query)}">
-          Ask PNEC Helper
+          Ask Helper Bot
         </button>
       </div>`;
     return;

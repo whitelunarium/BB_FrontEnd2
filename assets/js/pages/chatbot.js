@@ -6,6 +6,8 @@
 // ─── Chatbot state ────────────────────────────────────────────────────────────
 let chatbotState = {
   isOpen:          false,
+  isExpanded:      false,
+  isModal:         false,
   currentScreen:   'screen-welcome',
   currentCategory: null,  // { id, name }
   currentItem:     null,  // { id, question, answer }
@@ -55,6 +57,9 @@ function initChatbot() {
   loadUserFromSession();
   bindTriggerButton();
   bindCloseButton();
+  bindExpandButton();
+  bindModalButton();
+  bindBackdrop();
   bindBackButtons();
   bindSearchInput();
   bindAskStaffForm();
@@ -95,6 +100,21 @@ function bindCloseButton() {
   if (closeBtn) closeBtn.addEventListener('click', closeChatPanel);
 }
 
+function bindExpandButton() {
+  const expandBtn = document.getElementById('chatbot-expand-btn');
+  if (expandBtn) expandBtn.addEventListener('click', toggleExpandPanel);
+}
+
+function bindModalButton() {
+  const modalBtn = document.getElementById('chatbot-modal-btn');
+  if (modalBtn) modalBtn.addEventListener('click', toggleModalPanel);
+}
+
+function bindBackdrop() {
+  const backdrop = document.getElementById('chatbot-backdrop');
+  if (backdrop) backdrop.addEventListener('click', closeChatPanel);
+}
+
 /**
  * Purpose: Toggle chatbot panel open or closed.
  * @returns {void}
@@ -110,6 +130,7 @@ function toggleChatPanel() {
 function openChatPanel() {
   const panel   = document.getElementById('chatbot-panel');
   const trigger = document.getElementById('chatbot-trigger-btn');
+  syncPanelModes();
   if (panel)   panel.classList.add('open');
   if (trigger) { trigger.classList.add('open'); trigger.setAttribute('aria-expanded', 'true'); }
   chatbotState.isOpen = true;
@@ -122,9 +143,60 @@ function openChatPanel() {
 function closeChatPanel() {
   const panel   = document.getElementById('chatbot-panel');
   const trigger = document.getElementById('chatbot-trigger-btn');
+  const backdrop = document.getElementById('chatbot-backdrop');
   if (panel)   panel.classList.remove('open');
   if (trigger) { trigger.classList.remove('open'); trigger.setAttribute('aria-expanded', 'false'); }
+  if (backdrop) {
+    backdrop.hidden = true;
+    backdrop.classList.remove('open');
+  }
+  chatbotState.isExpanded = false;
+  chatbotState.isModal = false;
+  syncPanelModes();
   chatbotState.isOpen = false;
+}
+
+function toggleExpandPanel() {
+  chatbotState.isExpanded = !chatbotState.isExpanded;
+  if (!chatbotState.isExpanded) chatbotState.isModal = false;
+  syncPanelModes();
+}
+
+function toggleModalPanel() {
+  if (!chatbotState.isExpanded) return;
+  chatbotState.isModal = !chatbotState.isModal;
+  syncPanelModes();
+}
+
+function syncPanelModes() {
+  const panel = document.getElementById('chatbot-panel');
+  const expandBtn = document.getElementById('chatbot-expand-btn');
+  const modalBtn = document.getElementById('chatbot-modal-btn');
+  const backdrop = document.getElementById('chatbot-backdrop');
+
+  if (panel) {
+    panel.classList.toggle('expanded', chatbotState.isExpanded);
+    panel.classList.toggle('modal', chatbotState.isModal);
+  }
+
+  if (expandBtn) {
+    expandBtn.setAttribute('aria-pressed', chatbotState.isExpanded ? 'true' : 'false');
+    expandBtn.setAttribute('aria-label', chatbotState.isExpanded ? 'Shrink assistant' : 'Expand assistant');
+    expandBtn.textContent = chatbotState.isExpanded ? '⤡' : '⤢';
+  }
+
+  if (modalBtn) {
+    modalBtn.hidden = !chatbotState.isExpanded;
+    modalBtn.setAttribute('aria-pressed', chatbotState.isModal ? 'true' : 'false');
+    modalBtn.setAttribute('aria-label', chatbotState.isModal ? 'Exit overlay mode' : 'Open assistant in overlay');
+    modalBtn.textContent = chatbotState.isModal ? '▤' : '▣';
+  }
+
+  if (backdrop) {
+    const showBackdrop = chatbotState.isOpen && chatbotState.isModal;
+    backdrop.hidden = !showBackdrop;
+    backdrop.classList.toggle('open', showBackdrop);
+  }
 }
 
 // ─── Category loading ─────────────────────────────────────────────────────────
@@ -602,7 +674,7 @@ function buildFallbackAnswer(query, relatedFaqs) {
   }
 
   if (/who are you|what can you do|help\b/.test(normalized)) {
-    return "I'm the PNEC helper. I can answer questions about Poway Neighborhood Emergency Corps, emergency preparedness resources, coordinators, volunteering, and where to find things on this site.";
+    return "I'm Helper Bot. I can answer questions about Poway Neighborhood Emergency Corps, emergency preparedness resources, coordinators, volunteering, and where to find things on this site.";
   }
 
   const mentionsPnec =
@@ -726,7 +798,7 @@ async function askAssistant(query) {
       apiBase: config.apiBase || '',
       endpoint: config.endpoint || '',
       history: recentHistory,
-      systemPrompt: `You are the PNEC Helper for the Poway Neighborhood Emergency Corps website.
+      systemPrompt: `You are Helper Bot for the Poway Neighborhood Emergency Corps website.
 
 Your role is to act like a focused PNEC contact and preparedness information helper, not a general-purpose chatbot.
 Use the short conversation history to understand follow-up questions.
@@ -769,7 +841,7 @@ ${promptContext}`,
     renderAssistantAnswerView(trimmedQuery, answer);
     focusFollowupInput();
   } catch (error) {
-    console.error('PNEC helper failed to answer:', error);
+    console.error('Helper Bot failed to answer:', error);
     const unavailableMessage = getAssistantUnavailableMessage(error);
     if (unavailableMessage) {
       renderAssistantUnavailableView(unavailableMessage);

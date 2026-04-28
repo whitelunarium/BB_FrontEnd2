@@ -55,16 +55,13 @@
           <a href="{{ '/pages/programs-and-services.html' | relative_url }}" class="nav-link{% if page.url contains '/programs-and-services' %} active{% endif %}">Programs and Services</a>
         </li>
         <li class="nav-item">
-          <a href="{{ '/pages/preparedness-resources.html' | relative_url }}" class="nav-link{% if page.url contains '/preparedness-resources' %} active{% endif %}">Preparedness Resources</a>
+          <a href="{{ '/pages/preparedness-resources.html' | relative_url }}" class="nav-link{% if page.url contains '/preparedness-resources' or page.url contains '/poway-statistics-and-information' %} active{% endif %}">Preparedness &amp; Help</a>
         </li>
         <li class="nav-item">
           <a href="{{ '/pages/community-events-and-activities.html' | relative_url }}" class="nav-link{% if page.url contains '/community-events-and-activities' %} active{% endif %}">Community Events</a>
         </li>
         <li class="nav-item">
           <a href="{{ '/pages/find-your-neighborhood.html' | relative_url }}" class="nav-link{% if page.url contains '/find-your-neighborhood' %} active{% endif %}">Find Your Neighborhood</a>
-        </li>
-        <li class="nav-item">
-          <a href="{{ '/pages/poway-statistics-and-information.html' | relative_url }}" class="nav-link{% if page.url contains '/poway-statistics-and-information' %} active{% endif %}">Statistics and Information</a>
         </li>
         <li class="nav-item">
           <a href="{{ '/pages/contact.html' | relative_url }}" class="nav-link{% if page.url contains '/contact' %} active{% endif %}">Contact</a>
@@ -99,10 +96,9 @@
       <a href="{{ '/' | relative_url }}">Home</a>
       <a href="{{ '/pages/about.html' | relative_url }}">About</a>
       <a href="{{ '/pages/programs-and-services.html' | relative_url }}">Programs and Services</a>
-      <a href="{{ '/pages/preparedness-resources.html' | relative_url }}">Preparedness Resources</a>
+      <a href="{{ '/pages/preparedness-resources.html' | relative_url }}">Preparedness &amp; Help</a>
       <a href="{{ '/pages/community-events-and-activities.html' | relative_url }}">Community Events</a>
       <a href="{{ '/pages/find-your-neighborhood.html' | relative_url }}">Find Your Neighborhood</a>
-      <a href="{{ '/pages/poway-statistics-and-information.html' | relative_url }}">Statistics &amp; Info</a>
       <a href="{{ '/pages/contact.html' | relative_url }}">Contact</a>
       <a href="{{ '/pages/volunteer.html' | relative_url }}">Volunteer / Apply</a>
     </li>

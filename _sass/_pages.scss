@@ -1,6 +1,133 @@
 // _pages.scss
 // PNEC Page-specific styles ? auth, kit, map, gallery, game, calendar
 
+.pnec-page-shell {
+  min-height: calc(100vh - 140px);
+  background: linear-gradient(180deg, #f7faf8 0%, #ffffff 120px);
+}
+
+.content-section {
+  max-width: $max-width;
+  margin: 0 auto;
+  padding: 0 $spacing-lg $spacing-xxl;
+
+  @media (max-width: $bp-md) {
+    padding: 0 $spacing-md $spacing-xl;
+  }
+}
+
+.section-block {
+  margin-bottom: $spacing-xl;
+}
+
+.section-kicker {
+  margin: 0 0 10px;
+  color: $color-green-dark;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.section-title {
+  margin: 0 0 12px;
+  color: $color-navy;
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  line-height: 1.1;
+}
+
+.section-copy {
+  margin: 0;
+  color: $color-gray-600;
+  font-size: 1rem;
+  line-height: 1.7;
+  max-width: 760px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: $spacing-lg;
+
+  @media (max-width: $bp-md) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.info-card {
+  padding: $spacing-lg;
+  border: 1px solid #dbe6dd;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 14px 30px rgba(16, 38, 63, 0.05);
+
+  h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: $color-navy;
+  }
+
+  p:last-child,
+  ul:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.split-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+  gap: $spacing-xl;
+  align-items: start;
+
+  @media (max-width: $bp-md) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cta-band {
+  margin-top: $spacing-xl;
+  padding: $spacing-xl;
+  border-radius: 22px;
+  background: linear-gradient(135deg, #10263f 0%, #1d4f35 100%);
+  color: $color-white-pure;
+
+  h2,
+  h3,
+  p,
+  li {
+    color: inherit;
+  }
+
+  p {
+    max-width: 760px;
+  }
+
+  a {
+    color: inherit;
+  }
+}
+
+.media-frame {
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid #dbe6dd;
+  background: #fff;
+  box-shadow: 0 14px 30px rgba(16, 38, 63, 0.05);
+
+  img {
+    width: 100%;
+    display: block;
+    height: auto;
+  }
+}
+
+.list-clean {
+  margin: 0;
+  padding-left: 18px;
+  color: $color-gray-600;
+  line-height: 1.7;
+}
+
 // --- Page hero banner (for inner pages) --------------------------------------
 .page-hero {
   background: $color-navy;

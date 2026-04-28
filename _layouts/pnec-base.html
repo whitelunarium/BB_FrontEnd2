@@ -81,15 +81,21 @@
   {% else %}
 
   {% unless page.use_poway_embed %}
+  {% if page.use_poway_live_styles %}
   {% include poway-header.html %}
+  {% else %}
+  {% include nav/navbar.html %}
+  {% endif %}
   {% endunless %}
 
-  <main id="jupiterx-main" class="jupiterx-main" style="{% if page.use_poway_embed %}margin:0;padding:0;{% endif %}">
+  <main id="jupiterx-main" class="jupiterx-main pnec-page-shell" style="{% if page.use_poway_embed %}margin:0;padding:0;{% endif %}">
     {{ content }}
   </main>
-  </div><!-- closes jupiterx-site -->
 
   {% unless page.use_poway_embed %}
+  {% if page.use_poway_live_styles %}
+  {% include poway-auth-footer.html %}
+  {% endif %}
   <!-- FAQ Chatbot Widget (on every page) -->
   {% include chatbot/chatbot-widget.html %}
   {% endunless %}
