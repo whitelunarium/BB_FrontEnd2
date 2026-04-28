@@ -1,0 +1,196 @@
+---
+layout: pnec-base
+title: "Blog"
+description: "News, updates, and emergency preparedness resources from the Poway Neighborhood Emergency Corps."
+use_poway_live_styles: true
+use_poway_source_clone: true
+head_extra: |
+  <style>
+    .blog-hero {
+      min-height: 380px;
+      background: linear-gradient(rgba(9,25,45,0.62), rgba(9,25,45,0.62)),
+                  url('/assets/images/Poway_Flood.webp') center/cover no-repeat;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 60px 24px;
+    }
+    .blog-hero h1 {
+      color: #fff;
+      font-size: clamp(2.4rem, 6vw, 4.2rem);
+      font-weight: 300;
+      margin: 0 0 14px;
+      line-height: 1.1;
+    }
+    .blog-hero p {
+      color: rgba(255,255,255,.82);
+      font-size: 18px;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    .blog-shell {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 56px 24px 80px;
+    }
+    .blog-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 28px;
+    }
+    .blog-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(10,22,40,.08);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform .18s, box-shadow .18s;
+      text-decoration: none;
+      color: inherit;
+    }
+    .blog-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 36px rgba(10,22,40,.14);
+    }
+    .blog-card-img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      background: #e8edf4;
+    }
+    .blog-card-img-placeholder {
+      width: 100%;
+      height: 200px;
+      background: linear-gradient(135deg, #0a1628 0%, #1a3a5c 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.8rem;
+    }
+    .blog-card-body {
+      padding: 22px 24px 24px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .blog-card-date {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #72af2f;
+      margin-bottom: 8px;
+    }
+    .blog-card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #0a1628;
+      margin: 0 0 10px;
+      line-height: 1.3;
+    }
+    .blog-card-excerpt {
+      font-size: .9rem;
+      color: #5b6f8a;
+      line-height: 1.6;
+      flex: 1;
+    }
+    .blog-card-read {
+      margin-top: 18px;
+      font-size: .88rem;
+      font-weight: 700;
+      color: #72af2f;
+    }
+    .blog-empty {
+      text-align: center;
+      padding: 80px 20px;
+      color: #7a8fa8;
+    }
+    .blog-empty-icon { font-size: 3rem; margin-bottom: 14px; }
+    .blog-empty h2 { color: #0a1628; margin: 0 0 8px; }
+    .blog-loading {
+      display: flex;
+      justify-content: center;
+      padding: 60px;
+      color: #7a8fa8;
+      font-size: .95rem;
+    }
+    @media (max-width: 600px) {
+      .blog-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+---
+
+<div class="blog-hero">
+  <div>
+    <h1>PNEC Blog</h1>
+    <p>Stay informed with the latest news, preparedness tips, and community updates from Poway NEC.</p>
+  </div>
+</div>
+
+<div class="blog-shell">
+  <div id="blog-loading" class="blog-loading">Loading posts…</div>
+  <div id="blog-grid" class="blog-grid" style="display:none;"></div>
+  <div id="blog-empty" class="blog-empty" style="display:none;">
+    <div class="blog-empty-icon">📰</div>
+    <h2>No posts yet</h2>
+    <p>Check back soon for updates from the PNEC team.</p>
+  </div>
+</div>
+
+<script>
+(function() {
+  var base = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+    ? 'http://127.0.0.1:8425'
+    : 'https://beasts.opencodingsociety.com';
+
+  var postBase = (location.pathname.includes('/Beasts_FrontEnd') || location.pathname.startsWith('/Beasts'))
+    ? '/Beasts_FrontEnd/pages/blog-post.html'
+    : '/pages/blog-post.html';
+
+  function fmt(iso) {
+    if (!iso) return '';
+    try { return new Date(iso).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' }); }
+    catch(e) { return ''; }
+  }
+
+  fetch(base + '/api/blog', { credentials: 'include' })
+    .then(function(r) { return r.ok ? r.json() : { posts: [] }; })
+    .then(function(data) {
+      var posts = data.posts || [];
+      document.getElementById('blog-loading').style.display = 'none';
+
+      if (!posts.length) {
+        document.getElementById('blog-empty').style.display = 'block';
+        return;
+      }
+
+      var grid = document.getElementById('blog-grid');
+      grid.style.display = '';
+      grid.innerHTML = posts.map(function(p) {
+        var imgHtml = p.cover_image_url
+          ? '<img class="blog-card-img" src="' + p.cover_image_url + '" alt="" loading="lazy">'
+          : '<div class="blog-card-img-placeholder">📰</div>';
+        var excerpt = (p.excerpt || '').slice(0, 140) + ((p.excerpt || '').length > 140 ? '…' : '');
+        return '<a class="blog-card" href="' + postBase + '?slug=' + encodeURIComponent(p.slug) + '">'
+          + imgHtml
+          + '<div class="blog-card-body">'
+          + '<div class="blog-card-date">' + fmt(p.created_at) + '</div>'
+          + '<h2 class="blog-card-title">' + _esc(p.title) + '</h2>'
+          + (excerpt ? '<p class="blog-card-excerpt">' + _esc(excerpt) + '</p>' : '')
+          + '<span class="blog-card-read">Read more →</span>'
+          + '</div></a>';
+      }).join('');
+    })
+    .catch(function() {
+      document.getElementById('blog-loading').style.display = 'none';
+      document.getElementById('blog-empty').style.display = 'block';
+    });
+
+  function _esc(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+})();
+</script>

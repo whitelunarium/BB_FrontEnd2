@@ -1,0 +1,222 @@
+---
+layout: pnec-base
+title: "Blog Post"
+description: "Read the latest posts from the Poway Neighborhood Emergency Corps."
+use_poway_live_styles: true
+use_poway_source_clone: true
+head_extra: |
+  <style>
+    .bp-wrap {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 56px 24px 80px;
+    }
+    .bp-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #72af2f;
+      font-size: .9rem;
+      font-weight: 700;
+      text-decoration: none;
+      margin-bottom: 32px;
+    }
+    .bp-back:hover { text-decoration: underline; }
+    .bp-cover {
+      width: 100%;
+      max-height: 420px;
+      object-fit: cover;
+      border-radius: 16px;
+      margin-bottom: 32px;
+    }
+    .bp-meta {
+      font-size: .85rem;
+      color: #72af2f;
+      font-weight: 700;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .bp-title {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 800;
+      color: #0a1628;
+      margin: 0 0 16px;
+      line-height: 1.15;
+    }
+    .bp-byline {
+      font-size: .9rem;
+      color: #7a8fa8;
+      margin-bottom: 32px;
+      padding-bottom: 28px;
+      border-bottom: 2px solid #e8edf4;
+    }
+    .bp-content {
+      font-size: 1.05rem;
+      line-height: 1.8;
+      color: #2c3e50;
+    }
+    .bp-content h2, .bp-content h3 {
+      color: #0a1628;
+      margin-top: 2em;
+    }
+    .bp-content img {
+      max-width: 100%;
+      border-radius: 10px;
+      margin: 16px 0;
+    }
+    .bp-content a { color: #72af2f; }
+    .bp-content ul, .bp-content ol {
+      padding-left: 1.5em;
+      margin: 1em 0;
+    }
+    .bp-content blockquote {
+      border-left: 4px solid #72af2f;
+      margin: 1.5em 0;
+      padding: 12px 20px;
+      background: #f0f7e8;
+      border-radius: 0 8px 8px 0;
+      color: #445;
+    }
+    .bp-loading {
+      text-align: center;
+      padding: 80px 20px;
+      color: #7a8fa8;
+    }
+    .bp-error {
+      text-align: center;
+      padding: 80px 20px;
+      color: #c0392b;
+    }
+    .bp-error h2 { color: #0a1628; }
+    .bp-admin-bar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 24px;
+      padding: 14px 18px;
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 10px;
+      font-size: .88rem;
+    }
+    .bp-admin-bar span { flex: 1; font-weight: 600; color: #856404; }
+    .bp-btn {
+      padding: 7px 14px;
+      border-radius: 8px;
+      border: 0;
+      cursor: pointer;
+      font-size: .85rem;
+      font-weight: 700;
+    }
+    .bp-btn-edit   { background: #0a1628; color: #fff; }
+    .bp-btn-delete { background: #c0392b; color: #fff; }
+    @media (max-width: 600px) {
+      .bp-wrap { padding: 32px 16px 56px; }
+    }
+  </style>
+---
+
+<div class="bp-wrap" id="bp-wrap">
+  <div class="bp-loading" id="bp-loading">Loading post…</div>
+</div>
+
+<script>
+(function() {
+  var base = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+    ? 'http://127.0.0.1:8425'
+    : 'https://beasts.opencodingsociety.com';
+
+  var blogListUrl = (location.pathname.includes('/Beasts_FrontEnd') || location.pathname.startsWith('/Beasts'))
+    ? '/Beasts_FrontEnd/pages/blog.html'
+    : '/pages/blog.html';
+
+  var adminUrl = (location.pathname.includes('/Beasts_FrontEnd') || location.pathname.startsWith('/Beasts'))
+    ? '/Beasts_FrontEnd/pages/admin.html'
+    : '/pages/admin.html';
+
+  var params = new URLSearchParams(location.search);
+  var slug   = params.get('slug');
+
+  if (!slug) { showError('No post specified.'); return; }
+
+  var token = localStorage.getItem('pnec_token');
+  var user  = JSON.parse(localStorage.getItem('pnec_user') || 'null');
+  var isAdmin = user && user.role === 'admin';
+
+  var headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+
+  fetch(base + '/api/blog/' + encodeURIComponent(slug), { credentials: 'include', headers: headers })
+    .then(function(r) {
+      if (!r.ok) throw new Error(r.status);
+      return r.json();
+    })
+    .then(function(data) {
+      var p = data.post;
+      if (!p) { showError('Post not found.'); return; }
+
+      document.title = p.title + ' — PNEC Blog';
+
+      var html = '';
+
+      if (isAdmin) {
+        html += '<div class="bp-admin-bar">'
+          + '<span>⚠️ Admin view' + (!p.published ? ' — this post is a <strong>draft</strong> (not visible to the public)' : '') + '</span>'
+          + '<button class="bp-btn bp-btn-edit" onclick="editPost(' + p.id + ')">Edit</button>'
+          + '<button class="bp-btn bp-btn-delete" onclick="deletePost(' + p.id + ',\'' + _esc(p.slug) + '\')">Delete</button>'
+          + '</div>';
+      }
+
+      html += '<a class="bp-back" href="' + blogListUrl + '">← Back to Blog</a>';
+
+      if (p.cover_image_url) {
+        html += '<img class="bp-cover" src="' + _esc(p.cover_image_url) + '" alt="">';
+      }
+
+      html += '<div class="bp-meta">' + fmt(p.created_at) + '</div>';
+      html += '<h1 class="bp-title">' + _esc(p.title) + '</h1>';
+      html += '<div class="bp-byline">By ' + _esc(p.author_name || 'PNEC Team') + '</div>';
+      html += '<div class="bp-content">' + (p.content || '') + '</div>';
+
+      document.getElementById('bp-wrap').innerHTML = html;
+    })
+    .catch(function(e) {
+      if (e.message === '404') showError('Post not found.');
+      else showError('Could not load this post. Please try again.');
+    });
+
+  function showError(msg) {
+    document.getElementById('bp-wrap').innerHTML =
+      '<a class="bp-back" href="' + blogListUrl + '">← Back to Blog</a>'
+      + '<div class="bp-error"><h2>Oops</h2><p>' + msg + '</p></div>';
+  }
+
+  function fmt(iso) {
+    if (!iso) return '';
+    try { return new Date(iso).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' }); }
+    catch(e) { return ''; }
+  }
+
+  function _esc(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  window.editPost = function(id) {
+    window.location.href = adminUrl + '#blog-edit-' + id;
+  };
+
+  window.deletePost = function(id, slug) {
+    if (!confirm('Delete this post? This cannot be undone.')) return;
+    var h = { 'Content-Type': 'application/json' };
+    var tok = localStorage.getItem('pnec_token');
+    if (tok) h['Authorization'] = 'Bearer ' + tok;
+    fetch(base + '/api/blog/' + id, { method: 'DELETE', credentials: 'include', headers: h })
+      .then(function(r) {
+        if (r.ok) window.location.href = blogListUrl;
+        else alert('Failed to delete post.');
+      })
+      .catch(function() { alert('Network error. Please try again.'); });
+  };
+})();
+</script>

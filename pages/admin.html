@@ -211,6 +211,9 @@ table.adm-table tr:hover td { background: rgba(255,255,255,.03); }
       <div class="adm-nav-item" data-tab="media">
         <span class="adm-nav-icon">🖼️</span> Media / Gallery
       </div>
+      <div class="adm-nav-item" data-tab="blog">
+        <span class="adm-nav-icon">📝</span> Blog
+      </div>
       <div class="adm-nav-item" data-tab="settings">
         <span class="adm-nav-icon">⚙️</span> Site Settings
       </div>
@@ -239,6 +242,7 @@ table.adm-table tr:hover td { background: rgba(255,255,255,.03); }
           <div class="adm-stat"><div class="adm-stat-val" id="stat-faqs">—</div><div class="adm-stat-lbl">FAQ Entries</div></div>
           <div class="adm-stat"><div class="adm-stat-val" id="stat-media">—</div><div class="adm-stat-lbl">Media Posts</div></div>
           <div class="adm-stat"><div class="adm-stat-val" id="stat-alerts">—</div><div class="adm-stat-lbl">Active Alerts</div></div>
+          <div class="adm-stat"><div class="adm-stat-val" id="stat-posts">—</div><div class="adm-stat-lbl">Blog Posts</div></div>
         </div>
 
         <div class="adm-panel">
@@ -248,6 +252,7 @@ table.adm-table tr:hover td { background: rgba(255,255,255,.03); }
             <button class="btn btn-primary" onclick="admSwitchTab('alerts');document.getElementById('adm-new-alert-btn').click()">🚨 Post Alert</button>
             <button class="btn btn-ghost" onclick="admSwitchTab('users')">👥 Manage Users</button>
             <button class="btn btn-ghost" onclick="admSwitchTab('settings')">⚙️ Edit Site Info</button>
+            <button class="btn btn-primary" onclick="admSwitchTab('blog');document.getElementById('adm-new-post-btn').click()">📝 New Blog Post</button>
             <a href="{{ '/' | relative_url }}" target="_blank" class="btn btn-ghost" style="text-decoration:none;">🌐 View Site</a>
           </div>
         </div>
@@ -371,6 +376,28 @@ table.adm-table tr:hover td { background: rgba(255,255,255,.03); }
         </div>
       </div>
 
+      <!-- ── BLOG ──────────────────────────────────────────────────────────── -->
+      <div id="tab-blog" class="adm-tab">
+        <div class="adm-topbar">
+          <div>
+            <h2>Blog</h2>
+            <p>Write, publish, and manage posts that appear on the public blog.</p>
+          </div>
+          <button id="adm-new-post-btn" class="btn btn-primary" onclick="admOpenBlogModal()">✏️ New Post</button>
+        </div>
+        <div class="adm-panel">
+          <div class="adm-panel-head"><h3>All Posts</h3></div>
+          <div class="adm-table-wrap">
+            <table class="adm-table">
+              <thead><tr>
+                <th>Title</th><th>Status</th><th>Author</th><th>Date</th><th>Actions</th>
+              </tr></thead>
+              <tbody id="blog-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <!-- ── SETTINGS ───────────────────────────────────────────────────── -->
       <div id="tab-settings" class="adm-tab">
         <div class="adm-topbar">
@@ -476,6 +503,44 @@ table.adm-table tr:hover td { background: rgba(255,255,255,.03); }
   </div>
 </div>
 
+<!-- ── Blog Post Modal ─────────────────────────────────────────────────────── -->
+<div class="adm-modal-backdrop" id="blog-modal">
+  <div class="adm-modal" style="width:min(760px,100%);">
+    <h3 id="blog-modal-title">New Post</h3>
+    <input type="hidden" id="blog-modal-id">
+    <div class="adm-form-group">
+      <label>Title *</label>
+      <input id="blog-title" class="adm-input" placeholder="e.g. Preparing for Wildfire Season">
+    </div>
+    <div class="adm-form-row">
+      <div class="adm-form-group">
+        <label>Slug (URL path) — auto-generated if blank</label>
+        <input id="blog-slug" class="adm-input" placeholder="preparing-for-wildfire-season">
+      </div>
+      <div class="adm-form-group">
+        <label>Cover Image URL (optional)</label>
+        <input id="blog-cover" class="adm-input" placeholder="https://…">
+      </div>
+    </div>
+    <div class="adm-form-group">
+      <label>Excerpt (short summary shown in listings)</label>
+      <input id="blog-excerpt" class="adm-input" placeholder="A brief summary displayed on the blog listing page…">
+    </div>
+    <div class="adm-form-group">
+      <label>Content (HTML supported)</label>
+      <textarea id="blog-content" class="adm-textarea" style="min-height:240px;" placeholder="Write your post content here. You can use HTML tags like &lt;p&gt;, &lt;h2&gt;, &lt;strong&gt;, &lt;ul&gt;, &lt;img&gt;, etc."></textarea>
+    </div>
+    <div class="adm-form-group" style="flex-direction:row;align-items:center;gap:8px;">
+      <input type="checkbox" id="blog-published" style="width:18px;height:18px;cursor:pointer;">
+      <label for="blog-published" style="margin:0;cursor:pointer;color:var(--adm-text);font-size:.9rem;">Publish immediately (visible to public)</label>
+    </div>
+    <div class="adm-modal-footer">
+      <button class="btn btn-ghost" onclick="admCloseModal('blog-modal')">Cancel</button>
+      <button class="btn btn-primary" id="blog-save-btn" onclick="admSaveBlogPost()">Save Post</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="adm-toast" id="adm-toast"></div>
 
@@ -495,7 +560,7 @@ let admConfigEntries = [];
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
 (function boot() {
-  const u = JSON.parse(sessionStorage.getItem('pnec_user') || 'null');
+  const u = JSON.parse(localStorage.getItem('pnec_user') || 'null');
   if (!u || u.role !== 'admin') {
     document.getElementById('adm-gate').classList.add('visible');
     return;
@@ -529,6 +594,7 @@ function admSwitchTab(name) {
     users:    admLoadUsers,
     faq:      admLoadFaq,
     media:    admLoadMedia,
+    blog:     admLoadBlog,
     settings: admLoadSettings,
   };
   loaders[name]?.();
@@ -543,6 +609,7 @@ function admLoadOverview() {
     document.getElementById('stat-faqs').textContent   = stats.totalFaqs;
     document.getElementById('stat-media').textContent  = stats.totalMedia;
     document.getElementById('stat-alerts').textContent = stats.activeAnnouncements;
+    document.getElementById('stat-posts').textContent  = stats.totalPosts;
 
     const rb = document.getElementById('adm-role-breakdown');
     rb.innerHTML = '';
@@ -893,6 +960,116 @@ function admSaveConfigEntry(key) {
   adminUpdateConfigEntry(key, value)
     .then(() => admToast('Setting saved.', 'success'))
     .catch(e => admToast(e.message || 'Failed to save.', 'error'));
+}
+
+// ── Blog ──────────────────────────────────────────────────────────────────────
+
+let admBlogCache = [];
+
+function admLoadBlog() {
+  const tbody = document.getElementById('blog-tbody');
+  tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;color:var(--adm-muted);">Loading…</td></tr>';
+  adminFetchBlogPosts().then(posts => {
+    admBlogCache = posts;
+    admRenderBlog(posts);
+  }).catch(() => { tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;color:#e57373;">Failed to load posts.</td></tr>'; });
+}
+
+function admRenderBlog(posts) {
+  const tbody = document.getElementById('blog-tbody');
+  if (!posts.length) {
+    tbody.innerHTML = `<tr><td colspan="5"><div class="adm-empty"><div class="adm-empty-icon">📝</div>No posts yet. Write your first one!</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = posts.map(p => `
+    <tr>
+      <td>
+        <strong>${escHtml(p.title)}</strong>
+        ${p.excerpt ? `<br><span style="font-size:.8rem;color:var(--adm-muted);">${escHtml(p.excerpt.slice(0,90))}${p.excerpt.length>90?'…':''}</span>` : ''}
+      </td>
+      <td><span class="chip ${p.published ? 'chip-active' : 'chip-inactive'}">${p.published ? 'Published' : 'Draft'}</span></td>
+      <td style="color:var(--adm-muted);font-size:.85rem;">${escHtml(p.author_name || '—')}</td>
+      <td style="color:var(--adm-muted);font-size:.82rem;">${formatDate(p.created_at)}</td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-ghost btn-sm" onclick="admEditBlogPost(${p.id})">Edit</button>
+        <button class="btn btn-ghost btn-sm" onclick="admToggleBlogPublish(${p.id},${!p.published})">${p.published ? 'Unpublish' : 'Publish'}</button>
+        <button class="btn btn-danger btn-sm" onclick="admConfirmDeleteBlogPost(${p.id})">Delete</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function admOpenBlogModal(existingId) {
+  document.getElementById('blog-modal-title').textContent = existingId ? 'Edit Post' : 'New Post';
+  document.getElementById('blog-modal-id').value    = existingId || '';
+  document.getElementById('blog-title').value       = '';
+  document.getElementById('blog-slug').value        = '';
+  document.getElementById('blog-cover').value       = '';
+  document.getElementById('blog-excerpt').value     = '';
+  document.getElementById('blog-content').value     = '';
+  document.getElementById('blog-published').checked = false;
+  document.getElementById('blog-save-btn').textContent = existingId ? 'Update Post' : 'Save Post';
+
+  if (existingId) {
+    const p = admBlogCache.find(x => x.id === existingId);
+    if (p) {
+      document.getElementById('blog-title').value       = p.title;
+      document.getElementById('blog-slug').value        = p.slug;
+      document.getElementById('blog-cover').value       = p.cover_image_url || '';
+      document.getElementById('blog-excerpt').value     = p.excerpt || '';
+      document.getElementById('blog-published').checked = p.published;
+      // fetch full content for edit
+      fetch(`${API_BASE}/api/blog/${p.slug}`, { credentials: 'include' })
+        .then(r => r.ok ? r.json() : null)
+        .then(d => { if (d?.post) document.getElementById('blog-content').value = d.post.content || ''; })
+        .catch(() => {});
+    }
+  }
+  document.getElementById('blog-modal').classList.add('open');
+}
+
+function admEditBlogPost(id) { admOpenBlogModal(id); }
+
+function admSaveBlogPost() {
+  const id      = document.getElementById('blog-modal-id').value;
+  const title   = document.getElementById('blog-title').value.trim();
+  const content = document.getElementById('blog-content').value;
+
+  if (!title)   { admToast('Title is required.', 'error'); return; }
+  if (!content) { admToast('Content is required.', 'error'); return; }
+
+  const btn = document.getElementById('blog-save-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  const payload = {
+    title,
+    slug:            document.getElementById('blog-slug').value.trim() || undefined,
+    content,
+    excerpt:         document.getElementById('blog-excerpt').value.trim() || null,
+    cover_image_url: document.getElementById('blog-cover').value.trim() || null,
+    published:       document.getElementById('blog-published').checked,
+  };
+
+  const call = id ? adminUpdateBlogPost(parseInt(id), payload) : adminCreateBlogPost(payload);
+  call.then(() => {
+    admCloseModal('blog-modal');
+    admToast(id ? 'Post updated.' : 'Post created!', 'success');
+    admLoadBlog();
+  }).catch(e => admToast(e.message || 'Failed to save post.', 'error'))
+    .finally(() => { btn.disabled = false; btn.textContent = id ? 'Update Post' : 'Save Post'; });
+}
+
+function admToggleBlogPublish(id, publish) {
+  adminUpdateBlogPost(id, { published: publish })
+    .then(() => { admToast(publish ? 'Post published.' : 'Post unpublished.', 'success'); admLoadBlog(); })
+    .catch(e => admToast(e.message || 'Failed.', 'error'));
+}
+
+function admConfirmDeleteBlogPost(id) {
+  const p = admBlogCache.find(x => x.id === id);
+  if (!confirm(`Delete "${p ? p.title : 'this post'}"? This cannot be undone.`)) return;
+  adminDeleteBlogPost(id).then(() => { admToast('Post deleted.', 'success'); admLoadBlog(); })
+    .catch(e => admToast(e.message || 'Failed.', 'error'));
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
