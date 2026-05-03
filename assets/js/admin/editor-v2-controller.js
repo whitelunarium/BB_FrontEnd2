@@ -53,7 +53,7 @@
   let elPageSel, elSidebarTree, elSettingsPanel, elAddSectionBtn;
   let elSavePub, elPreviewBtn, elInspectorBtn, elShareBtn;
   let elIframe, elIframeUrl, elBanner, elToast, elPicker, elPickerList, elPickerClose;
-  let elTabSections, elTabTheme, elPanelSections, elPanelTheme;
+  let elTabSections, elTabTheme, elTabHistory, elPanelSections, elPanelTheme, elPanelHistory;
   let elViewportBtns, elIframeFrame;
   let elUndoBtn, elRedoBtn;
   let elPickerSearch, elAiPrompt, elAiGo;
@@ -80,8 +80,10 @@
 
     elTabSections   = document.getElementById('v2-tab-sections');
     elTabTheme      = document.getElementById('v2-tab-theme');
+    elTabHistory    = document.getElementById('v2-tab-history');
     elPanelSections = document.getElementById('v2-panel-sections');
     elPanelTheme    = document.getElementById('v2-panel-theme');
+    elPanelHistory  = document.getElementById('v2-panel-history');
     elViewportBtns  = document.querySelectorAll('.v2-viewport-btn');
     elIframeFrame   = document.getElementById('v2-iframe-frame');
     elUndoBtn       = document.getElementById('v2-undo');
@@ -100,6 +102,7 @@
     elIframe.addEventListener('load', flushQueue);
     if (elTabSections) elTabSections.addEventListener('click', () => switchSidebarTab('sections'));
     if (elTabTheme)    elTabTheme.addEventListener('click',    () => switchSidebarTab('theme'));
+    if (elTabHistory)  elTabHistory.addEventListener('click',  () => switchSidebarTab('history'));
     if (elViewportBtns) elViewportBtns.forEach(btn =>
       btn.addEventListener('click', () => setViewport(btn.dataset.viewport)));
     if (elUndoBtn) elUndoBtn.addEventListener('click', undo);
@@ -122,6 +125,23 @@
       toast('Could not load sections registry.', 'error');
       state.registry = [];
     }
+
+    // Auto-discover pages instead of relying on hardcoded option list
+    try {
+      const res = await fetch(_apiBase() + '/api/cms/pages', { credentials: 'include' });
+      if (res.ok) {
+        const body = await res.json();
+        const pages = body.pages || [];
+        const known = new Set(Array.from(elPageSel.options).map(o => o.value));
+        pages.forEach(p => {
+          if (known.has(p.page_slug)) return;
+          const opt = document.createElement('option');
+          opt.value = p.page_slug;
+          opt.textContent = p.page_slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+          elPageSel.appendChild(opt);
+        });
+      }
+    } catch (_e) { /* ignore */ }
 
     await loadPage(state.pageSlug);
   }
@@ -698,40 +718,94 @@
     const wrap = document.createElement('div');
     const preview = document.createElement('div');
     preview.className = 'v2-image-preview';
-    preview.textContent = initial || '(no image)';
     if (initial) {
       const img = document.createElement('img');
-      img.src = initial;
-      img.alt = '';
-      img.className = 'v2-image-thumb';
-      preview.innerHTML = '';
+      img.src = initial; img.alt = ''; img.className = 'v2-image-thumb';
       preview.appendChild(img);
+    } else {
+      preview.textContent = '(no image)';
     }
     wrap.appendChild(preview);
+
+    async function setUrl(url) {
+      preview.innerHTML = '';
+      const img = document.createElement('img');
+      img.src = url; img.alt = ''; img.className = 'v2-image-thumb';
+      preview.appendChild(img);
+      await applyPatch({ op: 'set', sid: state.selectedSid, key: field.id, value: url });
+      postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
+    }
+
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex; gap:6px; margin-top:6px;';
+    const libBtn = document.createElement('button');
+    libBtn.className = 'v2-btn v2-btn-ghost';
+    libBtn.style.flex = '1';
+    libBtn.textContent = '📁 Library';
+    libBtn.addEventListener('click', () => openAssetLibrary(setUrl));
+    row.appendChild(libBtn);
+    const upBtn = document.createElement('button');
+    upBtn.className = 'v2-btn';
+    upBtn.style.flex = '1';
+    upBtn.textContent = '⬆ Upload';
     const fileIn = document.createElement('input');
-    fileIn.type = 'file';
-    fileIn.accept = 'image/*';
-    fileIn.className = 'v2-input';
+    fileIn.type = 'file'; fileIn.accept = 'image/*'; fileIn.style.display = 'none';
+    upBtn.addEventListener('click', () => fileIn.click());
     fileIn.addEventListener('change', async () => {
-      const f = fileIn.files && fileIn.files[0];
-      if (!f) return;
-      try {
-        const { url } = await window.v2UploadImage(f);
-        preview.innerHTML = '';
-        const img = document.createElement('img');
-        img.src = url;
-        img.alt = '';
-        img.className = 'v2-image-thumb';
-        preview.appendChild(img);
-        await applyPatch({ op: 'set', sid: state.selectedSid, key: field.id, value: url });
-        postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
-      } catch (e) {
-        toast('Image upload failed.', 'error');
-      }
+      const f = fileIn.files && fileIn.files[0]; if (!f) return;
+      try { const { url } = await window.v2UploadImage(f); await setUrl(url); }
+      catch (e) { toast('Image upload failed.', 'error'); }
     });
+    row.appendChild(upBtn);
+    wrap.appendChild(row);
     wrap.appendChild(fileIn);
     return wrap;
   }
+
+  // ── Asset library modal ─────────────────────────────────────────────────
+  let _assetCallback = null;
+  function openAssetLibrary(onPick) {
+    _assetCallback = onPick;
+    const modal = document.getElementById('v2-asset-modal');
+    if (!modal) return;
+    modal.classList.add('is-open');
+    const list = document.getElementById('v2-asset-list');
+    list.innerHTML = '<p style="color:var(--v2-muted);text-align:center;padding:24px;">Loading…</p>';
+    fetch(_apiBase() + '/api/media?page=1', { credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        list.innerHTML = '';
+        const posts = (data && data.posts) || [];
+        const images = posts.filter(p => (p.media_type === 'image') && p.media_url);
+        if (!images.length) {
+          list.innerHTML = '<p style="color:var(--v2-muted);text-align:center;padding:24px;">No images uploaded yet.</p>';
+          return;
+        }
+        images.forEach(p => {
+          const tile = document.createElement('div');
+          tile.className = 'v2-asset-tile';
+          tile.innerHTML = `<img src="${escapeHtml(p.media_url)}" alt="" />
+                            <div class="v2-asset-tile-label">${escapeHtml(p.title || 'untitled')}</div>`;
+          tile.addEventListener('click', () => {
+            if (_assetCallback) _assetCallback(p.media_url);
+            closeAssetLibrary();
+          });
+          list.appendChild(tile);
+        });
+      })
+      .catch(() => {
+        list.innerHTML = '<p style="color:var(--v2-red);padding:12px;">Failed to load library.</p>';
+      });
+  }
+  function closeAssetLibrary() {
+    const modal = document.getElementById('v2-asset-modal');
+    if (modal) modal.classList.remove('is-open');
+    _assetCallback = null;
+  }
+  document.addEventListener('click', (e) => {
+    if (e.target && e.target.id === 'v2-asset-close') closeAssetLibrary();
+    if (e.target && e.target.id === 'v2-asset-modal') closeAssetLibrary();
+  });
 
   // ── Patch helper (single source of truth for backend writes) ─────────────
   async function applyPatch(patch, opts) {
@@ -791,34 +865,18 @@
         `;
         pcard.addEventListener('click', async () => {
           closePicker();
-          // Build a multi-patch: add the section, then add each block
-          const patches = [{ op: 'add', type: meta.type, settings: preset.settings || {} }];
-          // We need the new sid to add blocks — do it in two server round-trips
-          let res;
-          try {
-            res = await window.v2PatchDraft(state.pageSlug, patches);
-          } catch (e) {
-            toast('Add failed.', 'error');
-            return;
-          }
+          // Single round-trip: add op now accepts inline blocks
+          const res = await applyPatch({
+            op: 'add', type: meta.type,
+            settings: preset.settings || {},
+            blocks: preset.blocks || [],
+          });
           const newSid = (res && res.affected_sids || [])[0];
-          state.template = res.template;
-          if (newSid && Array.isArray(preset.blocks) && preset.blocks.length) {
-            const blockPatches = preset.blocks.map(b => ({
-              op: 'add_block', sid: newSid, block_type: b.type, settings: b.settings || {},
-            }));
-            try {
-              const r2 = await window.v2PatchDraft(state.pageSlug, blockPatches);
-              state.template = r2.template;
-            } catch (_e) {}
-          }
           if (newSid) {
             state.selectedSid = newSid;
             renderTree();
             renderSettings();
             postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: newSid });
-            // Snapshot for undo
-            recordUndo('add ' + preset.name, '{"sections":{},"order":[]}', JSON.stringify(state.template));
           }
         });
         elPickerList.appendChild(pcard);
@@ -976,10 +1034,67 @@
   function switchSidebarTab(name) {
     state.sidebarTab = name;
     if (elTabSections) elTabSections.classList.toggle('is-active', name === 'sections');
-    if (elTabTheme)    elTabTheme.classList.toggle('is-active', name === 'theme');
-    if (elPanelSections) elPanelSections.style.display = name === 'sections' ? 'flex' : 'none';
+    if (elTabTheme)    elTabTheme.classList.toggle('is-active',    name === 'theme');
+    if (elTabHistory)  elTabHistory.classList.toggle('is-active',  name === 'history');
+    if (elPanelSections) elPanelSections.style.display = name === 'sections' ? 'flex'  : 'none';
     if (elPanelTheme)    elPanelTheme.style.display    = name === 'theme'    ? 'block' : 'none';
-    if (name === 'theme' && !state.themeSchema) loadTheme();
+    if (elPanelHistory)  elPanelHistory.style.display  = name === 'history'  ? 'block' : 'none';
+    if (name === 'theme'   && !state.themeSchema) loadTheme();
+    if (name === 'history') loadHistory();
+  }
+
+  async function loadHistory() {
+    if (!elPanelHistory) return;
+    elPanelHistory.innerHTML = '<p style="color:var(--v2-muted);">Loading…</p>';
+    try {
+      const res = await fetch(_apiBase() + '/api/cms/audit?page=' + encodeURIComponent(state.pageSlug) + '&limit=80', {
+        credentials: 'include',
+        headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('pnec_token') || '') },
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const body = await res.json();
+      renderHistory(body.events || []);
+    } catch (e) {
+      elPanelHistory.innerHTML = '<p style="color:var(--v2-red);">Could not load history.</p>';
+    }
+  }
+
+  function renderHistory(events) {
+    elPanelHistory.innerHTML = '';
+    const head = document.createElement('div');
+    head.className = 'v2-settings-head';
+    head.innerHTML = `<h3>History</h3><p>Recent edits to this page, theme, and overrides.</p>`;
+    elPanelHistory.appendChild(head);
+    if (!events.length) {
+      const p = document.createElement('p');
+      p.style.cssText = 'color:var(--v2-muted); padding:8px 0;';
+      p.textContent = 'No history yet.';
+      elPanelHistory.appendChild(p);
+      return;
+    }
+    events.forEach(e => {
+      const row = document.createElement('div');
+      row.className = 'v2-history-row';
+      const when = e.updated_at ? new Date(e.updated_at) : null;
+      const ago  = when ? _timeAgo(when) : '?';
+      const iconMap = { page_template: '📄', page_publish: '🚀', theme: '🎨', override: '✏️' };
+      row.innerHTML = `
+        <div class="v2-history-row-icon">${iconMap[e.kind] || '·'}</div>
+        <div class="v2-history-row-body">
+          <div class="v2-history-detail">${escapeHtml(e.detail || '')}</div>
+          <div class="v2-history-meta">${escapeHtml(e.updated_by_name || '?')} · ${escapeHtml(ago)}</div>
+        </div>
+      `;
+      elPanelHistory.appendChild(row);
+    });
+  }
+
+  function _timeAgo(d) {
+    const s = Math.floor((Date.now() - d.getTime()) / 1000);
+    if (s < 60)    return s + 's ago';
+    if (s < 3600)  return Math.floor(s / 60) + 'm ago';
+    if (s < 86400) return Math.floor(s / 3600) + 'h ago';
+    return Math.floor(s / 86400) + 'd ago';
   }
 
   async function loadTheme() {
@@ -1161,19 +1276,14 @@
     try {
       const ctx = { existing_section_types: state.template.order.map(sid => (state.template.sections[sid] || {}).type) };
       const section = await window.v2GenerateSection(prompt, state.pageSlug, ctx);
-      // Add the section
+      // Single round-trip with inline blocks
       const res = await applyPatch({
-        op: 'add', type: section.type, settings: section.settings || {},
+        op: 'add',
+        type: section.type,
+        settings: section.settings || {},
+        blocks: Array.isArray(section.blocks) ? section.blocks : [],
       });
       const newSid = (res && res.affected_sids || [])[0];
-      // If it has blocks, add them
-      if (newSid && Array.isArray(section.blocks) && section.blocks.length) {
-        for (const b of section.blocks) {
-          await applyPatch({
-            op: 'add_block', sid: newSid, block_type: b.type, settings: b.settings || {},
-          });
-        }
-      }
       if (newSid) {
         state.selectedSid = newSid;
         renderSettings();
