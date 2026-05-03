@@ -1201,12 +1201,29 @@
       state.pendingInsertIndex = typeof d.index === 'number' ? d.index : null;
       openPicker();
     } else if (d.type === 'cms:inline:edit') {
-      // Stega-tagged element double-clicked in iframe → select section,
-      // wait for settings panel render, then scroll & focus the field.
+      // (Legacy) Stega-tagged element double-clicked → select section,
+      // focus the matching field in the sidebar.
       if (d.sectionId) {
         selectSection(d.sectionId);
         setTimeout(() => focusFieldInPanel(d.field), 50);
       }
+    } else if (d.type === 'cms:inline:save') {
+      // True Shopify-style: text was edited directly in the iframe.
+      // Save it via the regular set-op patch path. Skip the extra
+      // re-render postMessage since the iframe already shows the new value.
+      handleInlineSave(d.sectionId, d.field, d.value);
+    }
+  }
+
+  async function handleInlineSave(sid, field, value) {
+    if (!sid || !field) return;
+    try {
+      await applyPatch({ op: 'set', sid, key: field, value });
+      // Also update sidebar selection so the matching field reflects the new value
+      if (state.selectedSid === sid) renderSettings();
+      toast('Inline edit saved.', 'ok');
+    } catch (e) {
+      toast('Inline save failed.', 'error');
     }
   }
 
@@ -1470,25 +1487,42 @@
     if (!elPanelTheme) return;
     elPanelTheme.innerHTML = '';
     const head = document.createElement('div');
-    head.className = 'v2-settings-head';
-    head.innerHTML = `<h3>Theme settings</h3><p>Brand-wide colors, typography, layout. Affects every page.</p>`;
+    head.className = 'v2-theme-hero';
+    head.innerHTML = `
+      <div class="v2-theme-hero-icon">🎨</div>
+      <div>
+        <h3 style="margin:0;">Theme settings</h3>
+        <p style="margin:4px 0 0; color:var(--v2-muted); font-size:.8rem;">Brand-wide colors, typography, layout. Affects every page.</p>
+      </div>
+    `;
     elPanelTheme.appendChild(head);
 
-    Object.keys(state.themeSchema || {}).forEach(group => {
+    const groupOrder = ['brand', 'colors', 'typography', 'layout'];
+    const groupIcons = { brand: '🏷', colors: '🎨', typography: 'A', layout: '📐' };
+
+    const seenGroups = new Set();
+    groupOrder.concat(Object.keys(state.themeSchema || {})).forEach(group => {
+      if (seenGroups.has(group)) return;
+      if (!state.themeSchema || !state.themeSchema[group]) return;
+      seenGroups.add(group);
+
+      const card = document.createElement('section');
+      card.className = 'v2-theme-card';
+
       const groupHead = document.createElement('div');
-      groupHead.className = 'v2-token-group-head';
-      groupHead.textContent = group.replace(/_/g, ' ');
-      elPanelTheme.appendChild(groupHead);
+      groupHead.className = 'v2-theme-group-head';
+      groupHead.innerHTML = `<span class="v2-theme-group-icon">${groupIcons[group] || '·'}</span><span>${escapeHtml(group)}</span>`;
+      card.appendChild(groupHead);
+
       (state.themeSchema[group] || []).forEach(token => {
-        elPanelTheme.appendChild(buildTokenField(token));
+        card.appendChild(buildTokenField(token));
       });
+      elPanelTheme.appendChild(card);
     });
 
     const pubBtn = document.createElement('button');
-    pubBtn.className = 'v2-btn';
-    pubBtn.style.width = '100%';
-    pubBtn.style.marginTop = '14px';
-    pubBtn.textContent = 'Publish theme';
+    pubBtn.className = 'v2-btn v2-btn-publish-theme';
+    pubBtn.innerHTML = '<span style="font-size:1rem;">🚀</span>&nbsp; Publish theme to live site';
     pubBtn.addEventListener('click', async () => {
       if (!confirm('Publish theme tokens to the live site?')) return;
       try {
@@ -1501,33 +1535,59 @@
 
   function buildTokenField(token) {
     const wrap = document.createElement('div');
-    wrap.className = 'v2-field';
+    wrap.className = 'v2-token-field';
     const label = document.createElement('label');
-    label.className = 'v2-field-label';
+    label.className = 'v2-token-label';
     label.textContent = token.label;
     wrap.appendChild(label);
 
     const initial = (state.themeTokens && state.themeTokens[token.key] != null)
                     ? state.themeTokens[token.key] : token.default || '';
-    let input;
+
     if (token.type === 'color') {
-      input = document.createElement('input');
-      input.type = 'color';
-      input.className = 'v2-input v2-color';
-      input.value = initial && /^#[0-9a-fA-F]{6}$/.test(initial) ? initial : '#000000';
-    } else if (token.type === 'select') {
-      input = document.createElement('select');
-      input.className = 'v2-input';
-      (token.options || []).forEach(opt => {
-        const o = document.createElement('option'); o.value = opt; o.textContent = opt;
-        if (opt === initial) o.selected = true;
-        input.appendChild(o);
-      });
-    } else if (token.type === 'image') {
+      // Swatch + hex input combo
+      const row = document.createElement('div');
+      row.className = 'v2-color-row';
+      const swatch = document.createElement('input');
+      swatch.type = 'color';
+      swatch.className = 'v2-color-swatch';
+      swatch.value = initial && /^#[0-9a-fA-F]{6}$/.test(initial) ? initial : '#000000';
+      const hex = document.createElement('input');
+      hex.type = 'text';
+      hex.className = 'v2-hex-input';
+      hex.value = initial || '';
+      hex.placeholder = '#1e3a8a';
+      hex.spellcheck = false;
+      const sync = (val) => {
+        if (/^#[0-9a-fA-F]{6}$/.test(val)) swatch.value = val;
+      };
+      swatch.addEventListener('input', debounce(async () => {
+        hex.value = swatch.value;
+        await applyThemeTokenChange(token.key, swatch.value);
+      }, 200));
+      hex.addEventListener('input', debounce(async () => {
+        const v = hex.value.trim();
+        if (!v.startsWith('#')) return;
+        sync(v);
+        await applyThemeTokenChange(token.key, v);
+      }, 300));
+      row.appendChild(swatch);
+      row.appendChild(hex);
+      wrap.appendChild(row);
+      return wrap;
+    }
+
+    if (token.type === 'image') {
       const fileWrap = document.createElement('div');
       const preview = document.createElement('div');
       preview.className = 'v2-image-preview';
-      preview.textContent = initial || '(no image)';
+      if (initial) {
+        const img = document.createElement('img');
+        img.src = initial; img.className = 'v2-image-thumb';
+        preview.appendChild(img);
+      } else {
+        preview.textContent = '(no image)';
+      }
       fileWrap.appendChild(preview);
       const file = document.createElement('input');
       file.type = 'file'; file.accept = 'image/*'; file.className = 'v2-input';
@@ -1535,13 +1595,27 @@
         const f = file.files && file.files[0]; if (!f) return;
         try {
           const { url } = await window.v2UploadImage(f);
-          preview.textContent = url;
+          preview.innerHTML = '';
+          const img = document.createElement('img');
+          img.src = url; img.className = 'v2-image-thumb';
+          preview.appendChild(img);
           await applyThemeTokenChange(token.key, url);
         } catch (e) { toast('Upload failed.', 'error'); }
       });
       fileWrap.appendChild(file);
       wrap.appendChild(fileWrap);
       return wrap;
+    }
+
+    let input;
+    if (token.type === 'select') {
+      input = document.createElement('select');
+      input.className = 'v2-input';
+      (token.options || []).forEach(opt => {
+        const o = document.createElement('option'); o.value = opt; o.textContent = opt;
+        if (opt === initial) o.selected = true;
+        input.appendChild(o);
+      });
     } else {
       input = document.createElement('input');
       input.type = 'text';

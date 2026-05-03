@@ -295,20 +295,70 @@
   }
 
   function enableInlineEditClicks(expectedOrigin) {
+    // Double-click any stega-tagged element → make it directly editable in place.
+    // This is the true Shopify-style flow: the iframe text BECOMES the input.
+    // On blur or Enter, we post the new value up to the editor which PATCHes
+    // the backend; the iframe section is then re-rendered authoritatively.
     document.addEventListener('dblclick', (event) => {
-      // Only in inspector mode
-      if (!document.body.classList.contains('cms-inspector')) return;
       const el = event.target.closest('[data-cms-stega-sid][data-cms-stega-field]');
       if (!el) return;
+      // Don't intercept clicks that landed on a real link
+      if (el.tagName === 'A' && !document.body.classList.contains('cms-inspector')) return;
       event.preventDefault();
-      try {
-        window.parent.postMessage({
-          type: 'cms:inline:edit',
-          sectionId: el.getAttribute('data-cms-stega-sid'),
-          field:     el.getAttribute('data-cms-stega-field'),
-        }, expectedOrigin);
-      } catch (_e) { /* ignore */ }
+      event.stopPropagation();
+      startInlineEdit(el, expectedOrigin);
     }, true);
+  }
+
+  function startInlineEdit(el, expectedOrigin) {
+    if (el._cmsEditing) return;
+    el._cmsEditing = true;
+    const sid   = el.getAttribute('data-cms-stega-sid');
+    const field = el.getAttribute('data-cms-stega-field');
+    const original = el.textContent || '';
+    el.classList.add('cms-editing');
+    el.setAttribute('contenteditable', 'plaintext-only');
+    // Some browsers don't support plaintext-only, fall through to true
+    if (el.contentEditable !== 'plaintext-only') el.setAttribute('contenteditable', 'true');
+    el.spellcheck = true;
+    // Focus + select-all
+    el.focus();
+    try {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const sel = window.getSelection();
+      sel.removeAllRanges(); sel.addRange(range);
+    } catch (_e) { /* selection may fail in some embeds */ }
+
+    function commit(save) {
+      if (!el._cmsEditing) return;
+      el._cmsEditing = false;
+      el.classList.remove('cms-editing');
+      el.removeAttribute('contenteditable');
+      el.removeEventListener('blur',     onBlur, true);
+      el.removeEventListener('keydown',  onKey,  true);
+      const newText = (el.textContent || '').trim();
+      if (save && newText !== original) {
+        try {
+          window.parent.postMessage({
+            type:      'cms:inline:save',
+            sectionId: sid,
+            field:     field,
+            value:     newText,
+          }, expectedOrigin);
+        } catch (_e) {}
+      } else if (!save) {
+        // Restore original
+        el.textContent = original;
+      }
+    }
+    function onBlur() { commit(true); }
+    function onKey(e) {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); commit(true); }
+      else if (e.key === 'Escape')          { e.preventDefault(); commit(false); }
+    }
+    el.addEventListener('blur',    onBlur, true);
+    el.addEventListener('keydown', onKey,  true);
   }
 
   // ── v2: postMessage handlers (preview mode only) ────────────────────────
@@ -398,6 +448,32 @@
       [data-cms-section-id].is-cms-hover { outline: 2px solid #f59e0b; outline-offset: -2px; }
       body.cms-inspector [data-cms-section-id]:hover { outline: 2px dashed #60a5fa; outline-offset: -2px; cursor: pointer; }
       [data-cms-block-id].is-cms-selected { outline: 2px dotted #3b82f6; outline-offset: -2px; }
+      /* Inline-edit visual feedback (always on in preview mode) */
+      .cms-editable { transition: background 100ms, outline-color 100ms; }
+      body.cms-preview .cms-editable {
+        cursor: text;
+      }
+      body.cms-preview .cms-editable:hover {
+        background: rgba(59,130,246,0.10);
+        outline: 2px dashed #3b82f6;
+        outline-offset: 2px;
+      }
+      body.cms-preview .cms-editable:hover::after {
+        content: '✎ double-click to edit';
+        position: absolute;
+        top: -22px; left: 0;
+        background: #3b82f6; color: white;
+        font: 11px/1 ui-sans-serif, system-ui, sans-serif;
+        padding: 3px 7px; border-radius: 4px;
+        white-space: nowrap; pointer-events: none; z-index: 9999;
+      }
+      .cms-editable.cms-editing {
+        outline: 2px solid #f59e0b !important;
+        outline-offset: 2px;
+        background: rgba(245,158,11,0.15) !important;
+        box-shadow: 0 0 0 4px rgba(245,158,11,0.25);
+        cursor: text;
+      }
       /* Floating section-type label that shows in inspector mode */
       body.cms-inspector [data-cms-section-id]::before {
         content: attr(data-cms-section-type);
@@ -566,6 +642,7 @@
     document.body.classList.add('cms-hydrated');
 
     if (new URLSearchParams(window.location.search).get('preview') === '1') {
+      document.body.classList.add('cms-preview');
       enablePreviewMode();
       enableV2PreviewMode();
     }
