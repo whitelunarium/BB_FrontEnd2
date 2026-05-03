@@ -379,8 +379,26 @@ body {
   background: var(--v2-gradient-soft);
   border-radius: 8px;
   position: relative;
+  color: var(--v2-accent);
 }
-.v2-tree-handle { color: var(--v2-muted); font-size: 0.9rem; cursor: grab; user-select: none; }
+.v2-picker-card-icon svg { display: block; }
+.v2-picker-card:hover .v2-picker-card-icon { color: white; background: var(--v2-gradient); }
+.v2-tree-handle { color: var(--v2-muted); font-size: 0.9rem; cursor: grab; user-select: none; display: inline-flex; align-items: center; }
+.v2-tree-handle svg { opacity: .7; }
+.v2-tree-type-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px;
+  color: var(--v2-accent);
+  background: rgba(91,140,255,0.12);
+  border: 1px solid rgba(91,140,255,0.22);
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.v2-tree-row.is-selected .v2-tree-type-icon {
+  color: white;
+  background: rgba(255,255,255,0.20);
+  border-color: rgba(255,255,255,0.32);
+}
 .v2-tree-label { flex: 1; font-size: .88rem; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .v2-tree-type-pill {
   display: inline-block;
@@ -402,8 +420,10 @@ body {
 }
 .v2-tree-actions { display: flex; gap: 2px; opacity: 0; transform: translateX(4px); transition: all 120ms; }
 .v2-tree-row:hover .v2-tree-actions, .v2-tree-row.is-selected .v2-tree-actions { opacity: 1; transform: translateX(0); }
-.v2-icon-btn { background: transparent; color: var(--v2-text-soft); border: none; cursor: pointer; padding: 4px 6px; font-size: .9rem; border-radius: 5px; transition: background 120ms; }
+.v2-icon-btn { background: transparent; color: var(--v2-text-soft); border: none; cursor: pointer; padding: 4px 6px; font-size: .9rem; border-radius: 5px; transition: background 120ms; display: inline-flex; align-items: center; justify-content: center; }
+.v2-icon-btn svg { display: block; }
 .v2-icon-btn:hover { background: rgba(255,255,255,0.10); color: var(--v2-text); }
+.v2-icon-btn[data-act="delete"]:hover { color: #fecaca; background: rgba(239,68,68,0.18); }
 .v2-empty { color: var(--v2-muted); font-size: .85rem; padding: 18px; text-align: center; border: 1px dashed var(--v2-border-strong); border-radius: 10px; background: rgba(91,140,255,0.04); }
 .v2-empty-onboarding kbd { background: var(--v2-surface2); border: 1px solid var(--v2-border); padding: 1px 6px; border-radius: 3px; font-family: ui-monospace, monospace; font-size: .75rem; }
 #v2-add-section { width: 100%; margin-top: 8px; }
@@ -736,6 +756,16 @@ body {
   background: rgba(91,140,255,0.08);
   transform: translateX(2px);
 }
+.v2-find-row-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px;
+  color: var(--v2-violet);
+  background: rgba(168,85,247,0.14);
+  border: 1px solid rgba(168,85,247,0.28);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.v2-find-row.is-active .v2-find-row-icon { color: white; background: rgba(168,85,247,0.55); border-color: rgba(168,85,247,0.7); }
 .v2-find-row-body { flex: 1; min-width: 0; }
 .v2-find-row-title { font-size: .9rem; font-weight: 600; color: var(--v2-text); margin: 0 0 4px; display: flex; gap: 8px; align-items: center; }
 .v2-find-row-pill { font-size: .65rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--v2-text-soft); background: rgba(91,140,255,0.18); border: 1px solid rgba(91,140,255,0.3); padding: 1px 6px; border-radius: 999px; flex-shrink: 0; }
@@ -1108,5 +1138,6 @@ body {
 })();
 </script>
 
+<script src="{{ '/assets/js/admin/editor-v2-icons.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/admin/editor-v2-api.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/admin/editor-v2-controller.js' | relative_url }}"></script>

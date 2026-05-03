@@ -320,15 +320,18 @@
       const warnBadge = sidIssues.length
         ? `<span class="v2-tree-warn" title="${escapeHtml(sidIssues.map(i => i.message).join('\n'))}">⚠ ${sidIssues.length}</span>`
         : '';
+      const typeIcon = (window.V2_ICONS ? window.V2_ICONS.svg(section.type, { size: 14 }) : '');
+      const ic = (key) => (window.V2_ICONS ? window.V2_ICONS.svg('action.' + key, { size: 14 }) : '');
       row.innerHTML = `
-        <span class="v2-tree-handle" title="Drag to reorder">⋮⋮</span>
+        <span class="v2-tree-handle" title="Drag to reorder">${(window.V2_ICONS ? window.V2_ICONS.svg('action.drag', { size: 12 }) : '⋮⋮')}</span>
+        <span class="v2-tree-type-icon" aria-hidden="true">${typeIcon}</span>
         <span class="v2-tree-label" title="${escapeHtml(meta ? meta.label : section.type)}">${escapeHtml(displayLabel)}${section.name ? ' <span class=\"v2-tree-type-pill\">' + escapeHtml(meta ? meta.label : section.type) + '</span>' : ''}</span>
         ${warnBadge}
         <span class="v2-tree-actions">
-          <button class="v2-icon-btn" data-act="rename"     title="Rename">✏️</button>
-          <button class="v2-icon-btn" data-act="visibility" title="${section.visible === false ? 'Show' : 'Hide'}">${section.visible === false ? '🙈' : '👁'}</button>
-          <button class="v2-icon-btn" data-act="duplicate"  title="Duplicate">⧉</button>
-          <button class="v2-icon-btn" data-act="delete"     title="Delete">🗑</button>
+          <button class="v2-icon-btn" data-act="rename"     title="Rename">${ic('rename')}</button>
+          <button class="v2-icon-btn" data-act="visibility" title="${section.visible === false ? 'Show' : 'Hide'}">${section.visible === false ? ic('visibility_hide') : ic('visibility_show')}</button>
+          <button class="v2-icon-btn" data-act="duplicate"  title="Duplicate">${ic('duplicate')}</button>
+          <button class="v2-icon-btn" data-act="delete"     title="Delete">${ic('delete')}</button>
         </span>
       `;
       row.addEventListener('click', (e) => {
@@ -1552,8 +1555,11 @@
       card.className = 'v2-picker-card';
       card.dataset.cat = meta.category || 'other';
       const catMeta = CATEGORY_META[meta.category] || { icon: '·' };
+      const typeIcon = (window.V2_ICONS && window.V2_ICONS.has(meta.type))
+        ? window.V2_ICONS.svg(meta.type, { size: 22 })
+        : catMeta.icon;
       card.innerHTML = `
-        <div class="v2-picker-card-icon">${catMeta.icon}</div>
+        <div class="v2-picker-card-icon">${typeIcon}</div>
         <h4>${escapeHtml(meta.label)}</h4>
         <p>${escapeHtml(meta.description || '')}</p>
       `;
@@ -2351,12 +2357,14 @@
       hits.forEach((hit, idx) => {
         const meta = state.registry.find(t => t.type === hit.type);
         const typeLabel = meta ? meta.label : hit.type;
+        const typeIcon  = (window.V2_ICONS ? window.V2_ICONS.svg(hit.type, { size: 18 }) : '');
         const row = document.createElement('div');
         row.className = 'v2-find-row' + (idx === 0 ? ' is-active' : '');
         row.tabIndex = 0;
         row.dataset.pageSlug = hit.page_slug;
         row.dataset.sid = hit.sid;
         row.innerHTML = `
+          <div class="v2-find-row-icon" aria-hidden="true">${typeIcon}</div>
           <div class="v2-find-row-body">
             <p class="v2-find-row-title">
               <span>${escapeHtml(hit.name || typeLabel)}</span>
