@@ -89,6 +89,37 @@ body { margin: 0; background: var(--v2-bg); color: var(--v2-text); font-family: 
 .v2-block:hover .v2-block-actions { opacity: 1; }
 .v2-block-body { padding: 0 10px 10px; }
 
+/* Sidebar tabs */
+.v2-sidebar-tabs { display: flex; border-bottom: 1px solid var(--v2-border); flex-shrink: 0; }
+.v2-sidebar-tab { flex: 1; padding: 10px 12px; background: transparent; color: var(--v2-muted); border: none; cursor: pointer; font-size: .85rem; border-bottom: 2px solid transparent; }
+.v2-sidebar-tab.is-active { color: var(--v2-accent); border-bottom-color: var(--v2-accent); }
+
+/* Viewport toggle */
+.v2-viewport-toggle { display: flex; gap: 2px; background: var(--v2-bg); border: 1px solid var(--v2-border); border-radius: 6px; padding: 2px; }
+.v2-viewport-btn { background: transparent; color: var(--v2-muted); border: none; padding: 5px 10px; font-size: .8rem; border-radius: 4px; cursor: pointer; }
+.v2-viewport-btn.is-active { background: var(--v2-accent); color: white; }
+
+/* Iframe viewport sizing */
+.v2-iframe-frame { flex: 1; display: flex; align-items: stretch; justify-content: center; min-height: 0; background: #475569; padding: 12px; transition: padding 200ms; }
+.v2-iframe-frame.v2-vp-desktop #v2-iframe { width: 100%; height: 100%; max-width: none; box-shadow: none; }
+.v2-iframe-frame.v2-vp-tablet  #v2-iframe { width: 768px; height: 100%; max-width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,.3); border-radius: 12px; }
+.v2-iframe-frame.v2-vp-mobile  #v2-iframe { width: 375px; height: 100%; max-width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,.3); border-radius: 28px; }
+
+/* Theme panel */
+.v2-token-group-head { font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; color: var(--v2-muted); margin: 14px 0 6px; padding-bottom: 4px; border-bottom: 1px solid var(--v2-border); }
+
+/* Device visibility checkboxes */
+.v2-device-vis { display: flex; gap: 8px; margin-top: 4px; }
+.v2-device-vis label { display: flex; align-items: center; gap: 4px; background: var(--v2-bg); border: 1px solid var(--v2-border); padding: 6px 10px; border-radius: 6px; font-size: .8rem; cursor: pointer; }
+.v2-device-vis input { margin: 0; }
+
+/* AI panel inside picker */
+.v2-ai-row { display: flex; gap: 8px; margin-bottom: 14px; padding: 12px; background: rgba(59,130,246,0.08); border: 1px solid var(--v2-accent); border-radius: 8px; }
+.v2-ai-row textarea { flex: 1; background: var(--v2-surface2); color: var(--v2-text); border: 1px solid var(--v2-border); border-radius: 4px; padding: 6px 8px; min-height: 56px; font: inherit; resize: vertical; }
+.v2-ai-row button { white-space: nowrap; }
+
+.v2-picker-search { width: 100%; margin-bottom: 14px; }
+
 /* Iframe */
 .v2-preview { display: flex; flex-direction: column; min-height: 0; }
 .v2-preview-toolbar { padding: 8px 14px; background: #334155; color: var(--v2-text); display: flex; align-items: center; gap: 10px; font-size: .8rem; border-bottom: 1px solid var(--v2-border); flex-shrink: 0; }
@@ -134,6 +165,13 @@ body { margin: 0; background: var(--v2-bg); color: var(--v2-text); font-family: 
       <option value="programs">Programs</option>
     </select>
     <button id="v2-inspector-toggle" class="v2-btn v2-btn-ghost" title="Click any element in the preview to select it">🔍 Inspector</button>
+    <div class="v2-viewport-toggle" role="group" aria-label="Viewport">
+      <button class="v2-viewport-btn is-active" data-viewport="desktop" title="Desktop">🖥</button>
+      <button class="v2-viewport-btn"            data-viewport="tablet"  title="Tablet">📱</button>
+      <button class="v2-viewport-btn"            data-viewport="mobile"  title="Mobile">📱</button>
+    </div>
+    <button id="v2-undo" class="v2-btn v2-btn-ghost" title="Undo (⌘Z)">↶</button>
+    <button id="v2-redo" class="v2-btn v2-btn-ghost" title="Redo (⌘⇧Z)">↷</button>
     <div class="v2-spacer"></div>
     <button id="v2-share"        class="v2-btn v2-btn-ghost" title="Share preview link with non-admins">🔗 Share</button>
     <button id="v2-view-preview" class="v2-btn v2-btn-ghost" title="Open the public page in a new tab">↗ View live</button>
@@ -144,14 +182,21 @@ body { margin: 0; background: var(--v2-bg); color: var(--v2-text); font-family: 
 
   <div class="v2-body">
     <aside class="v2-sidebar">
-      <div class="v2-tree-container">
-        <div class="v2-tree-header">
-          <span>Sections</span>
-        </div>
-        <div id="v2-tree"></div>
-        <button id="v2-add-section" class="v2-btn">+ Add section</button>
+      <div class="v2-sidebar-tabs">
+        <button id="v2-tab-sections" class="v2-sidebar-tab is-active">Sections</button>
+        <button id="v2-tab-theme"    class="v2-sidebar-tab">Theme</button>
       </div>
-      <div class="v2-settings-container" id="v2-settings"></div>
+      <div id="v2-panel-sections" style="display:flex; flex-direction:column; flex:1; min-height:0;">
+        <div class="v2-tree-container">
+          <div class="v2-tree-header">
+            <span>Sections</span>
+          </div>
+          <div id="v2-tree"></div>
+          <button id="v2-add-section" class="v2-btn">+ Add section</button>
+        </div>
+        <div class="v2-settings-container" id="v2-settings"></div>
+      </div>
+      <div id="v2-panel-theme" style="display:none; padding:14px; overflow-y:auto; flex:1;"></div>
     </aside>
     <section class="v2-preview">
       <div class="v2-preview-toolbar">
@@ -159,7 +204,9 @@ body { margin: 0; background: var(--v2-bg); color: var(--v2-text); font-family: 
         <span id="v2-iframe-url"></span>
         <span class="v2-live-badge">DRAFT</span>
       </div>
-      <iframe id="v2-iframe" title="Page preview"></iframe>
+      <div class="v2-iframe-frame v2-vp-desktop" id="v2-iframe-frame">
+        <iframe id="v2-iframe" title="Page preview"></iframe>
+      </div>
     </section>
   </div>
 </div>
@@ -171,6 +218,11 @@ body { margin: 0; background: var(--v2-bg); color: var(--v2-text); font-family: 
       <h3>Add a section</h3>
       <button id="v2-picker-close" class="v2-btn v2-btn-ghost">✕ Close</button>
     </div>
+    <div class="v2-ai-row">
+      <textarea id="v2-ai-prompt" class="v2-input" placeholder="✨ Describe a section: e.g. 'A volunteer signup CTA with a button to mailto:volunteer@powaynec.com'"></textarea>
+      <button id="v2-ai-go" class="v2-btn">✨ Generate with AI</button>
+    </div>
+    <input id="v2-picker-search" type="text" class="v2-input v2-picker-search" placeholder="Search section types…" />
     <div id="v2-picker-list" class="v2-picker-list"></div>
   </div>
 </div>

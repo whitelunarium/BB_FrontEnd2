@@ -27,12 +27,23 @@
     iframeReady:  false,
     queue:        [],
     dragSrc:      null,
+    // v2.1 additions
+    sidebarTab:   'sections',  // 'sections' | 'theme'
+    viewport:     'desktop',   // 'desktop' | 'tablet' | 'mobile'
+    themeSchema:  null,
+    themeTokens:  null,
+    undoStack:    [],
+    redoStack:    [],
   };
 
   // ── DOM refs (resolved on init) ──────────────────────────────────────────
   let elPageSel, elSidebarTree, elSettingsPanel, elAddSectionBtn;
   let elSavePub, elPreviewBtn, elInspectorBtn, elShareBtn;
   let elIframe, elIframeUrl, elBanner, elToast, elPicker, elPickerList, elPickerClose;
+  let elTabSections, elTabTheme, elPanelSections, elPanelTheme;
+  let elViewportBtns, elIframeFrame;
+  let elUndoBtn, elRedoBtn;
+  let elPickerSearch, elAiPrompt, elAiGo;
 
   // ── Init ──────────────────────────────────────────────────────────────────
   async function init() {
@@ -54,6 +65,18 @@
 
     if (!elSidebarTree) return;
 
+    elTabSections   = document.getElementById('v2-tab-sections');
+    elTabTheme      = document.getElementById('v2-tab-theme');
+    elPanelSections = document.getElementById('v2-panel-sections');
+    elPanelTheme    = document.getElementById('v2-panel-theme');
+    elViewportBtns  = document.querySelectorAll('.v2-viewport-btn');
+    elIframeFrame   = document.getElementById('v2-iframe-frame');
+    elUndoBtn       = document.getElementById('v2-undo');
+    elRedoBtn       = document.getElementById('v2-redo');
+    elPickerSearch  = document.getElementById('v2-picker-search');
+    elAiPrompt      = document.getElementById('v2-ai-prompt');
+    elAiGo          = document.getElementById('v2-ai-go');
+
     elPageSel.addEventListener('change', () => switchPage(elPageSel.value));
     elAddSectionBtn.addEventListener('click', openPicker);
     elPickerClose.addEventListener('click', closePicker);
@@ -62,8 +85,17 @@
     elInspectorBtn.addEventListener('click', toggleInspector);
     elShareBtn.addEventListener('click', shareDraft);
     elIframe.addEventListener('load', flushQueue);
+    if (elTabSections) elTabSections.addEventListener('click', () => switchSidebarTab('sections'));
+    if (elTabTheme)    elTabTheme.addEventListener('click',    () => switchSidebarTab('theme'));
+    if (elViewportBtns) elViewportBtns.forEach(btn =>
+      btn.addEventListener('click', () => setViewport(btn.dataset.viewport)));
+    if (elUndoBtn) elUndoBtn.addEventListener('click', undo);
+    if (elRedoBtn) elRedoBtn.addEventListener('click', redo);
+    if (elPickerSearch) elPickerSearch.addEventListener('input', filterPicker);
+    if (elAiGo) elAiGo.addEventListener('click', generateSectionFromAi);
 
     window.addEventListener('message', onIframeMessage);
+    document.addEventListener('keydown', onKey);
 
     // Iframe-unresponsive watchdog
     setTimeout(() => {
@@ -242,7 +274,12 @@
                      (meta.description ? `<p>${escapeHtml(meta.description)}</p>` : '');
     elSettingsPanel.appendChild(head);
 
+    // Device visibility — applies to ALL section types
+    elSettingsPanel.appendChild(buildDeviceVisibilityRow(section));
+
     (meta.settings || []).forEach(field => {
+      // Conditional rendering
+      if (!shouldShowField(section, field)) return;
       elSettingsPanel.appendChild(buildField(section, field));
     });
 
@@ -389,6 +426,53 @@
     }
   }
 
+  function buildDeviceVisibilityRow(section) {
+    const wrap = document.createElement('div');
+    wrap.className = 'v2-field';
+    const label = document.createElement('label');
+    label.className = 'v2-field-label';
+    label.textContent = 'Show on';
+    wrap.appendChild(label);
+
+    const row = document.createElement('div');
+    row.className = 'v2-device-vis';
+    const current = Array.isArray(section.device_visibility) && section.device_visibility.length
+                  ? section.device_visibility
+                  : ['desktop', 'tablet', 'mobile'];
+    ['desktop', 'tablet', 'mobile'].forEach(d => {
+      const lbl = document.createElement('label');
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = current.includes(d);
+      cb.addEventListener('change', async () => {
+        const newDevices = ['desktop', 'tablet', 'mobile'].filter(x => {
+          if (x === d) return cb.checked;
+          return current.includes(x);
+        });
+        await applyPatch({ op: 'device_visibility', sid: state.selectedSid, devices: newDevices });
+        postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
+      });
+      lbl.appendChild(cb);
+      lbl.appendChild(document.createTextNode(' ' + d));
+      row.appendChild(lbl);
+    });
+    wrap.appendChild(row);
+    return wrap;
+  }
+
+  function shouldShowField(section, field) {
+    const cond = field.condition;
+    if (!cond) return true;
+    const target = (section.settings && section.settings[cond.field]);
+    const op = cond.op || '==';
+    if (op === '==') return target === cond.value;
+    if (op === '!=') return target !== cond.value;
+    if (op === 'in') return Array.isArray(cond.value) && cond.value.includes(target);
+    if (op === 'truthy') return !!target;
+    if (op === 'falsy')  return !target;
+    return true;
+  }
+
   function buildField(section, field) {
     const wrap = document.createElement('div');
     wrap.className = 'v2-field';
@@ -486,15 +570,21 @@
   }
 
   // ── Patch helper (single source of truth for backend writes) ─────────────
-  async function applyPatch(patch) {
+  async function applyPatch(patch, opts) {
+    opts = opts || {};
+    // Snapshot for undo (skip when undo/redo is itself the caller)
+    const snapshot = !opts.skipUndo ? JSON.stringify(state.template) : null;
     try {
       const res = await window.v2PatchDraft(state.pageSlug, [patch]);
       state.template = res.template;
       renderTree();
       // If the selected section was affected, re-render its settings panel from new state
       if (state.selectedSid && state.template.sections[state.selectedSid]) {
-        // Don't re-render full panel for `set` ops (would lose focus). Other ops are fine.
-        if (patch.op !== 'set') renderSettings();
+        // Don't re-render full panel for `set` / `set_block` ops (would lose focus).
+        if (patch.op !== 'set' && patch.op !== 'set_block') renderSettings();
+      }
+      if (snapshot) {
+        recordUndo(patch.op, snapshot, JSON.stringify(state.template));
       }
       return res;
     } catch (e) {
@@ -507,6 +597,7 @@
   function openPicker() {
     elPickerList.innerHTML = '';
     state.registry.forEach(meta => {
+      // Default card per type
       const card = document.createElement('div');
       card.className = 'v2-picker-card';
       card.innerHTML = `
@@ -525,6 +616,49 @@
         }
       });
       elPickerList.appendChild(card);
+
+      // Per-preset cards
+      (meta.presets || []).forEach(preset => {
+        const pcard = document.createElement('div');
+        pcard.className = 'v2-picker-card v2-picker-preset';
+        pcard.innerHTML = `
+          <h4>${escapeHtml(preset.name)}</h4>
+          <p>${escapeHtml(meta.label)} preset · ${(preset.blocks || []).length} item(s)</p>
+        `;
+        pcard.addEventListener('click', async () => {
+          closePicker();
+          // Build a multi-patch: add the section, then add each block
+          const patches = [{ op: 'add', type: meta.type, settings: preset.settings || {} }];
+          // We need the new sid to add blocks — do it in two server round-trips
+          let res;
+          try {
+            res = await window.v2PatchDraft(state.pageSlug, patches);
+          } catch (e) {
+            toast('Add failed.', 'error');
+            return;
+          }
+          const newSid = (res && res.affected_sids || [])[0];
+          state.template = res.template;
+          if (newSid && Array.isArray(preset.blocks) && preset.blocks.length) {
+            const blockPatches = preset.blocks.map(b => ({
+              op: 'add_block', sid: newSid, block_type: b.type, settings: b.settings || {},
+            }));
+            try {
+              const r2 = await window.v2PatchDraft(state.pageSlug, blockPatches);
+              state.template = r2.template;
+            } catch (_e) {}
+          }
+          if (newSid) {
+            state.selectedSid = newSid;
+            renderTree();
+            renderSettings();
+            postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: newSid });
+            // Snapshot for undo
+            recordUndo('add ' + preset.name, '{"sections":{},"order":[]}', JSON.stringify(state.template));
+          }
+        });
+        elPickerList.appendChild(pcard);
+      });
     });
     elPicker.classList.add('is-open');
   }
@@ -614,6 +748,224 @@
       clearTimeout(t);
       t = setTimeout(() => fn.apply(this, args), ms);
     };
+  }
+
+  // ── Sidebar tabs ────────────────────────────────────────────────────────
+  function switchSidebarTab(name) {
+    state.sidebarTab = name;
+    if (elTabSections) elTabSections.classList.toggle('is-active', name === 'sections');
+    if (elTabTheme)    elTabTheme.classList.toggle('is-active', name === 'theme');
+    if (elPanelSections) elPanelSections.style.display = name === 'sections' ? 'flex' : 'none';
+    if (elPanelTheme)    elPanelTheme.style.display    = name === 'theme'    ? 'block' : 'none';
+    if (name === 'theme' && !state.themeSchema) loadTheme();
+  }
+
+  async function loadTheme() {
+    try {
+      const [schema, current] = await Promise.all([
+        window.v2FetchThemeSchema(),
+        window.v2FetchTheme('draft'),
+      ]);
+      state.themeSchema = schema.groups || {};
+      state.themeTokens = current.tokens || {};
+    } catch (e) {
+      toast('Could not load theme.', 'error');
+      state.themeSchema = {};
+      state.themeTokens = {};
+    }
+    renderThemePanel();
+  }
+
+  function renderThemePanel() {
+    if (!elPanelTheme) return;
+    elPanelTheme.innerHTML = '';
+    const head = document.createElement('div');
+    head.className = 'v2-settings-head';
+    head.innerHTML = `<h3>Theme settings</h3><p>Brand-wide colors, typography, layout. Affects every page.</p>`;
+    elPanelTheme.appendChild(head);
+
+    Object.keys(state.themeSchema || {}).forEach(group => {
+      const groupHead = document.createElement('div');
+      groupHead.className = 'v2-token-group-head';
+      groupHead.textContent = group.replace(/_/g, ' ');
+      elPanelTheme.appendChild(groupHead);
+      (state.themeSchema[group] || []).forEach(token => {
+        elPanelTheme.appendChild(buildTokenField(token));
+      });
+    });
+
+    const pubBtn = document.createElement('button');
+    pubBtn.className = 'v2-btn';
+    pubBtn.style.width = '100%';
+    pubBtn.style.marginTop = '14px';
+    pubBtn.textContent = 'Publish theme';
+    pubBtn.addEventListener('click', async () => {
+      if (!confirm('Publish theme tokens to the live site?')) return;
+      try {
+        await window.v2PublishTheme();
+        toast('Theme published.', 'ok');
+      } catch (e) { toast('Publish failed.', 'error'); }
+    });
+    elPanelTheme.appendChild(pubBtn);
+  }
+
+  function buildTokenField(token) {
+    const wrap = document.createElement('div');
+    wrap.className = 'v2-field';
+    const label = document.createElement('label');
+    label.className = 'v2-field-label';
+    label.textContent = token.label;
+    wrap.appendChild(label);
+
+    const initial = (state.themeTokens && state.themeTokens[token.key] != null)
+                    ? state.themeTokens[token.key] : token.default || '';
+    let input;
+    if (token.type === 'color') {
+      input = document.createElement('input');
+      input.type = 'color';
+      input.className = 'v2-input v2-color';
+      input.value = initial && /^#[0-9a-fA-F]{6}$/.test(initial) ? initial : '#000000';
+    } else if (token.type === 'select') {
+      input = document.createElement('select');
+      input.className = 'v2-input';
+      (token.options || []).forEach(opt => {
+        const o = document.createElement('option'); o.value = opt; o.textContent = opt;
+        if (opt === initial) o.selected = true;
+        input.appendChild(o);
+      });
+    } else if (token.type === 'image') {
+      const fileWrap = document.createElement('div');
+      const preview = document.createElement('div');
+      preview.className = 'v2-image-preview';
+      preview.textContent = initial || '(no image)';
+      fileWrap.appendChild(preview);
+      const file = document.createElement('input');
+      file.type = 'file'; file.accept = 'image/*'; file.className = 'v2-input';
+      file.addEventListener('change', async () => {
+        const f = file.files && file.files[0]; if (!f) return;
+        try {
+          const { url } = await window.v2UploadImage(f);
+          preview.textContent = url;
+          await applyThemeTokenChange(token.key, url);
+        } catch (e) { toast('Upload failed.', 'error'); }
+      });
+      fileWrap.appendChild(file);
+      wrap.appendChild(fileWrap);
+      return wrap;
+    } else {
+      input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'v2-input';
+      input.value = initial || '';
+    }
+    input.addEventListener('input', debounce(async () => {
+      await applyThemeTokenChange(token.key, input.value);
+    }, 300));
+    wrap.appendChild(input);
+    return wrap;
+  }
+
+  async function applyThemeTokenChange(key, value) {
+    state.themeTokens[key] = value;
+    try {
+      await window.v2PatchThemeDraft({ [key]: value });
+      // Update iframe live: post a CSS variable update message
+      postToIframe({ type: 'cms:theme:update', key, value });
+    } catch (e) { toast('Theme save failed.', 'error'); }
+  }
+
+  // ── Viewport toggle ─────────────────────────────────────────────────────
+  function setViewport(name) {
+    state.viewport = name;
+    if (elViewportBtns) elViewportBtns.forEach(b => b.classList.toggle('is-active', b.dataset.viewport === name));
+    if (!elIframeFrame) return;
+    elIframeFrame.classList.remove('v2-vp-desktop', 'v2-vp-tablet', 'v2-vp-mobile');
+    elIframeFrame.classList.add('v2-vp-' + name);
+  }
+
+  // ── Undo / redo ─────────────────────────────────────────────────────────
+  function recordUndo(label, beforeJson, afterJson) {
+    state.undoStack.push({ label, beforeJson, afterJson });
+    if (state.undoStack.length > 50) state.undoStack.shift();
+    state.redoStack = [];
+    refreshUndoButtons();
+  }
+  function refreshUndoButtons() {
+    if (elUndoBtn) elUndoBtn.disabled = state.undoStack.length === 0;
+    if (elRedoBtn) elRedoBtn.disabled = state.redoStack.length === 0;
+  }
+  async function undo() {
+    const item = state.undoStack.pop();
+    if (!item) return;
+    state.redoStack.push(item);
+    try {
+      await applyPatch({ op: 'replace_template', template: JSON.parse(item.beforeJson) }, { skipUndo: true });
+      pointIframe(state.pageSlug);
+      toast('Undid: ' + item.label, 'ok');
+    } catch (e) { toast('Undo failed.', 'error'); }
+    refreshUndoButtons();
+  }
+  async function redo() {
+    const item = state.redoStack.pop();
+    if (!item) return;
+    state.undoStack.push(item);
+    try {
+      await applyPatch({ op: 'replace_template', template: JSON.parse(item.afterJson) }, { skipUndo: true });
+      pointIframe(state.pageSlug);
+      toast('Redid: ' + item.label, 'ok');
+    } catch (e) { toast('Redo failed.', 'error'); }
+    refreshUndoButtons();
+  }
+  function onKey(e) {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+    else if ((e.metaKey || e.ctrlKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); redo(); }
+  }
+
+  // ── Picker search filter ────────────────────────────────────────────────
+  function filterPicker() {
+    const q = (elPickerSearch.value || '').toLowerCase().trim();
+    elPickerList.querySelectorAll('.v2-picker-card').forEach(card => {
+      const text = card.textContent.toLowerCase();
+      card.style.display = !q || text.includes(q) ? '' : 'none';
+    });
+  }
+
+  // ── AI section generation ──────────────────────────────────────────────
+  async function generateSectionFromAi() {
+    const prompt = (elAiPrompt && elAiPrompt.value || '').trim();
+    if (!prompt) { toast('Type a prompt first.', 'error'); return; }
+    elAiGo.disabled = true;
+    elAiGo.textContent = 'Thinking…';
+    try {
+      const ctx = { existing_section_types: state.template.order.map(sid => (state.template.sections[sid] || {}).type) };
+      const section = await window.v2GenerateSection(prompt, state.pageSlug, ctx);
+      // Add the section
+      const res = await applyPatch({
+        op: 'add', type: section.type, settings: section.settings || {},
+      });
+      const newSid = (res && res.affected_sids || [])[0];
+      // If it has blocks, add them
+      if (newSid && Array.isArray(section.blocks) && section.blocks.length) {
+        for (const b of section.blocks) {
+          await applyPatch({
+            op: 'add_block', sid: newSid, block_type: b.type, settings: b.settings || {},
+          });
+        }
+      }
+      if (newSid) {
+        state.selectedSid = newSid;
+        renderSettings();
+        renderTree();
+        postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: newSid });
+      }
+      closePicker();
+      toast('AI added a ' + section.type + ' section.', 'ok');
+      elAiPrompt.value = '';
+    } catch (e) {
+      toast('AI request failed: ' + (e.message || 'unknown'), 'error');
+    }
+    elAiGo.disabled = false;
+    elAiGo.textContent = '✨ Generate with AI';
   }
 
   // Boot

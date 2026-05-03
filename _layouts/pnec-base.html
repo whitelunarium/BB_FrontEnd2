@@ -22,6 +22,25 @@
   {% endunless %}
   <link rel="stylesheet" href="{{ '/assets/css/chatbot.css' | relative_url }}">
   <link rel="stylesheet" href="{{ '/assets/css/cms-sections.css' | relative_url }}">
+  <!-- CMS theme tokens (CSS custom properties) — fetched at runtime -->
+  <script>
+    (function () {
+      var host = window.location.hostname;
+      var apiBase = (host === 'localhost' || host === '127.0.0.1')
+        ? 'http://127.0.0.1:8425'
+        : 'https://beasts.opencodingsociety.com';
+      var qs = new URLSearchParams(window.location.search);
+      var state = qs.get('preview') === '1' ? 'draft' : 'published';
+      var url = apiBase + '/api/cms/theme.css?state=' + state;
+      var token = qs.get('token');
+      if (token) url += '&token=' + encodeURIComponent(token);
+      var l = document.createElement('link');
+      l.rel = 'stylesheet';
+      l.href = url;
+      l.id = 'cms-theme-css';
+      document.head.appendChild(l);
+    })();
+  </script>
 
   {% if page.use_poway_source_clone %}
   {% include poway-live-head.html %}

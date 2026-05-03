@@ -67,6 +67,29 @@
     });
   }
 
+  function v2FetchThemeSchema() {
+    return _request('/api/cms/theme/schema');
+  }
+  function v2FetchTheme(state) {
+    state = state || 'draft';
+    return _request(`/api/cms/theme?state=${encodeURIComponent(state)}`);
+  }
+  function v2PatchThemeDraft(updates) {
+    return _request('/api/cms/theme/draft', {
+      method: 'PATCH',
+      body: JSON.stringify({ updates }),
+    });
+  }
+  function v2PublishTheme() {
+    return _request('/api/cms/theme/publish', { method: 'POST' });
+  }
+  function v2GenerateSection(prompt, pageSlug, pageContext) {
+    return _request('/api/cms/ai/section', {
+      method: 'POST',
+      body: JSON.stringify({ prompt, page_slug: pageSlug, page_context: pageContext || {} }),
+    });
+  }
+
   function v2UploadImage(file) {
     const fd = new FormData();
     fd.append('file', file);
@@ -92,4 +115,9 @@
   window.v2Publish               = v2Publish;
   window.v2IssuePreviewToken     = v2IssuePreviewToken;
   window.v2UploadImage           = v2UploadImage;
+  window.v2FetchThemeSchema      = v2FetchThemeSchema;
+  window.v2FetchTheme            = v2FetchTheme;
+  window.v2PatchThemeDraft       = v2PatchThemeDraft;
+  window.v2PublishTheme          = v2PublishTheme;
+  window.v2GenerateSection       = v2GenerateSection;
 })();

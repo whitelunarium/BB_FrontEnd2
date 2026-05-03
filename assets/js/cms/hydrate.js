@@ -207,6 +207,12 @@
       if (!msg) return;
 
       switch (msg.type) {
+        case 'cms:theme:update':
+          if (typeof msg.key === 'string') {
+            const cssVar = '--cms-' + msg.key.replace(/_/g, '-');
+            document.documentElement.style.setProperty(cssVar, String(msg.value || ''));
+          }
+          break;
         case 'cms:section:rerender':
           await rerenderSection(msg.page, msg.sectionId);
           break;

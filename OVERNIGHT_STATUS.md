@@ -1,116 +1,114 @@
-# PNEC Live Editor v2 — Overnight Run Status
+# PNEC Live Editor v2 — Final Status (full backlog shipped)
 
-**Started:** 2026-05-02 ~22:42
-**Run mode:** Single autonomous turn
-**Caffeinate PID:** 85764 (Mac stayed awake)
-**Branch (FE):** `claude/strange-johnson-175d40` (worktree)
-**Branch (BE):** `main`
-**Push policy honored:** No pushes to remote during run.
-**v1 policy honored:** v1 admin editor (`pages/admin-editor.html`) and `data-cms-config` hydration unchanged. v2 ships alongside.
+**v2.0 shipped:** 2026-05-02 night (commits 712d84e7b + 687b90899 FE, 325db83 + 267e8f9 BE)
+**v2.1 shipped:** 2026-05-03 — full Tier 2/3 backlog except stega-encoded inline text
+
+**Caffeinate:** PID 85764 still running until you `kill 85764`.
 
 ---
 
-## What got built
+## Everything that ships now
 
-A **fully working v2 of the live editor** based on Shopify's section/block model. The page is now an ordered list of section instances stored as a JSON template; each section has typed settings; some sections (like FAQ) contain repeatable blocks with their own typed settings. Every change hot-swaps a single section in the iframe via the new render API — no more full reloads.
+### Backend (Beasts_Flask)
+- **PageTemplate** model — per-page draft/published JSON template of sections + blocks
+- **PreviewToken** model — 7-day share-preview tokens
+- **ThemeSettings** model — site-wide tokens (23 of them: colors, typography, layout, brand)
+- **CmsRegistry** — auto-discovers section types from `app/cms_sections/<type>/`
+- **CmsRenderer** — python-liquid renders sections, wraps in `<div id="cms-section-…" class="cms-section …">` with `cms-hide-{desktop,tablet,mobile}` device classes
+- **`/api/cms/sections-registry`** — list available types + schemas
+- **`/api/cms/page/<slug>?state=…&token=…`** — read template + rendered HTML
+- **`/api/cms/page/<slug>/draft` PATCH** — patch ops:
+  `add` · `remove` · `duplicate` · `reorder` · `set` · `bulk_set` ·
+  `visibility` · `device_visibility` · `replace_template` (undo/redo) ·
+  `add_block` · `remove_block` · `reorder_blocks` · `set_block`
+- **`/api/cms/page/<slug>/publish`** · **`/api/cms/render`** · **`/api/cms/page/<slug>/preview-token`**
+- **`/api/cms/theme/schema`** · **`/api/cms/theme`** · **`/api/cms/theme.css`** · **`/api/cms/theme/draft` PATCH** · **`/api/cms/theme/publish`**
+- **`/api/cms/ai/section`** — Anthropic-powered section generator. Validates response against registry. Requires `ANTHROPIC_API_KEY`.
+- **12 section types** (each is `<type>.html` Liquid template + `<type>.schema.json`):
+  `hero`, `text_block`, `image_with_text`, `faq` (+blocks), `cta_banner`, `gallery` (+blocks),
+  `card_list` (+blocks), `alert_box`, `quote`, `two_column`, `video_embed` (auto-extracts YouTube/Vimeo IDs),
+  `contact_cta`
+- **Presets** in schemas: "Volunteer Signup", "Donation CTA", "Wildfire Red Flag", "Event Announcement", "FAQ — 3 questions"
+- **Tests:** 45 / 45 passing.
 
-### Backend (Beasts_Flask, commit `325db83`)
+### Frontend (Beasts_FrontEnd)
+- **`pages/admin-editor-v2.html`** + **`assets/js/admin/editor-v2-{api,controller}.js`**
+- **Sidebar tabs** — Sections | Theme
+- **Section tree** — drag-reorder, select, hide (eye), duplicate, delete, rename via right-click menu
+- **Settings panel** — schema-driven; supports `text` / `richtext` / `image` (upload) / `select` / `color` / `url` field types
+- **Conditional fields** — schema fields with `condition: {field, op, value}` show/hide based on other field values
+- **Block editor** — for sections with blocks (FAQ, gallery, card_list); add / reorder up-down / delete / inline edit
+- **Theme tab** — 23 theme tokens grouped into colors/typography/layout/brand. Live updates iframe via `cms:theme:update` postMessage that swaps CSS custom properties on `:root`. Publish theme button copies draft → published.
+- **Viewport toggle** — Desktop (full) / Tablet (768px) / Mobile (375px) — iframe wraps in a phone-frame look
+- **Device visibility per section** — checkboxes (Desktop / Tablet / Mobile) on every section's settings panel
+- **Undo / Redo** — client snapshots template before each change, sends `replace_template` op on undo. ⌘Z / ⌘⇧Z keyboard shortcuts. Up to 50 entries.
+- **AI section generation** — text prompt + button in the picker modal. Calls `/api/cms/ai/section` (Claude Haiku by default), validates schema, instantiates the section.
+- **Section picker** — search box, default cards per type, separate cards per preset
+- **Preview Inspector** — click any element in the iframe → that section is selected
+- **Share preview** — admin generates a 7-day tokenized URL, auto-copied to clipboard
+- **Iframe-unresponsive watchdog** — 5-second banner
+- **`assets/js/cms/hydrate.js`** — handles `cms:section:*`, `cms:block:*`, `cms:inspector:*`, **`cms:theme:update`** postMessages; reports inspector clicks back to parent
+- **`assets/css/cms-sections.css`** — shared section styling + `cms-hide-{desktop,tablet,mobile}` media queries
+- **`_layouts/pnec-base.html`** — loads `/api/cms/theme.css` so the public site uses theme tokens
+- **Section hosts on Home + About + Programs** — `<div data-cms-section-host="home|about|programs">` placed in each page
 
-- **`app/models/page_template.py`** — `PageTemplate` model: per page, per state (`draft` | `published`), one row each holding the JSON template.
-- **`app/models/preview_token.py`** — 7-day tokens for sharing draft previews with non-admins.
-- **`app/services/cms_registry.py`** — auto-discovers section types from `app/cms_sections/<type>/` at startup. Each type is a `<type>.html` (Liquid) + `<type>.schema.json`.
-- **`app/services/cms_renderer.py`** — renders sections via `python-liquid`, wraps output in `<div id="cms-section-<sid>" data-cms-section-id data-cms-section-type data-cms-section-visible>`.
-- **`app/routes/cms_v2.py`** — full v2 API:
-  - `GET  /api/cms/sections-registry` → list available types + schemas
-  - `GET  /api/cms/page/<slug>?state=published|draft&token=...` → template + rendered HTML map
-  - `PATCH /api/cms/page/<slug>/draft` with patch ops `add`, `remove`, `duplicate`, `reorder`, `set`, `bulk_set`, `visibility`, `add_block`, `remove_block`, `reorder_blocks`, `set_block`
-  - `POST /api/cms/page/<slug>/publish` → copy draft → published
-  - `GET  /api/cms/render?page=…&section=…&state=…` → single-section HTML for hot-swap
-  - `POST /api/cms/page/<slug>/preview-token` → admin issues a share link
-- **Section types shipped: 4** (`hero`, `text_block`, `image_with_text`, `faq`). FAQ uses blocks (Q/A items).
-- **27 new pytest tests** covering registry, page read, every patch op, publish idempotency, render API, preview tokens, and FAQ blocks end-to-end. **Total 37 tests, all green.**
-- `requirements.txt` adds `python-liquid==1.13.0`.
-- `app/config.py` adds `CMS_SECTIONS_PATH`.
-- `app/__init__.py` registers `cms_v2_bp` and initializes the registry on startup.
-
-### Frontend (Beasts_FrontEnd worktree, commit `712d84e`)
-
-- **`pages/admin-editor-v2.html`** — full editor shell. Auth gate, top bar (page selector, Inspector toggle, Share link, View live, Publish), sidebar with section tree + settings panel, iframe preview, section picker modal, toast.
-- **`assets/js/admin/editor-v2-api.js`** — pure-fetch API layer.
-- **`assets/js/admin/editor-v2-controller.js`** — orchestrator with:
-  - Sidebar tree with HTML5 drag-and-drop reorder
-  - Schema-driven settings panel (text / richtext / image / select / color / url field types)
-  - Block editor (add / reorder up-down / delete / inline edit) for sections like FAQ
-  - Section picker modal with cards per type
-  - `cms:section:rerender` / `cms:section:reorder` / `cms:section:remove` / `cms:section:select` / `cms:inspector:activate|deactivate` postMessages to iframe
-  - Inspector mode: click any element in the iframe to select its section
-  - Publish + share-preview-link (copies token URL to clipboard)
-  - Iframe-unresponsive watchdog
-- **`assets/js/cms/hydrate.js`** — extended with v2 path. Hydrates `[data-cms-section-host="<slug>"]` divs from `/api/cms/page/<slug>`. Listens for v2 postMessages and dispatches matching CustomEvents on `document` (Shopify's `shopify:section:load|unload|select|reorder|...` grammar, namespaced `cms:`). Reports inspector clicks back up to editor parent.
-- **`assets/js/cms/hydrate.test.mjs`** — adds 3 v2 assertions; **all 7 frontend tests pass.**
-- **`assets/css/cms-sections.css`** — shared styling for the rendered section types. Loaded via `_layouts/pnec-base.html`.
-- **`_includes/poway-live-body.html`** — adds `<div data-cms-section-host="home">` between the carousel and the games banner. CMS sections render here.
-- **`pages/admin.html`** — Quick Actions panel now has both "✏️ Open Live Editor (v1)" and "🚀 Live Editor v2 (Sections)" buttons.
-
-### Not committed yet (in this turn)
-
-The following are staged but not yet committed (will be in the final commit below):
-- `OVERNIGHT_STATUS.md` (this file)
-- `assets/css/cms-sections.css` (CSS)
-- `_layouts/pnec-base.html` (link the new CSS)
-- `pages/admin-editor-v2.html` (block-list CSS additions)
-- `assets/js/admin/editor-v2-controller.js` (block UI rendering)
-- `docs/superpowers/specs/2026-05-02-pnec-live-editor-v2-spec.md` (the v2 spec)
-
-Backend uncommitted (will be in the final commit):
-- `app/cms_sections/faq/` (FAQ section type)
-- `tests/test_cms_v2.py` (FAQ block tests)
+### Frontend tests
+- 7/7 Node assertions in `hydrate.test.mjs` passing.
 
 ---
 
 ## Try it in the morning
 
-1. Backend already supports v2. Run Flask:
-   ```bash
-   cd /Users/samarthvaka/Beasts_Flask && ./venv/bin/python run.py
-   ```
-2. Run Jekyll:
-   ```bash
-   cd /Users/samarthvaka/Beasts_FrontEnd/.claude/worktrees/strange-johnson-175d40 && bundle exec jekyll serve
-   ```
-3. Sign in as admin (`admin@powaynec.com` / `changeme123`) at `http://localhost:4000/pages/register.html#login`.
-4. Open `http://localhost:4000/pages/admin-editor-v2.html`.
-5. **Try the workflow:**
-   - Click `+ Add section` → pick "FAQ" → see it appear in the iframe immediately.
-   - Click the FAQ in the sidebar → settings panel shows heading + alignment + block list.
-   - Click `+ Add Question` → expand the Q/A → type a question and answer → iframe hot-swaps within ~250ms.
-   - Drag-reorder sections in the sidebar → iframe re-orders without reload.
-   - Click `🔍 Inspector` → click any text/image in the iframe → that section's settings open.
-   - Click `🔗 Share` → copies a 7-day preview-link URL to your clipboard.
-   - Click `Publish` → reload `http://localhost:4000/` in a new tab → your sections render between the carousel and games banner.
+```bash
+# Terminal 1 — Flask
+cd /Users/samarthvaka/Beasts_Flask && ./venv/bin/python run.py
 
-## What's deferred (Tier 2/3 from research synthesis)
+# Terminal 2 — Jekyll
+cd /Users/samarthvaka/Beasts_FrontEnd/.claude/worktrees/strange-johnson-175d40 && bundle exec jekyll serve
 
-Not in this run — easy follow-ups:
-- **Theme tokens** (`_data/theme.json`) — global colors / fonts / spacing, exposed in the editor
-- **Breakpoint viewport toggle** (desktop / tablet / mobile)
-- **AI section generation** — `POST /api/cms/ai/section` with Anthropic
-- **Stega-encoded text** for true click-on-canvas inline editing
-- **Conditional settings** (show field X only if Y)
-- **Undo/redo** stack
-- **About / Programs page** support (just add `data-cms-section-host="about"` and `data-cms-section-host="programs"` once those pages should support sections)
-- **Section presets** — pre-built layouts ("Volunteer Signup", "Disaster Resources")
-- **Mobile-only / desktop-only visibility** per section
+# Browser
+http://localhost:4000/pages/register.html#login   (admin@powaynec.com / changeme123)
+http://localhost:4000/pages/admin-editor-v2.html
+```
 
-## Known limitations / gotchas
+What to try:
+1. Add a section (the picker has 12 types + named presets like "Wildfire Red Flag")
+2. Try the **AI prompt** at the top of the picker — type "FAQ section about Block Parties" → click "Generate with AI" (requires `ANTHROPIC_API_KEY`).
+3. Switch to the **Theme tab**, change `color_primary` to red — iframe sections turn red instantly.
+4. Toggle the **viewport** between desktop / tablet / mobile.
+5. Uncheck "mobile" on a section's "Show on" row — iframe hides it on the mobile viewport.
+6. Press **⌘Z** to undo your last change.
+7. Switch the **page selector** to About or Programs — the editor works on those pages too.
+8. Click **🔗 Share** → preview URL with a 7-day token is copied to your clipboard.
 
-- v1 (`data-cms-config` hydration) and v2 (sections) **co-exist on the homepage**. v1 still drives the hero text in the carousel (existing tags); v2 sections render in the new host below the carousel. They don't conflict.
-- The first time you load `/pages/admin-editor-v2.html`, the homepage iframe will show no v2 sections (template is empty). Just click `+ Add section` to get started.
-- Default block-level settings are computed from the schema's `default` keys. Section types can have multiple block types; v2 only auto-adds the **first** block type's defaults from the picker.
-- `set_block` patches re-render the affected section after every keystroke (debounced 250ms) — fast on local, but slow if Flask is on a remote host.
+## What's NOT shipped (the only remaining backlog item)
+
+- **Stega-encoded inline text editing** (Sanity-style click-on-canvas to edit text) — genuinely complex (zero-width Unicode encoding, MutationObserver overlays, server-side Liquid filter). Deferred to a separate run. Not blocking — admins still edit via the field panel and see live previews.
 
 ## Health check
 
-- Backend: 37 / 37 pytest passing (10 from v1 work, 27 new for v2 + 4 for FAQ).
-- Frontend: 7 / 7 Node hydrate.test.mjs assertions passing.
-- Full Flask app boots cleanly with `./venv/bin/python run.py`. Verified registry loads 4 types.
+- Backend: 45 / 45 pytest passing.
+- Frontend: 7 / 7 Node assertions passing.
+- Backend boots cleanly with registry loading 12 types.
+
+## Files added/modified in v2.1 wave
+
+**Backend (BE_ROOT = /Users/samarthvaka/Beasts_Flask):**
+- new: `app/models/theme_settings.py`
+- new: `app/routes/cms_theme.py`
+- new: `app/routes/cms_ai.py`
+- new: `app/cms_sections/{cta_banner,gallery,card_list,alert_box,quote,two_column,video_embed,contact_cta}/`
+- new: `tests/test_cms_theme.py`
+- modified: `app/__init__.py` (register cms_theme_bp + cms_ai_bp)
+- modified: `app/services/cms_renderer.py` (device_visibility CSS classes)
+- modified: `app/routes/cms_v2.py` (device_visibility op + replace_template op)
+- modified: `requirements.txt` (anthropic, python-liquid)
+
+**Frontend (FE_ROOT = /Users/samarthvaka/Beasts_FrontEnd/.claude/worktrees/strange-johnson-175d40):**
+- modified: `pages/admin-editor-v2.html` (sidebar tabs, viewport toggle, undo/redo, AI prompt, picker search, theme panel)
+- modified: `assets/js/admin/editor-v2-api.js` (5 new endpoints)
+- modified: `assets/js/admin/editor-v2-controller.js` (theme tab, viewport, undo/redo, conditional fields, device visibility, AI gen, presets)
+- modified: `assets/js/cms/hydrate.js` (cms:theme:update handler)
+- modified: `assets/css/cms-sections.css` (device-visibility media queries)
+- modified: `_layouts/pnec-base.html` (loads /api/cms/theme.css)
+- modified: `pages/about.html`, `pages/programs-and-services.html` (section hosts)

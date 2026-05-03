@@ -56,6 +56,17 @@ body.cms-inspector [data-cms-section-visible="false"],
   }
 }
 
+/* Device visibility helpers */
+@media (min-width: 1024px) {
+  .cms-hide-desktop { display: none !important; }
+}
+@media (min-width: 640px) and (max-width: 1023px) {
+  .cms-hide-tablet { display: none !important; }
+}
+@media (max-width: 639px) {
+  .cms-hide-mobile { display: none !important; }
+}
+
 /* FAQ */
 .cms-faq__item summary::-webkit-details-marker { display: none; }
 .cms-faq__item summary::marker { content: ''; }
