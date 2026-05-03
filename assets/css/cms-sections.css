@@ -28,6 +28,29 @@
   outline-offset: 2px;
 }
 
+/* "+ Add section here" floating buttons (preview mode only) */
+.cms-add-here {
+  display: block;
+  width: 100%;
+  margin: 4px 0;
+  padding: 8px 12px;
+  background: transparent;
+  color: #94a3b8;
+  border: 1px dashed #cbd5e1;
+  border-radius: 6px;
+  font: 600 13px ui-sans-serif, system-ui, sans-serif;
+  cursor: pointer;
+  opacity: 0.4;
+  transition: opacity 120ms, color 120ms, border-color 120ms, background 120ms;
+}
+.cms-add-here:hover {
+  opacity: 1;
+  color: #1e3a8a;
+  border-color: #1e3a8a;
+  border-style: solid;
+  background: rgba(59,130,246,0.05);
+}
+
 /* Stega-tagged inline-editable elements get a subtle hint in inspector mode. */
 body.cms-inspector .cms-editable {
   cursor: text;

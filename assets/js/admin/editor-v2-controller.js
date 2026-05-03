@@ -1083,7 +1083,12 @@
       `;
       card.addEventListener('click', async () => {
         closePicker();
-        const res = await applyPatch({ op: 'add', type: meta.type });
+        const patch = { op: 'add', type: meta.type };
+        if (typeof state.pendingInsertIndex === 'number') {
+          patch.index = state.pendingInsertIndex;
+          state.pendingInsertIndex = null;
+        }
+        const res = await applyPatch(patch);
         const newSid = (res && res.affected_sids || [])[0];
         if (newSid) {
           state.selectedSid = newSid;
@@ -1105,11 +1110,16 @@
         pcard.addEventListener('click', async () => {
           closePicker();
           // Single round-trip: add op now accepts inline blocks
-          const res = await applyPatch({
+          const patch = {
             op: 'add', type: meta.type,
             settings: preset.settings || {},
             blocks: preset.blocks || [],
-          });
+          };
+          if (typeof state.pendingInsertIndex === 'number') {
+            patch.index = state.pendingInsertIndex;
+            state.pendingInsertIndex = null;
+          }
+          const res = await applyPatch(patch);
           const newSid = (res && res.affected_sids || [])[0];
           if (newSid) {
             state.selectedSid = newSid;
@@ -1184,6 +1194,12 @@
         const row = elSidebarTree.querySelector('.v2-tree-row[data-sid="' + d.sectionId + '"]');
         if (row) row.classList.add('is-iframe-hover');
       }
+    } else if (d.type === 'cms:add-here') {
+      // User clicked a "+ Add section here" button between sections.
+      // Open the picker with the insertion index pre-set so the next add
+      // lands at that position.
+      state.pendingInsertIndex = typeof d.index === 'number' ? d.index : null;
+      openPicker();
     } else if (d.type === 'cms:inline:edit') {
       // Stega-tagged element double-clicked in iframe → select section,
       // wait for settings panel render, then scroll & focus the field.

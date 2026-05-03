@@ -109,10 +109,42 @@
     host.innerHTML = order.map(sid => sectionsHtml[sid] || '').join('');
     // Stega scan after every render so inline-edit is wired up
     scanStegaInside(host);
+    // Insert "+" buttons between sections (preview mode only)
+    if (new URLSearchParams(window.location.search).get('preview') === '1') {
+      insertAddButtonsBetween(host, order);
+    }
     // Re-init hook for any embedded section JS
     order.forEach(sid => {
       document.dispatchEvent(new CustomEvent('cms:section:load', { detail: { sectionId: sid } }));
     });
+  }
+
+  function insertAddButtonsBetween(host, order) {
+    // Remove old buttons
+    host.querySelectorAll('.cms-add-here').forEach(b => b.remove());
+    const expectedOrigin = window.location.origin;
+    const make = (index) => {
+      const btn = document.createElement('button');
+      btn.className = 'cms-add-here';
+      btn.type = 'button';
+      btn.dataset.cmsInsertIndex = String(index);
+      btn.innerHTML = '<span>+ Add section here</span>';
+      btn.addEventListener('click', (e) => {
+        e.preventDefault(); e.stopPropagation();
+        try {
+          window.parent.postMessage({ type: 'cms:add-here', index: index }, expectedOrigin);
+        } catch (_e) {}
+      });
+      return btn;
+    };
+    // Insert before each section
+    order.forEach((sid, idx) => {
+      const sectionEl = host.querySelector('#cms-section-' + sid);
+      if (!sectionEl) return;
+      sectionEl.parentNode.insertBefore(make(idx), sectionEl);
+    });
+    // Plus one at the very end
+    host.appendChild(make(order.length));
   }
 
   // ── v2: discover all editable items on this page ───────────────────────
