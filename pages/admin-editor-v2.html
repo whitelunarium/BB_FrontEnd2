@@ -293,8 +293,11 @@ body { margin: 0; background: var(--v2-bg); color: var(--v2-text); font-family: 
       <button id="v2-picker-close" class="v2-btn v2-btn-ghost">✕ Close</button>
     </div>
     <div class="v2-ai-row">
-      <textarea id="v2-ai-prompt" class="v2-input" placeholder="✨ Describe a section: e.g. 'A volunteer signup CTA with a button to mailto:volunteer@powaynec.com'"></textarea>
-      <button id="v2-ai-go" class="v2-btn">✨ Generate with AI</button>
+      <textarea id="v2-ai-prompt" class="v2-input" placeholder="✨ Describe a section OR a whole page: e.g. 'Volunteer signup CTA' or 'A page about Block Parties with hero, three program cards, FAQ, and contact CTA'"></textarea>
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <button id="v2-ai-go"      class="v2-btn"           title="AI generates ONE section">✨ Section</button>
+        <button id="v2-ai-go-page" class="v2-btn v2-btn-ghost" title="AI generates a full multi-section page (replaces draft)">🪄 Whole page</button>
+      </div>
     </div>
     <input id="v2-picker-search" type="text" class="v2-input v2-picker-search" placeholder="Search section types…" />
     <div id="v2-picker-list" class="v2-picker-list"></div>

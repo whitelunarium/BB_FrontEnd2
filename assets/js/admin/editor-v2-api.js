@@ -90,6 +90,13 @@
     });
   }
 
+  function v2GeneratePage(prompt, pageSlug) {
+    return _request('/api/cms/ai/page', {
+      method: 'POST',
+      body: JSON.stringify({ prompt, page_slug: pageSlug }),
+    });
+  }
+
   function v2UploadImage(file) {
     const fd = new FormData();
     fd.append('file', file);
@@ -120,4 +127,5 @@
   window.v2PatchThemeDraft       = v2PatchThemeDraft;
   window.v2PublishTheme          = v2PublishTheme;
   window.v2GenerateSection       = v2GenerateSection;
+  window.v2GeneratePage          = v2GeneratePage;
 })();

@@ -133,6 +133,8 @@
     if (elRedoBtn) elRedoBtn.addEventListener('click', redo);
     if (elPickerSearch) elPickerSearch.addEventListener('input', filterPicker);
     if (elAiGo) elAiGo.addEventListener('click', generateSectionFromAi);
+    const aiGoPage = document.getElementById('v2-ai-go-page');
+    if (aiGoPage) aiGoPage.addEventListener('click', generatePageFromAi);
 
     window.addEventListener('message', onIframeMessage);
     document.addEventListener('keydown', onKey);
@@ -1734,6 +1736,55 @@
     }
     elAiGo.disabled = false;
     elAiGo.textContent = '✨ Generate with AI';
+  }
+
+  // ── AI: full page generation (flagship) ──────────────────────────────────
+  async function generatePageFromAi() {
+    const prompt = (elAiPrompt && elAiPrompt.value || '').trim();
+    if (!prompt) { toast('Type a prompt first.', 'error'); return; }
+    if (state.template.order.length && !confirm(
+      'This will REPLACE all sections on this page with AI-generated content. ' +
+      'Your current draft is snapshotted so ⌘Z will undo. Continue?')) return;
+
+    const aiBtn = document.getElementById('v2-ai-go-page');
+    if (aiBtn) { aiBtn.disabled = true; aiBtn.textContent = 'Thinking…'; }
+    try {
+      const beforeJson = JSON.stringify(state.template);
+      const result = await window.v2GeneratePage(prompt, state.pageSlug);
+      const sections = (result && result.sections) || [];
+      // Wipe existing draft, then add each section in order. We bundle this
+      // into one replace_template patch so it's a single round-trip.
+      const newTemplate = { sections: {}, order: [] };
+      sections.forEach((s) => {
+        const sid = 'ai' + Math.random().toString(36).slice(2, 10);
+        const blocks = {};
+        const block_order = [];
+        (s.blocks || []).forEach(b => {
+          const bid = 'b' + Math.random().toString(36).slice(2, 10);
+          blocks[bid] = { type: b.type, settings: b.settings || {} };
+          block_order.push(bid);
+        });
+        newTemplate.sections[sid] = {
+          type: s.type,
+          settings: s.settings || {},
+          visible: true,
+          blocks,
+          block_order,
+        };
+        newTemplate.order.push(sid);
+      });
+      const res = await applyPatch({ op: 'replace_template', template: newTemplate }, { skipUndo: true });
+      recordUndo('AI page', beforeJson, JSON.stringify(state.template));
+      state.template = res.template;
+      renderTree();
+      pointIframe(state.pageSlug);
+      closePicker();
+      toast(`AI built a ${sections.length}-section page.`, 'ok');
+      elAiPrompt.value = '';
+    } catch (e) {
+      toast('AI page-gen failed: ' + (e.message || ''), 'error');
+    }
+    if (aiBtn) { aiBtn.disabled = false; aiBtn.textContent = '🪄 Whole page'; }
   }
 
   // Boot
