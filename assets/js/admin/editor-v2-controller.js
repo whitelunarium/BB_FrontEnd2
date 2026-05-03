@@ -258,6 +258,8 @@
         if (e.target.closest('.v2-icon-btn')) return;
         selectSection(sid);
       });
+      row.addEventListener('mouseenter', () => postToIframe({ type: 'cms:section:hover', sectionId: sid }));
+      row.addEventListener('mouseleave', () => postToIframe({ type: 'cms:section:hover', sectionId: null }));
       row.querySelectorAll('.v2-icon-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -954,6 +956,14 @@
     if (d.type === 'cms:inspector:click') {
       // Inspector clicked something in the iframe — select it
       if (d.sectionId) selectSection(d.sectionId);
+    } else if (d.type === 'cms:inspector:hover') {
+      // Iframe hover → highlight matching sidebar row
+      elSidebarTree.querySelectorAll('.v2-tree-row.is-iframe-hover')
+        .forEach(r => r.classList.remove('is-iframe-hover'));
+      if (d.sectionId) {
+        const row = elSidebarTree.querySelector('.v2-tree-row[data-sid="' + d.sectionId + '"]');
+        if (row) row.classList.add('is-iframe-hover');
+      }
     } else if (d.type === 'cms:inline:edit') {
       // Stega-tagged element double-clicked in iframe → select section,
       // wait for settings panel render, then scroll & focus the field.

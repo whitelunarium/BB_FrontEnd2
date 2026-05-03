@@ -327,6 +327,7 @@
     style.textContent = `
       [data-cms-section-id] { position: relative; }
       [data-cms-section-id].is-cms-selected { outline: 2px solid #3b82f6; outline-offset: -2px; }
+      [data-cms-section-id].is-cms-hover { outline: 2px solid #f59e0b; outline-offset: -2px; }
       body.cms-inspector [data-cms-section-id]:hover { outline: 2px dashed #60a5fa; outline-offset: -2px; cursor: pointer; }
       [data-cms-block-id].is-cms-selected { outline: 2px dotted #3b82f6; outline-offset: -2px; }
     `;
@@ -378,6 +379,15 @@
             detail: { sectionId: msg.sectionId, load: !!msg.load }
           }));
           break;
+        case 'cms:section:hover':
+          // Editor hovered a row in the sidebar tree — outline the iframe section
+          document.querySelectorAll('[data-cms-section-id].is-cms-hover')
+            .forEach(el => el.classList.remove('is-cms-hover'));
+          if (msg.sectionId) {
+            const el = document.getElementById('cms-section-' + msg.sectionId);
+            if (el) el.classList.add('is-cms-hover');
+          }
+          break;
         case 'cms:inspector:activate':
           document.body.classList.add('cms-inspector');
           document.dispatchEvent(new CustomEvent('cms:inspector:activate'));
@@ -410,6 +420,26 @@
 
     // Inline-edit double-click: stega-tagged elements
     enableInlineEditClicks(expectedOrigin);
+
+    // Hover sync: when inspector mode is on, hovering a section in the iframe
+    // tells the editor parent to highlight the matching row in the sidebar tree.
+    document.addEventListener('mouseover', (event) => {
+      if (!document.body.classList.contains('cms-inspector')) return;
+      const el = event.target.closest('[data-cms-section-id]');
+      if (!el) return;
+      try {
+        window.parent.postMessage({
+          type: 'cms:inspector:hover',
+          sectionId: el.dataset.cmsSectionId,
+        }, expectedOrigin);
+      } catch (_e) { /* ignore */ }
+    }, true);
+    document.addEventListener('mouseleave', () => {
+      if (!document.body.classList.contains('cms-inspector')) return;
+      try {
+        window.parent.postMessage({ type: 'cms:inspector:hover', sectionId: null }, expectedOrigin);
+      } catch (_e) {}
+    }, true);
   }
 
   // ── v1+v2 boot: hydrate v1 (data-cms-config), then v2 (section hosts) ───
