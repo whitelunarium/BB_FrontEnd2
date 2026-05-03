@@ -245,6 +245,148 @@
     (meta.settings || []).forEach(field => {
       elSettingsPanel.appendChild(buildField(section, field));
     });
+
+    // Block list (only if the section type defines block schemas)
+    if (Array.isArray(meta.blocks) && meta.blocks.length) {
+      elSettingsPanel.appendChild(buildBlocksList(section, meta));
+    }
+  }
+
+  function buildBlocksList(section, meta) {
+    const wrap = document.createElement('div');
+    wrap.className = 'v2-blocks';
+    const header = document.createElement('div');
+    header.className = 'v2-blocks-header';
+    header.innerHTML = `<span>Items</span>`;
+    wrap.appendChild(header);
+
+    const order = section.block_order || [];
+    const blocks = section.blocks || {};
+    if (!order.length) {
+      const empty = document.createElement('div');
+      empty.className = 'v2-empty';
+      empty.style.fontSize = '.8rem';
+      empty.textContent = 'No items yet — click "+ Add item" below.';
+      wrap.appendChild(empty);
+    }
+    order.forEach((bid, idx) => {
+      const block = blocks[bid];
+      if (!block) return;
+      const blockMeta = (meta.blocks || []).find(b => b.type === block.type) || meta.blocks[0];
+      wrap.appendChild(buildBlockEditor(section, block, bid, blockMeta));
+    });
+
+    // Add block — pick first block type if multiple
+    const addBtn = document.createElement('button');
+    addBtn.className = 'v2-btn v2-btn-ghost';
+    addBtn.style.width = '100%';
+    addBtn.style.marginTop = '8px';
+    addBtn.textContent = `+ Add ${meta.blocks[0].label || 'item'}`;
+    addBtn.addEventListener('click', async () => {
+      const blockType = meta.blocks[0].type;
+      const defaults = {};
+      (meta.blocks[0].settings || []).forEach(f => {
+        if ('default' in f) defaults[f.id] = f.default;
+      });
+      await applyPatch({ op: 'add_block', sid: state.selectedSid, block_type: blockType, settings: defaults });
+      postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
+    });
+    wrap.appendChild(addBtn);
+    return wrap;
+  }
+
+  function buildBlockEditor(section, block, bid, blockMeta) {
+    const wrap = document.createElement('details');
+    wrap.className = 'v2-block';
+    wrap.open = (state.selectedBid === bid);
+    const summary = document.createElement('summary');
+    const summaryLabel = (block.settings && (block.settings.question || block.settings.heading)) || (blockMeta.label || block.type);
+    summary.innerHTML = `
+      <span class="v2-block-summary-label">${escapeHtml(String(summaryLabel).slice(0, 40))}</span>
+      <span class="v2-block-actions">
+        <button class="v2-icon-btn" data-block-act="up"     title="Move up">▲</button>
+        <button class="v2-icon-btn" data-block-act="down"   title="Move down">▼</button>
+        <button class="v2-icon-btn" data-block-act="delete" title="Delete">🗑</button>
+      </span>
+    `;
+    wrap.appendChild(summary);
+
+    summary.querySelectorAll('.v2-icon-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const act = btn.dataset.blockAct;
+        await handleBlockAction(section, bid, act);
+      });
+    });
+
+    const body = document.createElement('div');
+    body.className = 'v2-block-body';
+    (blockMeta.settings || []).forEach(field => {
+      body.appendChild(buildBlockField(section, block, bid, field));
+    });
+    wrap.appendChild(body);
+    return wrap;
+  }
+
+  function buildBlockField(section, block, bid, field) {
+    const wrap = document.createElement('div');
+    wrap.className = 'v2-field';
+    const label = document.createElement('label');
+    label.className = 'v2-field-label';
+    label.textContent = field.label || field.id;
+    wrap.appendChild(label);
+
+    const initial = (block.settings && field.id in block.settings)
+                    ? block.settings[field.id]
+                    : (field.default != null ? field.default : '');
+    let input;
+    if (field.type === 'richtext') {
+      input = document.createElement('textarea');
+      input.className = 'v2-input v2-textarea';
+      input.rows = 3;
+      input.value = initial || '';
+    } else if (field.type === 'select') {
+      input = document.createElement('select');
+      input.className = 'v2-input';
+      (field.options || []).forEach(opt => {
+        const o = document.createElement('option');
+        o.value = opt; o.textContent = opt;
+        if (opt === initial) o.selected = true;
+        input.appendChild(o);
+      });
+    } else {
+      input = document.createElement('input');
+      input.type = (field.type === 'url' ? 'url' : 'text');
+      input.className = 'v2-input';
+      input.value = initial || '';
+    }
+    input.addEventListener('input', debounce(async () => {
+      await applyPatch({
+        op: 'set_block', sid: state.selectedSid, bid, key: field.id, value: input.value,
+      });
+      postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
+    }, 250));
+    wrap.appendChild(input);
+    return wrap;
+  }
+
+  async function handleBlockAction(section, bid, action) {
+    const order = section.block_order || [];
+    if (action === 'delete') {
+      if (!confirm('Delete this item?')) return;
+      await applyPatch({ op: 'remove_block', sid: state.selectedSid, bid });
+      postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
+    } else if (action === 'up' || action === 'down') {
+      const idx = order.indexOf(bid);
+      if (idx < 0) return;
+      const swap = action === 'up' ? idx - 1 : idx + 1;
+      if (swap < 0 || swap >= order.length) return;
+      const newOrder = order.slice();
+      [newOrder[idx], newOrder[swap]] = [newOrder[swap], newOrder[idx]];
+      await applyPatch({ op: 'reorder_blocks', sid: state.selectedSid, block_order: newOrder });
+      postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
+    }
   }
 
   function buildField(section, field) {

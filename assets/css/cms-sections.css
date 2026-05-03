@@ -1,0 +1,69 @@
+---
+---
+
+/* assets/css/cms-sections.css
+   Shared styling for the CMS v2 section types. Loaded via _layouts/pnec-base.html
+   on every page. Designed to inherit cleanly into the WordPress-cloned homepage. */
+
+/* Container reset for the host */
+[data-cms-section-host] {
+  display: block;
+  width: 100%;
+}
+
+[data-cms-section-id] {
+  display: block;
+  width: 100%;
+  margin-bottom: 0;
+}
+
+/* Hidden sections still take a small footprint in admin preview so they're
+   findable, but render empty on the public page. */
+[data-cms-section-visible="false"] {
+  display: none;
+}
+body.cms-inspector [data-cms-section-visible="false"],
+[data-cms-section-host][data-cms-preview="true"] [data-cms-section-visible="false"] {
+  display: block;
+  opacity: 0.5;
+  outline: 1px dashed #94a3b8;
+}
+
+/* Hero */
+.cms-hero {
+  position: relative;
+}
+.cms-hero__headline {
+  line-height: 1.15;
+}
+
+/* Text block */
+.cms-text-block {
+  color: #1e293b;
+}
+
+/* Image with text */
+.cms-iwt {
+  align-items: center;
+}
+@media (max-width: 640px) {
+  .cms-iwt {
+    grid-template-columns: 1fr !important;
+  }
+  .cms-iwt__media,
+  .cms-iwt__text {
+    order: unset !important;
+  }
+}
+
+/* FAQ */
+.cms-faq__item summary::-webkit-details-marker { display: none; }
+.cms-faq__item summary::marker { content: ''; }
+.cms-faq__item summary::after {
+  content: '+';
+  float: right;
+  color: #94a3b8;
+}
+.cms-faq__item[open] summary::after {
+  content: '−';
+}
