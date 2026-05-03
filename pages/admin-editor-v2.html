@@ -191,6 +191,31 @@ body {
 .v2-tree-row.is-dragging { opacity: 0.4; transform: scale(0.96); }
 .v2-tree-row.is-drag-over { border-top: 2px solid var(--v2-accent); padding-top: 7px; }
 .v2-tree-row.is-iframe-hover { background: rgba(251,191,36,0.12); border-color: var(--v2-amber); }
+.v2-tree-row.is-multi-selected {
+  background: rgba(168,85,247,0.14);
+  border-color: rgba(168,85,247,0.40);
+  box-shadow: inset 3px 0 0 rgba(168,85,247,0.85);
+}
+.v2-tree-row.is-multi-selected::before { background: rgba(168,85,247,0.85); transform: scaleY(1); }
+.v2-bulk-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  margin: 8px 12px 0;
+  background: linear-gradient(135deg, rgba(91,140,255,0.15), rgba(168,85,247,0.18));
+  border: 1px solid rgba(168,85,247,0.35);
+  border-radius: 10px;
+  position: sticky; bottom: 0;
+  backdrop-filter: blur(10px);
+  z-index: 5;
+  animation: v2-pop-in 220ms cubic-bezier(.2,.9,.3,1.1);
+  flex-wrap: wrap;
+}
+.v2-bulk-count { font-size: .8rem; font-weight: 700; color: var(--v2-text); background: rgba(255,255,255,0.10); padding: 4px 10px; border-radius: 999px; }
+.v2-bulk-bar .v2-btn { font-size: .78rem; padding: 5px 9px; }
+.v2-bulk-danger { color: #fecaca !important; }
+.v2-bulk-danger:hover { background: rgba(239,68,68,0.25) !important; }
 .v2-tree-warn {
   background: linear-gradient(135deg, var(--v2-amber) 0%, #f97316 100%);
   color: #1f2937;
@@ -1035,6 +1060,9 @@ body {
       <dt>⌘C / ⌘V</dt>       <dd>(on focused tree row) copy / paste section between pages</dd>
       <dt>↑ ↓</dt>           <dd>(on focused tree row) move focus to neighbor</dd>
       <dt>⇧Backspace</dt>    <dd>(on focused tree row) delete section</dd>
+      <dt>⇧Click</dt>        <dd>(on tree row) range-select sections between current and clicked</dd>
+      <dt>⌘Click</dt>        <dd>(on tree row) toggle that row in the multi-selection set</dd>
+      <dt>⌘A</dt>            <dd>(on focused tree row) select every section on the page</dd>
       <dt>Right-click</dt>   <dd>(on a section anywhere) open quick-action menu</dd>
       <dt>Esc</dt>           <dd>Close any open dialog</dd>
     </dl>

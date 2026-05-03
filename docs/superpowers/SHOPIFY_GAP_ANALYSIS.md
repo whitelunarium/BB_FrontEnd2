@@ -111,7 +111,7 @@ Ranked by leverage:
 9. **Block-level copy/paste** — ✅ shipped
 10. **Drag-to-reorder in iframe** — ✅ shipped
 11. **Templates: create new page from blank** — ✅ shipped
-12. **Multi-select tree rows + bulk delete/duplicate/move** — still missing
+12. **Multi-select tree rows + bulk delete/duplicate/move** ✅ shipped (v2.20) — Shift-click range, Cmd-click toggle, ⌘A select-all, sticky bulk-action bar with Hide/Show/Duplicate/Delete that ships every selected sid in a single atomic PATCH (server batches, undo rolls all back as one).
 13. **Better section-type icons** (Lucide-like SVGs) — still missing
 14. **AI-generated placeholder images** — still missing
 15. **Block-level cross-page copy/paste between Q&A items, gallery items, etc.** — still missing

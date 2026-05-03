@@ -39,6 +39,8 @@
     siteConfig:    null,       // cached /api/site-config full state
     selectedExisting: null,    // {kind, key} when an existing item is selected
     overrides:     {},         // page-overrides cached map
+    // v2.20 additions
+    multiSelected: new Set(),  // sids selected in addition to selectedSid (for bulk ops)
   };
 
   function _apiBase() {
@@ -284,7 +286,9 @@
       const sidIssues = issuesBySid[sid] || [];
       const displayLabel = section.name || (meta ? meta.label : section.type);
       const row = document.createElement('div');
-      row.className = 'v2-tree-row' + (sid === state.selectedSid ? ' is-selected' : '');
+      row.className = 'v2-tree-row'
+        + (sid === state.selectedSid ? ' is-selected' : '')
+        + (state.multiSelected.has(sid) ? ' is-multi-selected' : '');
       row.draggable = true;
       row.dataset.sid = sid;
       row.tabIndex = 0;
@@ -329,6 +333,23 @@
       `;
       row.addEventListener('click', (e) => {
         if (e.target.closest('.v2-icon-btn')) return;
+        if (e.shiftKey && state.selectedSid) {
+          // Shift+click → range-select from current primary to here
+          extendSelectionTo(sid);
+          e.preventDefault();
+          return;
+        }
+        if (e.metaKey || e.ctrlKey) {
+          // Cmd/Ctrl+click → toggle this sid in the multi-selected set
+          toggleMultiSelect(sid);
+          e.preventDefault();
+          return;
+        }
+        // Plain click → clear multi-selection and pick a single primary
+        if (state.multiSelected.size) {
+          state.multiSelected.clear();
+          renderBulkBar();
+        }
         selectSection(sid);
       });
       row.addEventListener('mouseenter', () => postToIframe({ type: 'cms:section:hover', sectionId: sid }));
@@ -386,7 +407,128 @@
     state.selectedExisting = null;
     renderTree();
     renderSettings();
+    renderBulkBar();
     postToIframe({ type: 'cms:section:select', sectionId: sid });
+  }
+
+  // ── Multi-select (Shift / Cmd-click on tree rows) ────────────────────────
+  function toggleMultiSelect(sid) {
+    // Cmd/Ctrl-click toggles this sid in the auxiliary set, leaving the
+    // primary selection (state.selectedSid) intact.
+    if (state.multiSelected.has(sid)) state.multiSelected.delete(sid);
+    else                              state.multiSelected.add(sid);
+    renderTree();
+    renderBulkBar();
+  }
+  function extendSelectionTo(sid) {
+    // Shift-click range-selects all sids between state.selectedSid and sid
+    // in the rendered order. The primary doesn't change; the in-between sids
+    // get added to multiSelected.
+    if (!state.selectedSid || sid === state.selectedSid) return;
+    const order = state.template.order;
+    const a = order.indexOf(state.selectedSid);
+    const b = order.indexOf(sid);
+    if (a < 0 || b < 0) return;
+    const [lo, hi] = a < b ? [a, b] : [b, a];
+    state.multiSelected.clear();
+    for (let i = lo; i <= hi; i++) {
+      if (order[i] !== state.selectedSid) state.multiSelected.add(order[i]);
+    }
+    renderTree();
+    renderBulkBar();
+  }
+  function clearMultiSelect() {
+    if (!state.multiSelected.size) return;
+    state.multiSelected.clear();
+    renderTree();
+    renderBulkBar();
+  }
+  // All sids the user wants to act on: primary + multi-selected
+  function getActiveSids() {
+    const sids = new Set(state.multiSelected);
+    if (state.selectedSid) sids.add(state.selectedSid);
+    return Array.from(sids);
+  }
+  function renderBulkBar() {
+    let bar = document.getElementById('v2-bulk-bar');
+    const count = state.multiSelected.size + (state.selectedSid && state.multiSelected.size ? 1 : 0);
+    if (state.multiSelected.size === 0) {
+      if (bar) bar.remove();
+      return;
+    }
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.id = 'v2-bulk-bar';
+      bar.className = 'v2-bulk-bar';
+      const container = elSidebarTree && elSidebarTree.parentElement;
+      if (container) container.appendChild(bar);
+      else document.body.appendChild(bar);
+    }
+    bar.innerHTML = `
+      <span class="v2-bulk-count">${count} selected</span>
+      <button class="v2-btn v2-btn-ghost"  data-bulk="visibility-hide" title="Hide all">🙈 Hide</button>
+      <button class="v2-btn v2-btn-ghost"  data-bulk="visibility-show" title="Show all">👁 Show</button>
+      <button class="v2-btn v2-btn-ghost"  data-bulk="duplicate"        title="Duplicate all">⧉ Duplicate</button>
+      <button class="v2-btn v2-btn-ghost v2-bulk-danger" data-bulk="delete" title="Delete all">🗑 Delete</button>
+      <button class="v2-btn v2-btn-ghost"  data-bulk="clear"            title="Clear selection">✕</button>
+    `;
+    bar.querySelectorAll('button[data-bulk]').forEach(btn => {
+      btn.addEventListener('click', () => bulkAction(btn.dataset.bulk));
+    });
+  }
+  async function bulkAction(action) {
+    const sids = getActiveSids();
+    if (!sids.length) return;
+    if (action === 'clear') { clearMultiSelect(); return; }
+    if (action === 'delete') {
+      if (!confirm('Delete ' + sids.length + ' section' + (sids.length === 1 ? '' : 's') + '? You can undo with ⌘Z.')) return;
+      // Build a single batch of `remove` patches — backend processes them
+      // atomically so undo can roll all of them back as one.
+      const patches = sids.map(sid => ({ op: 'remove', sid }));
+      await applyPatchBatch(patches);
+      sids.forEach(sid => postToIframe({ type: 'cms:section:remove', sectionId: sid }));
+      // If primary was deleted, clear it
+      if (state.selectedSid && sids.includes(state.selectedSid)) state.selectedSid = null;
+      clearMultiSelect();
+      renderSettings();
+      return;
+    }
+    if (action === 'duplicate') {
+      const patches = sids.map(sid => ({ op: 'duplicate', sid }));
+      const res = await applyPatchBatch(patches);
+      const newSids = (res && res.affected_sids || []).filter(x => !sids.includes(x));
+      newSids.forEach(sid => postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: sid }));
+      clearMultiSelect();
+      return;
+    }
+    if (action === 'visibility-hide' || action === 'visibility-show') {
+      const visible = action === 'visibility-show';
+      const patches = sids.map(sid => ({ op: 'visibility', sid, visible }));
+      await applyPatchBatch(patches);
+      sids.forEach(sid => postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: sid }));
+      clearMultiSelect();
+      return;
+    }
+  }
+  // Tiny convenience: send N patches in one PATCH (server processes them in order
+  // and gives us the union of affected sids).
+  async function applyPatchBatch(patches) {
+    if (!patches || !patches.length) return null;
+    const beforeJson = JSON.stringify(state.template);
+    setStatus('saving');
+    try {
+      const res = await window.v2PatchDraft(state.pageSlug, patches);
+      state.template = res.template;
+      setStatus('saved', 'last edit ' + new Date().toLocaleTimeString());
+      recordUndo('bulk:' + patches.length, beforeJson, JSON.stringify(state.template));
+      renderTree();
+      setTimeout(requestScan, 400);
+      return res;
+    } catch (e) {
+      setStatus('error', e.message || '');
+      toast('Bulk action failed: ' + (e.message || ''), 'error');
+      return null;
+    }
   }
 
   function selectExisting(item) {
@@ -2059,6 +2201,25 @@
       if (findModal && findModal.classList.contains('is-open')) {
         e.preventDefault();
         closeFindModal();
+        return;
+      }
+      // Esc also clears any multi-selection
+      if (state.multiSelected.size) {
+        e.preventDefault();
+        clearMultiSelect();
+        return;
+      }
+    }
+
+    // ⌘A on a focused tree row → select all sections in current page
+    if ((e.metaKey || e.ctrlKey) && (e.key === 'a' || e.key === 'A')) {
+      const target = e.target;
+      const insideTree = target && target.closest && target.closest('.v2-tree-row');
+      if (insideTree) {
+        e.preventDefault();
+        state.multiSelected = new Set(state.template.order.filter(s => s !== state.selectedSid));
+        renderTree();
+        renderBulkBar();
         return;
       }
     }
