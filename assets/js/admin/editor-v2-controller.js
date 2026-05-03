@@ -124,6 +124,8 @@
     }
     const dupBtn = document.getElementById('v2-duplicate-page');
     if (dupBtn) dupBtn.addEventListener('click', duplicatePage);
+    const createBtn = document.getElementById('v2-create-page');
+    if (createBtn) createBtn.addEventListener('click', createBlankPage);
     document.addEventListener('click', (e) => {
       if (e.target && e.target.id === 'v2-help-overlay') closeHelp();
     });
@@ -1187,6 +1189,33 @@
       postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: newSid });
       toast('Pasted as new section.', 'ok');
     }
+  }
+
+  // ── Create blank page ────────────────────────────────────────────────────
+  async function createBlankPage() {
+    const target = prompt('New page slug (lowercase, hyphens):');
+    if (!target) return;
+    const slug = target.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+    if (!slug) { toast('Invalid slug.', 'error'); return; }
+    try {
+      const res = await fetch(_apiBase() + '/api/cms/page/' + encodeURIComponent(slug) + '/create', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json',
+                   'Authorization': 'Bearer ' + (localStorage.getItem('pnec_token') || '') },
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        toast('Create failed: ' + (err.detail || res.status), 'error');
+        return;
+      }
+      const opt = document.createElement('option');
+      opt.value = slug;
+      opt.textContent = slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      elPageSel.appendChild(opt);
+      elPageSel.value = slug;
+      await switchPage(slug);
+      toast('Created blank page "' + slug + '".', 'ok');
+    } catch (e) { toast('Create failed.', 'error'); }
   }
 
   // ── Duplicate page ───────────────────────────────────────────────────────
