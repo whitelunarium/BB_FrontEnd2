@@ -107,10 +107,86 @@
     if (!host || !template) return;
     const order = (template.order || []).filter(sid => sectionsHtml[sid]);
     host.innerHTML = order.map(sid => sectionsHtml[sid] || '').join('');
+    // Stega scan after every render so inline-edit is wired up
+    scanStegaInside(host);
     // Re-init hook for any embedded section JS
     order.forEach(sid => {
       document.dispatchEvent(new CustomEvent('cms:section:load', { detail: { sectionId: sid } }));
     });
+  }
+
+  // ── v2: stega-encoded inline-edit detection ─────────────────────────────
+  // Mirrors app/services/cms_stega.py — zero-width chars after a 4-char
+  // sentinel encode a JSON payload {sid, field}. We walk text nodes in
+  // preview mode, decode any payload at the start, and tag the parent
+  // element with data-cms-stega-sid + data-cms-stega-field for click-to-edit.
+
+  const STEGA_ZWSP = '​';
+  const STEGA_ZWNJ = '‌';
+  const STEGA_SENTINEL = STEGA_ZWNJ + STEGA_ZWSP + STEGA_ZWNJ + STEGA_ZWSP;
+
+  function decodeStega(text) {
+    if (!text || text.indexOf(STEGA_SENTINEL) !== 0) return null;
+    let rest = text.slice(STEGA_SENTINEL.length);
+    const bytes = [];
+    let i = 0;
+    while (i + 8 <= rest.length) {
+      const chunk = rest.slice(i, i + 8);
+      if (!/^[​‌]+$/.test(chunk)) break;
+      let byte = 0;
+      for (let j = 0; j < 8; j++) {
+        byte = (byte << 1) | (chunk.charCodeAt(j) === 0x200C ? 1 : 0);
+      }
+      bytes.push(byte);
+      i += 8;
+    }
+    if (!bytes.length) return null;
+    let str;
+    try { str = new TextDecoder('utf-8').decode(new Uint8Array(bytes)); }
+    catch (_e) { return null; }
+    let payload;
+    try { payload = JSON.parse(str); }
+    catch (_e) { return null; }
+    return { payload, remaining: rest.slice(i) };
+  }
+
+  function scanStegaInside(root) {
+    if (!root || typeof document === 'undefined' || typeof NodeFilter === 'undefined' ||
+        typeof document.createTreeWalker !== 'function') return;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+    const updates = [];
+    let node;
+    while ((node = walker.nextNode())) {
+      const decoded = decodeStega(node.nodeValue);
+      if (!decoded) continue;
+      const parent = node.parentElement;
+      if (!parent) continue;
+      // Strip the encoded prefix and tag the parent
+      updates.push({ node, parent, payload: decoded.payload, remaining: decoded.remaining });
+    }
+    updates.forEach(({ node, parent, payload, remaining }) => {
+      node.nodeValue = remaining;
+      parent.setAttribute('data-cms-stega-sid', String(payload.sid || ''));
+      parent.setAttribute('data-cms-stega-field', String(payload.field || ''));
+      parent.classList.add('cms-editable');
+    });
+  }
+
+  function enableInlineEditClicks(expectedOrigin) {
+    document.addEventListener('dblclick', (event) => {
+      // Only in inspector mode
+      if (!document.body.classList.contains('cms-inspector')) return;
+      const el = event.target.closest('[data-cms-stega-sid][data-cms-stega-field]');
+      if (!el) return;
+      event.preventDefault();
+      try {
+        window.parent.postMessage({
+          type: 'cms:inline:edit',
+          sectionId: el.getAttribute('data-cms-stega-sid'),
+          field:     el.getAttribute('data-cms-stega-field'),
+        }, expectedOrigin);
+      } catch (_e) { /* ignore */ }
+    }, true);
   }
 
   // ── v2: postMessage handlers (preview mode only) ────────────────────────
@@ -257,6 +333,9 @@
         }, expectedOrigin);
       } catch (_e) { /* ignore */ }
     }, true);
+
+    // Inline-edit double-click: stega-tagged elements
+    enableInlineEditClicks(expectedOrigin);
   }
 
   // ── v1+v2 boot: hydrate v1 (data-cms-config), then v2 (section hosts) ───

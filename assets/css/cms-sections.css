@@ -17,6 +17,29 @@
   margin-bottom: 0;
 }
 
+/* Stega-tagged inline-editable elements get a subtle hint in inspector mode. */
+body.cms-inspector .cms-editable {
+  cursor: text;
+  position: relative;
+}
+body.cms-inspector .cms-editable:hover {
+  outline: 2px dashed #3b82f6;
+  outline-offset: 2px;
+}
+body.cms-inspector .cms-editable:hover::after {
+  content: 'double-click to edit';
+  position: absolute;
+  top: -22px;
+  left: 0;
+  background: #3b82f6;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
 /* Hidden sections still take a small footprint in admin preview so they're
    findable, but render empty on the public page. */
 [data-cms-section-visible="false"] {

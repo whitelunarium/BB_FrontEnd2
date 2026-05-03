@@ -94,4 +94,44 @@ assert.equal(
     'null data → null');
 }
 
+// v2.1: stega encode/decode round trip (constants must match Python)
+{
+  const ZWSP = '​', ZWNJ = '‌';
+  const SENTINEL = ZWNJ + ZWSP + ZWNJ + ZWSP;
+  function encode(payload, text) {
+    const json = JSON.stringify(payload);
+    const bytes = new TextEncoder().encode(json);
+    let bits = '';
+    for (const b of bytes) bits += b.toString(2).padStart(8, '0');
+    let enc = '';
+    for (const c of bits) enc += c === '0' ? ZWSP : ZWNJ;
+    return SENTINEL + enc + text;
+  }
+  // The decoder lives inside hydrate.js but isn't exported. We re-derive it
+  // here for a sanity test of the encoding format.
+  function decode(text) {
+    if (!text.startsWith(SENTINEL)) return null;
+    let rest = text.slice(SENTINEL.length);
+    const bytes = [];
+    let i = 0;
+    while (i + 8 <= rest.length) {
+      const chunk = rest.slice(i, i + 8);
+      if (!/^[​‌]+$/.test(chunk)) break;
+      let byte = 0;
+      for (let j = 0; j < 8; j++) {
+        byte = (byte << 1) | (chunk.charCodeAt(j) === 0x200C ? 1 : 0);
+      }
+      bytes.push(byte);
+      i += 8;
+    }
+    const str = new TextDecoder('utf-8').decode(new Uint8Array(bytes));
+    return JSON.parse(str);
+  }
+  const enc = encode({ sid: 'abc', field: 'headline' }, 'Hello world');
+  assert.equal(enc.endsWith('Hello world'), true, 'stega: visible text preserved');
+  assert.equal(enc.startsWith(SENTINEL), true, 'stega: sentinel prefix');
+  assert.deepEqual(decode(enc), { sid: 'abc', field: 'headline' }, 'stega: round-trip');
+  assert.equal(decode('plain text'), null, 'stega: plain text returns null');
+}
+
 console.log('hydrate.test.mjs: all assertions passed');

@@ -691,6 +691,41 @@
     if (d.type === 'cms:inspector:click') {
       // Inspector clicked something in the iframe — select it
       if (d.sectionId) selectSection(d.sectionId);
+    } else if (d.type === 'cms:inline:edit') {
+      // Stega-tagged element double-clicked in iframe → select section,
+      // wait for settings panel render, then scroll & focus the field.
+      if (d.sectionId) {
+        selectSection(d.sectionId);
+        setTimeout(() => focusFieldInPanel(d.field), 50);
+      }
+    }
+  }
+
+  function focusFieldInPanel(fieldId) {
+    if (!elSettingsPanel || !fieldId) return;
+    const wraps = elSettingsPanel.querySelectorAll('.v2-field');
+    for (const wrap of wraps) {
+      const label = wrap.querySelector('.v2-field-label');
+      if (!label) continue;
+      // The field id isn't stored in the DOM, but the label maps to the
+      // schema field's `label` and most are unique per section. Match the
+      // first input/textarea inside whose surrounding label matches the
+      // selected section's setting whose key === fieldId. We do this by
+      // looking up the section's schema and finding the matching label.
+      const section = state.template.sections[state.selectedSid];
+      if (!section) return;
+      const meta = state.registry.find(t => t.type === section.type);
+      if (!meta) return;
+      const field = (meta.settings || []).find(f => f.id === fieldId);
+      if (!field) return;
+      if (label.textContent.trim() === (field.label || field.id)) {
+        wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const input = wrap.querySelector('input, textarea, select');
+        if (input) input.focus();
+        wrap.style.outline = '2px solid var(--v2-accent)';
+        setTimeout(() => { wrap.style.outline = ''; }, 800);
+        return;
+      }
     }
   }
 
