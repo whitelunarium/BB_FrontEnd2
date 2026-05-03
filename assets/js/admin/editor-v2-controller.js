@@ -103,6 +103,15 @@
     if (elTabSections) elTabSections.addEventListener('click', () => switchSidebarTab('sections'));
     if (elTabTheme)    elTabTheme.addEventListener('click',    () => switchSidebarTab('theme'));
     if (elTabHistory)  elTabHistory.addEventListener('click',  () => switchSidebarTab('history'));
+    const treeSearch = document.getElementById('v2-tree-search');
+    if (treeSearch) treeSearch.addEventListener('input', filterTree);
+    const helpBtn = document.getElementById('v2-help');
+    const helpClose = document.getElementById('v2-help-close');
+    if (helpBtn)   helpBtn.addEventListener('click', openHelp);
+    if (helpClose) helpClose.addEventListener('click', closeHelp);
+    document.addEventListener('click', (e) => {
+      if (e.target && e.target.id === 'v2-help-overlay') closeHelp();
+    });
     if (elViewportBtns) elViewportBtns.forEach(btn =>
       btn.addEventListener('click', () => setViewport(btn.dataset.viewport)));
     if (elUndoBtn) elUndoBtn.addEventListener('click', undo);
@@ -226,6 +235,15 @@
       row.className = 'v2-tree-row' + (sid === state.selectedSid ? ' is-selected' : '');
       row.draggable = true;
       row.dataset.sid = sid;
+      row.tabIndex = 0;
+      row.setAttribute('role', 'treeitem');
+      row.setAttribute('aria-selected', sid === state.selectedSid ? 'true' : 'false');
+      row.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectSection(sid); }
+        else if (e.key === 'Delete' || e.key === 'Backspace') {
+          if (e.shiftKey) { e.preventDefault(); handleSectionAction(sid, 'delete'); }
+        }
+      });
 
       row.innerHTML = `
         <span class="v2-tree-handle" title="Drag to reorder">⋮⋮</span>
@@ -1033,9 +1051,12 @@
   // ── Sidebar tabs ────────────────────────────────────────────────────────
   function switchSidebarTab(name) {
     state.sidebarTab = name;
-    if (elTabSections) elTabSections.classList.toggle('is-active', name === 'sections');
-    if (elTabTheme)    elTabTheme.classList.toggle('is-active',    name === 'theme');
-    if (elTabHistory)  elTabHistory.classList.toggle('is-active',  name === 'history');
+    [['sections', elTabSections], ['theme', elTabTheme], ['history', elTabHistory]].forEach(([n, el]) => {
+      if (!el) return;
+      const active = (n === name);
+      el.classList.toggle('is-active', active);
+      el.setAttribute('aria-selected', active ? 'true' : 'false');
+    });
     if (elPanelSections) elPanelSections.style.display = name === 'sections' ? 'flex'  : 'none';
     if (elPanelTheme)    elPanelTheme.style.display    = name === 'theme'    ? 'block' : 'none';
     if (elPanelHistory)  elPanelHistory.style.display  = name === 'history'  ? 'block' : 'none';
@@ -1254,8 +1275,61 @@
     refreshUndoButtons();
   }
   function onKey(e) {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
-    else if ((e.metaKey || e.ctrlKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); redo(); }
+    // Skip when the user is typing in an input
+    const tag = (e.target && e.target.tagName) || '';
+    const typing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (e.target && e.target.isContentEditable);
+
+    // ⌘Z / ⌘⇧Z work even while typing in editor inputs (they're text fields, not document content)
+    if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); return; }
+    if ((e.metaKey || e.ctrlKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); redo(); return; }
+
+    if (typing) return;
+
+    if (e.key === 'a' || e.key === 'A') { e.preventDefault(); openPicker(); }
+    else if (e.key === 'i' || e.key === 'I') { e.preventDefault(); toggleInspector(); }
+    else if (e.key === '1') { e.preventDefault(); switchSidebarTab('sections'); }
+    else if (e.key === '2') { e.preventDefault(); switchSidebarTab('theme'); }
+    else if (e.key === '3') { e.preventDefault(); switchSidebarTab('history'); }
+    else if (e.key === 'd' || e.key === 'D') { e.preventDefault(); setViewport('desktop'); }
+    else if (e.key === 't' || e.key === 'T') { e.preventDefault(); setViewport('tablet'); }
+    else if (e.key === 'm' || e.key === 'M') { e.preventDefault(); setViewport('mobile'); }
+    else if (e.key === '/') {
+      e.preventDefault();
+      const search = document.getElementById('v2-tree-search');
+      if (search) { switchSidebarTab('sections'); search.focus(); }
+    }
+    else if (e.key === '?') { e.preventDefault(); openHelp(); }
+    else if (e.key === 'Escape') { closePicker(); closeAssetLibrary(); closeHelp(); }
+  }
+
+  function openHelp() {
+    const overlay = document.getElementById('v2-help-overlay');
+    if (overlay) overlay.classList.add('is-open');
+  }
+  function closeHelp() {
+    const overlay = document.getElementById('v2-help-overlay');
+    if (overlay) overlay.classList.remove('is-open');
+  }
+
+  // Tree filter
+  function filterTree() {
+    const search = document.getElementById('v2-tree-search');
+    if (!search) return;
+    const q = search.value.toLowerCase().trim();
+    elSidebarTree.querySelectorAll('.v2-tree-row').forEach(row => {
+      const text = row.textContent.toLowerCase();
+      row.style.display = !q || text.includes(q) ? '' : 'none';
+    });
+    elSidebarTree.querySelectorAll('.v2-tree-group-head').forEach(head => {
+      // Show group head if any visible row follows it before the next head
+      let next = head.nextElementSibling;
+      let anyVisible = false;
+      while (next && !next.classList.contains('v2-tree-group-head')) {
+        if (next.classList.contains('v2-tree-row') && next.style.display !== 'none') { anyVisible = true; break; }
+        next = next.nextElementSibling;
+      }
+      head.style.display = !q || anyVisible ? '' : 'none';
+    });
   }
 
   // ── Picker search filter ────────────────────────────────────────────────

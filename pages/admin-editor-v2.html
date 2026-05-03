@@ -143,6 +143,22 @@ body { margin: 0; background: var(--v2-bg); color: var(--v2-text); font-family: 
 .v2-history-detail { font-size: .85rem; color: var(--v2-text); }
 .v2-history-meta   { font-size: .7rem;  color: var(--v2-muted); margin-top: 2px; }
 
+/* Focus rings — accessibility */
+.v2-btn:focus-visible, .v2-sidebar-tab:focus-visible, .v2-icon-btn:focus-visible,
+.v2-tree-row:focus-visible, .v2-input:focus-visible, .v2-viewport-btn:focus-visible {
+  outline: 2px solid var(--v2-accent); outline-offset: 2px;
+}
+.v2-tree-row { outline-offset: -2px; }
+
+/* Keyboard shortcut help overlay */
+#v2-help-overlay { position: fixed; inset: 0; background: rgba(10,22,40,0.85); display: none; place-items: center; padding: 24px; z-index: 250; }
+#v2-help-overlay.is-open { display: grid; }
+.v2-help-shell { background: var(--v2-surface); border: 1px solid var(--v2-border); border-radius: 12px; padding: 24px; max-width: 480px; width: 100%; }
+.v2-help-shell h3 { margin: 0 0 14px; }
+.v2-help-shell dl { display: grid; grid-template-columns: max-content 1fr; gap: 8px 14px; margin: 0; font-size: .9rem; }
+.v2-help-shell dt { color: var(--v2-muted); font-family: ui-monospace, monospace; }
+.v2-help-shell dd { margin: 0; color: var(--v2-text); }
+
 /* Iframe */
 .v2-preview { display: flex; flex-direction: column; min-height: 0; }
 .v2-preview-toolbar { padding: 8px 14px; background: #334155; color: var(--v2-text); display: flex; align-items: center; gap: 10px; font-size: .8rem; border-bottom: 1px solid var(--v2-border); flex-shrink: 0; }
@@ -187,7 +203,8 @@ body { margin: 0; background: var(--v2-bg); color: var(--v2-text); font-family: 
       <option value="about">About</option>
       <option value="programs">Programs</option>
     </select>
-    <button id="v2-inspector-toggle" class="v2-btn v2-btn-ghost" title="Click any element in the preview to select it">🔍 Inspector</button>
+    <button id="v2-inspector-toggle" class="v2-btn v2-btn-ghost" title="Click any element in the preview to select it (I)" aria-keyshortcuts="I">🔍 Inspector</button>
+    <button id="v2-help" class="v2-btn v2-btn-ghost" title="Keyboard shortcuts (?)" aria-keyshortcuts="?">⌨</button>
     <div class="v2-viewport-toggle" role="group" aria-label="Viewport">
       <button class="v2-viewport-btn is-active" data-viewport="desktop" title="Desktop">🖥</button>
       <button class="v2-viewport-btn"            data-viewport="tablet"  title="Tablet">📱</button>
@@ -205,23 +222,24 @@ body { margin: 0; background: var(--v2-bg); color: var(--v2-text); font-family: 
 
   <div class="v2-body">
     <aside class="v2-sidebar">
-      <div class="v2-sidebar-tabs">
-        <button id="v2-tab-sections" class="v2-sidebar-tab is-active">Sections</button>
-        <button id="v2-tab-theme"    class="v2-sidebar-tab">Theme</button>
-        <button id="v2-tab-history"  class="v2-sidebar-tab">History</button>
+      <div class="v2-sidebar-tabs" role="tablist" aria-label="Editor panels">
+        <button id="v2-tab-sections" class="v2-sidebar-tab is-active" role="tab" aria-selected="true"  aria-controls="v2-panel-sections">Sections</button>
+        <button id="v2-tab-theme"    class="v2-sidebar-tab"           role="tab" aria-selected="false" aria-controls="v2-panel-theme">Theme</button>
+        <button id="v2-tab-history"  class="v2-sidebar-tab"           role="tab" aria-selected="false" aria-controls="v2-panel-history">History</button>
       </div>
-      <div id="v2-panel-sections" style="display:flex; flex-direction:column; flex:1; min-height:0;">
+      <div id="v2-panel-sections" role="tabpanel" aria-labelledby="v2-tab-sections" style="display:flex; flex-direction:column; flex:1; min-height:0;">
         <div class="v2-tree-container">
           <div class="v2-tree-header">
             <span>Sections</span>
           </div>
-          <div id="v2-tree"></div>
-          <button id="v2-add-section" class="v2-btn">+ Add section</button>
+          <input id="v2-tree-search" type="search" class="v2-input" placeholder="Filter sections…" style="margin-bottom:8px;" aria-label="Filter sections" />
+          <div id="v2-tree" role="tree" aria-label="Page content tree"></div>
+          <button id="v2-add-section" class="v2-btn" aria-keyshortcuts="A">+ Add section <span style="opacity:.6;font-size:.75rem;">A</span></button>
         </div>
         <div class="v2-settings-container" id="v2-settings"></div>
       </div>
-      <div id="v2-panel-theme" style="display:none; padding:14px; overflow-y:auto; flex:1;"></div>
-      <div id="v2-panel-history" style="display:none; padding:14px; overflow-y:auto; flex:1;"></div>
+      <div id="v2-panel-theme" role="tabpanel" aria-labelledby="v2-tab-theme" style="display:none; padding:14px; overflow-y:auto; flex:1;"></div>
+      <div id="v2-panel-history" role="tabpanel" aria-labelledby="v2-tab-history" style="display:none; padding:14px; overflow-y:auto; flex:1;"></div>
     </aside>
     <section class="v2-preview">
       <div class="v2-preview-toolbar">
@@ -253,6 +271,25 @@ body { margin: 0; background: var(--v2-bg); color: var(--v2-text); font-family: 
 </div>
 
 <div id="v2-toast"></div>
+
+<!-- Keyboard shortcuts overlay -->
+<div id="v2-help-overlay" role="dialog" aria-modal="true" aria-labelledby="v2-help-title">
+  <div class="v2-help-shell">
+    <h3 id="v2-help-title">Keyboard shortcuts</h3>
+    <dl>
+      <dt>A</dt>             <dd>Add section (open picker)</dd>
+      <dt>I</dt>             <dd>Toggle Inspector mode</dd>
+      <dt>1 / 2 / 3</dt>     <dd>Sections / Theme / History tab</dd>
+      <dt>D / T / M</dt>     <dd>Desktop / Tablet / Mobile viewport</dd>
+      <dt>⌘Z</dt>            <dd>Undo last change</dd>
+      <dt>⌘⇧Z</dt>           <dd>Redo</dd>
+      <dt>/</dt>             <dd>Focus the section filter</dd>
+      <dt>?</dt>             <dd>Show this help</dd>
+      <dt>Esc</dt>           <dd>Close any open dialog</dd>
+    </dl>
+    <button id="v2-help-close" class="v2-btn" style="margin-top:14px;">Close</button>
+  </div>
+</div>
 
 <!-- Asset library modal -->
 <div id="v2-asset-modal">
