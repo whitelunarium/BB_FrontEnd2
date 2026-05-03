@@ -44,8 +44,19 @@
   {% endif %}
 
   {% if page.head_extra %}{{ page.head_extra }}{% endif %}
+
+  <!-- CMS hydrate flash-prevention -->
+  <style>
+    body[data-cms-page]:not(.cms-hydrated) [data-cms-config],
+    body[data-cms-page]:not(.cms-hydrated) [data-cms-override] {
+      visibility: hidden;
+    }
+  </style>
+  <script>
+    setTimeout(function () { document.body && document.body.classList.add('cms-hydrated'); }, 800);
+  </script>
 </head>
-<body{% if page.body_class or page.use_poway_live_styles %} class="{% if page.use_poway_live_styles and page.use_poway_source_clone != true %}home wp-singular page-template page-template-elementor_header_footer page page-id-22 wp-theme-jupiterx no-js ctct-jupiterx elementor-default elementor-template-full-width elementor-kit-771 elementor-page elementor-page-22 {% endif %}{{ page.body_class }}"{% endif %}{% if page.body_attributes %} {{ page.body_attributes }}{% endif %}>
+<body{% if page.use_poway_source_clone %} data-cms-page="home"{% endif %}{% if page.body_class or page.use_poway_live_styles %} class="{% if page.use_poway_live_styles and page.use_poway_source_clone != true %}home wp-singular page-template page-template-elementor_header_footer page page-id-22 wp-theme-jupiterx no-js ctct-jupiterx elementor-default elementor-template-full-width elementor-kit-771 elementor-page elementor-page-22 {% endif %}{{ page.body_class }}"{% endif %}{% if page.body_attributes %} {{ page.body_attributes }}{% endif %}>
 
   {% include poway-alert-banner.html %}
 
@@ -78,6 +89,8 @@
   <script src="{{ '/assets/js/pages/chatbot.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/pages/risk-widget.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/pages/navbar.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/cms/cms-api.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/cms/hydrate.js' | relative_url }}"></script>
   {% else %}
 
   {% unless page.use_poway_embed %}
@@ -126,6 +139,8 @@
   <script src="{{ '/assets/js/pages/chatbot.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/pages/risk-widget.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/pages/navbar.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/cms/cms-api.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/cms/hydrate.js' | relative_url }}"></script>
 
   {% if page.use_leaflet %}
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
