@@ -118,6 +118,8 @@
       importBtn.addEventListener('click', () => importFile.click());
       importFile.addEventListener('change', importPage);
     }
+    const dupBtn = document.getElementById('v2-duplicate-page');
+    if (dupBtn) dupBtn.addEventListener('click', duplicatePage);
     document.addEventListener('click', (e) => {
       if (e.target && e.target.id === 'v2-help-overlay') closeHelp();
     });
@@ -822,6 +824,41 @@
     const fileIn = document.createElement('input');
     fileIn.type = 'file'; fileIn.accept = 'image/*'; fileIn.style.display = 'none';
     upBtn.addEventListener('click', () => fileIn.click());
+    // AI alt button — only shown when there's already an image and the field id suggests alt
+    if (initial && /image/i.test(field.id)) {
+      const altBtn = document.createElement('button');
+      altBtn.className = 'v2-btn v2-btn-ghost';
+      altBtn.title = 'Generate alt text with AI for the matching alt field';
+      altBtn.style.flex = '0 0 auto';
+      altBtn.textContent = '✨ alt';
+      altBtn.addEventListener('click', async () => {
+        altBtn.disabled = true; altBtn.textContent = '✨…';
+        try {
+          const res = await fetch(_apiBase() + '/api/cms/ai/alt-text', {
+            method: 'POST', credentials: 'include',
+            headers: { 'Content-Type': 'application/json',
+                       'Authorization': 'Bearer ' + (localStorage.getItem('pnec_token') || '') },
+            body: JSON.stringify({ image_url: initial,
+                                   context: 'Section type: ' + (section.type || '') }),
+          });
+          if (!res.ok) throw new Error('AI ' + res.status);
+          const body = await res.json();
+          // Find an alt-like sibling field on the same section and write into it
+          const altKey = (state.registry.find(t => t.type === section.type) || {}).settings || [];
+          const altField = altKey.find(f => /alt/i.test(f.id));
+          if (altField) {
+            await applyPatch({ op: 'set', sid: state.selectedSid, key: altField.id, value: body.alt });
+            postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
+            renderSettings();
+            toast('AI alt: "' + body.alt + '"', 'ok');
+          } else {
+            toast('No alt field on this section.', 'error');
+          }
+        } catch (e) { toast('AI alt failed.', 'error'); }
+        altBtn.disabled = false; altBtn.textContent = '✨ alt';
+      });
+      row.appendChild(altBtn);
+    }
     fileIn.addEventListener('change', async () => {
       const f = fileIn.files && fileIn.files[0]; if (!f) return;
       try { const { url } = await window.v2UploadImage(f); await setUrl(url); }
@@ -878,14 +915,29 @@
     if (e.target && e.target.id === 'v2-asset-modal') closeAssetLibrary();
   });
 
+  // ── Status bar ────────────────────────────────────────────────────────────
+  function setStatus(state_, detail) {
+    const s = document.getElementById('v2-status-state');
+    const d = document.getElementById('v2-status-detail');
+    if (!s) return;
+    s.classList.remove('is-saving', 'is-saved', 'is-error');
+    if (state_ === 'saving') { s.textContent = 'Saving…'; s.classList.add('is-saving'); }
+    else if (state_ === 'saved') { s.textContent = '✓ Saved'; s.classList.add('is-saved'); }
+    else if (state_ === 'error') { s.textContent = '⚠ Error'; s.classList.add('is-error'); }
+    else { s.textContent = state_ || 'Ready'; }
+    if (d) d.textContent = detail || '';
+  }
+
   // ── Patch helper (single source of truth for backend writes) ─────────────
   async function applyPatch(patch, opts) {
     opts = opts || {};
+    setStatus('saving');
     // Snapshot for undo (skip when undo/redo is itself the caller)
     const snapshot = !opts.skipUndo ? JSON.stringify(state.template) : null;
     try {
       const res = await window.v2PatchDraft(state.pageSlug, [patch]);
       state.template = res.template;
+      setStatus('saved', 'last edit ' + new Date().toLocaleTimeString());
       renderTree();
       // If the selected section was affected, re-render its settings panel from new state
       if (state.selectedSid && state.template.sections[state.selectedSid]) {
@@ -899,9 +951,38 @@
       setTimeout(requestScan, 400);
       return res;
     } catch (e) {
+      setStatus('error', e.message || '');
       toast('Save failed: ' + (e.message || 'unknown error'), 'error');
       throw e;
     }
+  }
+
+  // ── Duplicate page ───────────────────────────────────────────────────────
+  async function duplicatePage() {
+    const target = prompt('New page slug (e.g. "neighborhood-resources"):');
+    if (!target) return;
+    const cleaned = target.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+    if (!cleaned) { toast('Invalid slug.', 'error'); return; }
+    try {
+      const res = await fetch(_apiBase() + '/api/cms/page/' + encodeURIComponent(state.pageSlug) + '/duplicate', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json',
+                   'Authorization': 'Bearer ' + (localStorage.getItem('pnec_token') || '') },
+        body: JSON.stringify({ target_slug: cleaned }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        toast('Duplicate failed: ' + (err.detail || res.status), 'error');
+        return;
+      }
+      // Add the new page to the selector
+      const opt = document.createElement('option');
+      opt.value = cleaned; opt.textContent = cleaned.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      elPageSel.appendChild(opt);
+      elPageSel.value = cleaned;
+      await switchPage(cleaned);
+      toast('Duplicated to "' + cleaned + '".', 'ok');
+    } catch (e) { toast('Duplicate failed.', 'error'); }
   }
 
   // ── Section picker (Add section) ──────────────────────────────────────────
