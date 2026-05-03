@@ -295,26 +295,46 @@
   }
 
   function enableInlineEditClicks(expectedOrigin) {
-    // Double-click any stega-tagged element → make it directly editable in place.
-    // This is the true Shopify-style flow: the iframe text BECOMES the input.
-    // On blur or Enter, we post the new value up to the editor which PATCHes
-    // the backend; the iframe section is then re-rendered authoritatively.
+    // Double-click any editable element → make it directly editable in place.
+    // We support three flavors:
+    //   v2 stega:        [data-cms-stega-sid][data-cms-stega-field]
+    //   v1 site-config:  [data-cms-config]
+    //   v1 page-override:[data-cms-override]
     document.addEventListener('dblclick', (event) => {
-      const el = event.target.closest('[data-cms-stega-sid][data-cms-stega-field]');
+      const stegaEl = event.target.closest('[data-cms-stega-sid][data-cms-stega-field]');
+      const cfgEl   = !stegaEl && event.target.closest('[data-cms-config]');
+      const ovrEl   = !stegaEl && !cfgEl && event.target.closest('[data-cms-override]');
+      const el = stegaEl || cfgEl || ovrEl;
       if (!el) return;
-      // Don't intercept clicks that landed on a real link
       if (el.tagName === 'A' && !document.body.classList.contains('cms-inspector')) return;
       event.preventDefault();
       event.stopPropagation();
-      startInlineEdit(el, expectedOrigin);
+      let kind, key1, key2;
+      if (stegaEl) {
+        kind = 'section';
+        key1 = el.getAttribute('data-cms-stega-sid');
+        key2 = el.getAttribute('data-cms-stega-field');
+      } else if (cfgEl) {
+        kind = 'site_config';
+        key1 = el.getAttribute('data-cms-config');
+      } else {
+        kind = 'override';
+        key1 = el.getAttribute('data-cms-override');
+      }
+      startInlineEdit(el, expectedOrigin, kind, key1, key2);
     }, true);
   }
 
-  function startInlineEdit(el, expectedOrigin) {
+  // Mark v1-editable elements with .cms-editable so the same hover styling
+  // applies. Called from hydrate() after applyAll runs.
+  function tagV1Editables() {
+    document.querySelectorAll('[data-cms-config]').forEach(el => el.classList.add('cms-editable'));
+    document.querySelectorAll('[data-cms-override]').forEach(el => el.classList.add('cms-editable'));
+  }
+
+  function startInlineEdit(el, expectedOrigin, kind, key1, key2) {
     if (el._cmsEditing) return;
     el._cmsEditing = true;
-    const sid   = el.getAttribute('data-cms-stega-sid');
-    const field = el.getAttribute('data-cms-stega-field');
     const original = el.textContent || '';
     el.classList.add('cms-editing');
     el.setAttribute('contenteditable', 'plaintext-only');
@@ -340,15 +360,13 @@
       const newText = (el.textContent || '').trim();
       if (save && newText !== original) {
         try {
-          window.parent.postMessage({
-            type:      'cms:inline:save',
-            sectionId: sid,
-            field:     field,
-            value:     newText,
-          }, expectedOrigin);
+          const msg = { type: 'cms:inline:save', kind, value: newText };
+          if (kind === 'section')      { msg.sectionId = key1; msg.field = key2; }
+          else if (kind === 'site_config') { msg.key = key1; }
+          else if (kind === 'override')    { msg.key = key1; }
+          window.parent.postMessage(msg, expectedOrigin);
         } catch (_e) {}
       } else if (!save) {
-        // Restore original
         el.textContent = original;
       }
     }
@@ -643,6 +661,7 @@
 
     if (new URLSearchParams(window.location.search).get('preview') === '1') {
       document.body.classList.add('cms-preview');
+      tagV1Editables();
       enablePreviewMode();
       enableV2PreviewMode();
     }

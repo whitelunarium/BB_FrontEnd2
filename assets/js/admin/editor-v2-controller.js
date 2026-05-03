@@ -1208,19 +1208,25 @@
         setTimeout(() => focusFieldInPanel(d.field), 50);
       }
     } else if (d.type === 'cms:inline:save') {
-      // True Shopify-style: text was edited directly in the iframe.
-      // Save it via the regular set-op patch path. Skip the extra
-      // re-render postMessage since the iframe already shows the new value.
-      handleInlineSave(d.sectionId, d.field, d.value);
+      handleInlineSave(d);
     }
   }
 
-  async function handleInlineSave(sid, field, value) {
-    if (!sid || !field) return;
+  async function handleInlineSave(msg) {
     try {
-      await applyPatch({ op: 'set', sid, key: field, value });
-      // Also update sidebar selection so the matching field reflects the new value
-      if (state.selectedSid === sid) renderSettings();
+      if (msg.kind === 'section' && msg.sectionId && msg.field) {
+        await applyPatch({ op: 'set', sid: msg.sectionId, key: msg.field, value: msg.value });
+        if (state.selectedSid === msg.sectionId) renderSettings();
+      } else if (msg.kind === 'site_config' && msg.key) {
+        const item = { kind: 'site_config', key: msg.key, label: msg.key };
+        await applyExistingChange(item, msg.value);
+        // Refresh existing items so sidebar peek text updates next scan
+        if (state.siteConfig) state.siteConfig[msg.key] = msg.value;
+      } else if (msg.kind === 'override' && msg.key) {
+        const item = { kind: 'override', key: msg.key, label: msg.key };
+        await applyExistingChange(item, msg.value);
+        if (state.overrides) state.overrides[msg.key] = msg.value;
+      } else { return; }
       toast('Inline edit saved.', 'ok');
     } catch (e) {
       toast('Inline save failed.', 'error');
