@@ -268,6 +268,21 @@
         else if (e.key === 'Delete' || e.key === 'Backspace') {
           if (e.shiftKey) { e.preventDefault(); handleSectionAction(sid, 'delete'); }
         }
+        else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          const rows = Array.from(elSidebarTree.querySelectorAll('.v2-tree-row[data-sid]'));
+          const idx = rows.indexOf(row);
+          const next = e.key === 'ArrowDown' ? rows[idx + 1] : rows[idx - 1];
+          if (next) next.focus();
+        }
+        else if ((e.metaKey || e.ctrlKey) && e.key === 'c') {
+          e.preventDefault();
+          copySectionToClipboard(sid);
+        }
+        else if ((e.metaKey || e.ctrlKey) && e.key === 'v') {
+          e.preventDefault();
+          pasteSectionFromClipboard();
+        }
       });
 
       const warnBadge = sidIssues.length
@@ -971,6 +986,57 @@
       setStatus('error', e.message || '');
       toast('Save failed: ' + (e.message || 'unknown error'), 'error');
       throw e;
+    }
+  }
+
+  // ── Section clipboard (copy/paste between pages) ────────────────────────
+  async function copySectionToClipboard(sid) {
+    const section = state.template.sections[sid];
+    if (!section) return;
+    const payload = {
+      __cms_section_clipboard: true,
+      type:        section.type,
+      settings:    section.settings || {},
+      blocks:      Object.keys(section.blocks || {}).map(bid => ({
+        type: section.blocks[bid].type,
+        settings: section.blocks[bid].settings || {},
+      })),
+    };
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(payload));
+      toast('Section copied — paste with ⌘V on a tree row.', 'ok');
+    } catch (_e) {
+      toast('Clipboard write failed.', 'error');
+    }
+  }
+  async function pasteSectionFromClipboard() {
+    let txt;
+    try { txt = await navigator.clipboard.readText(); }
+    catch (_e) { toast('Clipboard read failed.', 'error'); return; }
+    if (!txt) return;
+    let payload;
+    try { payload = JSON.parse(txt); } catch (_e) { toast('Clipboard not a section.', 'error'); return; }
+    if (!payload || !payload.__cms_section_clipboard) {
+      toast('Clipboard not a section.', 'error');
+      return;
+    }
+    if (!state.registry.find(t => t.type === payload.type)) {
+      toast('Section type "' + payload.type + '" not in registry.', 'error');
+      return;
+    }
+    const res = await applyPatch({
+      op: 'add',
+      type: payload.type,
+      settings: payload.settings || {},
+      blocks: payload.blocks || [],
+    });
+    const newSid = (res && res.affected_sids || [])[0];
+    if (newSid) {
+      state.selectedSid = newSid;
+      renderTree();
+      renderSettings();
+      postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: newSid });
+      toast('Pasted as new section.', 'ok');
     }
   }
 

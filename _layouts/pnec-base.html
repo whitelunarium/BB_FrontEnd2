@@ -22,6 +22,50 @@
   {% endunless %}
   <link rel="stylesheet" href="{{ '/assets/css/chatbot.css' | relative_url }}">
   <link rel="stylesheet" href="{{ '/assets/css/cms-sections.css' | relative_url }}">
+
+  <!-- CMS SEO meta — fetched at runtime so admins can edit without rebuilding -->
+  <script>
+    (function () {
+      var slug = (document.body && document.body.dataset && document.body.dataset.cmsPage) ||
+                 (location.pathname === '/' ? 'home' :
+                  location.pathname.replace(/^\/pages\//, '').replace(/\.html$/, ''));
+      var host = location.hostname;
+      var apiBase = (host === 'localhost' || host === '127.0.0.1')
+        ? 'http://127.0.0.1:8425'
+        : 'https://beasts.opencodingsociety.com';
+      fetch(apiBase + '/api/cms/page/' + encodeURIComponent(slug) + '/seo')
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (s) {
+          if (!s) return;
+          function setMeta(selector, attr, value) {
+            if (!value) return;
+            var el = document.head.querySelector(selector);
+            if (!el) {
+              el = document.createElement('meta');
+              if (attr === 'name')     el.setAttribute('name', selector.match(/name="([^"]+)"/)[1]);
+              else if (attr === 'property') el.setAttribute('property', selector.match(/property="([^"]+)"/)[1]);
+              document.head.appendChild(el);
+            }
+            el.setAttribute('content', value);
+          }
+          if (s.title)            document.title = s.title;
+          setMeta('meta[name="description"]',         'name',     s.description);
+          setMeta('meta[name="robots"]',              'name',     s.robots);
+          setMeta('meta[property="og:title"]',        'property', s.og_title || s.title);
+          setMeta('meta[property="og:description"]',  'property', s.og_description || s.description);
+          setMeta('meta[property="og:image"]',        'property', s.og_image_url);
+          setMeta('meta[name="twitter:card"]',        'name',     s.twitter_card);
+          setMeta('meta[name="twitter:image"]',       'name',     s.og_image_url);
+          if (s.canonical_url) {
+            var c = document.head.querySelector('link[rel="canonical"]');
+            if (!c) { c = document.createElement('link'); c.setAttribute('rel', 'canonical'); document.head.appendChild(c); }
+            c.setAttribute('href', s.canonical_url);
+          }
+        })
+        .catch(function () { /* fail silent */ });
+    })();
+  </script>
+
   <!-- CMS theme tokens (CSS custom properties) — fetched at runtime -->
   <script>
     (function () {
