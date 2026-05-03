@@ -69,6 +69,9 @@ body { margin: 0; background: var(--v2-bg); color: var(--v2-text); font-family: 
 .v2-status-detail { color: var(--v2-muted); }
 .v2-status-btn { background: transparent; color: var(--v2-muted); border: 1px solid var(--v2-border); padding: 3px 8px; border-radius: 4px; cursor: pointer; font-size: .7rem; }
 .v2-status-btn:hover { color: var(--v2-text); border-color: var(--v2-text); }
+
+/* Word count under richtext */
+.v2-richtext-counter { font-size: .7rem; color: var(--v2-muted); margin-top: 4px; text-align: right; }
 .v2-tree-handle { color: var(--v2-muted); font-size: 0.9rem; cursor: grab; user-select: none; }
 .v2-tree-label { flex: 1; font-size: .9rem; }
 .v2-tree-actions { display: flex; gap: 4px; opacity: 0.5; transition: opacity 120ms; }
@@ -251,6 +254,7 @@ body { margin: 0; background: var(--v2-bg); color: var(--v2-text); font-family: 
       <div class="v2-sidebar-tabs" role="tablist" aria-label="Editor panels">
         <button id="v2-tab-sections" class="v2-sidebar-tab is-active" role="tab" aria-selected="true"  aria-controls="v2-panel-sections">Sections</button>
         <button id="v2-tab-theme"    class="v2-sidebar-tab"           role="tab" aria-selected="false" aria-controls="v2-panel-theme">Theme</button>
+        <button id="v2-tab-seo"      class="v2-sidebar-tab"           role="tab" aria-selected="false" aria-controls="v2-panel-seo">SEO</button>
         <button id="v2-tab-history"  class="v2-sidebar-tab"           role="tab" aria-selected="false" aria-controls="v2-panel-history">History</button>
       </div>
       <div id="v2-panel-sections" role="tabpanel" aria-labelledby="v2-tab-sections" style="display:flex; flex-direction:column; flex:1; min-height:0;">
@@ -265,6 +269,7 @@ body { margin: 0; background: var(--v2-bg); color: var(--v2-text); font-family: 
         <div class="v2-settings-container" id="v2-settings"></div>
       </div>
       <div id="v2-panel-theme" role="tabpanel" aria-labelledby="v2-tab-theme" style="display:none; padding:14px; overflow-y:auto; flex:1;"></div>
+      <div id="v2-panel-seo" role="tabpanel" aria-labelledby="v2-tab-seo" style="display:none; padding:14px; overflow-y:auto; flex:1;"></div>
       <div id="v2-panel-history" role="tabpanel" aria-labelledby="v2-tab-history" style="display:none; padding:14px; overflow-y:auto; flex:1;"></div>
     </aside>
     <section class="v2-preview">
@@ -305,7 +310,7 @@ body { margin: 0; background: var(--v2-bg); color: var(--v2-text); font-family: 
     <dl>
       <dt>A</dt>             <dd>Add section (open picker)</dd>
       <dt>I</dt>             <dd>Toggle Inspector mode</dd>
-      <dt>1 / 2 / 3</dt>     <dd>Sections / Theme / History tab</dd>
+      <dt>1 / 2 / 3 / 4</dt> <dd>Sections / Theme / SEO / History tab</dd>
       <dt>D / T / M</dt>     <dd>Desktop / Tablet / Mobile viewport</dd>
       <dt>⌘Z</dt>            <dd>Undo last change</dd>
       <dt>⌘⇧Z</dt>           <dd>Redo</dd>

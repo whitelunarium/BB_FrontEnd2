@@ -53,7 +53,8 @@
   let elPageSel, elSidebarTree, elSettingsPanel, elAddSectionBtn;
   let elSavePub, elPreviewBtn, elInspectorBtn, elShareBtn;
   let elIframe, elIframeUrl, elBanner, elToast, elPicker, elPickerList, elPickerClose;
-  let elTabSections, elTabTheme, elTabHistory, elPanelSections, elPanelTheme, elPanelHistory;
+  let elTabSections, elTabTheme, elTabSeo, elTabHistory;
+  let elPanelSections, elPanelTheme, elPanelSeo, elPanelHistory;
   let elViewportBtns, elIframeFrame;
   let elUndoBtn, elRedoBtn;
   let elPickerSearch, elAiPrompt, elAiGo;
@@ -80,9 +81,11 @@
 
     elTabSections   = document.getElementById('v2-tab-sections');
     elTabTheme      = document.getElementById('v2-tab-theme');
+    elTabSeo        = document.getElementById('v2-tab-seo');
     elTabHistory    = document.getElementById('v2-tab-history');
     elPanelSections = document.getElementById('v2-panel-sections');
     elPanelTheme    = document.getElementById('v2-panel-theme');
+    elPanelSeo      = document.getElementById('v2-panel-seo');
     elPanelHistory  = document.getElementById('v2-panel-history');
     elViewportBtns  = document.querySelectorAll('.v2-viewport-btn');
     elIframeFrame   = document.getElementById('v2-iframe-frame');
@@ -102,6 +105,7 @@
     elIframe.addEventListener('load', flushQueue);
     if (elTabSections) elTabSections.addEventListener('click', () => switchSidebarTab('sections'));
     if (elTabTheme)    elTabTheme.addEventListener('click',    () => switchSidebarTab('theme'));
+    if (elTabSeo)      elTabSeo.addEventListener('click',      () => switchSidebarTab('seo'));
     if (elTabHistory)  elTabHistory.addEventListener('click',  () => switchSidebarTab('history'));
     const treeSearch = document.getElementById('v2-tree-search');
     if (treeSearch) treeSearch.addEventListener('input', filterTree);
@@ -730,11 +734,23 @@
     }
 
     let input;
+    let richtextCounter = null;
     if (field.type === 'richtext') {
       input = document.createElement('textarea');
       input.className = 'v2-input v2-textarea';
       input.rows = 5;
       input.value = initial || '';
+      input.spellcheck = true;
+      richtextCounter = document.createElement('div');
+      richtextCounter.className = 'v2-richtext-counter';
+      const upd = () => {
+        const txt = (input.value || '').replace(/<[^>]*>/g, ' ').trim();
+        const words = txt ? txt.split(/\s+/).length : 0;
+        const minutes = Math.max(1, Math.round(words / 230));
+        richtextCounter.textContent = `${words} words · ~${minutes} min read · ${input.value.length} chars`;
+      };
+      upd();
+      input.addEventListener('input', upd);
     } else if (field.type === 'select') {
       input = document.createElement('select');
       input.className = 'v2-input';
@@ -766,6 +782,7 @@
       postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
     }, 250));
     wrap.appendChild(input);
+    if (richtextCounter) wrap.appendChild(richtextCounter);
 
     // Reset-to-default button (only when current value differs from default)
     if ('default' in field && initial !== field.default) {
@@ -1196,7 +1213,7 @@
   // ── Sidebar tabs ────────────────────────────────────────────────────────
   function switchSidebarTab(name) {
     state.sidebarTab = name;
-    [['sections', elTabSections], ['theme', elTabTheme], ['history', elTabHistory]].forEach(([n, el]) => {
+    [['sections', elTabSections], ['theme', elTabTheme], ['seo', elTabSeo], ['history', elTabHistory]].forEach(([n, el]) => {
       if (!el) return;
       const active = (n === name);
       el.classList.toggle('is-active', active);
@@ -1204,9 +1221,95 @@
     });
     if (elPanelSections) elPanelSections.style.display = name === 'sections' ? 'flex'  : 'none';
     if (elPanelTheme)    elPanelTheme.style.display    = name === 'theme'    ? 'block' : 'none';
+    if (elPanelSeo)      elPanelSeo.style.display      = name === 'seo'      ? 'block' : 'none';
     if (elPanelHistory)  elPanelHistory.style.display  = name === 'history'  ? 'block' : 'none';
     if (name === 'theme'   && !state.themeSchema) loadTheme();
+    if (name === 'seo')    loadSeo();
     if (name === 'history') loadHistory();
+  }
+
+  // ── SEO panel ────────────────────────────────────────────────────────────
+  async function loadSeo() {
+    if (!elPanelSeo) return;
+    elPanelSeo.innerHTML = '<p style="color:var(--v2-muted);">Loading…</p>';
+    let seo = {};
+    try {
+      const res = await fetch(_apiBase() + '/api/cms/page/' + encodeURIComponent(state.pageSlug) + '/seo');
+      if (res.ok) seo = await res.json();
+    } catch (_e) {}
+    renderSeoPanel(seo);
+  }
+
+  function renderSeoPanel(seo) {
+    elPanelSeo.innerHTML = '';
+    const head = document.createElement('div');
+    head.className = 'v2-settings-head';
+    head.innerHTML = `<h3>SEO &amp; sharing</h3><p>Search-engine and social-share metadata for <code>${escapeHtml(state.pageSlug)}</code>.</p>`;
+    elPanelSeo.appendChild(head);
+
+    const fields = [
+      { key: 'title',          label: 'Title (≤60 chars)',                    type: 'text',     hint: 'Shown in browser tabs and search results.' },
+      { key: 'description',    label: 'Meta description (≤160 chars)',         type: 'textarea', hint: 'The two-line summary in search results.' },
+      { key: 'og_image_url',   label: 'Social share image',                    type: 'image',    hint: 'Shown when the page is shared on Facebook, Slack, etc.' },
+      { key: 'og_title',       label: 'Social share title (Open Graph)',       type: 'text',     hint: 'Defaults to the page title if blank.' },
+      { key: 'og_description', label: 'Social share description (Open Graph)', type: 'textarea', hint: 'Defaults to the meta description if blank.' },
+      { key: 'twitter_card',   label: 'Twitter card type',                     type: 'select',   options: ['summary', 'summary_large_image'] },
+      { key: 'canonical_url',  label: 'Canonical URL (optional)',              type: 'text',     hint: 'Set if this page is a copy of one at another URL.' },
+      { key: 'robots',         label: 'Robots meta',                           type: 'text',     hint: 'Default: index, follow' },
+    ];
+    fields.forEach(f => elPanelSeo.appendChild(buildSeoField(seo, f)));
+  }
+
+  function buildSeoField(seo, f) {
+    const wrap = document.createElement('div');
+    wrap.className = 'v2-field';
+    const label = document.createElement('label');
+    label.className = 'v2-field-label';
+    label.textContent = f.label;
+    wrap.appendChild(label);
+    let input;
+    if (f.type === 'textarea') {
+      input = document.createElement('textarea');
+      input.className = 'v2-input v2-textarea';
+      input.rows = 3;
+      input.value = seo[f.key] || '';
+    } else if (f.type === 'select') {
+      input = document.createElement('select');
+      input.className = 'v2-input';
+      (f.options || []).forEach(o => {
+        const op = document.createElement('option');
+        op.value = o; op.textContent = o; if (o === seo[f.key]) op.selected = true;
+        input.appendChild(op);
+      });
+    } else if (f.type === 'image') {
+      input = document.createElement('input');
+      input.type = 'text'; input.className = 'v2-input';
+      input.value = seo[f.key] || '';
+      input.placeholder = 'https://… or /uploads/…';
+    } else {
+      input = document.createElement('input');
+      input.type = 'text'; input.className = 'v2-input';
+      input.value = seo[f.key] || '';
+    }
+    input.addEventListener('input', debounce(async () => {
+      try {
+        await fetch(_apiBase() + '/api/cms/page/' + encodeURIComponent(state.pageSlug) + '/seo', {
+          method: 'PATCH', credentials: 'include',
+          headers: { 'Content-Type': 'application/json',
+                     'Authorization': 'Bearer ' + (localStorage.getItem('pnec_token') || '') },
+          body: JSON.stringify({ updates: { [f.key]: input.value } }),
+        });
+        setStatus('saved', 'SEO ' + f.key + ' saved');
+      } catch (_e) { toast('SEO save failed.', 'error'); }
+    }, 300));
+    wrap.appendChild(input);
+    if (f.hint) {
+      const hint = document.createElement('div');
+      hint.style.cssText = 'font-size:.7rem; color:var(--v2-muted); margin-top:4px;';
+      hint.textContent = f.hint;
+      wrap.appendChild(hint);
+    }
+    return wrap;
   }
 
   async function loadHistory() {
@@ -1434,7 +1537,8 @@
     else if (e.key === 'i' || e.key === 'I') { e.preventDefault(); toggleInspector(); }
     else if (e.key === '1') { e.preventDefault(); switchSidebarTab('sections'); }
     else if (e.key === '2') { e.preventDefault(); switchSidebarTab('theme'); }
-    else if (e.key === '3') { e.preventDefault(); switchSidebarTab('history'); }
+    else if (e.key === '3') { e.preventDefault(); switchSidebarTab('seo'); }
+    else if (e.key === '4') { e.preventDefault(); switchSidebarTab('history'); }
     else if (e.key === 'd' || e.key === 'D') { e.preventDefault(); setViewport('desktop'); }
     else if (e.key === 't' || e.key === 'T') { e.preventDefault(); setViewport('tablet'); }
     else if (e.key === 'm' || e.key === 'M') { e.preventDefault(); setViewport('mobile'); }
