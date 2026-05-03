@@ -61,6 +61,7 @@ body { margin: 0; background: var(--v2-bg); color: var(--v2-text); font-family: 
 .v2-icon-btn { background: transparent; color: var(--v2-text); border: none; cursor: pointer; padding: 2px 4px; font-size: .9rem; border-radius: 4px; }
 .v2-icon-btn:hover { background: var(--v2-surface2); }
 .v2-empty { color: var(--v2-muted); font-size: .85rem; padding: 16px; text-align: center; border: 1px dashed var(--v2-border); border-radius: 6px; }
+.v2-empty-onboarding kbd { background: var(--v2-surface2); border: 1px solid var(--v2-border); padding: 1px 6px; border-radius: 3px; font-family: ui-monospace, monospace; font-size: .75rem; }
 #v2-add-section { width: 100%; margin-top: 8px; }
 
 /* Settings panel */
@@ -214,9 +215,12 @@ body { margin: 0; background: var(--v2-bg); color: var(--v2-text); font-family: 
     <button id="v2-undo" class="v2-btn v2-btn-ghost" title="Undo (⌘Z)">↶</button>
     <button id="v2-redo" class="v2-btn v2-btn-ghost" title="Redo (⌘⇧Z)">↷</button>
     <div class="v2-spacer"></div>
+    <button id="v2-export"       class="v2-btn v2-btn-ghost" title="Download this page's template as JSON">⬇ Export</button>
+    <button id="v2-import"       class="v2-btn v2-btn-ghost" title="Import a template JSON from a file">⬆ Import</button>
     <button id="v2-share"        class="v2-btn v2-btn-ghost" title="Share preview link with non-admins">🔗 Share</button>
     <button id="v2-view-preview" class="v2-btn v2-btn-ghost" title="Open the public page in a new tab">↗ View live</button>
     <button id="v2-publish"      class="v2-btn">Publish</button>
+    <input id="v2-import-file" type="file" accept="application/json,.json" style="display:none;" />
   </div>
 
   <div id="v2-banner" class="v2-banner"></div>

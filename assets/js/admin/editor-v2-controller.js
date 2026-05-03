@@ -109,6 +109,15 @@
     const helpClose = document.getElementById('v2-help-close');
     if (helpBtn)   helpBtn.addEventListener('click', openHelp);
     if (helpClose) helpClose.addEventListener('click', closeHelp);
+
+    const exportBtn = document.getElementById('v2-export');
+    const importBtn = document.getElementById('v2-import');
+    const importFile = document.getElementById('v2-import-file');
+    if (exportBtn) exportBtn.addEventListener('click', exportPage);
+    if (importBtn && importFile) {
+      importBtn.addEventListener('click', () => importFile.click());
+      importFile.addEventListener('change', importPage);
+    }
     document.addEventListener('click', (e) => {
       if (e.target && e.target.id === 'v2-help-overlay') closeHelp();
     });
@@ -222,8 +231,12 @@
 
     if (!state.template.order.length) {
       const empty = document.createElement('div');
-      empty.className = 'v2-empty';
-      empty.textContent = 'No sections yet. Click "+ Add section" to start.';
+      empty.className = 'v2-empty v2-empty-onboarding';
+      empty.innerHTML = `
+        <div style="font-size:1.6rem;text-align:center;padding:14px 0;">✨</div>
+        <div style="text-align:center;font-weight:600;color:var(--v2-text);">No sections on this page yet.</div>
+        <div style="text-align:center;color:var(--v2-muted);font-size:.85rem;margin:6px 0 14px;">Click <kbd>A</kbd> or the button below to add your first section. Try a preset like <em>Volunteer Signup</em> or <em>Wildfire Red Flag</em>.</div>
+      `;
       elSidebarTree.appendChild(empty);
       return;
     }
@@ -731,6 +744,24 @@
       postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
     }, 250));
     wrap.appendChild(input);
+
+    // Reset-to-default button (only when current value differs from default)
+    if ('default' in field && initial !== field.default) {
+      const reset = document.createElement('button');
+      reset.className = 'v2-btn v2-btn-ghost';
+      reset.style.cssText = 'margin-top:4px; font-size:.7rem; padding:3px 8px;';
+      reset.textContent = '↻ Reset to default';
+      reset.title = 'Reset this field to ' + JSON.stringify(field.default);
+      reset.addEventListener('click', async () => {
+        if (input.tagName === 'SELECT') input.value = field.default;
+        else input.value = field.default || '';
+        await applyPatch({ op: 'set', sid: state.selectedSid, key: field.id, value: field.default });
+        postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
+        renderSettings();
+      });
+      wrap.appendChild(reset);
+    }
+
     return wrap;
   }
 
@@ -1310,6 +1341,53 @@
     }
     else if (e.key === '?') { e.preventDefault(); openHelp(); }
     else if (e.key === 'Escape') { closePicker(); closeAssetLibrary(); closeHelp(); }
+  }
+
+  // ── Export / Import ──────────────────────────────────────────────────────
+  async function exportPage() {
+    try {
+      const res = await fetch(_apiBase() + '/api/cms/page/' + encodeURIComponent(state.pageSlug) + '/export', {
+        credentials: 'include',
+        headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('pnec_token') || '') },
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'pnec-' + state.pageSlug + '-' + new Date().toISOString().slice(0, 10) + '.json';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast('Exported.', 'ok');
+    } catch (e) { toast('Export failed.', 'error'); }
+  }
+
+  async function importPage(e) {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    e.target.value = '';
+    if (!confirm('Replace this page\'s draft with the imported template? You can undo with ⌘Z.')) return;
+    try {
+      const text = await f.text();
+      let parsed;
+      try { parsed = JSON.parse(text); }
+      catch (_e) { toast('Not valid JSON.', 'error'); return; }
+      const beforeJson = JSON.stringify(state.template);
+      const res = await fetch(_apiBase() + '/api/cms/page/' + encodeURIComponent(state.pageSlug) + '/import', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json',
+                   'Authorization': 'Bearer ' + (localStorage.getItem('pnec_token') || '') },
+        body: JSON.stringify({ template: parsed.draft || parsed.template || parsed }),
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const body = await res.json();
+      state.template = body.template;
+      recordUndo('import', beforeJson, JSON.stringify(state.template));
+      renderTree();
+      pointIframe(state.pageSlug);
+      toast('Imported.', 'ok');
+    } catch (e) { toast('Import failed: ' + (e.message || ''), 'error'); }
   }
 
   function openHelp() {
