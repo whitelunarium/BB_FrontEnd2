@@ -704,6 +704,48 @@ body {
 .v2-asset-tile img { width: 100%; height: 110px; object-fit: cover; display: block; }
 .v2-asset-tile-label { font-size: .75rem; padding: 6px 8px; color: var(--v2-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+/* AI placeholder-image modal */
+.v2-ai-image-modal {
+  position: fixed; inset: 0;
+  background: rgba(6,12,28,0.7);
+  backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  z-index: 270;
+  animation: v2-fade-in 200ms;
+}
+.v2-ai-image-shell {
+  background: linear-gradient(180deg, var(--v2-surface) 0%, var(--v2-bg) 100%);
+  border: 1px solid var(--v2-border-strong);
+  border-radius: 16px;
+  padding: 22px;
+  max-width: 720px; width: 100%;
+  max-height: 88vh; overflow-y: auto;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+  animation: v2-pop-in 240ms cubic-bezier(.2,.9,.3,1.1);
+}
+.v2-ai-image-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.v2-ai-image-header h3 {
+  margin: 0;
+  background: var(--v2-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.v2-ai-image-help { color: var(--v2-text-soft); font-size: .82rem; line-height: 1.5; margin: 2px 0 12px; }
+.v2-ai-image-row { display: flex; gap: 8px; align-items: end; margin-top: 8px; }
+.v2-ai-image-row .v2-field-label { display: flex; flex-direction: column; gap: 4px; flex: 0 0 auto; }
+.v2-ai-image-row .v2-input { width: 90px; }
+.v2-ai-image-row .v2-btn { margin-left: auto; }
+.v2-ai-image-preview { margin: 14px 0 8px; min-height: 160px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.v2-ai-image-result { width: 100%; max-height: 380px; object-fit: contain; border-radius: 10px; border: 1px solid var(--v2-border); background: rgba(255,255,255,0.04); }
+.v2-ai-image-loading { color: var(--v2-violet); font-size: .9rem; padding: 32px 0; }
+.v2-ai-image-error { color: #fecaca; background: rgba(239,68,68,0.10); border: 1px solid rgba(239,68,68,0.30); padding: 10px 14px; border-radius: 8px; width: 100%; }
+.v2-ai-image-meta { color: var(--v2-muted); font-size: .76rem; margin: 0; }
+#v2-ai-image-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
+
 /* Cross-page find modal — Cmd-K-style spotlight */
 #v2-find-modal {
   position: fixed; inset: 0;

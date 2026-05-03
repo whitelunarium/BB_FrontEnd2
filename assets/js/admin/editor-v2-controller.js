@@ -1191,9 +1191,125 @@
       catch (e) { toast('Image upload failed.', 'error'); }
     });
     row.appendChild(upBtn);
+    // AI placeholder image: prompt → Pollinations URL via Groq-polished prompt
+    const aiBtn = document.createElement('button');
+    aiBtn.className = 'v2-btn v2-btn-ghost';
+    aiBtn.title = 'Generate a placeholder image from a prompt (AI)';
+    aiBtn.style.flex = '0 0 auto';
+    aiBtn.innerHTML = '✨ AI image';
+    aiBtn.addEventListener('click', () => openAiImageModal(field, section, setUrl));
+    row.appendChild(aiBtn);
     wrap.appendChild(row);
     wrap.appendChild(fileIn);
     return wrap;
+  }
+
+  // ── AI placeholder-image modal ───────────────────────────────────────────
+  function openAiImageModal(field, section, onPick) {
+    closeAiImageModal();
+    const overlay = document.createElement('div');
+    overlay.id = 'v2-ai-image-modal';
+    overlay.className = 'v2-ai-image-modal is-open';
+    overlay.innerHTML = `
+      <div class="v2-ai-image-shell">
+        <div class="v2-ai-image-header">
+          <h3>✨ Generate a placeholder image</h3>
+          <button class="v2-btn v2-btn-ghost" data-action="close">✕</button>
+        </div>
+        <p class="v2-ai-image-help">
+          Describe what you want to see (e.g. "neighbors stocking an emergency kit"
+          or "wildfire smoke over Poway hills at sunset"). We'll polish the prompt
+          and generate an image. Use it as a placeholder while you wait for a real photo.
+        </p>
+        <textarea id="v2-ai-image-prompt" class="v2-input v2-textarea" rows="3"
+                  placeholder="Describe the image…"></textarea>
+        <div class="v2-ai-image-row">
+          <label class="v2-field-label" style="margin:0;">Width
+            <input id="v2-ai-image-w" type="number" class="v2-input" value="1200" min="64" max="2400" />
+          </label>
+          <label class="v2-field-label" style="margin:0;">Height
+            <input id="v2-ai-image-h" type="number" class="v2-input" value="800" min="64" max="2400" />
+          </label>
+          <button id="v2-ai-image-go" class="v2-btn">Generate</button>
+        </div>
+        <div id="v2-ai-image-preview" class="v2-ai-image-preview"></div>
+        <div id="v2-ai-image-actions" style="display:none;">
+          <button class="v2-btn" data-action="use">✓ Use this image</button>
+          <button class="v2-btn v2-btn-ghost" data-action="regen">↻ Regenerate</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', (ev) => { if (ev.target === overlay) closeAiImageModal(); });
+    overlay.querySelector('[data-action="close"]').addEventListener('click', closeAiImageModal);
+
+    const prompt  = overlay.querySelector('#v2-ai-image-prompt');
+    const wIn     = overlay.querySelector('#v2-ai-image-w');
+    const hIn     = overlay.querySelector('#v2-ai-image-h');
+    const goBtn   = overlay.querySelector('#v2-ai-image-go');
+    const preview = overlay.querySelector('#v2-ai-image-preview');
+    const actions = overlay.querySelector('#v2-ai-image-actions');
+    let lastResult = null; // { url, alt, polished_prompt }
+
+    setTimeout(() => prompt && prompt.focus(), 30);
+
+    async function generate() {
+      const p = (prompt.value || '').trim();
+      if (!p) { toast('Type a description first.', 'error'); return; }
+      goBtn.disabled = true; goBtn.textContent = 'Polishing prompt…';
+      preview.innerHTML = '<div class="v2-ai-image-loading">✨ Generating with AI…</div>';
+      actions.style.display = 'none';
+      try {
+        const res = await fetch(_apiBase() + '/api/cms/ai/placeholder-image', {
+          method: 'POST', credentials: 'include',
+          headers: { 'Content-Type': 'application/json',
+                     'Authorization': 'Bearer ' + (localStorage.getItem('pnec_token') || '') },
+          body: JSON.stringify({
+            prompt: p,
+            width: parseInt(wIn.value, 10) || 1200,
+            height: parseInt(hIn.value, 10) || 800,
+          }),
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        lastResult = await res.json();
+        preview.innerHTML = `
+          <img src="${escapeHtml(lastResult.url)}" alt="${escapeHtml(lastResult.alt || '')}"
+               class="v2-ai-image-result" />
+          <p class="v2-ai-image-meta">Polished prompt: <em>${escapeHtml(lastResult.polished_prompt || '')}</em></p>
+          <p class="v2-ai-image-meta">Suggested alt: <em>${escapeHtml(lastResult.alt || '')}</em></p>
+        `;
+        actions.style.display = 'flex';
+      } catch (e) {
+        preview.innerHTML = `<div class="v2-ai-image-error">⚠ Generation failed: ${escapeHtml(e.message || 'unknown')}</div>`;
+      }
+      goBtn.disabled = false; goBtn.textContent = 'Generate';
+    }
+
+    goBtn.addEventListener('click', generate);
+    prompt.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); generate(); }
+    });
+    actions.addEventListener('click', async (e) => {
+      const action = e.target.dataset.action;
+      if (action === 'regen') return generate();
+      if (action === 'use' && lastResult) {
+        await onPick(lastResult.url);
+        // Try to set the matching alt field too if one exists
+        const altKey = (state.registry.find(t => t.type === section.type) || {}).settings || [];
+        const altField = altKey.find(f => /alt/i.test(f.id));
+        if (altField && lastResult.alt) {
+          await applyPatch({ op: 'set', sid: state.selectedSid, key: altField.id, value: lastResult.alt });
+          postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
+          renderSettings();
+        }
+        toast('Image set ✓', 'ok');
+        closeAiImageModal();
+      }
+    });
+  }
+  function closeAiImageModal() {
+    const m = document.getElementById('v2-ai-image-modal');
+    if (m) m.remove();
   }
 
   // ── Asset library modal ─────────────────────────────────────────────────

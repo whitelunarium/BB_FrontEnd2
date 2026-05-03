@@ -113,9 +113,10 @@ Ranked by leverage:
 11. **Templates: create new page from blank** — ✅ shipped
 12. **Multi-select tree rows + bulk delete/duplicate/move** ✅ shipped (v2.20) — Shift-click range, Cmd-click toggle, ⌘A select-all, sticky bulk-action bar with Hide/Show/Duplicate/Delete that ships every selected sid in a single atomic PATCH (server batches, undo rolls all back as one).
 13. **Better section-type icons** ✅ shipped (v2.21) — `editor-v2-icons.js` ships 13 inline Lucide-style SVGs (one per section type) plus 11 action icons (rename / visibility / duplicate / delete / drag / move / copy / paste / edit). Used in tree rows, section picker cards, find-modal results, and action chips. Self-contained — no CDN, no external font.
-14. **AI-generated placeholder images** — still missing
+14. **AI-generated placeholder images** ✅ shipped (v2.22) — Every image field grows a "✨ AI image" button. Opens a modal that asks Groq to polish the user's prompt into a neutral, ethical photo brief, then shows a real generated image from Pollinations.ai (free, no key) with width/height presets. One click to "Use this image" sets both the URL and the matching alt-text field automatically.
 15. **Block-level cross-page copy/paste between Q&A items, gallery items, etc.** — still missing
-16. **Live PNEC chatbot brand-voice tuning** — out of scope for editor
+16. **Hover thumbnail previews on picker cards** — still missing
+17. **Live PNEC chatbot brand-voice tuning** — out of scope for editor
 
 ## What's deliberately not building
 
