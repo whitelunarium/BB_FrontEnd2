@@ -125,7 +125,7 @@
       <a href="{{ '/' | relative_url }}" class="pnec-header-logo">
         <img src="https://powaynec.com/wp-content/uploads/2020/05/Poway-NEC-Logo-White@600x-768x307.png" alt="Poway NEC">
       </a>
-      <a href="{{ '/pages/donate.html' | relative_url }}" class="pnec-header-donate">
+      <a href="/donation-form/" class="pnec-header-donate">
         Donate Now <i class="fas fa-heart"></i>
       </a>
     </div>
@@ -136,20 +136,16 @@
     <!-- Nav bar -->
     <nav class="pnec-header-nav" aria-label="Main navigation">
       <ul>
-        <li><a href="{{ '/' | relative_url }}"{% if page.url == '/' %} class="active"{% endif %}>Home</a></li>
         <li><a href="{{ '/pages/about.html' | relative_url }}"{% if page.url contains '/about' %} class="active"{% endif %}>About</a></li>
         <li><a href="{{ '/pages/programs-and-services.html' | relative_url }}"{% if page.url contains '/programs-and-services' %} class="active"{% endif %}>Programs and Services</a></li>
         <li><a href="{{ '/pages/preparedness-resources.html' | relative_url }}"{% if page.url contains '/preparedness-resources' or page.url contains '/poway-statistics-and-information' %} class="active"{% endif %}>Preparedness &amp; Help</a></li>
         <li><a href="{{ '/pages/community-events-and-activities.html' | relative_url }}"{% if page.url contains '/community-events-and-activities' %} class="active"{% endif %}>Community Events</a></li>
-        <li><a href="{{ '/pages/find-your-neighborhood.html' | relative_url }}"{% if page.url contains '/find-your-neighborhood' %} class="active"{% endif %}>Find Your Neighborhood</a></li>
-        <li><a href="{{ '/pages/contact.html' | relative_url }}"{% if page.url contains '/contact' %} class="active"{% endif %}>Contact</a></li>
         <li id="poway-auth-display-item" style="display:none;">
           <a href="{{ '/pages/profile.html' | relative_url }}" id="poway-auth-display-link" aria-label="My Profile">
             <span id="poway-auth-display-name"></span><span id="poway-auth-display-location" style="display:none;"></span>
           </a>
         </li>
         <li id="poway-auth-login-item"><a href="{{ '/pages/register.html#login' | relative_url }}"{% if page.url contains '/login' %} class="active"{% endif %}>Login</a></li>
-        <li id="poway-auth-register-item"><a href="{{ '/pages/register.html' | relative_url }}"{% if page.url contains '/register' %} class="active"{% endif %}>Register</a></li>
       </ul>
     </nav>
   </div>
@@ -163,7 +159,6 @@
   </a>
 </span>
 <span id="poway-auth-login-item-mobile" style="display:none;"></span>
-<span id="poway-auth-register-item-mobile" style="display:none;"></span>
 
 <script>
 (function() {

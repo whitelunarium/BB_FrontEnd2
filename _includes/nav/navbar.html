@@ -35,7 +35,7 @@
           </ul>
         </div>
 
-        <a href="{{ '/pages/donate.html' | relative_url }}" class="btn-donate-nav">Donate Now</a>
+        <a href="/donation-form/" class="btn-donate-nav">Donate Now</a>
 
         <button class="hamburger" id="hamburger-btn" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open navigation menu">
           <span></span><span></span><span></span>
@@ -45,9 +45,6 @@
 
     <div class="navbar-bottom">
       <ul class="navbar-nav" role="list">
-        <li class="nav-item">
-          <a href="{{ '/' | relative_url }}" class="nav-link{% if page.url == '/' or page.url == '/index.html' %} active{% endif %}">Home</a>
-        </li>
         <li class="nav-item">
           <a href="{{ '/pages/about.html' | relative_url }}" class="nav-link{% if page.url contains '/about' %} active{% endif %}">About</a>
         </li>
@@ -89,11 +86,7 @@
 
   <ul class="mobile-nav-links">
     <li class="mobile-nav-section">
-      <a href="{{ '/' | relative_url }}">Home</a>
-    </li>
-    <li class="mobile-nav-section">
       <div class="mobile-nav-section-label">Explore</div>
-      <a href="{{ '/' | relative_url }}">Home</a>
       <a href="{{ '/pages/about.html' | relative_url }}">About</a>
       <a href="{{ '/pages/programs-and-services.html' | relative_url }}">Programs and Services</a>
       <a href="{{ '/pages/preparedness-resources.html' | relative_url }}">Preparedness &amp; Help</a>
@@ -117,5 +110,5 @@
     </li>
   </ul>
 
-  <a href="{{ '/pages/donate.html' | relative_url }}" class="btn btn-primary btn-block">Donate Now</a>
+  <a href="/donation-form/" class="btn btn-primary btn-block">Donate Now</a>
 </nav>

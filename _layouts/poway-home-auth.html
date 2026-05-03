@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% if page.title %}{{ page.title }} &#8211; {% endif %}Poway NEC &amp; FSC</title>
+  <meta name="description" content="{% if page.description %}{{ page.description }}{% else %}Poway NEC &amp; FSC{% endif %}" />
+  {% include poway-live-head.html %}
+  <link rel="stylesheet" href="{{ '/assets/css/chatbot.css' | relative_url }}" />
+  {% if page.head_extra %}{{ page.head_extra }}{% endif %}
+</head>
+<body class="home wp-singular page-template page-template-elementor_header_footer page page-id-22 wp-theme-jupiterx no-js ctct-jupiterx elementor-default elementor-template-full-width elementor-kit-771 elementor-page elementor-page-22 jupiterx-header-overlapped jupiterx-header-overlapped-tablet jupiterx-header-overlapped-mobile {{ page.body_class }}" itemscope="itemscope" itemtype="http://schema.org/WebPage">
+  {% include poway-home-auth-top.html %}
+  <main id="jupiterx-main" class="jupiterx-main">
+    {{ content }}
+  </main>
+  {% include poway-auth-footer.html %}
+  {% include chatbot/chatbot-widget.html %}
+  <script src="{{ '/assets/js/utils/errors.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/api/auth-api.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/api/faq-api.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/ui/auth-ui.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/ui/chatbot-ui.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/pages/chatbot.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/pages/navbar.js' | relative_url }}"></script>
+  {% if page.page_script_paths %}
+    {% for script_path in page.page_script_paths %}
+  <script src="{{ script_path | relative_url }}"></script>
+    {% endfor %}
+  {% elsif page.page_script_path %}
+  <script src="{{ page.page_script_path | relative_url }}"></script>
+  {% endif %}
+</body>
+</html>
