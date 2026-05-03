@@ -579,11 +579,12 @@
       wrap.appendChild(buildBlockEditor(section, block, bid, blockMeta));
     });
 
-    // Add block — pick first block type if multiple
+    // Add block + paste row
+    const addRow = document.createElement('div');
+    addRow.style.cssText = 'display:flex; gap:6px; margin-top:8px;';
     const addBtn = document.createElement('button');
     addBtn.className = 'v2-btn v2-btn-ghost';
-    addBtn.style.width = '100%';
-    addBtn.style.marginTop = '8px';
+    addBtn.style.flex = '1';
     addBtn.textContent = `+ Add ${meta.blocks[0].label || 'item'}`;
     addBtn.addEventListener('click', async () => {
       const blockType = meta.blocks[0].type;
@@ -594,7 +595,14 @@
       await applyPatch({ op: 'add_block', sid: state.selectedSid, block_type: blockType, settings: defaults });
       postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
     });
-    wrap.appendChild(addBtn);
+    addRow.appendChild(addBtn);
+    const pasteBtn = document.createElement('button');
+    pasteBtn.className = 'v2-btn v2-btn-ghost';
+    pasteBtn.title = 'Paste block from clipboard';
+    pasteBtn.textContent = '📥';
+    pasteBtn.addEventListener('click', () => pasteBlockFromClipboard(section, meta));
+    addRow.appendChild(pasteBtn);
+    wrap.appendChild(addRow);
     return wrap;
   }
 
@@ -621,6 +629,11 @@
         const act = btn.dataset.blockAct;
         await handleBlockAction(section, bid, act);
       });
+    });
+    // Right-click on the summary copies/pastes blocks
+    summary.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      openBlockContextMenu(e, section, bid, blockMeta);
     });
 
     const body = document.createElement('div');
@@ -1086,6 +1099,78 @@
     }
   }
 
+  // ── Block-level clipboard ────────────────────────────────────────────────
+  async function copyBlockToClipboard(section, bid, blockMeta) {
+    const block = (section.blocks || {})[bid];
+    if (!block) return;
+    const payload = {
+      __cms_block_clipboard: true,
+      type:     block.type,
+      settings: block.settings || {},
+    };
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(payload));
+      toast('Block copied — paste into any matching section.', 'ok');
+    } catch (_e) { toast('Clipboard write failed.', 'error'); }
+  }
+
+  async function pasteBlockFromClipboard(section, meta) {
+    let txt;
+    try { txt = await navigator.clipboard.readText(); }
+    catch (_e) { toast('Clipboard read failed.', 'error'); return; }
+    let payload;
+    try { payload = JSON.parse(txt); } catch (_e) { toast('Clipboard not a block.', 'error'); return; }
+    if (!payload || !payload.__cms_block_clipboard) {
+      toast('Clipboard not a block.', 'error');
+      return;
+    }
+    // Verify the section's schema accepts this block type
+    const allowedTypes = (meta.blocks || []).map(b => b.type);
+    if (!allowedTypes.includes(payload.type)) {
+      toast(`This section doesn't accept ${payload.type} blocks.`, 'error');
+      return;
+    }
+    await applyPatch({
+      op: 'add_block', sid: state.selectedSid,
+      block_type: payload.type,
+      settings:   payload.settings || {},
+    });
+    postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
+  }
+
+  function openBlockContextMenu(event, section, bid, blockMeta) {
+    closeContextMenu();
+    const menu = document.createElement('div');
+    menu.id = 'v2-ctx-menu';
+    menu.className = 'v2-ctx-menu';
+    menu.style.left = event.clientX + 'px';
+    menu.style.top  = event.clientY + 'px';
+    const meta = state.registry.find(t => t.type === section.type);
+    const items = [
+      { icon: '📋', label: 'Copy block',      action: () => copyBlockToClipboard(section, bid, blockMeta) },
+      { icon: '📥', label: 'Paste block',     action: () => pasteBlockFromClipboard(section, meta) },
+      { icon: '⬆',  label: 'Move up',         action: () => handleBlockAction(section, bid, 'up') },
+      { icon: '⬇',  label: 'Move down',       action: () => handleBlockAction(section, bid, 'down') },
+      { divider: true },
+      { icon: '🗑',  label: 'Delete block',    danger: true, action: () => handleBlockAction(section, bid, 'delete') },
+    ];
+    items.forEach(it => {
+      if (it.divider) {
+        const d = document.createElement('div'); d.className = 'v2-ctx-divider'; menu.appendChild(d); return;
+      }
+      const btn = document.createElement('button');
+      btn.className = 'v2-ctx-item' + (it.danger ? ' is-danger' : '');
+      btn.innerHTML = `<span class="v2-ctx-icon">${it.icon}</span><span>${it.label}</span>`;
+      btn.addEventListener('click', () => { closeContextMenu(); it.action(); });
+      menu.appendChild(btn);
+    });
+    document.body.appendChild(menu);
+    setTimeout(() => {
+      document.addEventListener('click', closeContextMenu, { once: true });
+      document.addEventListener('contextmenu', closeContextMenu, { once: true });
+    }, 0);
+  }
+
   // ── Right-click context menu on tree rows ────────────────────────────────
   function openContextMenu(event, sid) {
     closeContextMenu();
@@ -1404,6 +1489,12 @@
       if (d.sectionId) {
         const row = elSidebarTree.querySelector('.v2-tree-row[data-sid="' + d.sectionId + '"]');
         if (row) row.classList.add('is-iframe-hover');
+      }
+    } else if (d.type === 'cms:reorder-from-iframe') {
+      // User dragged a section to a new position in the iframe canvas
+      if (Array.isArray(d.order)) {
+        applyPatch({ op: 'reorder', order: d.order })
+          .then(() => postToIframe({ type: 'cms:section:reorder', page: state.pageSlug, order: d.order }));
       }
     } else if (d.type === 'cms:add-here') {
       // User clicked a "+ Add section here" button between sections.

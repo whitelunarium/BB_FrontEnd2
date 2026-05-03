@@ -135,6 +135,34 @@
           window.parent.postMessage({ type: 'cms:add-here', index: index }, expectedOrigin);
         } catch (_e) {}
       });
+      // Also act as a drop zone for drag-reorder
+      btn.addEventListener('dragover', (e) => {
+        if (host._cmsDraggingSid) {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          btn.classList.add('cms-add-here-drop');
+        }
+      });
+      btn.addEventListener('dragleave', () => btn.classList.remove('cms-add-here-drop'));
+      btn.addEventListener('drop', (e) => {
+        e.preventDefault();
+        btn.classList.remove('cms-add-here-drop');
+        const sid = host._cmsDraggingSid;
+        if (!sid) return;
+        const newIndex = Number(btn.dataset.cmsInsertIndex);
+        const cur = order.slice();
+        const fromIdx = cur.indexOf(sid);
+        if (fromIdx < 0) return;
+        cur.splice(fromIdx, 1);
+        const insertAt = newIndex > fromIdx ? newIndex - 1 : newIndex;
+        cur.splice(insertAt, 0, sid);
+        try {
+          window.parent.postMessage({
+            type: 'cms:reorder-from-iframe',
+            order: cur,
+          }, expectedOrigin);
+        } catch (_e) {}
+      });
       return btn;
     };
     // Insert before each section
@@ -145,6 +173,21 @@
     });
     // Plus one at the very end
     host.appendChild(make(order.length));
+    // Wire each section as draggable
+    order.forEach(sid => {
+      const sectionEl = host.querySelector('#cms-section-' + sid);
+      if (!sectionEl) return;
+      sectionEl.draggable = true;
+      sectionEl.addEventListener('dragstart', (e) => {
+        host._cmsDraggingSid = sid;
+        host.classList.add('cms-dragging');
+        try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', sid); } catch (_e) {}
+      });
+      sectionEl.addEventListener('dragend', () => {
+        host._cmsDraggingSid = null;
+        host.classList.remove('cms-dragging');
+      });
+    });
   }
 
   // ── v2: discover all editable items on this page ───────────────────────

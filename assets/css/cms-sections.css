@@ -50,6 +50,24 @@
   border-style: solid;
   background: rgba(59,130,246,0.05);
 }
+/* Drop zone state during drag-reorder */
+.cms-add-here-drop {
+  opacity: 1 !important;
+  height: 28px;
+  background: linear-gradient(90deg, #5b8cff, #a855f7) !important;
+  color: white !important;
+  border: 0 !important;
+  box-shadow: 0 4px 14px rgba(91,140,255,0.5);
+  animation: cms-drop-pulse 0.6s ease-in-out infinite alternate;
+}
+@keyframes cms-drop-pulse {
+  from { transform: scale(1); }
+  to   { transform: scaleY(1.2); }
+}
+[data-cms-section-host].cms-dragging [data-cms-section-id] {
+  opacity: 0.5;
+  cursor: grabbing;
+}
 
 /* Stega-tagged inline-editable elements get a subtle hint in inspector mode. */
 body.cms-inspector .cms-editable {
