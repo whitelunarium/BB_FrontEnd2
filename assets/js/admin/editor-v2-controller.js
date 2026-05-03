@@ -1,0 +1,483 @@
+// assets/js/admin/editor-v2-controller.js
+// Responsibility: Live theme editor v2 orchestrator.
+//
+// Manages:
+//   - State: current page slug, registry of section types, current template,
+//            selected section, dirty flag.
+//   - Sidebar tree: list of sections with select/duplicate/hide/delete and
+//            drag-to-reorder (HTML5 drag API, no library).
+//   - Settings panel: dynamically built from the selected section's schema.
+//   - Iframe preview: postMessage events to hot-swap sections, inspector toggle.
+//   - Save / Publish: PATCH and POST to backend.
+//
+// Depends on editor-v2-api.js. Consumes/emits postMessage with hydrate.js v2
+// inside the iframe.
+
+(function () {
+  'use strict';
+
+  // ── State ─────────────────────────────────────────────────────────────────
+  const state = {
+    pageSlug:     'home',
+    registry:     [],          // [{type, label, settings:[...], ...}]
+    template:     { sections: {}, order: [] },
+    selectedSid:  null,
+    selectedBid:  null,
+    inspectorOn:  false,
+    iframeReady:  false,
+    queue:        [],
+    dragSrc:      null,
+  };
+
+  // ── DOM refs (resolved on init) ──────────────────────────────────────────
+  let elPageSel, elSidebarTree, elSettingsPanel, elAddSectionBtn;
+  let elSavePub, elPreviewBtn, elInspectorBtn, elShareBtn;
+  let elIframe, elIframeUrl, elBanner, elToast, elPicker, elPickerList, elPickerClose;
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  async function init() {
+    elPageSel        = document.getElementById('v2-page-select');
+    elSidebarTree    = document.getElementById('v2-tree');
+    elSettingsPanel  = document.getElementById('v2-settings');
+    elAddSectionBtn  = document.getElementById('v2-add-section');
+    elSavePub        = document.getElementById('v2-publish');
+    elPreviewBtn     = document.getElementById('v2-view-preview');
+    elInspectorBtn   = document.getElementById('v2-inspector-toggle');
+    elShareBtn       = document.getElementById('v2-share');
+    elIframe         = document.getElementById('v2-iframe');
+    elIframeUrl      = document.getElementById('v2-iframe-url');
+    elBanner         = document.getElementById('v2-banner');
+    elToast          = document.getElementById('v2-toast');
+    elPicker         = document.getElementById('v2-picker');
+    elPickerList     = document.getElementById('v2-picker-list');
+    elPickerClose    = document.getElementById('v2-picker-close');
+
+    if (!elSidebarTree) return;
+
+    elPageSel.addEventListener('change', () => switchPage(elPageSel.value));
+    elAddSectionBtn.addEventListener('click', openPicker);
+    elPickerClose.addEventListener('click', closePicker);
+    elSavePub.addEventListener('click', publish);
+    elPreviewBtn.addEventListener('click', () => window.open(state.pageSlug === 'home' ? '/' : `/pages/${state.pageSlug}.html`, '_blank'));
+    elInspectorBtn.addEventListener('click', toggleInspector);
+    elShareBtn.addEventListener('click', shareDraft);
+    elIframe.addEventListener('load', flushQueue);
+
+    window.addEventListener('message', onIframeMessage);
+
+    // Iframe-unresponsive watchdog
+    setTimeout(() => {
+      if (!state.iframeReady) showBanner('Preview not responding — saves still apply.');
+    }, 5000);
+
+    try {
+      const reg = await window.v2FetchSectionsRegistry();
+      state.registry = reg.sections || [];
+    } catch (e) {
+      toast('Could not load sections registry.', 'error');
+      state.registry = [];
+    }
+
+    await loadPage(state.pageSlug);
+  }
+
+  // ── Page loading ──────────────────────────────────────────────────────────
+  async function switchPage(slug) {
+    state.pageSlug = slug;
+    state.selectedSid = null;
+    state.selectedBid = null;
+    await loadPage(slug);
+  }
+
+  async function loadPage(slug) {
+    try {
+      const page = await window.v2FetchPage(slug, 'draft');
+      state.template = page.template || { sections: {}, order: [] };
+    } catch (e) {
+      toast('Could not load page.', 'error');
+      state.template = { sections: {}, order: [] };
+    }
+    pointIframe(slug);
+    renderTree();
+    renderSettings();
+  }
+
+  function pointIframe(slug) {
+    const path = slug === 'home' ? '/' : `/pages/${slug}.html`;
+    const url  = path + (path.indexOf('?') === -1 ? '?preview=1' : '&preview=1');
+    elIframe.src = url;
+    elIframeUrl.textContent = url;
+    state.iframeReady = false;
+    state.queue = [];
+  }
+
+  // ── Sidebar tree ──────────────────────────────────────────────────────────
+  function renderTree() {
+    elSidebarTree.innerHTML = '';
+    if (!state.template.order.length) {
+      const empty = document.createElement('div');
+      empty.className = 'v2-empty';
+      empty.textContent = 'No sections yet. Click "+ Add section" to start.';
+      elSidebarTree.appendChild(empty);
+      return;
+    }
+    state.template.order.forEach((sid, idx) => {
+      const section = state.template.sections[sid];
+      if (!section) return;
+      const meta = state.registry.find(t => t.type === section.type);
+      const row = document.createElement('div');
+      row.className = 'v2-tree-row' + (sid === state.selectedSid ? ' is-selected' : '');
+      row.draggable = true;
+      row.dataset.sid = sid;
+
+      row.innerHTML = `
+        <span class="v2-tree-handle" title="Drag to reorder">⋮⋮</span>
+        <span class="v2-tree-label">${escapeHtml(meta ? meta.label : section.type)}</span>
+        <span class="v2-tree-actions">
+          <button class="v2-icon-btn" data-act="visibility" title="${section.visible === false ? 'Show' : 'Hide'}">${section.visible === false ? '🙈' : '👁'}</button>
+          <button class="v2-icon-btn" data-act="duplicate" title="Duplicate">⧉</button>
+          <button class="v2-icon-btn" data-act="delete"    title="Delete">🗑</button>
+        </span>
+      `;
+      row.addEventListener('click', (e) => {
+        if (e.target.closest('.v2-icon-btn')) return;
+        selectSection(sid);
+      });
+      row.querySelectorAll('.v2-icon-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          handleSectionAction(sid, btn.dataset.act);
+        });
+      });
+
+      // Drag-to-reorder
+      row.addEventListener('dragstart', (e) => {
+        state.dragSrc = sid;
+        row.classList.add('is-dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        try { e.dataTransfer.setData('text/plain', sid); } catch (_e) {}
+      });
+      row.addEventListener('dragend', () => {
+        row.classList.remove('is-dragging');
+        state.dragSrc = null;
+        elSidebarTree.querySelectorAll('.is-drag-over').forEach(el => el.classList.remove('is-drag-over'));
+      });
+      row.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        row.classList.add('is-drag-over');
+      });
+      row.addEventListener('dragleave', () => row.classList.remove('is-drag-over'));
+      row.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        row.classList.remove('is-drag-over');
+        const srcSid = state.dragSrc;
+        const dstSid = sid;
+        if (!srcSid || srcSid === dstSid) return;
+        const order = state.template.order.slice();
+        const fromIdx = order.indexOf(srcSid);
+        const toIdx   = order.indexOf(dstSid);
+        if (fromIdx < 0 || toIdx < 0) return;
+        order.splice(fromIdx, 1);
+        order.splice(toIdx, 0, srcSid);
+        await applyPatch({ op: 'reorder', order });
+        // Hot-swap iframe
+        postToIframe({ type: 'cms:section:reorder', page: state.pageSlug, order });
+      });
+
+      elSidebarTree.appendChild(row);
+    });
+  }
+
+  function selectSection(sid) {
+    state.selectedSid = sid;
+    state.selectedBid = null;
+    renderTree();
+    renderSettings();
+    postToIframe({ type: 'cms:section:select', sectionId: sid });
+  }
+
+  async function handleSectionAction(sid, action) {
+    if (action === 'visibility') {
+      const cur = state.template.sections[sid] && state.template.sections[sid].visible !== false;
+      await applyPatch({ op: 'visibility', sid, visible: !cur });
+      postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: sid });
+    } else if (action === 'duplicate') {
+      const res = await applyPatch({ op: 'duplicate', sid });
+      // The new sid is in res.affected_sids
+      const newSid = (res && res.affected_sids || []).find(x => x !== sid);
+      if (newSid) postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: newSid });
+    } else if (action === 'delete') {
+      if (!confirm('Delete this section?')) return;
+      await applyPatch({ op: 'remove', sid });
+      postToIframe({ type: 'cms:section:remove', sectionId: sid });
+      if (state.selectedSid === sid) {
+        state.selectedSid = null;
+        renderSettings();
+      }
+    }
+  }
+
+  // ── Settings panel ────────────────────────────────────────────────────────
+  function renderSettings() {
+    elSettingsPanel.innerHTML = '';
+    if (!state.selectedSid) {
+      const empty = document.createElement('div');
+      empty.className = 'v2-settings-empty';
+      empty.textContent = 'Select a section to edit its settings.';
+      elSettingsPanel.appendChild(empty);
+      return;
+    }
+    const section = state.template.sections[state.selectedSid];
+    if (!section) return;
+    const meta = state.registry.find(t => t.type === section.type);
+    if (!meta) {
+      elSettingsPanel.innerHTML = `<div class="v2-settings-empty">Unknown section type: ${escapeHtml(section.type)}</div>`;
+      return;
+    }
+
+    const head = document.createElement('div');
+    head.className = 'v2-settings-head';
+    head.innerHTML = `<h3>${escapeHtml(meta.label)}</h3>` +
+                     (meta.description ? `<p>${escapeHtml(meta.description)}</p>` : '');
+    elSettingsPanel.appendChild(head);
+
+    (meta.settings || []).forEach(field => {
+      elSettingsPanel.appendChild(buildField(section, field));
+    });
+  }
+
+  function buildField(section, field) {
+    const wrap = document.createElement('div');
+    wrap.className = 'v2-field';
+    const label = document.createElement('label');
+    label.className = 'v2-field-label';
+    label.textContent = field.label || field.id;
+    wrap.appendChild(label);
+
+    const initial = (section.settings && field.id in section.settings)
+                    ? section.settings[field.id]
+                    : (field.default != null ? field.default : '');
+
+    if (field.type === 'image') {
+      wrap.appendChild(buildImageField(section, field, initial));
+      return wrap;
+    }
+
+    let input;
+    if (field.type === 'richtext') {
+      input = document.createElement('textarea');
+      input.className = 'v2-input v2-textarea';
+      input.rows = 5;
+      input.value = initial || '';
+    } else if (field.type === 'select') {
+      input = document.createElement('select');
+      input.className = 'v2-input';
+      (field.options || []).forEach(opt => {
+        const o = document.createElement('option');
+        o.value = opt;
+        o.textContent = opt;
+        if (opt === initial) o.selected = true;
+        input.appendChild(o);
+      });
+    } else if (field.type === 'color') {
+      input = document.createElement('input');
+      input.type = 'color';
+      input.className = 'v2-input v2-color';
+      input.value = initial || '#1e3a8a';
+    } else if (field.type === 'url') {
+      input = document.createElement('input');
+      input.type = 'url';
+      input.className = 'v2-input';
+      input.value = initial || '';
+    } else {
+      input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'v2-input';
+      input.value = initial || '';
+    }
+    input.addEventListener('input', debounce(async () => {
+      await applyPatch({ op: 'set', sid: state.selectedSid, key: field.id, value: input.value });
+      postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
+    }, 250));
+    wrap.appendChild(input);
+    return wrap;
+  }
+
+  function buildImageField(section, field, initial) {
+    const wrap = document.createElement('div');
+    const preview = document.createElement('div');
+    preview.className = 'v2-image-preview';
+    preview.textContent = initial || '(no image)';
+    if (initial) {
+      const img = document.createElement('img');
+      img.src = initial;
+      img.alt = '';
+      img.className = 'v2-image-thumb';
+      preview.innerHTML = '';
+      preview.appendChild(img);
+    }
+    wrap.appendChild(preview);
+    const fileIn = document.createElement('input');
+    fileIn.type = 'file';
+    fileIn.accept = 'image/*';
+    fileIn.className = 'v2-input';
+    fileIn.addEventListener('change', async () => {
+      const f = fileIn.files && fileIn.files[0];
+      if (!f) return;
+      try {
+        const { url } = await window.v2UploadImage(f);
+        preview.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = '';
+        img.className = 'v2-image-thumb';
+        preview.appendChild(img);
+        await applyPatch({ op: 'set', sid: state.selectedSid, key: field.id, value: url });
+        postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
+      } catch (e) {
+        toast('Image upload failed.', 'error');
+      }
+    });
+    wrap.appendChild(fileIn);
+    return wrap;
+  }
+
+  // ── Patch helper (single source of truth for backend writes) ─────────────
+  async function applyPatch(patch) {
+    try {
+      const res = await window.v2PatchDraft(state.pageSlug, [patch]);
+      state.template = res.template;
+      renderTree();
+      // If the selected section was affected, re-render its settings panel from new state
+      if (state.selectedSid && state.template.sections[state.selectedSid]) {
+        // Don't re-render full panel for `set` ops (would lose focus). Other ops are fine.
+        if (patch.op !== 'set') renderSettings();
+      }
+      return res;
+    } catch (e) {
+      toast('Save failed: ' + (e.message || 'unknown error'), 'error');
+      throw e;
+    }
+  }
+
+  // ── Section picker (Add section) ──────────────────────────────────────────
+  function openPicker() {
+    elPickerList.innerHTML = '';
+    state.registry.forEach(meta => {
+      const card = document.createElement('div');
+      card.className = 'v2-picker-card';
+      card.innerHTML = `
+        <h4>${escapeHtml(meta.label)}</h4>
+        <p>${escapeHtml(meta.description || '')}</p>
+      `;
+      card.addEventListener('click', async () => {
+        closePicker();
+        const res = await applyPatch({ op: 'add', type: meta.type });
+        const newSid = (res && res.affected_sids || [])[0];
+        if (newSid) {
+          state.selectedSid = newSid;
+          renderSettings();
+          renderTree();
+          postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: newSid });
+        }
+      });
+      elPickerList.appendChild(card);
+    });
+    elPicker.classList.add('is-open');
+  }
+  function closePicker() {
+    elPicker.classList.remove('is-open');
+  }
+
+  // ── Iframe communication ──────────────────────────────────────────────────
+  function postToIframe(msg) {
+    if (!state.iframeReady) {
+      state.queue.push(msg);
+      return;
+    }
+    try {
+      elIframe.contentWindow.postMessage(msg, window.location.origin);
+    } catch (_e) { /* ignore */ }
+  }
+  function flushQueue() {
+    state.iframeReady = true;
+    hideBanner();
+    while (state.queue.length) {
+      const m = state.queue.shift();
+      try { elIframe.contentWindow.postMessage(m, window.location.origin); } catch (_e) {}
+    }
+  }
+  function onIframeMessage(event) {
+    if (event.origin !== window.location.origin) return;
+    const d = event.data;
+    if (!d || typeof d !== 'object') return;
+    if (d.type === 'cms:inspector:click') {
+      // Inspector clicked something in the iframe — select it
+      if (d.sectionId) selectSection(d.sectionId);
+    }
+  }
+
+  // ── Inspector toggle ──────────────────────────────────────────────────────
+  function toggleInspector() {
+    state.inspectorOn = !state.inspectorOn;
+    elInspectorBtn.classList.toggle('is-on', state.inspectorOn);
+    postToIframe({ type: state.inspectorOn ? 'cms:inspector:activate' : 'cms:inspector:deactivate' });
+  }
+
+  // ── Publish + share ───────────────────────────────────────────────────────
+  async function publish() {
+    if (!confirm('Publish current draft to live site?')) return;
+    try {
+      await window.v2Publish(state.pageSlug);
+      toast('Published.', 'ok');
+    } catch (e) {
+      toast('Publish failed: ' + (e.message || 'error'), 'error');
+    }
+  }
+  async function shareDraft() {
+    try {
+      const tok = await window.v2IssuePreviewToken(state.pageSlug, 7);
+      const path = state.pageSlug === 'home' ? '/' : `/pages/${state.pageSlug}.html`;
+      const url  = `${window.location.origin}${path}?preview=1&token=${encodeURIComponent(tok.token)}`;
+      try { await navigator.clipboard.writeText(url); } catch (_e) {}
+      toast('Preview link copied to clipboard (valid 7 days).', 'ok');
+    } catch (e) {
+      toast('Could not issue preview token.', 'error');
+    }
+  }
+
+  // ── UI helpers ────────────────────────────────────────────────────────────
+  function toast(msg, kind) {
+    elToast.textContent = msg;
+    elToast.className = 'v2-toast ' + (kind || '');
+    elToast.style.opacity = '1';
+    setTimeout(() => { elToast.style.opacity = '0'; }, 3500);
+  }
+  function showBanner(msg) {
+    elBanner.textContent = msg;
+    elBanner.style.display = 'block';
+  }
+  function hideBanner() {
+    elBanner.style.display = 'none';
+  }
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
+  function debounce(fn, ms) {
+    let t;
+    return function (...args) {
+      clearTimeout(t);
+      t = setTimeout(() => fn.apply(this, args), ms);
+    };
+  }
+
+  // Boot
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();

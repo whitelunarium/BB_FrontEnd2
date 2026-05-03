@@ -18,6 +18,8 @@ await import('./hydrate.js');
 
 const { applyValue, parsePreviewMessage } = globalThis.__pnecCmsTestExports;
 
+const { applySectionTemplate, parseV2Message } = globalThis.__pnecCmsTestExports;
+
 // applyValue dispatch
 {
   const img = { tagName: 'IMG', src: 'old.jpg', dataset: {} };
@@ -58,5 +60,38 @@ assert.equal(
   null,
   'null data → null'
 );
+
+// v2: applySectionTemplate fills host innerHTML in `order`
+{
+  const html = [];
+  const host = {
+    set innerHTML(v) { this._html = v; html.push(v); },
+    get innerHTML() { return this._html || ''; },
+  };
+  // Stub document.dispatchEvent so the load events don't break under Node
+  const oldDoc = globalThis.document;
+  globalThis.document = Object.assign(oldDoc || {}, {
+    dispatchEvent: () => true,
+  });
+  applySectionTemplate(host, { order: ['a', 'b'] }, { a: '<div id="a">A</div>', b: '<div id="b">B</div>' });
+  assert.equal(host.innerHTML, '<div id="a">A</div><div id="b">B</div>', 'sections joined in order');
+  globalThis.document = oldDoc;
+}
+
+// v2: parseV2Message accepts cms:* types only
+{
+  const okOrigin = 'http://localhost:4000';
+  assert.deepEqual(
+    parseV2Message({ origin: okOrigin, data: { type: 'cms:section:rerender', page: 'home', sectionId: 'x' } }, okOrigin),
+    { type: 'cms:section:rerender', page: 'home', sectionId: 'x' },
+    'cms:* message parsed'
+  );
+  assert.equal(parseV2Message({ origin: 'http://evil', data: { type: 'cms:section:rerender' } }, okOrigin), null,
+    'bad origin → null');
+  assert.equal(parseV2Message({ origin: okOrigin, data: { type: 'unrelated' } }, okOrigin), null,
+    'non-cms type → null');
+  assert.equal(parseV2Message({ origin: okOrigin, data: null }, okOrigin), null,
+    'null data → null');
+}
 
 console.log('hydrate.test.mjs: all assertions passed');
