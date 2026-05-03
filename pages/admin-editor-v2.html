@@ -356,7 +356,25 @@ body {
   position: relative;
 }
 .v2-tree-handle { color: var(--v2-muted); font-size: 0.9rem; cursor: grab; user-select: none; }
-.v2-tree-label { flex: 1; font-size: .88rem; font-weight: 500; }
+.v2-tree-label { flex: 1; font-size: .88rem; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.v2-tree-type-pill {
+  display: inline-block;
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  color: var(--v2-text-soft);
+  background: rgba(91,140,255,0.16);
+  border: 1px solid rgba(91,140,255,0.30);
+  padding: 1px 6px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.v2-tree-row.is-selected .v2-tree-type-pill {
+  background: rgba(255,255,255,0.18);
+  border-color: rgba(255,255,255,0.30);
+  color: var(--v2-text);
+}
 .v2-tree-actions { display: flex; gap: 2px; opacity: 0; transform: translateX(4px); transition: all 120ms; }
 .v2-tree-row:hover .v2-tree-actions, .v2-tree-row.is-selected .v2-tree-actions { opacity: 1; transform: translateX(0); }
 .v2-icon-btn { background: transparent; color: var(--v2-text-soft); border: none; cursor: pointer; padding: 4px 6px; font-size: .9rem; border-radius: 5px; transition: background 120ms; }
@@ -641,6 +659,65 @@ body {
 .v2-asset-tile img { width: 100%; height: 110px; object-fit: cover; display: block; }
 .v2-asset-tile-label { font-size: .75rem; padding: 6px 8px; color: var(--v2-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+/* Cross-page find modal — Cmd-K-style spotlight */
+#v2-find-modal {
+  position: fixed; inset: 0;
+  background: rgba(6,12,28,0.7);
+  backdrop-filter: blur(8px);
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 12vh 24px 24px;
+  z-index: 260;
+}
+#v2-find-modal.is-open { display: flex; animation: v2-fade-in 200ms; }
+.v2-find-shell {
+  background: linear-gradient(180deg, var(--v2-surface) 0%, var(--v2-bg) 100%);
+  border: 1px solid var(--v2-border-strong);
+  border-radius: 16px;
+  padding: 18px;
+  max-width: 720px; width: 100%;
+  max-height: 70vh;
+  display: flex; flex-direction: column;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+  animation: v2-pop-in 240ms cubic-bezier(.2,.9,.3,1.1);
+}
+.v2-find-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.v2-find-header h3 {
+  background: var(--v2-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+#v2-find-input { font-size: 1rem; padding: 12px 14px; }
+.v2-find-meta { margin: 8px 0 4px; }
+.v2-find-count { font-size: .72rem; color: var(--v2-muted); }
+.v2-find-results { flex: 1; min-height: 0; overflow-y: auto; margin-top: 6px; padding-right: 4px; }
+.v2-find-row {
+  display: flex;
+  gap: 12px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  background: var(--v2-surface2);
+  border: 1px solid var(--v2-border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 120ms;
+}
+.v2-find-row:hover, .v2-find-row.is-active {
+  border-color: var(--v2-accent);
+  background: rgba(91,140,255,0.08);
+  transform: translateX(2px);
+}
+.v2-find-row-body { flex: 1; min-width: 0; }
+.v2-find-row-title { font-size: .9rem; font-weight: 600; color: var(--v2-text); margin: 0 0 4px; display: flex; gap: 8px; align-items: center; }
+.v2-find-row-pill { font-size: .65rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--v2-text-soft); background: rgba(91,140,255,0.18); border: 1px solid rgba(91,140,255,0.3); padding: 1px 6px; border-radius: 999px; flex-shrink: 0; }
+.v2-find-row-page { font-size: .7rem; color: var(--v2-violet); font-weight: 600; }
+.v2-find-row-preview { font-size: .8rem; color: var(--v2-text-soft); margin: 0; line-height: 1.45; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.v2-find-empty { padding: 32px 12px; text-align: center; color: var(--v2-muted); font-size: .85rem; }
+
 /* History panel — timeline */
 .v2-history-row {
   display: flex; gap: 12px;
@@ -856,6 +933,7 @@ body {
       <option value="programs">Programs</option>
     </select>
     <button id="v2-inspector-toggle" class="v2-btn v2-btn-ghost" title="Click any element in the preview to select it (I)" aria-keyshortcuts="I">🔍 Inspector</button>
+    <button id="v2-find" class="v2-btn v2-btn-ghost" title="Search every section across every page (⌘K)" aria-keyshortcuts="Meta+K">🔎 Find</button>
     <button id="v2-help" class="v2-btn v2-btn-ghost" title="Keyboard shortcuts (?)" aria-keyshortcuts="?">⌨</button>
     <div class="v2-viewport-toggle" role="group" aria-label="Viewport">
       <button class="v2-viewport-btn is-active" data-viewport="desktop" title="Desktop">🖥</button>
@@ -946,15 +1024,18 @@ body {
     <dl>
       <dt>A</dt>             <dd>Add section (open picker)</dd>
       <dt>I</dt>             <dd>Toggle Inspector mode</dd>
+      <dt>⌘K</dt>            <dd>Find sections across every page</dd>
       <dt>1 / 2 / 3 / 4</dt> <dd>Sections / Theme / SEO / History tab</dd>
       <dt>D / T / M</dt>     <dd>Desktop / Tablet / Mobile viewport</dd>
       <dt>⌘Z</dt>            <dd>Undo last change</dd>
       <dt>⌘⇧Z</dt>           <dd>Redo</dd>
       <dt>/</dt>             <dd>Focus the section filter</dd>
       <dt>?</dt>             <dd>Show this help</dd>
+      <dt>F2</dt>            <dd>(on focused tree row) rename section</dd>
       <dt>⌘C / ⌘V</dt>       <dd>(on focused tree row) copy / paste section between pages</dd>
       <dt>↑ ↓</dt>           <dd>(on focused tree row) move focus to neighbor</dd>
       <dt>⇧Backspace</dt>    <dd>(on focused tree row) delete section</dd>
+      <dt>Right-click</dt>   <dd>(on a section anywhere) open quick-action menu</dd>
       <dt>Esc</dt>           <dd>Close any open dialog</dd>
     </dl>
     <button id="v2-help-close" class="v2-btn" style="margin-top:14px;">Close</button>
@@ -969,6 +1050,22 @@ body {
       <button id="v2-asset-close" class="v2-btn v2-btn-ghost">✕ Close</button>
     </div>
     <div id="v2-asset-list" class="v2-asset-list"></div>
+  </div>
+</div>
+
+<!-- Cross-page section search modal -->
+<div id="v2-find-modal" role="dialog" aria-modal="true" aria-labelledby="v2-find-title">
+  <div class="v2-find-shell">
+    <div class="v2-find-header">
+      <h3 id="v2-find-title" style="margin:0;">🔎 Find sections everywhere</h3>
+      <button id="v2-find-close" class="v2-btn v2-btn-ghost">✕ Close</button>
+    </div>
+    <input id="v2-find-input" type="search" class="v2-input"
+           placeholder="Search by text, headline, button label…  Esc to close" autocomplete="off" />
+    <div class="v2-find-meta">
+      <span id="v2-find-count" class="v2-find-count">Type to search across every page in your site</span>
+    </div>
+    <div id="v2-find-results" class="v2-find-results"></div>
   </div>
 </div>
 

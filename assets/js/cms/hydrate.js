@@ -638,6 +638,24 @@
       } catch (_e) { /* ignore */ }
     }, true);
 
+    // Right-click any section in the iframe (preview mode) → tell editor to open ctx menu
+    document.addEventListener('contextmenu', (event) => {
+      const sectionEl = event.target.closest('[data-cms-section-id]');
+      if (!sectionEl) return;
+      event.preventDefault();
+      const rect = sectionEl.getBoundingClientRect();
+      const iframeRect = window.frameElement ? window.frameElement.getBoundingClientRect() : { left: 0, top: 0 };
+      try {
+        window.parent.postMessage({
+          type:      'cms:iframe:context-menu',
+          sectionId: sectionEl.dataset.cmsSectionId,
+          // Pass screen coordinates so the parent can position the menu
+          x: event.clientX + iframeRect.left,
+          y: event.clientY + iframeRect.top,
+        }, expectedOrigin);
+      } catch (_e) {}
+    }, true);
+
     // Inline-edit double-click: stega-tagged elements
     enableInlineEditClicks(expectedOrigin);
 

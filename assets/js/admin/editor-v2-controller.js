@@ -114,6 +114,19 @@
     if (helpBtn)   helpBtn.addEventListener('click', openHelp);
     if (helpClose) helpClose.addEventListener('click', closeHelp);
 
+    // Cross-page find (Cmd-K spotlight)
+    const findBtn   = document.getElementById('v2-find');
+    const findClose = document.getElementById('v2-find-close');
+    const findInput = document.getElementById('v2-find-input');
+    const findModal = document.getElementById('v2-find-modal');
+    if (findBtn)   findBtn.addEventListener('click', openFindModal);
+    if (findClose) findClose.addEventListener('click', closeFindModal);
+    if (findInput) findInput.addEventListener('input', debounce(runFind, 180));
+    if (findInput) findInput.addEventListener('keydown', onFindKey);
+    if (findModal) findModal.addEventListener('click', (ev) => {
+      if (ev.target === findModal) closeFindModal();
+    });
+
     const exportBtn = document.getElementById('v2-export');
     const importBtn = document.getElementById('v2-import');
     const importFile = document.getElementById('v2-import-file');
@@ -269,6 +282,7 @@
       if (!section) return;
       const meta = state.registry.find(t => t.type === section.type);
       const sidIssues = issuesBySid[sid] || [];
+      const displayLabel = section.name || (meta ? meta.label : section.type);
       const row = document.createElement('div');
       row.className = 'v2-tree-row' + (sid === state.selectedSid ? ' is-selected' : '');
       row.draggable = true;
@@ -278,6 +292,7 @@
       row.setAttribute('aria-selected', sid === state.selectedSid ? 'true' : 'false');
       row.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectSection(sid); }
+        else if (e.key === 'F2') { e.preventDefault(); handleSectionAction(sid, 'rename'); }
         else if (e.key === 'Delete' || e.key === 'Backspace') {
           if (e.shiftKey) { e.preventDefault(); handleSectionAction(sid, 'delete'); }
         }
@@ -303,12 +318,13 @@
         : '';
       row.innerHTML = `
         <span class="v2-tree-handle" title="Drag to reorder">⋮⋮</span>
-        <span class="v2-tree-label">${escapeHtml(meta ? meta.label : section.type)}</span>
+        <span class="v2-tree-label" title="${escapeHtml(meta ? meta.label : section.type)}">${escapeHtml(displayLabel)}${section.name ? ' <span class=\"v2-tree-type-pill\">' + escapeHtml(meta ? meta.label : section.type) + '</span>' : ''}</span>
         ${warnBadge}
         <span class="v2-tree-actions">
+          <button class="v2-icon-btn" data-act="rename"     title="Rename">✏️</button>
           <button class="v2-icon-btn" data-act="visibility" title="${section.visible === false ? 'Show' : 'Hide'}">${section.visible === false ? '🙈' : '👁'}</button>
-          <button class="v2-icon-btn" data-act="duplicate" title="Duplicate">⧉</button>
-          <button class="v2-icon-btn" data-act="delete"    title="Delete">🗑</button>
+          <button class="v2-icon-btn" data-act="duplicate"  title="Duplicate">⧉</button>
+          <button class="v2-icon-btn" data-act="delete"     title="Delete">🗑</button>
         </span>
       `;
       row.addEventListener('click', (e) => {
@@ -501,6 +517,20 @@
       // The new sid is in res.affected_sids
       const newSid = (res && res.affected_sids || []).find(x => x !== sid);
       if (newSid) postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: newSid });
+    } else if (action === 'rename') {
+      // Give the section a friendly display name (independent of its type).
+      const section = state.template.sections[sid];
+      if (!section) return;
+      const meta = state.registry.find(t => t.type === section.type);
+      const fallback = meta ? meta.label : section.type;
+      const current  = section.name || '';
+      const next     = window.prompt(
+        'Rename this section\n\nLeave blank to reset to the default ("' + fallback + '").',
+        current,
+      );
+      if (next === null) return; // user cancelled
+      await applyPatch({ op: 'rename', sid, name: next });
+      // Tree row content changed — settings panel header is unaffected
     } else if (action === 'delete') {
       if (!confirm('Delete this section?')) return;
       await applyPatch({ op: 'remove', sid });
@@ -1192,6 +1222,7 @@
     menu.style.top  = event.clientY + 'px';
     const items = [
       { icon: '✏️',  label: 'Edit',           action: () => selectSection(sid) },
+      { icon: '🏷',  label: 'Rename',         action: () => handleSectionAction(sid, 'rename') },
       { icon: '⧉',  label: 'Duplicate',      action: () => handleSectionAction(sid, 'duplicate') },
       { icon: '📋',  label: 'Copy section',   action: () => copySectionToClipboard(sid) },
       { icon: section.visible === false ? '👁' : '🙈', label: section.visible === false ? 'Show' : 'Hide', action: () => handleSectionAction(sid, 'visibility') },
@@ -1498,6 +1529,15 @@
       if (d.sectionId) {
         const row = elSidebarTree.querySelector('.v2-tree-row[data-sid="' + d.sectionId + '"]');
         if (row) row.classList.add('is-iframe-hover');
+      }
+    } else if (d.type === 'cms:iframe:context-menu') {
+      // Right-click happened inside the iframe → open editor context menu
+      // at iframe-relative coords translated to editor coords
+      if (d.sectionId) {
+        const ifrRect = elIframe.getBoundingClientRect();
+        const fakeEvent = { clientX: ifrRect.left + (d.x || 0), clientY: ifrRect.top + (d.y || 0), preventDefault(){}, stopPropagation(){} };
+        // Defer to the same context menu used by the tree
+        openContextMenu(fakeEvent, d.sectionId);
       }
     } else if (d.type === 'cms:reorder-from-iframe') {
       // User dragged a section to a new position in the iframe canvas
@@ -2006,6 +2046,23 @@
     if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); return; }
     if ((e.metaKey || e.ctrlKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); redo(); return; }
 
+    // ⌘K opens cross-page section search (works even while typing — Spotlight pattern)
+    if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+      e.preventDefault();
+      openFindModal();
+      return;
+    }
+
+    // Esc inside the find modal closes it (handled even while focused inside the input)
+    if (e.key === 'Escape') {
+      const findModal = document.getElementById('v2-find-modal');
+      if (findModal && findModal.classList.contains('is-open')) {
+        e.preventDefault();
+        closeFindModal();
+        return;
+      }
+    }
+
     if (typing) return;
 
     if (e.key === 'a' || e.key === 'A') { e.preventDefault(); openPicker(); }
@@ -2080,6 +2137,132 @@
   function closeHelp() {
     const overlay = document.getElementById('v2-help-overlay');
     if (overlay) overlay.classList.remove('is-open');
+  }
+
+  // ── Cross-page find (Cmd-K) ─────────────────────────────────────────────
+  function openFindModal() {
+    const modal = document.getElementById('v2-find-modal');
+    const input = document.getElementById('v2-find-input');
+    if (!modal) return;
+    modal.classList.add('is-open');
+    if (input) {
+      // Pre-fill with the tree filter, if any, so context carries over
+      const tree = document.getElementById('v2-tree-search');
+      if (tree && tree.value) input.value = tree.value;
+      setTimeout(() => { input.focus(); input.select(); }, 30);
+      runFind(); // populate immediately on open
+    }
+  }
+  function closeFindModal() {
+    const modal = document.getElementById('v2-find-modal');
+    if (modal) modal.classList.remove('is-open');
+  }
+  async function runFind() {
+    const input   = document.getElementById('v2-find-input');
+    const results = document.getElementById('v2-find-results');
+    const counter = document.getElementById('v2-find-count');
+    if (!input || !results) return;
+    const q = (input.value || '').trim();
+    results.innerHTML = '';
+    if (counter) counter.textContent = q ? 'Searching…' : 'Type to search across every page in your site';
+    try {
+      const url = _apiBase() + '/api/cms/search?q=' + encodeURIComponent(q) + '&state=draft';
+      const res = await fetch(url, {
+        credentials: 'include',
+        headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('pnec_token') || '') },
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const body = await res.json();
+      const hits = body.hits || [];
+      if (counter) {
+        counter.textContent = hits.length
+          ? hits.length + ' match' + (hits.length === 1 ? '' : 'es') + (q ? ' for "' + q + '"' : '')
+          : (q ? 'Nothing matches "' + q + '"' : 'No sections defined yet — start by adding one.');
+      }
+      if (!hits.length) {
+        const empty = document.createElement('div');
+        empty.className = 'v2-find-empty';
+        empty.textContent = q ? '🤷 No matches. Try a shorter query or a different page.'
+                              : 'Start typing to find any section text on any page.';
+        results.appendChild(empty);
+        return;
+      }
+      hits.forEach((hit, idx) => {
+        const meta = state.registry.find(t => t.type === hit.type);
+        const typeLabel = meta ? meta.label : hit.type;
+        const row = document.createElement('div');
+        row.className = 'v2-find-row' + (idx === 0 ? ' is-active' : '');
+        row.tabIndex = 0;
+        row.dataset.pageSlug = hit.page_slug;
+        row.dataset.sid = hit.sid;
+        row.innerHTML = `
+          <div class="v2-find-row-body">
+            <p class="v2-find-row-title">
+              <span>${escapeHtml(hit.name || typeLabel)}</span>
+              ${hit.name ? '<span class="v2-find-row-pill">' + escapeHtml(typeLabel) + '</span>' : ''}
+            </p>
+            <p class="v2-find-row-page">📄 ${escapeHtml(hit.page_slug)}</p>
+            <p class="v2-find-row-preview">${escapeHtml(hit.preview || '')}</p>
+          </div>
+        `;
+        row.addEventListener('click', () => jumpToHit(hit));
+        row.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') { e.preventDefault(); jumpToHit(hit); }
+        });
+        results.appendChild(row);
+      });
+    } catch (e) {
+      if (counter) counter.textContent = 'Search failed: ' + (e.message || 'unknown');
+    }
+  }
+  function onFindKey(e) {
+    const results = document.getElementById('v2-find-results');
+    if (!results) return;
+    const rows = Array.from(results.querySelectorAll('.v2-find-row'));
+    if (!rows.length) return;
+    const activeIdx = rows.findIndex(r => r.classList.contains('is-active'));
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      rows.forEach(r => r.classList.remove('is-active'));
+      const next = rows[Math.min(activeIdx + 1, rows.length - 1)];
+      next.classList.add('is-active');
+      next.scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      rows.forEach(r => r.classList.remove('is-active'));
+      const prev = rows[Math.max(activeIdx - 1, 0)];
+      prev.classList.add('is-active');
+      prev.scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      const active = rows[activeIdx === -1 ? 0 : activeIdx];
+      if (active) {
+        const hit = { page_slug: active.dataset.pageSlug, sid: active.dataset.sid };
+        jumpToHit(hit);
+      }
+    }
+  }
+  async function jumpToHit(hit) {
+    closeFindModal();
+    if (hit.page_slug && hit.page_slug !== state.pageSlug) {
+      // Switch the page picker first so the URL reflects the new page
+      if (elPageSel) {
+        // Make sure the option exists (auto-discovered pages may not yet)
+        const known = Array.from(elPageSel.options).some(o => o.value === hit.page_slug);
+        if (!known) {
+          const opt = document.createElement('option');
+          opt.value = hit.page_slug;
+          opt.textContent = hit.page_slug;
+          elPageSel.appendChild(opt);
+        }
+        elPageSel.value = hit.page_slug;
+      }
+      await switchPage(hit.page_slug);
+    }
+    if (hit.sid) {
+      // Wait one tick for the tree to render after page switch
+      setTimeout(() => selectSection(hit.sid), 50);
+    }
   }
 
   // Tree filter
