@@ -163,6 +163,8 @@
   {% else %}
   {% include nav/navbar.html %}
   {% endif %}
+  <!-- CMS-driven header section group -->
+  <div data-cms-section-host="_header" id="cms-header-host"></div>
   {% endunless %}
 
   <main id="jupiterx-main" class="jupiterx-main pnec-page-shell" style="{% if page.use_poway_embed %}margin:0;padding:0;{% endif %}">
@@ -170,6 +172,8 @@
   </main>
 
   {% unless page.use_poway_embed %}
+  <!-- CMS-driven footer section group -->
+  <div data-cms-section-host="_footer" id="cms-footer-host"></div>
   {% if page.use_poway_live_styles %}
   {% include poway-auth-footer.html %}
   {% endif %}

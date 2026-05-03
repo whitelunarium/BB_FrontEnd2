@@ -165,7 +165,10 @@
           if (known.has(p.page_slug)) return;
           const opt = document.createElement('option');
           opt.value = p.page_slug;
-          opt.textContent = p.page_slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+          // Pretty-print: _header → 🧭 Header (group), _footer → 🦶 Footer (group)
+          if (p.page_slug === '_header')      opt.textContent = '🧭 Header (section group)';
+          else if (p.page_slug === '_footer') opt.textContent = '🦶 Footer (section group)';
+          else opt.textContent = p.page_slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
           elPageSel.appendChild(opt);
         });
       }
@@ -196,7 +199,13 @@
   }
 
   function pointIframe(slug) {
-    const path = slug === 'home' ? '/' : `/pages/${slug}.html`;
+    let path;
+    if (slug === 'home')      path = '/';
+    else if (slug === '_header' || slug === '_footer') {
+      // Preview header/footer on a Jekyll-managed page that has the host divs
+      path = '/pages/admin.html';
+    }
+    else path = `/pages/${slug}.html`;
     const url  = path + (path.indexOf('?') === -1 ? '?preview=1' : '&preview=1');
     elIframe.src = url;
     elIframeUrl.textContent = url;
