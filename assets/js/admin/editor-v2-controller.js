@@ -34,7 +34,20 @@
     themeTokens:  null,
     undoStack:    [],
     redoStack:    [],
+    // v2.2 additions
+    existingItems: [],         // [{kind, key|sid, label, preview, selector}]
+    siteConfig:    null,       // cached /api/site-config full state
+    selectedExisting: null,    // {kind, key} when an existing item is selected
+    overrides:     {},         // page-overrides cached map
   };
+
+  function _apiBase() {
+    if (window.PNEC_CMS_API_BASE) return window.PNEC_CMS_API_BASE;
+    const host = window.location.hostname;
+    return (host === 'localhost' || host === '127.0.0.1')
+      ? 'http://127.0.0.1:8425'
+      : 'https://beasts.opencodingsociety.com';
+  }
 
   // ── DOM refs (resolved on init) ──────────────────────────────────────────
   let elPageSel, elSidebarTree, elSettingsPanel, elAddSectionBtn;
@@ -146,6 +159,38 @@
   // ── Sidebar tree ──────────────────────────────────────────────────────────
   function renderTree() {
     elSidebarTree.innerHTML = '';
+
+    // ── Group A: Existing content (v1 site-config + page-overrides) ──
+    const existing = (state.existingItems || []).filter(i => i.kind === 'site_config' || i.kind === 'override');
+    if (existing.length) {
+      const groupHead = document.createElement('div');
+      groupHead.className = 'v2-tree-group-head';
+      groupHead.textContent = 'Existing content';
+      elSidebarTree.appendChild(groupHead);
+      existing.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'v2-tree-row v2-tree-existing'
+          + (state.selectedExisting && state.selectedExisting.key === item.key && state.selectedExisting.kind === item.kind ? ' is-selected' : '');
+        const icon = item.kind === 'site_config' ? '🌐' : '✏️';
+        row.innerHTML = `
+          <span class="v2-tree-handle" style="visibility:hidden;">⋮⋮</span>
+          <span class="v2-tree-label">${icon} ${escapeHtml(item.label)}</span>
+        `;
+        const peek = document.createElement('span');
+        peek.className = 'v2-tree-peek';
+        peek.textContent = item.preview || '';
+        row.appendChild(peek);
+        row.addEventListener('click', () => selectExisting(item));
+        elSidebarTree.appendChild(row);
+      });
+    }
+
+    // ── Group B: v2 Sections ──
+    const groupHead2 = document.createElement('div');
+    groupHead2.className = 'v2-tree-group-head';
+    groupHead2.textContent = 'Sections';
+    elSidebarTree.appendChild(groupHead2);
+
     if (!state.template.order.length) {
       const empty = document.createElement('div');
       empty.className = 'v2-empty';
@@ -224,9 +269,128 @@
   function selectSection(sid) {
     state.selectedSid = sid;
     state.selectedBid = null;
+    state.selectedExisting = null;
     renderTree();
     renderSettings();
     postToIframe({ type: 'cms:section:select', sectionId: sid });
+  }
+
+  function selectExisting(item) {
+    state.selectedExisting = { kind: item.kind, key: item.key, label: item.label, selector: item.selector };
+    state.selectedSid = null;
+    state.selectedBid = null;
+    renderTree();
+    renderExistingPanel();
+    // Tell the iframe to scroll & flash that element
+    postToIframe({ type: 'cms:scroll-to', selector: item.selector });
+  }
+
+  function renderExistingPanel() {
+    elSettingsPanel.innerHTML = '';
+    const item = state.selectedExisting;
+    if (!item) return;
+    const head = document.createElement('div');
+    head.className = 'v2-settings-head';
+    head.innerHTML = `<h3>${escapeHtml(item.label)}</h3>` +
+      `<p>${item.kind === 'site_config' ? 'Site-wide setting' : 'Page-level override'} · key: <code>${escapeHtml(item.key)}</code></p>`;
+    elSettingsPanel.appendChild(head);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'v2-field';
+    const label = document.createElement('label');
+    label.className = 'v2-field-label';
+    label.textContent = 'Value';
+    wrap.appendChild(label);
+
+    const initial = item.kind === 'site_config'
+      ? (state.siteConfig && state.siteConfig[item.key]) || ''
+      : (state.overrides && state.overrides[item.key]) || '';
+
+    // Determine field shape: image vs text vs richtext
+    const looksLikeImage = /image|logo|banner|favicon|photo/i.test(item.key);
+    const looksLikeRichtext = /(_para\d?|_blurb|_history|_mission|_html|_body)/i.test(item.key)
+                              || (typeof initial === 'string' && initial.indexOf('<') >= 0);
+    const looksLikeUrl   = /(_url|donate)/i.test(item.key);
+
+    let input;
+    if (looksLikeImage) {
+      const preview = document.createElement('div');
+      preview.className = 'v2-image-preview';
+      if (initial) {
+        const img = document.createElement('img');
+        img.src = initial;
+        img.className = 'v2-image-thumb';
+        preview.innerHTML = '';
+        preview.appendChild(img);
+      } else {
+        preview.textContent = '(no image)';
+      }
+      wrap.appendChild(preview);
+      const fileIn = document.createElement('input');
+      fileIn.type = 'file';
+      fileIn.accept = 'image/*';
+      fileIn.className = 'v2-input';
+      fileIn.addEventListener('change', async () => {
+        const f = fileIn.files && fileIn.files[0]; if (!f) return;
+        try {
+          const { url } = await window.v2UploadImage(f);
+          await applyExistingChange(item, url);
+          preview.innerHTML = '';
+          const img = document.createElement('img');
+          img.src = url; img.className = 'v2-image-thumb';
+          preview.appendChild(img);
+        } catch (e) { toast('Upload failed.', 'error'); }
+      });
+      wrap.appendChild(fileIn);
+      elSettingsPanel.appendChild(wrap);
+      return;
+    }
+    if (looksLikeRichtext) {
+      input = document.createElement('textarea');
+      input.className = 'v2-input v2-textarea';
+      input.rows = 6;
+      input.value = initial;
+    } else {
+      input = document.createElement('input');
+      input.type = looksLikeUrl ? 'url' : 'text';
+      input.className = 'v2-input';
+      input.value = initial;
+    }
+    input.addEventListener('input', debounce(async () => {
+      await applyExistingChange(item, input.value);
+    }, 250));
+    wrap.appendChild(input);
+    elSettingsPanel.appendChild(wrap);
+  }
+
+  async function applyExistingChange(item, value) {
+    if (item.kind === 'site_config') {
+      // Patch site-config (v1 endpoint)
+      try {
+        const res = await fetch(_apiBase() + '/api/site-config/' + encodeURIComponent(item.key), {
+          method: 'PATCH', credentials: 'include',
+          headers: { 'Content-Type': 'application/json',
+                     'Authorization': 'Bearer ' + (localStorage.getItem('pnec_token') || '') },
+          body: JSON.stringify({ value }),
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        state.siteConfig[item.key] = value;
+        // Live-update the iframe via the v1 cms-update message
+        postToIframe({ type: 'cms-update', kind: 'config', key: item.key, value });
+      } catch (e) { toast('Save failed.', 'error'); }
+    } else if (item.kind === 'override') {
+      try {
+        const res = await fetch(_apiBase() + '/api/overrides/' + encodeURIComponent(state.pageSlug), {
+          method: 'POST', credentials: 'include',
+          headers: { 'Content-Type': 'application/json',
+                     'Authorization': 'Bearer ' + (localStorage.getItem('pnec_token') || '') },
+          body: JSON.stringify({ element_id: item.key, content: value }),
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        state.overrides[item.key] = value;
+        postToIframe({ type: 'cms-update', kind: 'override', key: item.key, value });
+      } catch (e) { toast('Save failed.', 'error'); }
+    }
   }
 
   async function handleSectionAction(sid, action) {
@@ -683,11 +847,34 @@
       const m = state.queue.shift();
       try { elIframe.contentWindow.postMessage(m, window.location.origin); } catch (_e) {}
     }
+    // After iframe loads, ask it for an inventory of editable items
+    setTimeout(() => requestScan(), 600);
   }
+
+  function requestScan() {
+    postToIframe({ type: 'cms:scan' });
+  }
+
   function onIframeMessage(event) {
     if (event.origin !== window.location.origin) return;
     const d = event.data;
     if (!d || typeof d !== 'object') return;
+    if (d.type === 'cms:scan:result') {
+      // Iframe sent us its editable inventory
+      const items = Array.isArray(d.items) ? d.items : [];
+      state.existingItems = items;
+      // Pre-load site-config + overrides so we can render the labels with values
+      Promise.all([
+        fetch(_apiBase() + '/api/site-config').then(r => r.ok ? r.json() : null).catch(() => null),
+        fetch(_apiBase() + '/api/overrides/' + encodeURIComponent(state.pageSlug)).then(r => r.ok ? r.json() : null).catch(() => null),
+      ]).then(([cfg, ovr]) => {
+        state.siteConfig = (cfg && cfg.config) || {};
+        state.siteConfigMeta = (cfg && cfg.meta) || {};
+        state.overrides = (ovr && ovr.overrides) || {};
+        renderTree();
+      });
+      return;
+    }
     if (d.type === 'cms:inspector:click') {
       // Inspector clicked something in the iframe — select it
       if (d.sectionId) selectSection(d.sectionId);

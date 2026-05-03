@@ -17,6 +17,17 @@
   margin-bottom: 0;
 }
 
+/* Flash animation when editor scrolls iframe to a selected element. */
+@keyframes cms-flash {
+  0%   { box-shadow: 0 0 0 0 rgba(59,130,246,0.8); }
+  100% { box-shadow: 0 0 0 12px rgba(59,130,246,0); }
+}
+.cms-flash {
+  animation: cms-flash 1.4s ease-out;
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
 /* Stega-tagged inline-editable elements get a subtle hint in inspector mode. */
 body.cms-inspector .cms-editable {
   cursor: text;

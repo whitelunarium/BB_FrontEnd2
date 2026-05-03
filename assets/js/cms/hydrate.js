@@ -115,6 +115,60 @@
     });
   }
 
+  // ── v2: discover all editable items on this page ───────────────────────
+  function scanEditable() {
+    const items = [];
+    // 1. v1: data-cms-config — site-config keys driving fixed elements
+    document.querySelectorAll('[data-cms-config]').forEach(el => {
+      const key = el.dataset.cmsConfig;
+      if (!key) return;
+      items.push({
+        kind:    'site_config',
+        key,
+        label:   _humanLabel(key),
+        preview: _previewText(el, key),
+        selector: 'BODY [data-cms-config="' + key + '"]',
+      });
+    });
+    // 2. v1: data-cms-override — page-overrides (per-page text)
+    document.querySelectorAll('[data-cms-override]').forEach(el => {
+      const key = el.dataset.cmsOverride;
+      if (!key) return;
+      items.push({
+        kind:    'override',
+        key,
+        label:   _humanLabel(key),
+        preview: _previewText(el, key),
+        selector: 'BODY [data-cms-override="' + key + '"]',
+      });
+    });
+    // 3. v2: data-cms-section-id — registered sections
+    document.querySelectorAll('[data-cms-section-id]').forEach(el => {
+      items.push({
+        kind:     'section',
+        sid:      el.dataset.cmsSectionId,
+        type:     el.dataset.cmsSectionType,
+        visible:  el.dataset.cmsSectionVisible !== 'false',
+        preview:  _previewText(el).slice(0, 60),
+        selector: '#cms-section-' + el.dataset.cmsSectionId,
+      });
+    });
+    return items;
+  }
+
+  function _humanLabel(key) {
+    return String(key)
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  function _previewText(el, fallback) {
+    if (!el) return fallback || '';
+    if (el.tagName === 'IMG') return '[image: ' + (el.alt || el.src || '') + ']';
+    const t = (el.textContent || '').replace(/\s+/g, ' ').trim();
+    return t.slice(0, 80) || fallback || '';
+  }
+
   // ── v2: stega-encoded inline-edit detection ─────────────────────────────
   // Mirrors app/services/cms_stega.py — zero-width chars after a 4-char
   // sentinel encode a JSON payload {sid, field}. We walk text nodes in
@@ -283,6 +337,26 @@
       if (!msg) return;
 
       switch (msg.type) {
+        case 'cms:scan': {
+          // Editor asked for an inventory of all editable elements on this page.
+          const items = scanEditable();
+          try {
+            window.parent.postMessage({ type: 'cms:scan:result', items }, expectedOrigin);
+          } catch (_e) {}
+          break;
+        }
+        case 'cms:scroll-to': {
+          const sel = msg.selector;
+          if (sel) {
+            const el = document.querySelector(sel);
+            if (el) {
+              el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              el.classList.add('cms-flash');
+              setTimeout(() => el.classList.remove('cms-flash'), 1500);
+            }
+          }
+          break;
+        }
         case 'cms:theme:update':
           if (typeof msg.key === 'string') {
             const cssVar = '--cms-' + msg.key.replace(/_/g, '-');
