@@ -306,6 +306,7 @@
       });
       row.addEventListener('mouseenter', () => postToIframe({ type: 'cms:section:hover', sectionId: sid }));
       row.addEventListener('mouseleave', () => postToIframe({ type: 'cms:section:hover', sectionId: null }));
+      row.addEventListener('contextmenu', (e) => { e.preventDefault(); openContextMenu(e, sid); });
       row.querySelectorAll('.v2-icon-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -538,6 +539,9 @@
       elSettingsPanel.appendChild(buildBlocksList(section, meta));
     }
 
+    // Layout overrides (spacing + background) — collapsible
+    elSettingsPanel.appendChild(buildLayoutSection(section));
+
     // Lint issues for the selected section
     const issues = (state.lintIssues || []).filter(i => i.sectionId === state.selectedSid);
     if (issues.length) {
@@ -684,6 +688,95 @@
       await applyPatch({ op: 'reorder_blocks', sid: state.selectedSid, block_order: newOrder });
       postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
     }
+  }
+
+  function buildLayoutSection(section) {
+    const wrap = document.createElement('details');
+    wrap.className = 'v2-layout-section';
+    const layout = section.layout || {};
+    const summary = document.createElement('summary');
+    summary.innerHTML = '<span class="v2-layout-summary-icon">📐</span> Layout & spacing';
+    wrap.appendChild(summary);
+
+    const body = document.createElement('div');
+    body.className = 'v2-layout-body';
+
+    const fields = [
+      { key: 'padding_top',      label: 'Padding top',     placeholder: 'e.g. 64px' },
+      { key: 'padding_bottom',   label: 'Padding bottom',  placeholder: 'e.g. 64px' },
+      { key: 'background_color', label: 'Background color (hex or scheme var)', placeholder: '#fff or var(--cms-scheme-2-bg)' },
+      { key: 'text_color',       label: 'Text color',      placeholder: '#1e293b' },
+      { key: 'background_image', label: 'Background image URL', placeholder: 'https://…' },
+      { key: 'max_width',        label: 'Max content width', placeholder: 'e.g. 720px or 100%' },
+    ];
+    fields.forEach(f => {
+      const row = document.createElement('div');
+      row.className = 'v2-field';
+      const lbl = document.createElement('label');
+      lbl.className = 'v2-field-label';
+      lbl.textContent = f.label;
+      row.appendChild(lbl);
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'v2-input';
+      input.value = layout[f.key] || '';
+      input.placeholder = f.placeholder;
+      input.addEventListener('input', debounce(async () => {
+        await applyPatch({ op: 'layout', sid: state.selectedSid, updates: { [f.key]: input.value } });
+        postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
+      }, 300));
+      row.appendChild(input);
+      body.appendChild(row);
+    });
+
+    // Color scheme buttons — quick presets that fill BG + text together
+    const schemeRow = document.createElement('div');
+    schemeRow.className = 'v2-field';
+    const schemeLbl = document.createElement('label');
+    schemeLbl.className = 'v2-field-label';
+    schemeLbl.textContent = 'Color scheme (apply preset)';
+    schemeRow.appendChild(schemeLbl);
+    const schemeBtns = document.createElement('div');
+    schemeBtns.className = 'v2-scheme-row';
+    [1, 2, 3, 4].forEach(n => {
+      const btn = document.createElement('button');
+      btn.className = 'v2-scheme-btn';
+      btn.style.background = `var(--cms-scheme-${n}-bg, #fff)`;
+      btn.style.color      = `var(--cms-scheme-${n}-text, #000)`;
+      btn.textContent = `${n}`;
+      btn.title = `Apply scheme ${n}`;
+      btn.addEventListener('click', async () => {
+        const updates = {
+          background_color: `var(--cms-scheme-${n}-bg)`,
+          text_color:       `var(--cms-scheme-${n}-text)`,
+        };
+        await applyPatch({ op: 'layout', sid: state.selectedSid, updates });
+        postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
+        renderSettings();
+      });
+      schemeBtns.appendChild(btn);
+    });
+    schemeRow.appendChild(schemeBtns);
+    body.appendChild(schemeRow);
+
+    // Reset button
+    const reset = document.createElement('button');
+    reset.className = 'v2-btn v2-btn-ghost';
+    reset.style.width = '100%';
+    reset.style.marginTop = '6px';
+    reset.textContent = 'Reset layout';
+    reset.addEventListener('click', async () => {
+      const updates = {};
+      ['padding_top','padding_bottom','background_color','background_image','text_color','max_width']
+        .forEach(k => { updates[k] = ''; });
+      await applyPatch({ op: 'layout', sid: state.selectedSid, updates });
+      postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
+      renderSettings();
+    });
+    body.appendChild(reset);
+
+    wrap.appendChild(body);
+    return wrap;
   }
 
   function buildDeviceVisibilityRow(section) {
@@ -991,6 +1084,60 @@
     }
   }
 
+  // ── Right-click context menu on tree rows ────────────────────────────────
+  function openContextMenu(event, sid) {
+    closeContextMenu();
+    const section = state.template.sections[sid];
+    if (!section) return;
+    const menu = document.createElement('div');
+    menu.id = 'v2-ctx-menu';
+    menu.className = 'v2-ctx-menu';
+    menu.style.left = event.clientX + 'px';
+    menu.style.top  = event.clientY + 'px';
+    const items = [
+      { icon: '✏️',  label: 'Edit',           action: () => selectSection(sid) },
+      { icon: '⧉',  label: 'Duplicate',      action: () => handleSectionAction(sid, 'duplicate') },
+      { icon: '📋',  label: 'Copy section',   action: () => copySectionToClipboard(sid) },
+      { icon: section.visible === false ? '👁' : '🙈', label: section.visible === false ? 'Show' : 'Hide', action: () => handleSectionAction(sid, 'visibility') },
+      { icon: '⬆',  label: 'Move up',        action: () => moveSection(sid, -1) },
+      { icon: '⬇',  label: 'Move down',      action: () => moveSection(sid, 1) },
+      { divider: true },
+      { icon: '🗑',  label: 'Delete',         danger: true, action: () => handleSectionAction(sid, 'delete') },
+    ];
+    items.forEach(it => {
+      if (it.divider) {
+        const d = document.createElement('div');
+        d.className = 'v2-ctx-divider';
+        menu.appendChild(d);
+        return;
+      }
+      const btn = document.createElement('button');
+      btn.className = 'v2-ctx-item' + (it.danger ? ' is-danger' : '');
+      btn.innerHTML = `<span class="v2-ctx-icon">${it.icon}</span><span>${it.label}</span>`;
+      btn.addEventListener('click', () => { closeContextMenu(); it.action(); });
+      menu.appendChild(btn);
+    });
+    document.body.appendChild(menu);
+    setTimeout(() => {
+      document.addEventListener('click', closeContextMenu, { once: true });
+      document.addEventListener('contextmenu', closeContextMenu, { once: true });
+    }, 0);
+  }
+  function closeContextMenu() {
+    const m = document.getElementById('v2-ctx-menu');
+    if (m) m.remove();
+  }
+  async function moveSection(sid, dir) {
+    const order = state.template.order.slice();
+    const idx = order.indexOf(sid);
+    if (idx < 0) return;
+    const swap = idx + dir;
+    if (swap < 0 || swap >= order.length) return;
+    [order[idx], order[swap]] = [order[swap], order[idx]];
+    await applyPatch({ op: 'reorder', order });
+    postToIframe({ type: 'cms:section:reorder', page: state.pageSlug, order });
+  }
+
   // ── Section clipboard (copy/paste between pages) ────────────────────────
   async function copySectionToClipboard(sid) {
     const section = state.template.sections[sid];
@@ -1071,13 +1218,46 @@
   }
 
   // ── Section picker (Add section) ──────────────────────────────────────────
+  const CATEGORY_META = {
+    headers:  { label: 'Headers',  icon: '🏔' },
+    content:  { label: 'Content',  icon: '📝' },
+    media:    { label: 'Media',    icon: '🎬' },
+    layout:   { label: 'Layout',   icon: '📐' },
+    other:    { label: 'Other',    icon: '✨' },
+  };
   function openPicker() {
     elPickerList.innerHTML = '';
+    // Category tabs
+    const cats = Array.from(new Set(state.registry.map(s => s.category || 'other')));
+    cats.sort();
+    if (cats.length > 1) {
+      const tabs = document.createElement('div');
+      tabs.className = 'v2-picker-cats';
+      tabs.innerHTML = `<button class="v2-picker-cat is-active" data-cat="all">All</button>`;
+      cats.forEach(c => {
+        const m = CATEGORY_META[c] || { label: c, icon: '·' };
+        tabs.innerHTML += `<button class="v2-picker-cat" data-cat="${escapeHtml(c)}">${m.icon} ${escapeHtml(m.label)}</button>`;
+      });
+      tabs.addEventListener('click', (e) => {
+        const btn = e.target.closest('.v2-picker-cat');
+        if (!btn) return;
+        tabs.querySelectorAll('.v2-picker-cat').forEach(b => b.classList.remove('is-active'));
+        btn.classList.add('is-active');
+        const cat = btn.dataset.cat;
+        elPickerList.querySelectorAll('.v2-picker-card').forEach(card => {
+          card.style.display = (cat === 'all' || card.dataset.cat === cat) ? '' : 'none';
+        });
+      });
+      elPickerList.appendChild(tabs);
+    }
     state.registry.forEach(meta => {
       // Default card per type
       const card = document.createElement('div');
       card.className = 'v2-picker-card';
+      card.dataset.cat = meta.category || 'other';
+      const catMeta = CATEGORY_META[meta.category] || { icon: '·' };
       card.innerHTML = `
+        <div class="v2-picker-card-icon">${catMeta.icon}</div>
         <h4>${escapeHtml(meta.label)}</h4>
         <p>${escapeHtml(meta.description || '')}</p>
       `;
@@ -1103,7 +1283,9 @@
       (meta.presets || []).forEach(preset => {
         const pcard = document.createElement('div');
         pcard.className = 'v2-picker-card v2-picker-preset';
+        pcard.dataset.cat = meta.category || 'other';
         pcard.innerHTML = `
+          <div class="v2-picker-card-icon">⭐</div>
           <h4>${escapeHtml(preset.name)}</h4>
           <p>${escapeHtml(meta.label)} preset · ${(preset.blocks || []).length} item(s)</p>
         `;
