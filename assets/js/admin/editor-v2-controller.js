@@ -240,10 +240,16 @@
       elSidebarTree.appendChild(empty);
       return;
     }
+    const issuesBySid = (state.lintIssues || []).reduce((acc, i) => {
+      (acc[i.sectionId] = acc[i.sectionId] || []).push(i);
+      return acc;
+    }, {});
+
     state.template.order.forEach((sid, idx) => {
       const section = state.template.sections[sid];
       if (!section) return;
       const meta = state.registry.find(t => t.type === section.type);
+      const sidIssues = issuesBySid[sid] || [];
       const row = document.createElement('div');
       row.className = 'v2-tree-row' + (sid === state.selectedSid ? ' is-selected' : '');
       row.draggable = true;
@@ -258,9 +264,13 @@
         }
       });
 
+      const warnBadge = sidIssues.length
+        ? `<span class="v2-tree-warn" title="${escapeHtml(sidIssues.map(i => i.message).join('\n'))}">⚠ ${sidIssues.length}</span>`
+        : '';
       row.innerHTML = `
         <span class="v2-tree-handle" title="Drag to reorder">⋮⋮</span>
         <span class="v2-tree-label">${escapeHtml(meta ? meta.label : section.type)}</span>
+        ${warnBadge}
         <span class="v2-tree-actions">
           <button class="v2-icon-btn" data-act="visibility" title="${section.visible === false ? 'Show' : 'Hide'}">${section.visible === false ? '🙈' : '👁'}</button>
           <button class="v2-icon-btn" data-act="duplicate" title="Duplicate">⧉</button>
@@ -503,6 +513,16 @@
     // Block list (only if the section type defines block schemas)
     if (Array.isArray(meta.blocks) && meta.blocks.length) {
       elSettingsPanel.appendChild(buildBlocksList(section, meta));
+    }
+
+    // Lint issues for the selected section
+    const issues = (state.lintIssues || []).filter(i => i.sectionId === state.selectedSid);
+    if (issues.length) {
+      const wrap = document.createElement('div');
+      wrap.className = 'v2-lint';
+      wrap.innerHTML = `<div class="v2-lint-head">⚠ ${issues.length} issue${issues.length > 1 ? 's' : ''}</div>` +
+        '<ul>' + issues.map(i => `<li>${escapeHtml(i.message)}</li>`).join('') + '</ul>';
+      elSettingsPanel.appendChild(wrap);
     }
   }
 
@@ -875,6 +895,8 @@
       if (snapshot) {
         recordUndo(patch.op, snapshot, JSON.stringify(state.template));
       }
+      // Re-scan after a short delay (iframe needs a tick to re-render)
+      setTimeout(requestScan, 400);
       return res;
     } catch (e) {
       toast('Save failed: ' + (e.message || 'unknown error'), 'error');
@@ -969,9 +991,10 @@
     const d = event.data;
     if (!d || typeof d !== 'object') return;
     if (d.type === 'cms:scan:result') {
-      // Iframe sent us its editable inventory
+      // Iframe sent us its editable inventory + lint issues
       const items = Array.isArray(d.items) ? d.items : [];
       state.existingItems = items;
+      state.lintIssues = Array.isArray(d.issues) ? d.issues : [];
       // Pre-load site-config + overrides so we can render the labels with values
       Promise.all([
         fetch(_apiBase() + '/api/site-config').then(r => r.ok ? r.json() : null).catch(() => null),

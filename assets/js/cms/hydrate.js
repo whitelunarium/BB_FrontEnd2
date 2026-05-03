@@ -116,6 +116,42 @@
   }
 
   // ── v2: discover all editable items on this page ───────────────────────
+  function scanLinter() {
+    // Returns a list of {sectionId, severity, message} for accessibility / link
+    // / content issues found in the editable section markup.
+    const issues = [];
+    document.querySelectorAll('[data-cms-section-id]').forEach(section => {
+      const sid = section.dataset.cmsSectionId;
+      // Images without alt
+      section.querySelectorAll('img').forEach(img => {
+        if (!img.getAttribute('alt')) {
+          issues.push({ sectionId: sid, severity: 'warn', message: 'Image missing alt text' });
+        }
+        if (!img.src || img.src.endsWith('#') || img.src === window.location.href) {
+          issues.push({ sectionId: sid, severity: 'warn', message: 'Image has empty source' });
+        }
+      });
+      // Empty links / placeholder URLs
+      section.querySelectorAll('a').forEach(a => {
+        const href = a.getAttribute('href');
+        const text = (a.textContent || '').trim();
+        if (!href || href === '#' || href === '') {
+          issues.push({ sectionId: sid, severity: 'warn', message: `Link "${text || '(empty)'}" has placeholder URL` });
+        }
+        if (!text) {
+          issues.push({ sectionId: sid, severity: 'warn', message: 'Link has no visible text' });
+        }
+      });
+      // Empty headings
+      section.querySelectorAll('h1, h2, h3').forEach(h => {
+        if (!(h.textContent || '').trim()) {
+          issues.push({ sectionId: sid, severity: 'info', message: 'Heading is empty' });
+        }
+      });
+    });
+    return issues;
+  }
+
   function scanEditable() {
     const items = [];
     // 1. v1: data-cms-config — site-config keys driving fixed elements
@@ -330,6 +366,20 @@
       [data-cms-section-id].is-cms-hover { outline: 2px solid #f59e0b; outline-offset: -2px; }
       body.cms-inspector [data-cms-section-id]:hover { outline: 2px dashed #60a5fa; outline-offset: -2px; cursor: pointer; }
       [data-cms-block-id].is-cms-selected { outline: 2px dotted #3b82f6; outline-offset: -2px; }
+      /* Floating section-type label that shows in inspector mode */
+      body.cms-inspector [data-cms-section-id]::before {
+        content: attr(data-cms-section-type);
+        position: absolute; top: -10px; left: 8px;
+        background: #1e3a8a; color: white;
+        font: 11px/1 ui-sans-serif, system-ui, sans-serif; padding: 3px 8px;
+        border-radius: 4px; opacity: 0; transition: opacity 120ms;
+        pointer-events: none; z-index: 9999;
+      }
+      body.cms-inspector [data-cms-section-id]:hover::before,
+      body.cms-inspector [data-cms-section-id].is-cms-selected::before,
+      body.cms-inspector [data-cms-section-id].is-cms-hover::before {
+        opacity: 1;
+      }
     `;
     document.head.appendChild(style);
 
@@ -341,8 +391,9 @@
         case 'cms:scan': {
           // Editor asked for an inventory of all editable elements on this page.
           const items = scanEditable();
+          const issues = scanLinter();
           try {
-            window.parent.postMessage({ type: 'cms:scan:result', items }, expectedOrigin);
+            window.parent.postMessage({ type: 'cms:scan:result', items, issues }, expectedOrigin);
           } catch (_e) {}
           break;
         }
