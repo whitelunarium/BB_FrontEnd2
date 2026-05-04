@@ -246,6 +246,8 @@
     elIframeUrl.textContent = url;
     state.iframeReady = false;
     state.queue = [];
+    // Show loading spinner — cleared when flushQueue() fires on iframe load.
+    if (elIframeFrame) elIframeFrame.classList.add('is-loading');
   }
 
   // ── Sidebar tree ──────────────────────────────────────────────────────────
@@ -1969,7 +1971,11 @@
       ? window.V2_ICONS.wireframe(meta.type)
       : '';
     const icon = window.V2_ICONS.svg(meta.type, { size: 24 });
-    const fields = (meta.settings || []).slice(0, 6).map(f => '· ' + (f.label || f.id)).join('<br>');
+    // Defensively escape — schemas are committed to source today but a future
+    // user-extensible registry would make this a real XSS surface.
+    const fields = (meta.settings || []).slice(0, 6)
+      .map(f => '· ' + escapeHtml(f.label || f.id || ''))
+      .join('<br>');
     const blockCount = (meta.blocks || []).length;
     const presetCount = (meta.presets || []).length;
     const presetNote = preset
@@ -2027,6 +2033,8 @@
   function flushQueue() {
     state.iframeReady = true;
     hideBanner();
+    // Hide loading spinner now that the iframe is ready
+    if (elIframeFrame) elIframeFrame.classList.remove('is-loading');
     while (state.queue.length) {
       const m = state.queue.shift();
       try { elIframe.contentWindow.postMessage(m, window.location.origin); } catch (_e) {}

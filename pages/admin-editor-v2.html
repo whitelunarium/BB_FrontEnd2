@@ -579,6 +579,31 @@ body {
 .v2-iframe-frame.v2-vp-mobile     #v2-iframe { width: 375px; height: 100%; max-width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,.3); border-radius: 28px; }
 .v2-iframe-frame.v2-vp-fullscreen #v2-iframe { width: 100%;  height: 100%; max-width: none; box-shadow: none; }
 
+/* Iframe loading spinner — overlays the iframe area while a new page loads. */
+.v2-iframe-frame { position: relative; }
+.v2-iframe-loader {
+  position: absolute; inset: 12px;
+  display: none;
+  align-items: center; justify-content: center;
+  flex-direction: column; gap: 14px;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(6px);
+  border-radius: 8px;
+  z-index: 5;
+  pointer-events: none;
+  animation: v2-fade-in 220ms;
+}
+.v2-iframe-frame.is-loading .v2-iframe-loader { display: flex; }
+.v2-iframe-loader-spinner {
+  width: 38px; height: 38px;
+  border: 3px solid rgba(255,255,255,0.18);
+  border-top-color: #a855f7;
+  border-radius: 50%;
+  animation: v2-spin 0.7s linear infinite;
+}
+.v2-iframe-loader-text { color: rgba(255,255,255,0.78); font: 600 .82rem ui-sans-serif, system-ui, sans-serif; letter-spacing: .02em; }
+@keyframes v2-spin { to { transform: rotate(360deg); } }
+
 /* Fullscreen mode — sidebar collapses, preview expands edge-to-edge */
 #v2-shell.is-fullscreen .v2-sidebar { display: none; }
 #v2-shell.is-fullscreen .v2-preview { flex: 1 1 100%; min-width: 0; }
@@ -1235,6 +1260,10 @@ body {
         <span class="v2-live-badge">DRAFT</span>
       </div>
       <div class="v2-iframe-frame v2-vp-desktop" id="v2-iframe-frame">
+        <div id="v2-iframe-loader" class="v2-iframe-loader" aria-hidden="true">
+          <div class="v2-iframe-loader-spinner"></div>
+          <div class="v2-iframe-loader-text">Loading preview…</div>
+        </div>
         <iframe id="v2-iframe" title="Page preview"></iframe>
       </div>
     </section>
