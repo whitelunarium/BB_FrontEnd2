@@ -8,7 +8,9 @@ push-as-we-ship.
 
 **Live URL (local):** http://localhost:4000/pages/admin-editor-v2.html
 
-**Prod (after FE GitHub Pages rebuild):** https://powaynec.com/pages/admin-editor-v2.html — works only when the BE Flask at `beasts.opencodingsociety.com` has the latest code AND CORS is allowed for the public origin. Locally everything is fine.
+**Prod (after FE GitHub Pages rebuild):** https://pnec.opencodingsociety.com/pages/admin-editor-v2.html — works only when the BE Flask at `beasts.opencodingsociety.com` has the latest code AND CORS is allowed for the public origin. Locally everything is fine.
+
+(Note: `powaynec.com` is the legacy WordPress site the org still owns; this Jekyll/Flask rebuild lives at `pnec.opencodingsociety.com`. The rebuild clones some CSS from the WP install for visual parity but the editor and live site are at the OCS subdomain.)
 
 ---
 
