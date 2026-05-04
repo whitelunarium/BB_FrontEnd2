@@ -1056,6 +1056,19 @@ body {
 #v2-toast[style*="opacity: 1"] { transform: translateY(0); }
 #v2-toast.error { border-color: var(--v2-red); color: #fecaca; box-shadow: 0 4px 16px rgba(248,113,113,0.3); }
 #v2-toast.ok    { border-color: var(--v2-green); color: #bbf7d0; box-shadow: 0 4px 16px rgba(34,211,165,0.3); }
+#v2-toast { display: inline-flex; align-items: center; gap: 14px; }
+.v2-toast-action {
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.20);
+  color: var(--v2-text);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font: 600 .8rem ui-sans-serif, system-ui, sans-serif;
+  cursor: pointer;
+  letter-spacing: .02em;
+  transition: background 120ms;
+}
+.v2-toast-action:hover { background: var(--v2-gradient); border-color: transparent; color: white; }
 
 /* Picker modal */
 #v2-picker {

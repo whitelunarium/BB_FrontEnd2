@@ -486,7 +486,6 @@
     if (!sids.length) return;
     if (action === 'clear') { clearMultiSelect(); return; }
     if (action === 'delete') {
-      if (!confirm('Delete ' + sids.length + ' section' + (sids.length === 1 ? '' : 's') + '? You can undo with ⌘Z.')) return;
       // Build a single batch of `remove` patches — backend processes them
       // atomically so undo can roll all of them back as one.
       const patches = sids.map(sid => ({ op: 'remove', sid }));
@@ -496,6 +495,10 @@
       if (state.selectedSid && sids.includes(state.selectedSid)) state.selectedSid = null;
       clearMultiSelect();
       renderSettings();
+      toast('Deleted ' + sids.length + ' section' + (sids.length === 1 ? '' : 's') + '.', 'ok', {
+        action: { label: 'Undo', fn: () => undo() },
+        duration: 8000,
+      });
       return;
     }
     if (action === 'duplicate') {
@@ -679,13 +682,21 @@
       await applyPatch({ op: 'rename', sid, name: next });
       // Tree row content changed — settings panel header is unaffected
     } else if (action === 'delete') {
-      if (!confirm('Delete this section?')) return;
+      // Capture a label for the toast before we lose the section
+      const sec = state.template.sections[sid];
+      const meta = state.registry.find(t => t.type === sec.type);
+      const label = sec.name || (meta ? meta.label : sec.type);
+      // No more confirm() — Gmail-style instant action with undo toast.
       await applyPatch({ op: 'remove', sid });
       postToIframe({ type: 'cms:section:remove', sectionId: sid });
       if (state.selectedSid === sid) {
         state.selectedSid = null;
         renderSettings();
       }
+      toast('Deleted "' + label + '".', 'ok', {
+        action: { label: 'Undo', fn: () => undo() },
+        duration: 8000,
+      });
     }
   }
 
@@ -2215,11 +2226,32 @@
   }
 
   // ── UI helpers ────────────────────────────────────────────────────────────
-  function toast(msg, kind) {
-    elToast.textContent = msg;
+  let _toastTimer = null;
+  function toast(msg, kind, opts) {
+    opts = opts || {};
     elToast.className = 'v2-toast ' + (kind || '');
     elToast.style.opacity = '1';
-    setTimeout(() => { elToast.style.opacity = '0'; }, 3500);
+    if (_toastTimer) clearTimeout(_toastTimer);
+
+    if (opts.action) {
+      // Rich toast: message + button
+      elToast.innerHTML = '';
+      const span = document.createElement('span');
+      span.textContent = msg;
+      const btn = document.createElement('button');
+      btn.className = 'v2-toast-action';
+      btn.textContent = opts.action.label || 'Undo';
+      btn.addEventListener('click', () => {
+        try { opts.action.fn(); } catch (_e) {}
+        elToast.style.opacity = '0';
+      });
+      elToast.appendChild(span);
+      elToast.appendChild(btn);
+      _toastTimer = setTimeout(() => { elToast.style.opacity = '0'; }, opts.duration || 6000);
+    } else {
+      elToast.textContent = msg;
+      _toastTimer = setTimeout(() => { elToast.style.opacity = '0'; }, opts.duration || 3500);
+    }
   }
   function showBanner(msg) {
     elBanner.textContent = msg;
