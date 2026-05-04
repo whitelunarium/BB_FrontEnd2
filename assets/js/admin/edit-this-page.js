@@ -24,6 +24,14 @@
   if (path.indexOf('/pages/register') !== -1) return;
   // Don't run on admin.html either — already has prominent buttons
   if (path.endsWith('/pages/admin.html') || path.endsWith('/admin.html')) return;
+  // Don't run inside the editor's iframe (?preview=1) — would render a
+  // redundant button that loops the iframe back to the editor when clicked.
+  // Same for any window already framed inside another (the editor uses an
+  // iframe, so window !== window.top).
+  try {
+    if (new URLSearchParams(window.location.search).get('preview') === '1') return;
+    if (window.top !== window.self) return;
+  } catch (_e) { /* cross-origin frames throw; safe to continue */ }
 
   function isAdmin() {
     try {
@@ -87,13 +95,19 @@
       btn.style.boxShadow   = '0 8px 24px rgba(91,140,255,0.35), 0 0 0 1px rgba(255,255,255,0.10) inset';
     });
 
-    // Position the chatbot — if it exists, scoot the edit button up so they stack
-    // instead of overlapping. We do this in a tick so we run after chatbot init.
+    // Position above the chatbot if it exists. The actual class is
+    // `.chatbot-trigger` (kept the older names as fallback for safety in
+    // case the include changes). Computed from the actual chatbot's bottom
+    // offset + height so the gap is correct on all screen sizes.
     setTimeout(() => {
-      const chatbot = document.querySelector('.pnec-chatbot-fab, .chatbot-toggle, [data-pnec-chatbot]');
+      const chatbot = document.querySelector(
+        '.chatbot-trigger, .pnec-chatbot-fab, .chatbot-toggle, [data-pnec-chatbot], #chatbot-trigger-btn'
+      );
       if (chatbot) {
-        // Stack edit button ABOVE the chatbot, with a small gap
-        btn.style.bottom = '88px';
+        const r = chatbot.getBoundingClientRect();
+        // Use the chatbot's height + 16px gap, fallback to 88px if rect is empty
+        const chatbotHeight = r.height || 56;
+        btn.style.bottom = (chatbotHeight + 28) + 'px';
       }
     }, 600);
     return btn;

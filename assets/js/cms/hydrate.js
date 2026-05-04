@@ -22,7 +22,31 @@
   function applyValue(el, value) {
     if (!el) return;
     if (el.tagName === 'IMG') {
+      // BUG FIX: many cloned WP images have a srcset attribute. Setting only
+      // `src` would be silently overridden by the browser preferring srcset,
+      // so the swapped image wouldn't visibly appear. Clear srcset + sizes
+      // when an admin overrides the URL so the new src is what's rendered.
+      // (Guards for plain object stubs in node tests where DOM API is absent.)
+      if (typeof el.removeAttribute === 'function') {
+        el.removeAttribute('srcset');
+        el.removeAttribute('sizes');
+      }
       el.src = value;
+      if (typeof el.hasAttribute === 'function') {
+        // Some lazy-load wrappers store the "real" URL on data-src/data-lazy-src
+        // and swap it into src on intersection. Mirror our value into those so
+        // the lazy-load doesn't restore the original after we set src.
+        if (el.hasAttribute('data-src'))      el.setAttribute('data-src', value);
+        if (el.hasAttribute('data-lazy-src')) el.setAttribute('data-lazy-src', value);
+      }
+      // Same idea for <picture> ancestors with inner <source srcset>.
+      const picture = (el.parentElement && el.parentElement.tagName === 'PICTURE')
+        ? el.parentElement : null;
+      if (picture && typeof picture.querySelectorAll === 'function') {
+        picture.querySelectorAll('source').forEach(s => {
+          if (typeof s.removeAttribute === 'function') s.removeAttribute('srcset');
+        });
+      }
       return;
     }
     if (el.dataset && el.dataset.cmsHtml === 'true') {
@@ -89,8 +113,14 @@
     '[data-cms-section-id]',            // already inside a v2 section
     '[data-cms-no-edit]',               // explicit opt-out
     '#mobile-nav', '#mobile-nav-overlay',
+    // Chatbot widget — the trigger button + the slide-out panel
+    '.chatbot-trigger', '.chatbot-panel', '.chatbot-backdrop',
+    '#chatbot-trigger-btn', '#chatbot-panel',
     '.pnec-chatbot-fab', '.chatbot-toggle', '[data-pnec-chatbot]',
-    '#v2-shell', '#v2-gate',            // editor itself (defensive)
+    // Editor itself (defensive — editor isn't on a public page but just in case)
+    '#v2-shell', '#v2-gate',
+    // Risk widget / other floating UI
+    '.risk-widget', '#risk-widget',
   ];
 
   function _stableElementHash(str) {
@@ -132,11 +162,18 @@
     const text = (el.textContent || '').trim();
     if (!text) return false;
     // Skip elements that contain block-level children (we want to tag the leaf)
-    // — but allow inline children like <strong>, <em>, <a>.
     const hasBlockChildren = Array.from(el.children).some(c =>
       ['DIV','SECTION','ARTICLE','P','UL','OL','LI','H1','H2','H3','H4','H5','H6','BLOCKQUOTE','HEADER','FOOTER','NAV','MAIN','ASIDE','TABLE'].includes(c.tagName)
     );
     if (hasBlockChildren) return false;
+    // Skip elements that contain interactive widgets we DEFINITELY don't want
+    // to flatten (forms, embedded video). Links and basic formatting (a, strong,
+    // em, b, i) are preserved by startInlineEdit's "html mode" path so we can
+    // safely tag a <p> that contains them.
+    const hasUnsafeInline = Array.from(el.children).some(c =>
+      ['INPUT','SELECT','TEXTAREA','LABEL','SVG','VIDEO','AUDIO','IFRAME'].includes(c.tagName)
+    );
+    if (hasUnsafeInline) return false;
     // Skip absurdly long text (likely a wrapper, not a leaf)
     if (text.length > 800) return false;
     // Skip elements whose visible text is a single number (counters, dates)
@@ -156,7 +193,16 @@
       el.classList.add('cms-editable');
       // Apply saved value if we have one for this generated key
       if (overrides && Object.prototype.hasOwnProperty.call(overrides, key)) {
-        applyValue(el, overrides[key]);
+        const value = overrides[key];
+        // BUG FIX (v2.36): if the saved value looks like HTML (contains tags),
+        // mark the element as HTML-rendered so applyValue uses innerHTML
+        // instead of escaping it. Without this, an admin's saved <a href> text
+        // would render as literal "<a href=...>" on every public visit until
+        // the admin re-edits and we set data-cms-html via startInlineEdit.
+        if (typeof value === 'string' && /<[a-z][\s\S]*>/i.test(value)) {
+          el.setAttribute('data-cms-html', 'true');
+        }
+        applyValue(el, value);
       }
       tagged.push({ key, el });
     });
@@ -584,11 +630,23 @@
   function startInlineEdit(el, expectedOrigin, kind, key1, key2) {
     if (el._cmsEditing) return;
     el._cmsEditing = true;
-    const original = el.textContent || '';
+    // BUG FIX (v2.36): if the element contains inline children we want to
+    // preserve (links, bold, italic), use innerHTML mode instead of plaintext.
+    // Auto-tag now allows wrappers with inline children, so without this
+    // the user would lose their <a href="…"> on every edit.
+    const hasInlineChildren = el.children && el.children.length > 0;
+    const htmlMode = hasInlineChildren;
+    const originalHtml = el.innerHTML;
+    const originalText = el.textContent || '';
     el.classList.add('cms-editing');
-    el.setAttribute('contenteditable', 'plaintext-only');
-    // Some browsers don't support plaintext-only, fall through to true
-    if (el.contentEditable !== 'plaintext-only') el.setAttribute('contenteditable', 'true');
+    if (htmlMode) {
+      // Full contentEditable so links/strong/em are preserved during edit
+      el.setAttribute('contenteditable', 'true');
+    } else {
+      el.setAttribute('contenteditable', 'plaintext-only');
+      // Some browsers don't support plaintext-only, fall through to true
+      if (el.contentEditable !== 'plaintext-only') el.setAttribute('contenteditable', 'true');
+    }
     el.spellcheck = true;
     // Focus + select-all
     el.focus();
@@ -606,17 +664,28 @@
       el.removeAttribute('contenteditable');
       el.removeEventListener('blur',     onBlur, true);
       el.removeEventListener('keydown',  onKey,  true);
-      const newText = (el.textContent || '').trim();
-      if (save && newText !== original) {
+      // In htmlMode, save the whole innerHTML so links/strong/em survive.
+      // The applyValue path on the public site mirrors this — when an override
+      // value contains '<' it's treated as HTML by re-applying as innerHTML
+      // (we set data-cms-html on the element to make that explicit).
+      const newRaw = htmlMode ? el.innerHTML : (el.textContent || '');
+      const original = htmlMode ? originalHtml : originalText;
+      const newClean = newRaw.trim();
+      if (save && newClean !== original.trim()) {
+        if (htmlMode) {
+          // Make sure subsequent applyValue() runs save HTML, not text.
+          el.setAttribute('data-cms-html', 'true');
+        }
         try {
-          const msg = { type: 'cms:inline:save', kind, value: newText };
+          const msg = { type: 'cms:inline:save', kind, value: newClean, htmlMode };
           if (kind === 'section')      { msg.sectionId = key1; msg.field = key2; }
           else if (kind === 'site_config') { msg.key = key1; }
           else if (kind === 'override')    { msg.key = key1; }
           window.parent.postMessage(msg, expectedOrigin);
         } catch (_e) {}
       } else if (!save) {
-        el.textContent = original;
+        if (htmlMode) el.innerHTML = originalHtml;
+        else          el.textContent = originalText;
       }
     }
     function onBlur() { commit(true); }
@@ -870,8 +939,27 @@
     });
 
     // Inspector mode: clicks on sections in the iframe report the sid up to the editor parent.
+    // Also: in inspector mode, clicking ANY editable link (nav_label_*, footer link
+    // labels, auto-tagged anchors) should NOT navigate — admin is here to edit
+    // text, not browse. They can still navigate by clicking the page picker.
     document.addEventListener('click', (event) => {
       if (!document.body.classList.contains('cms-inspector')) return;
+
+      // Suppress link navigation on tagged/editable links so a single click
+      // doesn't yank the iframe away from the page the admin is editing.
+      const linkEl = event.target.closest('a');
+      const editableTaggedLink = linkEl && (
+        linkEl.hasAttribute('data-cms-config') ||
+        linkEl.hasAttribute('data-cms-override') ||
+        linkEl.hasAttribute('data-cms-stega-sid')
+      );
+      if (editableTaggedLink) {
+        event.preventDefault();
+        event.stopPropagation();
+        // Don't return early — we still want to bubble up to selectSection
+        // if this link is inside a v2 section. But navigation is now blocked.
+      }
+
       const sectionEl = event.target.closest('[data-cms-section-id]');
       if (!sectionEl) return;
       event.preventDefault();
@@ -994,15 +1082,24 @@
       document.body.classList.add('cms-preview');
       tagV1Editables();
       // Brief first-load pulse so the admin can see, at a glance, every
-      // element that's hover-editable. Staggered so it sweeps across the
-      // page rather than all firing at once.
+      // element that's hover-editable. Only pulses elements currently in
+      // the viewport — pulsing 500+ off-screen elements at once would be
+      // wasted work and would trigger a thundering-herd of layout recalcs
+      // when they all finish their stagger at the cap.
       setTimeout(() => {
-        const editables = Array.from(document.querySelectorAll('.cms-editable'));
-        editables.forEach((el, i) => {
+        const all = Array.from(document.querySelectorAll('.cms-editable'));
+        const vh = window.innerHeight || 800;
+        const inView = all.filter(el => {
+          const r = el.getBoundingClientRect();
+          return r.top < vh + 100 && r.bottom > -20 && r.width > 0 && r.height > 0;
+        });
+        // Hard-cap to keep stagger window readable
+        const toPulse = inView.slice(0, 60);
+        toPulse.forEach((el, i) => {
           setTimeout(() => {
             el.classList.add('cms-first-pulse');
             setTimeout(() => el.classList.remove('cms-first-pulse'), 1700);
-          }, Math.min(i * 18, 1200));
+          }, i * 22);
         });
       }, 400);
       enablePreviewMode();
