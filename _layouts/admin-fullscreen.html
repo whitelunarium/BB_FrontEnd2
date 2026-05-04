@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page.title | default: "PNEC Admin" }}</title>
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#0b1426">
+
+  <!--
+    admin-fullscreen layout (v2.41)
+    A minimal, chrome-free shell for admin tools that own their own full-screen
+    UI (the live theme editor, future analytics dashboards, etc).
+
+    Why this exists: previously these pages used `pnec-base`, which renders the
+    public navbar + footer + chatbot widget around them. The result was a duplicated
+    navigation surface — the public PNEC nav above the editor's own topbar AND
+    inside the editor's iframe preview. Confusing, and screen real-estate wasted.
+
+    This layout intentionally renders ONLY:
+      - the document <head> (title, viewport, brand color)
+      - {{ content }} (the page itself owns the entire visible UI)
+      - the auth scripts so localStorage.pnec_user is hot
+      - NO navbar, NO footer, NO chatbot, NO CMS section hosts.
+
+    To go back to the public page, the admin can use the editor's "↗ View live"
+    button (which opens the public page in a new tab) — exactly how Shopify does
+    it. So no nav loss.
+  -->
+
+  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+  {% if page.head_extra %}{{ page.head_extra }}{% endif %}
+
+  <style>
+    /* Reset margins so the fullscreen admin tool can paint to all four edges. */
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: #060c1c;
+      color: #e2e8f0;
+      font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+    }
+    /* Just in case any global rule leaked through, hide every kind of public chrome. */
+    .pnec-navbar, .navbar-bottom, .navbar-shell,
+    .pnec-footer, footer.pnec-footer, .footer-grid,
+    .chatbot-trigger, .chatbot-panel, .chatbot-backdrop,
+    .mobile-nav, .mobile-nav-overlay,
+    [data-cms-section-host],
+    #pnec-edit-this-page {
+      display: none !important;
+    }
+  </style>
+</head>
+<body class="admin-fullscreen-body">
+  {{ content }}
+
+  <!--
+    Auth + API scripts only — no chatbot, no scroll-reveal, no edit-this-page.
+    The editor handles all its own UX.
+  -->
+  <script src="{{ '/assets/js/api/auth-api.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/utils/errors.js' | relative_url }}"></script>
+</body>
+</html>

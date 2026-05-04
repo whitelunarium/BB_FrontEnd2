@@ -58,9 +58,14 @@
     const btn = document.createElement('a');
     btn.id = 'pnec-edit-this-page';
     btn.href = '/pages/admin-editor-v2.html?page=' + encodeURIComponent(slug || 'home');
-    btn.title = 'Open this page in the live theme editor (admin)';
-    btn.setAttribute('aria-label', 'Edit this page');
-    btn.innerHTML = '<span class="pnec-edit-icon">✏️</span><span class="pnec-edit-label">Edit this page</span>';
+    // v2.41: open the editor in a new tab so the public site stays put.
+    // Avoids the duplicated-navbar look the user pointed out and lets admins
+    // keep both windows side-by-side.
+    btn.target = '_blank';
+    btn.rel    = 'noopener';
+    btn.title = 'Open this page in the live theme editor (opens in a new tab — admin-only)';
+    btn.setAttribute('aria-label', 'Edit this page in a new tab');
+    btn.innerHTML = '<span class="pnec-edit-icon">✏️</span><span class="pnec-edit-label">Edit this page</span><span class="pnec-edit-newtab" aria-hidden="true">↗</span>';
     btn.style.cssText = [
       'position:fixed',
       'right:20px',
@@ -130,7 +135,8 @@
         // Only fire if no modifier (so ⌘E still works as default browser shortcut)
         if (!e.metaKey && !e.ctrlKey && !e.altKey) {
           e.preventDefault();
-          window.location.href = btn.href;
+          // Match the click behavior — open the editor in a new tab.
+          window.open(btn.href, '_blank', 'noopener');
         }
       }
     });

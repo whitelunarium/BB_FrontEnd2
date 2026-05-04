@@ -31,7 +31,7 @@
             <li id="nav-events-link" style="display:none"><a href="{{ '/pages/manage-events.html' | relative_url }}" class="user-menu-item" role="menuitem">Manage Events</a></li>
             <li id="nav-dashboard-link" style="display:none"><a href="{{ '/pages/dashboard.html' | relative_url }}" class="user-menu-item" role="menuitem">Staff Dashboard</a></li>
             <li id="nav-admin-link" style="display:none"><a href="{{ '/pages/admin.html' | relative_url }}" class="user-menu-item" role="menuitem">⚙️ Admin Dashboard</a></li>
-            <li id="nav-editor-link" style="display:none"><a href="{{ '/pages/admin-editor-v2.html' | relative_url }}" class="user-menu-item" role="menuitem">🎨 Live Theme Editor</a></li>
+            <li id="nav-editor-link" style="display:none"><a href="{{ '/pages/admin-editor-v2.html' | relative_url }}" target="_blank" rel="noopener" class="user-menu-item" role="menuitem">🎨 Live Theme Editor ↗</a></li>
             <!-- v2.41: Sign Out lives on the profile page now (link below points there). The legacy navbar-logout-btn id is kept on a hidden stub so existing JS handlers don't error. -->
             <li><a href="{{ '/pages/profile.html#signout' | relative_url }}" class="user-menu-item" role="menuitem">↩ Sign out</a></li>
             <li style="display:none"><button id="navbar-logout-btn" type="button" aria-hidden="true"></button></li>
@@ -118,7 +118,7 @@
       <a href="{{ '/pages/profile.html' | relative_url }}">My Profile</a>
       <a href="{{ '/pages/dashboard.html' | relative_url }}" id="mobile-dashboard-link" style="display:none">Staff Dashboard</a>
       <a href="{{ '/pages/admin.html' | relative_url }}" id="mobile-admin-link" style="display:none">⚙️ Admin Dashboard</a>
-      <a href="{{ '/pages/admin-editor-v2.html' | relative_url }}" id="mobile-editor-link" style="display:none">🎨 Live Theme Editor</a>
+      <a href="{{ '/pages/admin-editor-v2.html' | relative_url }}" target="_blank" rel="noopener" id="mobile-editor-link" style="display:none">🎨 Live Theme Editor ↗</a>
       <!-- v2.41: Sign Out → Profile (a single Sign-out button lives there). Kept hidden stub for legacy JS. -->
       <a href="{{ '/pages/profile.html#signout' | relative_url }}" style="color: #fc8181;">↩ Sign out</a>
       <a href="#" id="mobile-logout-btn" style="display:none" aria-hidden="true"></a>
