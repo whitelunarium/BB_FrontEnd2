@@ -2618,16 +2618,20 @@
       input.type = 'text'; input.className = 'v2-input';
       input.value = seo[f.key] || '';
     }
+    // BUG FIX (v2.40): same race fix as overrides — capture slug at panel
+    // render time, not at save fire time.
+    const slugAtRender = state.pageSlug;
     input.addEventListener('input', debounce(async () => {
       try {
-        await fetch(_apiBase() + '/api/cms/page/' + encodeURIComponent(state.pageSlug) + '/seo', {
+        const res = await fetch(_apiBase() + '/api/cms/page/' + encodeURIComponent(slugAtRender) + '/seo', {
           method: 'PATCH', credentials: 'include',
           headers: { 'Content-Type': 'application/json',
                      'Authorization': 'Bearer ' + (localStorage.getItem('pnec_token') || '') },
           body: JSON.stringify({ updates: { [f.key]: input.value } }),
         });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
         setStatus('saved', 'SEO ' + f.key + ' saved');
-      } catch (_e) { toast('SEO save failed.', 'error'); }
+      } catch (e) { toast(_humanizeError('SEO save failed', e), 'error'); }
     }, 300));
     wrap.appendChild(input);
     if (f.hint) {

@@ -603,6 +603,9 @@ body {
 }
 .v2-iframe-loader-text { color: rgba(255,255,255,0.78); font: 600 .82rem ui-sans-serif, system-ui, sans-serif; letter-spacing: .02em; }
 @keyframes v2-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .v2-iframe-loader-spinner { animation: none; border-top-color: #a855f7; }
+}
 
 /* Fullscreen mode — sidebar collapses, preview expands edge-to-edge */
 #v2-shell.is-fullscreen .v2-sidebar { display: none; }

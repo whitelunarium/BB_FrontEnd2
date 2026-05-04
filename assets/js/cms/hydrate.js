@@ -809,6 +809,10 @@
       body.cms-preview .cms-editable.cms-first-pulse {
         animation: cms-first-pulse 1.6s ease-out 1;
       }
+      /* Honor users with reduced-motion enabled: skip the pulse entirely. */
+      @media (prefers-reduced-motion: reduce) {
+        body.cms-preview .cms-editable.cms-first-pulse { animation: none; }
+      }
       [data-cms-section-id] { position: relative; }
       [data-cms-section-id].is-cms-selected {
         outline: 2px solid #3b82f6; outline-offset: -2px;
