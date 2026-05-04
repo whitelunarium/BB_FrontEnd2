@@ -2895,12 +2895,23 @@
   }
 
   async function applyThemeTokenChange(key, value) {
-    state.themeTokens[key] = value;
+    // BUG FIX (v2.40): only commit to local state AFTER the save succeeds.
+    // Previously we updated state.themeTokens optimistically — if the save
+    // failed (network error, 401), the local state diverged from the backend
+    // and a later save of a different token would overwrite the backend's
+    // copy with the bad local cache.
+    const prev = state.themeTokens[key];
     try {
       await window.v2PatchThemeDraft({ [key]: value });
+      state.themeTokens[key] = value;
       // Update iframe live: post a CSS variable update message
       postToIframe({ type: 'cms:theme:update', key, value });
-    } catch (e) { toast('Theme save failed.', 'error'); }
+    } catch (e) {
+      // Roll back: leave state.themeTokens[key] at prev value so the next
+      // edit doesn't carry the failed value forward.
+      state.themeTokens[key] = prev;
+      toast(_humanizeError('Theme save failed', e), 'error');
+    }
   }
 
   // ── Viewport toggle ─────────────────────────────────────────────────────
