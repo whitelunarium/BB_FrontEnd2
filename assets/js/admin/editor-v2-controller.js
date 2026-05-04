@@ -155,6 +155,22 @@
 
     window.addEventListener('message', onIframeMessage);
     document.addEventListener('keydown', onKey);
+    // Browser back/forward should switch pages too — updates from pushState.
+    window.addEventListener('popstate', () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const want = (params.get('page') || 'home').trim();
+        if (want && want !== state.pageSlug) {
+          // Sync select + state without re-pushing into history (popstate
+          // already updated the URL).
+          if (elPageSel) elPageSel.value = want;
+          state.pageSlug = want;
+          state.selectedSid = null;
+          state.selectedBid = null;
+          loadPage(want);
+        }
+      } catch (_e) {}
+    });
 
     // Iframe-unresponsive watchdog
     setTimeout(() => {
@@ -217,6 +233,13 @@
     state.pageSlug = slug;
     state.selectedSid = null;
     state.selectedBid = null;
+    // Reflect the active page in the URL so refresh/share-tab restores it.
+    // pushState (not replace) so the back button cycles through edited pages.
+    try {
+      const u = new URL(window.location.href);
+      u.searchParams.set('page', slug);
+      window.history.pushState({ page: slug }, '', u.toString());
+    } catch (_e) { /* ignore in non-browser test env */ }
     await loadPage(slug);
   }
 
