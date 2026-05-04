@@ -744,7 +744,15 @@
     wrap.className = 'v2-blocks';
     const header = document.createElement('div');
     header.className = 'v2-blocks-header';
-    header.innerHTML = `<span>Items</span>`;
+    header.innerHTML = `
+      <span>Items</span>
+      <span class="v2-blocks-header-actions">
+        <button class="v2-icon-btn" data-blk-act="copy-all"  title="Copy every item — paste into any matching section on any page">📋 All</button>
+        <button class="v2-icon-btn" data-blk-act="paste-all" title="Paste blocks from clipboard">📥</button>
+      </span>
+    `;
+    header.querySelector('[data-blk-act="copy-all"]').addEventListener('click', () => copyAllBlocksToClipboard(section));
+    header.querySelector('[data-blk-act="paste-all"]').addEventListener('click', () => pasteBlockFromClipboard(section, meta));
     wrap.appendChild(header);
 
     const order = section.block_order || [];
@@ -1400,17 +1408,52 @@
   }
 
   // ── Block-level clipboard ────────────────────────────────────────────────
-  async function copyBlockToClipboard(section, bid, blockMeta) {
+  // Internal payload shape (always an array internally even for single blocks
+  // so paste logic is uniform):
+  //   { __cms_block_clipboard: true, blocks: [{type, settings}, ...] }
+  // We also write a tiny mirror to localStorage so a "paste history" survives
+  // across pages even if the user copies something else outside the editor.
+  const _BLOCK_HISTORY_KEY = 'pnec_v2_block_clip_history';
+  function _readBlockHistory() {
+    try { return JSON.parse(localStorage.getItem(_BLOCK_HISTORY_KEY) || '[]'); }
+    catch (_e) { return []; }
+  }
+  function _pushBlockHistory(payload) {
+    const list = _readBlockHistory();
+    list.unshift({ at: Date.now(), payload });
+    while (list.length > 5) list.pop();
+    try { localStorage.setItem(_BLOCK_HISTORY_KEY, JSON.stringify(list)); } catch (_e) {}
+  }
+
+  async function copyBlockToClipboard(section, bid, _blockMeta) {
     const block = (section.blocks || {})[bid];
     if (!block) return;
     const payload = {
       __cms_block_clipboard: true,
-      type:     block.type,
-      settings: block.settings || {},
+      blocks: [{ type: block.type, settings: block.settings || {} }],
     };
     try {
       await navigator.clipboard.writeText(JSON.stringify(payload));
+      _pushBlockHistory(payload);
       toast('Block copied — paste into any matching section.', 'ok');
+    } catch (_e) { toast('Clipboard write failed.', 'error'); }
+  }
+
+  async function copyAllBlocksToClipboard(section) {
+    const order  = section.block_order || [];
+    const blocks = section.blocks || {};
+    if (!order.length) { toast('Nothing to copy — section has no items.', 'error'); return; }
+    const payload = {
+      __cms_block_clipboard: true,
+      blocks: order
+        .map(bid => blocks[bid])
+        .filter(Boolean)
+        .map(b => ({ type: b.type, settings: b.settings || {} })),
+    };
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(payload));
+      _pushBlockHistory(payload);
+      toast(`${payload.blocks.length} block${payload.blocks.length === 1 ? '' : 's'} copied — paste into any matching section.`, 'ok');
     } catch (_e) { toast('Clipboard write failed.', 'error'); }
   }
 
@@ -1424,18 +1467,31 @@
       toast('Clipboard not a block.', 'error');
       return;
     }
-    // Verify the section's schema accepts this block type
-    const allowedTypes = (meta.blocks || []).map(b => b.type);
-    if (!allowedTypes.includes(payload.type)) {
-      toast(`This section doesn't accept ${payload.type} blocks.`, 'error');
+    // Backwards-compat: old single-block payloads had {type, settings} at the top
+    let items = Array.isArray(payload.blocks) && payload.blocks.length ? payload.blocks : null;
+    if (!items && payload.type) items = [{ type: payload.type, settings: payload.settings || {} }];
+    if (!items || !items.length) { toast('Clipboard has no blocks.', 'error'); return; }
+
+    // Filter to types this section's schema actually accepts
+    const allowedTypes = new Set((meta.blocks || []).map(b => b.type));
+    const compat   = items.filter(b => allowedTypes.has(b.type));
+    const dropped  = items.length - compat.length;
+    if (!compat.length) {
+      toast(`This section doesn't accept any of those block types.`, 'error');
       return;
     }
-    await applyPatch({
+    // Send all compatible blocks as one batch PATCH so paste is atomic
+    const patches = compat.map(b => ({
       op: 'add_block', sid: state.selectedSid,
-      block_type: payload.type,
-      settings:   payload.settings || {},
-    });
+      block_type: b.type, settings: b.settings || {},
+    }));
+    await applyPatchBatch(patches);
     postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
+    if (dropped) {
+      toast(`Pasted ${compat.length} block(s); dropped ${dropped} incompatible.`, 'ok');
+    } else {
+      toast(`Pasted ${compat.length} block${compat.length === 1 ? '' : 's'}.`, 'ok');
+    }
   }
 
   function openBlockContextMenu(event, section, bid, blockMeta) {

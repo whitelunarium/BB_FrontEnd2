@@ -481,7 +481,9 @@ body {
 
 /* Block list (e.g. FAQ items) */
 .v2-blocks { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--v2-border); }
-.v2-blocks-header { font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; color: var(--v2-muted); margin-bottom: 8px; }
+.v2-blocks-header { font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; color: var(--v2-muted); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+.v2-blocks-header-actions { display: inline-flex; gap: 2px; }
+.v2-blocks-header .v2-icon-btn { font-size: .7rem; padding: 2px 6px; }
 .v2-block { background: var(--v2-bg); border: 1px solid var(--v2-border); border-radius: 6px; margin-bottom: 6px; }
 .v2-block summary { padding: 8px 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: .85rem; }
 .v2-block summary::-webkit-details-marker { display: none; }
