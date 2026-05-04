@@ -3061,8 +3061,16 @@
       recordUndo('import', beforeJson, JSON.stringify(state.template));
       renderTree();
       pointIframe(state.pageSlug);
-      toast('Imported.', 'ok');
-    } catch (e) { toast('Import failed: ' + (e.message || ''), 'error'); }
+      // Tell the admin if any sections got dropped during validation (v2.40
+      // import endpoint now returns dropped_count when caps were enforced).
+      const dropped = body.dropped_count || 0;
+      if (dropped > 0) {
+        toast('Imported. ' + dropped + ' section' + (dropped === 1 ? '' : 's') +
+              ' dropped (over the 25-section cap or unknown section types).', 'ok');
+      } else {
+        toast('Imported.', 'ok');
+      }
+    } catch (e) { toast(_humanizeError('Import failed', e), 'error'); }
   }
 
   function openHelp() {
