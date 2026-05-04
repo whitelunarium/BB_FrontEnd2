@@ -751,7 +751,7 @@
         state.siteConfig[item.key] = value;
         // Live-update the iframe via the v1 cms-update message
         postToIframe({ type: 'cms-update', kind: 'config', key: item.key, value });
-      } catch (e) { toast('Save failed.', 'error'); }
+      } catch (e) { toast(_humanizeError('Save failed', e), 'error'); }
     } else if (item.kind === 'override') {
       try {
         const res = await fetch(_apiBase() + '/api/overrides/' + encodeURIComponent(slug), {
@@ -769,7 +769,7 @@
         if (slug === state.pageSlug) {
           postToIframe({ type: 'cms-update', kind: 'override', key: item.key, value });
         }
-      } catch (e) { toast('Save failed.', 'error'); }
+      } catch (e) { toast(_humanizeError('Save failed', e), 'error'); }
     }
   }
 
@@ -1590,9 +1590,32 @@
       return res;
     } catch (e) {
       setStatus('error', e.message || '');
-      toast('Save failed: ' + (e.message || 'unknown error'), 'error');
+      toast(_humanizeError('Save failed', e), 'error');
       throw e;
     }
+  }
+
+  // Turn raw "HTTP 401" / "TypeError: Failed to fetch" / etc. into something
+  // an admin can act on. Used by every catch block that would otherwise
+  // surface a programmer-grade error.
+  function _humanizeError(prefix, err) {
+    const m = (err && err.message) || String(err || '');
+    if (/\b401\b|UNAUTHORIZED/i.test(m)) {
+      return prefix + ': your session expired. Please refresh the page and sign in again.';
+    }
+    if (/\b403\b|FORBIDDEN/i.test(m)) {
+      return prefix + ': you don\'t have permission for this action.';
+    }
+    if (/\b413\b|too large/i.test(m)) {
+      return prefix + ': content too large. Try splitting into smaller pieces.';
+    }
+    if (/Failed to fetch|NetworkError|net::|networkerror/i.test(m)) {
+      return prefix + ': can\'t reach the server. Check your internet connection.';
+    }
+    if (/\b5\d\d\b/.test(m)) {
+      return prefix + ': server error (' + m + '). Try again in a moment.';
+    }
+    return prefix + ': ' + (m || 'unknown error');
   }
 
   // ── Block-level clipboard ────────────────────────────────────────────────
