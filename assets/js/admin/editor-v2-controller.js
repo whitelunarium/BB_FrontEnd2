@@ -1974,6 +1974,14 @@
       const m = state.queue.shift();
       try { elIframe.contentWindow.postMessage(m, window.location.origin); } catch (_e) {}
     }
+    // Auto-turn-on Inspector mode so the user always sees hover outlines
+    // (instead of having to remember to click 🔍). The button still works
+    // as a manual toggle.
+    if (!state.inspectorOn) {
+      state.inspectorOn = true;
+      elInspectorBtn.classList.add('is-on');
+      postToIframe({ type: 'cms:inspector:activate' });
+    }
     // After iframe loads, ask it for an inventory of editable items
     setTimeout(() => requestScan(), 600);
   }
@@ -2000,6 +2008,7 @@
         state.siteConfigMeta = (cfg && cfg.meta) || {};
         state.overrides = (ovr && ovr.overrides) || {};
         renderTree();
+        updateEditableBanner();
       });
       return;
     }
@@ -2279,6 +2288,29 @@
   }
   function hideBanner() {
     elBanner.style.display = 'none';
+  }
+  function updateEditableBanner() {
+    // Decide what to tell the admin about the page they just loaded.
+    // - If there are v2 sections → say so + how many are editable
+    // - If there are v1 [data-cms-config]/[data-cms-override] markers → say so
+    // - If neither → tell the user this page isn't yet editable + how to fix
+    const sectionCount = (state.template && state.template.order) ? state.template.order.length : 0;
+    const v1Items      = (state.existingItems || []).filter(i => i.kind === 'site_config' || i.kind === 'override');
+    if (sectionCount > 0) {
+      // v2 page — banner is unnecessary, the tree shows everything
+      hideBanner();
+      return;
+    }
+    if (v1Items.length > 0) {
+      // Legacy page with some inline-editable hotspots
+      showBanner('💡 ' + v1Items.length + ' editable element' + (v1Items.length === 1 ? '' : 's') +
+        ' on this page. Hover any of them in the preview to edit, or use the "Existing content" group in the sidebar.');
+      return;
+    }
+    // Nothing on this page is editable yet
+    showBanner('⚠️ This page has no editable content yet. ' +
+      'Click "+ Add section" in the sidebar to start adding CMS sections, or convert legacy ' +
+      'WordPress-style HTML by tagging elements with data-cms-config="some_key" attributes.');
   }
   function escapeHtml(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
