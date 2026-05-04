@@ -2111,8 +2111,15 @@
     setTimeout(() => requestScan(), 600);
   }
 
+  // Dedupe rapid scan requests — a burst of edits used to fire N scans;
+  // now they coalesce into one ~120ms after the last edit settles.
+  let _scanCoalesceTimer = null;
   function requestScan() {
-    postToIframe({ type: 'cms:scan' });
+    if (_scanCoalesceTimer) clearTimeout(_scanCoalesceTimer);
+    _scanCoalesceTimer = setTimeout(() => {
+      _scanCoalesceTimer = null;
+      postToIframe({ type: 'cms:scan' });
+    }, 120);
   }
 
   function onIframeMessage(event) {

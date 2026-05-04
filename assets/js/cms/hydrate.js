@@ -718,17 +718,33 @@
       if (!res.ok) return;
       const body = await res.json();
       const old = document.getElementById('cms-section-' + sid);
+      let freshEl = null;
       if (old) {
         document.dispatchEvent(new CustomEvent('cms:section:unload', { detail: { sectionId: sid } }));
         old.outerHTML = body.html;
+        freshEl = document.getElementById('cms-section-' + sid);
         document.dispatchEvent(new CustomEvent('cms:section:load',   { detail: { sectionId: sid } }));
       } else {
         // Section was just added — append into the matching host
         const host = document.querySelector('[data-cms-section-host]');
         if (host) {
           host.insertAdjacentHTML('beforeend', body.html);
+          freshEl = document.getElementById('cms-section-' + sid);
           document.dispatchEvent(new CustomEvent('cms:section:load', { detail: { sectionId: sid } }));
         }
+      }
+      // BUG FIX (v2.38): re-applying outerHTML throws away the inline-edit
+      // tagging done by scanStegaInside / autoTagAll, and the new element
+      // isn't observed by the entrance-animation IntersectionObserver. Re-
+      // run all three on just the fresh subtree so inline-edit still works
+      // on the new HTML.
+      if (freshEl) {
+        scanStegaInside(freshEl);
+        armEntranceAnimations(freshEl);
+        // Auto-tag is per-page (uses path-based hashes), so we need the slug.
+        // Inside a v2 section, autoTagAll's exclude list (data-cms-section-id)
+        // already skips it — so we don't need to re-run autoTagAll inside the
+        // section. The section's stega tagging covers its own editable fields.
       }
     } catch (e) {
       console.warn('[cms-v2] rerender failed', e);
