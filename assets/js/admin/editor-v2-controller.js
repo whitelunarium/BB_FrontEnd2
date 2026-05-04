@@ -2523,12 +2523,12 @@
     elPanelHistory.innerHTML = '';
     const head = document.createElement('div');
     head.className = 'v2-settings-head';
-    head.innerHTML = `<h3>History</h3><p>Recent edits to this page, theme, and overrides.</p>`;
+    head.innerHTML = `<h3>History</h3><p>Recent edits across pages, theme, and overrides. Click ↻ to revert any inline edit.</p>`;
     elPanelHistory.appendChild(head);
     if (!events.length) {
       const p = document.createElement('p');
       p.style.cssText = 'color:var(--v2-muted); padding:8px 0;';
-      p.textContent = 'No history yet.';
+      p.textContent = 'No history yet — your first edit will appear here.';
       elPanelHistory.appendChild(p);
       return;
     }
@@ -2537,14 +2537,49 @@
       row.className = 'v2-history-row';
       const when = e.updated_at ? new Date(e.updated_at) : null;
       const ago  = when ? _timeAgo(when) : '?';
-      const iconMap = { page_template: '📄', page_publish: '🚀', theme: '🎨', override: '✏️' };
+      const iconMap = {
+        page_template: '📄',
+        page_publish:  '🚀',
+        theme:         '🎨',
+        override:      '✏️',
+        site_config:   '🌐',
+      };
+      // Detail-level revert: only meaningful for `override` and `site_config`
+      const canRevert = (e.kind === 'override'    && e.element_id && e.page_slug)
+                     || (e.kind === 'site_config' && e.cfg_key);
+      const revertBtn = canRevert ? '<button class="v2-icon-btn v2-history-revert" title="Reset this change to default">↻</button>' : '';
       row.innerHTML = `
         <div class="v2-history-row-icon">${iconMap[e.kind] || '·'}</div>
         <div class="v2-history-row-body">
           <div class="v2-history-detail">${escapeHtml(e.detail || '')}</div>
           <div class="v2-history-meta">${escapeHtml(e.updated_by_name || '?')} · ${escapeHtml(ago)}</div>
         </div>
+        ${revertBtn}
       `;
+      const btn = row.querySelector('.v2-history-revert');
+      if (btn) {
+        btn.addEventListener('click', async () => {
+          const ok = confirm('Revert this change?\n\n' + (e.detail || ''));
+          if (!ok) return;
+          try {
+            let url;
+            if (e.kind === 'override') {
+              url = _apiBase() + '/api/overrides/' + encodeURIComponent(e.page_slug)
+                    + '/' + encodeURIComponent(e.element_id);
+            } else if (e.kind === 'site_config') {
+              url = _apiBase() + '/api/site-config/' + encodeURIComponent(e.cfg_key);
+            }
+            const res = await fetch(url, {
+              method: 'DELETE', credentials: 'include',
+              headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('pnec_token') || '') },
+            });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            toast('Reverted ✓', 'ok');
+            loadHistory();
+            try { elIframe.contentWindow.location.reload(); } catch (_e) {}
+          } catch (e2) { toast('Revert failed: ' + (e2.message || ''), 'error'); }
+        });
+      }
       elPanelHistory.appendChild(row);
     });
   }
