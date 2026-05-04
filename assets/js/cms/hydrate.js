@@ -710,6 +710,16 @@
     const style = document.createElement('style');
     style.id = 'cms-preview-style';
     style.textContent = `
+      /* First-load pulse — when the editor opens a page, flash every
+         editable element briefly so admins see what's editable. */
+      @keyframes cms-first-pulse {
+        0%   { box-shadow: 0 0 0 0 rgba(91,140,255,0.55), 0 0 0 0 rgba(168,85,247,0.30); }
+        50%  { box-shadow: 0 0 0 4px rgba(91,140,255,0.35), 0 0 0 12px rgba(168,85,247,0.15); }
+        100% { box-shadow: 0 0 0 0 rgba(91,140,255,0), 0 0 0 0 rgba(168,85,247,0); }
+      }
+      body.cms-preview .cms-editable.cms-first-pulse {
+        animation: cms-first-pulse 1.6s ease-out 1;
+      }
       [data-cms-section-id] { position: relative; }
       [data-cms-section-id].is-cms-selected {
         outline: 2px solid #3b82f6; outline-offset: -2px;
@@ -983,6 +993,18 @@
     if (new URLSearchParams(window.location.search).get('preview') === '1') {
       document.body.classList.add('cms-preview');
       tagV1Editables();
+      // Brief first-load pulse so the admin can see, at a glance, every
+      // element that's hover-editable. Staggered so it sweeps across the
+      // page rather than all firing at once.
+      setTimeout(() => {
+        const editables = Array.from(document.querySelectorAll('.cms-editable'));
+        editables.forEach((el, i) => {
+          setTimeout(() => {
+            el.classList.add('cms-first-pulse');
+            setTimeout(() => el.classList.remove('cms-first-pulse'), 1700);
+          }, Math.min(i * 18, 1200));
+        });
+      }, 400);
       enablePreviewMode();
       enableV2PreviewMode();
     }

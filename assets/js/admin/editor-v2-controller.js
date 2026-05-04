@@ -1456,17 +1456,17 @@
       if (sec.layout && sec.layout.animation) animated++;
     });
     const overLimit = total >= 25;
+    const auto      = state.autoTagged || 0;
+    const v1Items   = (state.existingItems || []).filter(i => i.kind === 'site_config' || i.kind === 'override').length;
     el.innerHTML = `
       <span class="v2-status-stat-pill${overLimit ? ' is-warn' : ''}" title="Sections on this page (soft limit 25)">
         ${total}/25 sections
       </span>
-      <span class="v2-status-stat-pill" title="${visible} visible, ${hidden} hidden">
-        👁 ${visible} · 🙈 ${hidden}
-      </span>
-      <span class="v2-status-stat-pill" title="Total blocks across all sections">
-        ${blocks} block${blocks === 1 ? '' : 's'}
-      </span>
+      ${total ? `<span class="v2-status-stat-pill" title="${visible} visible, ${hidden} hidden">👁 ${visible} · 🙈 ${hidden}</span>` : ''}
+      ${blocks ? `<span class="v2-status-stat-pill" title="Total blocks across all sections">${blocks} block${blocks === 1 ? '' : 's'}</span>` : ''}
       ${animated ? `<span class="v2-status-stat-pill" title="Sections with entrance animations">✨ ${animated} animated</span>` : ''}
+      ${v1Items ? `<span class="v2-status-stat-pill" title="Manually-tagged inline-editable elements">🏷 ${v1Items} tagged</span>` : ''}
+      ${auto ? `<span class="v2-status-stat-pill" title="Auto-detected hover-editable text/image elements">✨ ${auto} hoverable</span>` : ''}
     `;
   }
 
