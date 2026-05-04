@@ -42,6 +42,14 @@ push-as-we-ship.
 | v2.24 | Hover preview popover on picker cards w/ wireframe SVG | yes |
 | v2.25 | Fullscreen viewport (F) + per-section entrance animations + status-bar stats | yes |
 | v2.26 | Publish-time diff modal — review every change before clicking 🚀 | yes |
+| v2.27 | Gmail-style undo toasts (no more confirm dialogs on delete) | yes |
+| v2.28 | Floating "✏️ Edit this page" button on every public page (admin-only) + nav-bar editor link | yes |
+| v2.29 | All real PNEC pages in picker + auto-on Inspector + Shopify-strength hover glow + accurate "what's editable here" banner | yes |
+| v2.30 | **Universal inline-edit auto-tagger** — every text element on every page is now hover-editable, no per-page setup needed | yes |
+| v2.31 | Images are hover-swappable (asset library opens) + navbar + footer labels editable globally | yes |
+| v2.32 | First-load pulse animation on every editable element + richer status-bar stats | yes |
+| v2.33 | "↻ Reset to default" button on every site_config / override field | yes |
+| v2.34 | Friendly labels in sidebar from `siteConfigMeta` + sorted alphabetically; **bug fix:** site_config + page_overrides blueprints were never registered in app/__init__.py — fixing this made v1 inline-edit ACTUALLY work for the first time | yes |
 
 ## How to use the new stuff (≈12 things to try in 5 minutes)
 
