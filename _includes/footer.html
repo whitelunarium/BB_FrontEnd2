@@ -5,18 +5,18 @@
   <div class="footer-grid">
     <div class="footer-brand">
       <a href="{{ '/' | relative_url }}" class="footer-logo-area">
-        <img src="{{ '/images/capstone/powaynec.png' | relative_url }}" alt="" class="footer-logo-mark">
+        <img src="{{ '/images/capstone/powaynec.png' | relative_url }}" alt="" class="footer-logo-mark" data-cms-config="footer_logo_url">
         <div>
-          <div class="footer-org-name">Poway Neighborhood Emergency Corps</div>
+          <div class="footer-org-name" data-cms-config="footer_org_name">Poway Neighborhood Emergency Corps</div>
         </div>
       </a>
-      <p class="footer-tagline">
+      <p class="footer-tagline" data-cms-config="footer_tagline">
         Neighbor helping neighbor since 1995. PNEC helps Poway residents prepare, connect, and support one another during emergencies.
       </p>
       <div class="footer-contact-info">
-        <div>Poway, CA 92064</div>
-        <div><a href="mailto:powaynec@gmail.com">powaynec@gmail.com</a></div>
-        <div><a href="https://powaynec.com">powaynec.com</a></div>
+        <div data-cms-config="footer_address">Poway, CA 92064</div>
+        <div><a href="mailto:powaynec@gmail.com" data-cms-config="footer_email">powaynec@gmail.com</a></div>
+        <div><a href="https://powaynec.com" data-cms-config="footer_website">powaynec.com</a></div>
       </div>
       <div class="footer-social">
         <a href="https://www.facebook.com/powaynec" aria-label="PNEC on Facebook" rel="noopener">
@@ -52,15 +52,17 @@
     </div>
 
     <div class="footer-newsletter">
-      <h4>Stay Prepared</h4>
-      <p>Stay informed about community meetings and activities. Join our mailing list today.</p>
+      <h4 data-cms-config="footer_newsletter_heading">Stay Prepared</h4>
+      <p  data-cms-config="footer_newsletter_blurb">Stay informed about community meetings and activities. Join our mailing list today.</p>
       <div class="newsletter-form-container">
         <a href="https://visitor.constantcontact.com/manage/optin?v=001..."
-           target="_blank" rel="noopener" class="btn-newsletter">
+           target="_blank" rel="noopener" class="btn-newsletter"
+           data-cms-config="footer_newsletter_cta">
           Join Our Mailing List
         </a>
       </div>
-      <div style="margin-top: 12px; font-size: 12px; color: rgba(255,255,255,0.5);">
+      <div style="margin-top: 12px; font-size: 12px; color: rgba(255,255,255,0.5);"
+           data-cms-config="footer_newsletter_disclaimer">
         We respect your privacy. Unsubscribe at any time.
       </div>
     </div>
@@ -68,10 +70,10 @@
   </div>
 
   <div class="footer-bottom">
-    <p>© {{ 'now' | date: "%Y" }} Poway Neighborhood Emergency Corps. All rights reserved.</p>
+    <p data-cms-config="footer_copyright">© {{ 'now' | date: "%Y" }} Poway Neighborhood Emergency Corps. All rights reserved.</p>
     <div class="footer-links">
-      <a href="{{ '/pages/contact.html' | relative_url }}">Contact</a>
-      <a href="{{ '/pages/privacy.html' | relative_url }}">Privacy Policy</a>
+      <a href="{{ '/pages/contact.html' | relative_url }}" data-cms-config="footer_link_contact">Contact</a>
+      <a href="{{ '/pages/privacy.html' | relative_url }}" data-cms-config="footer_link_privacy">Privacy Policy</a>
     </div>
   </div>
 

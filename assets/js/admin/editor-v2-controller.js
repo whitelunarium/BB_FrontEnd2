@@ -2054,6 +2054,18 @@
       }
     } else if (d.type === 'cms:inline:save') {
       handleInlineSave(d);
+    } else if (d.type === 'cms:image-pick-request') {
+      // Iframe asked us to open the asset picker for one of its <img> elements.
+      // When the user picks a URL, we save it as an override or site_config.
+      const item = d.kind === 'site_config'
+        ? { kind: 'site_config', key: d.key, label: d.key }
+        : { kind: 'override',    key: d.key, label: d.key };
+      openAssetLibrary(async (url) => {
+        await applyExistingChange(item, url);
+        if (d.kind === 'site_config' && state.siteConfig) state.siteConfig[d.key] = url;
+        else if (state.overrides) state.overrides[d.key] = url;
+        toast('Image swapped ✓', 'ok');
+      });
     }
   }
 

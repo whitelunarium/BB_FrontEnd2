@@ -160,7 +160,41 @@
       }
       tagged.push({ key, el });
     });
+    autoTagAllImages(slug, overrides, tagged);
     return tagged;
+  }
+
+  // ── Image auto-tagger ────────────────────────────────────────────────────
+  // Same idea as autoTagAll but for <img>: any image not already tagged and
+  // not inside an excluded ancestor becomes hover-swappable. Click on the
+  // image in admin preview opens the asset library; the picked URL is saved
+  // through the same /api/overrides pipeline (applyValue knows to swap .src).
+  function autoTagAllImages(slug, overrides, tagged) {
+    if (!slug) return;
+    document.querySelectorAll('img').forEach(img => {
+      if (img.hasAttribute('data-cms-config'))   return;
+      if (img.hasAttribute('data-cms-override')) return;
+      // Same excluded ancestors as text auto-tag
+      for (const sel of AUTO_TAG_EXCLUDE_ANCESTORS) {
+        if (img.closest(sel)) return;
+      }
+      // Skip tiny images (icons, sprites, tracking pixels)
+      const rect = img.getBoundingClientRect();
+      if (rect.width < 32 || rect.height < 32) return;
+      // Skip data: URIs (likely inline svg/icons embedded in CSS)
+      const src = img.getAttribute('src') || '';
+      if (src.startsWith('data:')) return;
+      const path = _elementPath(img);
+      const hash = _stableElementHash(slug + '|' + path + '|IMG');
+      const key  = AUTO_TAG_PREFIX + 'img_' + hash;
+      img.setAttribute('data-cms-override', key);
+      img.classList.add('cms-editable');
+      img.classList.add('cms-editable-image');
+      if (overrides && Object.prototype.hasOwnProperty.call(overrides, key)) {
+        applyValue(img, overrides[key]);
+      }
+      if (tagged) tagged.push({ key, el: img });
+    });
   }
 
   // ── v2: shared API base ──────────────────────────────────────────────────
@@ -493,10 +527,11 @@
 
   function enableInlineEditClicks(expectedOrigin) {
     // Double-click any editable element → make it directly editable in place.
-    // We support three flavors:
+    // We support these flavors:
     //   v2 stega:        [data-cms-stega-sid][data-cms-stega-field]
     //   v1 site-config:  [data-cms-config]
     //   v1 page-override:[data-cms-override]
+    //   image swap:      [data-cms-override] on an <img> → ask editor for asset picker
     document.addEventListener('dblclick', (event) => {
       const stegaEl = event.target.closest('[data-cms-stega-sid][data-cms-stega-field]');
       const cfgEl   = !stegaEl && event.target.closest('[data-cms-config]');
@@ -506,6 +541,23 @@
       if (el.tagName === 'A' && !document.body.classList.contains('cms-inspector')) return;
       event.preventDefault();
       event.stopPropagation();
+      // Image elements need a different flow — open the editor's asset picker
+      if (el.tagName === 'IMG') {
+        const key = el.getAttribute('data-cms-override') || el.getAttribute('data-cms-config');
+        const kind = el.hasAttribute('data-cms-config') ? 'site_config' : 'override';
+        try {
+          window.parent.postMessage({
+            type: 'cms:image-pick-request',
+            kind,
+            key,
+            currentSrc: el.getAttribute('src') || '',
+          }, expectedOrigin);
+        } catch (_e) {}
+        // Brief visual ack
+        el.classList.add('cms-editing');
+        setTimeout(() => el.classList.remove('cms-editing'), 800);
+        return;
+      }
       let kind, key1, key2;
       if (stegaEl) {
         kind = 'section';
@@ -695,6 +747,17 @@
         padding: 5px 9px; border-radius: 5px;
         white-space: nowrap; pointer-events: none; z-index: 9999;
         box-shadow: 0 4px 12px rgba(91,140,255,0.45);
+      }
+      /* Images need a distinct affordance — they open the asset picker, not contentEditable. */
+      body.cms-preview .cms-editable-image { cursor: zoom-in; }
+      body.cms-preview .cms-editable-image:hover {
+        outline: 3px solid #ec4899; outline-offset: 2px;
+        box-shadow: 0 0 0 8px rgba(236,72,153,0.20);
+      }
+      body.cms-preview img.cms-editable-image:hover::after,
+      body.cms-preview .cms-editable-image:hover::after {
+        content: '🖼 double-click to swap image';
+        background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
       }
       .cms-editable.cms-editing {
         outline: 2px solid #f59e0b !important;

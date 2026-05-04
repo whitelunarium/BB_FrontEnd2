@@ -5,10 +5,10 @@
   <div class="navbar-shell">
     <div class="navbar-top">
       <a href="{{ '/' | relative_url }}" class="navbar-brand" aria-label="PNEC Home">
-        <img src="{{ '/images/capstone/powaynec.png' | relative_url }}" alt="" class="brand-logo">
+        <img src="{{ '/images/capstone/powaynec.png' | relative_url }}" alt="" class="brand-logo" data-cms-config="brand_logo_url">
         <div class="brand-text">
-          <span class="brand-name">Poway NEC &amp; FSC</span>
-          <span class="brand-tagline">Neighbors Helping Neighbors</span>
+          <span class="brand-name"    data-cms-config="brand_name">Poway NEC &amp; FSC</span>
+          <span class="brand-tagline" data-cms-config="brand_tagline">Neighbors Helping Neighbors</span>
         </div>
       </a>
 
@@ -36,7 +36,7 @@
           </ul>
         </div>
 
-        <a href="/donation-form/" class="btn-donate-nav">Donate Now</a>
+        <a href="/donation-form/" class="btn-donate-nav" data-cms-config="nav_donate_label">Donate Now</a>
 
         <button class="hamburger" id="hamburger-btn" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open navigation menu">
           <span></span><span></span><span></span>
@@ -47,28 +47,28 @@
     <div class="navbar-bottom">
       <ul class="navbar-nav" role="list">
         <li class="nav-item">
-          <a href="{{ '/pages/about.html' | relative_url }}" class="nav-link{% if page.url contains '/about' %} active{% endif %}">About</a>
+          <a href="{{ '/pages/about.html' | relative_url }}" class="nav-link{% if page.url contains '/about' %} active{% endif %}" data-cms-config="nav_label_about">About</a>
         </li>
         <li class="nav-item">
-          <a href="{{ '/pages/programs-and-services.html' | relative_url }}" class="nav-link{% if page.url contains '/programs-and-services' %} active{% endif %}">Programs and Services</a>
+          <a href="{{ '/pages/programs-and-services.html' | relative_url }}" class="nav-link{% if page.url contains '/programs-and-services' %} active{% endif %}" data-cms-config="nav_label_programs">Programs and Services</a>
         </li>
         <li class="nav-item">
-          <a href="{{ '/pages/preparedness-resources.html' | relative_url }}" class="nav-link{% if page.url contains '/preparedness-resources' or page.url contains '/poway-statistics-and-information' %} active{% endif %}">Preparedness &amp; Help</a>
+          <a href="{{ '/pages/preparedness-resources.html' | relative_url }}" class="nav-link{% if page.url contains '/preparedness-resources' or page.url contains '/poway-statistics-and-information' %} active{% endif %}" data-cms-config="nav_label_preparedness">Preparedness &amp; Help</a>
         </li>
         <li class="nav-item">
-          <a href="{{ '/pages/community-events-and-activities.html' | relative_url }}" class="nav-link{% if page.url contains '/community-events-and-activities' %} active{% endif %}">Community Events</a>
+          <a href="{{ '/pages/community-events-and-activities.html' | relative_url }}" class="nav-link{% if page.url contains '/community-events-and-activities' %} active{% endif %}" data-cms-config="nav_label_events">Community Events</a>
         </li>
         <li class="nav-item">
-          <a href="{{ '/pages/find-your-neighborhood.html' | relative_url }}" class="nav-link{% if page.url contains '/find-your-neighborhood' %} active{% endif %}">Find Your Neighborhood</a>
+          <a href="{{ '/pages/find-your-neighborhood.html' | relative_url }}" class="nav-link{% if page.url contains '/find-your-neighborhood' %} active{% endif %}" data-cms-config="nav_label_neighborhood">Find Your Neighborhood</a>
         </li>
         <li class="nav-item">
-          <a href="{{ '/pages/contact.html' | relative_url }}" class="nav-link{% if page.url contains '/contact' %} active{% endif %}">Contact</a>
+          <a href="{{ '/pages/contact.html' | relative_url }}" class="nav-link{% if page.url contains '/contact' %} active{% endif %}" data-cms-config="nav_label_contact">Contact</a>
         </li>
         <li class="nav-item" id="navbar-login-item">
-          <a href="{{ '/pages/register.html#login' | relative_url }}" class="nav-link{% if page.url contains '/login' %} active{% endif %}">Login</a>
+          <a href="{{ '/pages/register.html#login' | relative_url }}" class="nav-link{% if page.url contains '/login' %} active{% endif %}" data-cms-config="nav_label_login">Login</a>
         </li>
         <li class="nav-item" id="navbar-register-item">
-          <a href="{{ '/pages/register.html' | relative_url }}" class="nav-link{% if page.url contains '/register' %} active{% endif %}">Register</a>
+          <a href="{{ '/pages/register.html' | relative_url }}" class="nav-link{% if page.url contains '/register' %} active{% endif %}" data-cms-config="nav_label_register">Register</a>
         </li>
       </ul>
     </div>
