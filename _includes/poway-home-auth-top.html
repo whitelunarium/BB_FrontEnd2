@@ -15,7 +15,8 @@
                       <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1241"><a href="{{ '/pages/preparedness-resources.html' | relative_url }}" class="elementor-item">Preparedness &amp; Help</a></li>
                       <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1240"><a href="{{ '/pages/community-events-and-activities.html' | relative_url }}" class="elementor-item">Community Events</a></li>
                       <li id="poway-auth-display-item" class="menu-item menu-item-type-custom poway-auth-display" style="display:none;"><a href="{{ '/pages/profile.html' | relative_url }}" class="elementor-item" id="poway-auth-display-link"><span id="poway-auth-display-name"></span><span id="poway-auth-display-location" class="poway-auth-display-location" style="display:none;"></span></a></li>
-                      <li id="poway-auth-logout-item" class="menu-item menu-item-type-custom" style="display:none;"><a href="#" class="elementor-item" id="poway-logout-btn" onclick="pnecLogout(event)">Logout</a></li>
+                      <!-- v2.41: Logout moved to profile page only — kept hidden as a stub for legacy JS that targets the id. -->
+                      <li id="poway-auth-logout-item" class="menu-item menu-item-type-custom" style="display:none !important;"><a href="#" class="elementor-item" id="poway-logout-btn" onclick="pnecLogout(event)">Logout</a></li>
                       <li id="poway-auth-login-item" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-login{% if page.auth_nav == 'login' %} current-menu-item current_page_item{% endif %}"><a href="{{ '/pages/register.html#login' | relative_url }}" class="elementor-item{% if page.auth_nav == 'login' %} elementor-item-active{% endif %}">Login</a></li>
                     </ul>
                   </nav>
@@ -29,7 +30,7 @@
                       <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1241"><a href="{{ '/pages/preparedness-resources.html' | relative_url }}" class="elementor-item" tabindex="-1">Preparedness &amp; Help</a></li>
                       <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1240"><a href="{{ '/pages/community-events-and-activities.html' | relative_url }}" class="elementor-item" tabindex="-1">Community Events</a></li>
                       <li id="poway-auth-display-item-mobile" class="menu-item menu-item-type-custom poway-auth-display" style="display:none;"><a href="{{ '/pages/profile.html' | relative_url }}" class="elementor-item" id="poway-auth-display-link-mobile" tabindex="-1"><span id="poway-auth-display-name-mobile"></span><span id="poway-auth-display-location-mobile" class="poway-auth-display-location" style="display:none;"></span></a></li>
-                      <li id="poway-auth-logout-item-mobile" class="menu-item menu-item-type-custom" style="display:none;"><a href="#" class="elementor-item" tabindex="-1" onclick="pnecLogout(event)">Logout</a></li>
+                      <li id="poway-auth-logout-item-mobile" class="menu-item menu-item-type-custom" style="display:none !important;"><a href="#" class="elementor-item" tabindex="-1" onclick="pnecLogout(event)">Logout</a></li>
                       <li id="poway-auth-login-item-mobile" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-login{% if page.auth_nav == 'login' %} current-menu-item current_page_item{% endif %}"><a href="{{ '/pages/register.html#login' | relative_url }}" class="elementor-item{% if page.auth_nav == 'login' %} elementor-item-active{% endif %}" tabindex="-1">Login</a></li>
                     </ul>
                   </nav>

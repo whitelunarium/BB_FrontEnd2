@@ -11,7 +11,10 @@
 <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1241"><a href="{{ '/pages/preparedness-resources.html' | relative_url }}" class="elementor-item">Preparedness &amp; Help</a></li>
 <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1240"><a href="{{ '/pages/community-events-and-activities.html' | relative_url }}" class="elementor-item">Community Events</a></li>
 <li id="poway-auth-display-item" class="menu-item menu-item-type-custom poway-auth-display" style="display:none;"><a href="{{ '/pages/profile.html' | relative_url }}" class="elementor-item" id="poway-auth-display-link"><span id="poway-auth-display-name"></span><span id="poway-auth-display-location" class="poway-auth-display-location" style="display:none;"></span></a></li>
-<li id="poway-auth-logout-item" class="menu-item menu-item-type-custom" style="display:none;"><a href="#" class="elementor-item" id="poway-logout-btn" onclick="pnecLogout(event)">Logout</a></li>
+<!-- v2.41: Logout moved to profile page only (felt overcomplicated as a nav item).
+     The element is kept hidden (display:none) so any legacy JS targeting it
+     by id still works, but it's never visible to the user now. -->
+<li id="poway-auth-logout-item" class="menu-item menu-item-type-custom" style="display:none !important;"><a href="#" class="elementor-item" id="poway-logout-btn" onclick="pnecLogout(event)">Logout</a></li>
 <li id="poway-auth-login-item" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-login"><a href="{{ '/pages/register.html#login' | relative_url }}" class="elementor-item">Login</a></li>
 </ul>			</nav>
 					<div class="elementor-menu-toggle" role="button" tabindex="0" aria-label="Menu Toggle" aria-expanded="false">
@@ -22,7 +25,7 @@
 <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1241"><a href="{{ '/pages/preparedness-resources.html' | relative_url }}" class="elementor-item" tabindex="-1">Preparedness &amp; Help</a></li>
 <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1240"><a href="{{ '/pages/community-events-and-activities.html' | relative_url }}" class="elementor-item" tabindex="-1">Community Events</a></li>
 <li id="poway-auth-display-item-mobile" class="menu-item menu-item-type-custom poway-auth-display" style="display:none;"><a href="{{ '/pages/profile.html' | relative_url }}" class="elementor-item" id="poway-auth-display-link-mobile" tabindex="-1"><span id="poway-auth-display-name-mobile"></span><span id="poway-auth-display-location-mobile" class="poway-auth-display-location" style="display:none;"></span></a></li>
-<li id="poway-auth-logout-item-mobile" class="menu-item menu-item-type-custom" style="display:none;"><a href="#" class="elementor-item" tabindex="-1" onclick="pnecLogout(event)">Logout</a></li>
+<li id="poway-auth-logout-item-mobile" class="menu-item menu-item-type-custom" style="display:none !important;"><a href="#" class="elementor-item" tabindex="-1" onclick="pnecLogout(event)">Logout</a></li>
 <li id="poway-auth-login-item-mobile" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-login"><a href="{{ '/pages/register.html#login' | relative_url }}" class="elementor-item" tabindex="-1">Login</a></li>
 </ul>			</nav>
 						</div>
@@ -123,46 +126,14 @@
 		</div>
 					</div>
 		</section>
-				<!-- ── Admin blog bar (shown only to admin/staff) ───────────────── -->
-				<div id="pnec-admin-blog-bar" style="display:none; background:#fff7ed; border-top:3px solid #c0392b; border-bottom:1px solid #fbd9c9; padding:16px 32px; gap:20px; align-items:center; flex-wrap:wrap;">
-					<div style="flex:1; min-width:200px;">
-						<span style="font-size:0.78rem; font-weight:700; color:#c0392b; text-transform:uppercase; letter-spacing:0.06em;">Staff Dashboard</span>
-						<div id="pnec-admin-recent-posts" style="margin-top:8px; display:flex; gap:12px; flex-wrap:wrap;"></div>
-					</div>
-					<div style="display:flex; gap:10px; flex-shrink:0; flex-wrap:wrap;">
-						<a id="pnec-admin-write-btn" href="{{ '/pages/admin-blog.html' | relative_url }}" style="background:#c0392b; color:#fff; padding:9px 18px; border-radius:8px; font-weight:700; font-size:0.85rem; text-decoration:none; white-space:nowrap;">✏️ Write Post</a>
-						<a href="{{ '/pages/preparedness-resources.html#local-risk' | relative_url }}" style="background:#0a1628; color:#fff; padding:9px 18px; border-radius:8px; font-weight:600; font-size:0.85rem; text-decoration:none; white-space:nowrap;">📊 Local Risk</a>
-					</div>
-				</div>
-				<script>
-				(function() {
-					try {
-						var stored = localStorage.getItem('pnec_user') || sessionStorage.getItem('pnec_user');
-						if (!stored) return;
-						var user = JSON.parse(stored);
-						if (!user || (user.role !== 'admin' && user.role !== 'staff')) return;
-						var bar = document.getElementById('pnec-admin-blog-bar');
-						if (bar) bar.style.display = 'flex';
-						var postsEl = document.getElementById('pnec-admin-recent-posts');
-						if (!postsEl) return;
-						var apiBase = (window.API_BASE || 'http://localhost:8425');
-						fetch(apiBase + '/api/posts?limit=3', { credentials: 'include' })
-							.then(function(r) { return r.ok ? r.json() : null; })
-							.then(function(data) {
-								var posts = (data && Array.isArray(data.posts)) ? data.posts : (Array.isArray(data) ? data : []);
-								if (!posts.length) {
-									postsEl.innerHTML = '<span style="font-size:0.82rem;color:#9e9e9e;">No posts yet — write the first one!</span>';
-									return;
-								}
-								postsEl.innerHTML = posts.slice(0, 3).map(function(p) {
-									return '<a href="{{ \'/pages/blog.html\' | relative_url }}#post-' + (p.id || '') + '" style="font-size:0.82rem;color:#0a1628;text-decoration:underline;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;display:inline-block;" title="' + (p.title || '').replace(/"/g,'&quot;') + '">' + ((p.title || 'Untitled').length > 28 ? (p.title || 'Untitled').slice(0,28) + '…' : (p.title || 'Untitled')) + '</a>';
-								}).join('');
-							})
-							.catch(function() {});
-					} catch(e) {}
-				})();
-				</script>
-				<!-- ────────────────────────────────────────────────────────────── -->
+				<!-- ── Admin Staff Dashboard bar removed (v2.41) ─────────────────
+				     Was a half-broken affordance: "Write Post" linked to
+				     /pages/admin-blog.html which doesn't exist (404), and the
+				     "Local Risk" anchor jumped to a non-existent #local-risk.
+				     Admins should use the Admin Dashboard (gear icon in
+				     user-menu) for posting + the Live Theme Editor (🎨 icon)
+				     for everything else.
+				───────────────────────────────────────────────────────────── -->
 		<style>
 			.pnec-risk-band {
 				background: #ffffff;

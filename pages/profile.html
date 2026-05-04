@@ -201,6 +201,46 @@ body_class: inner-page
   cursor: not-allowed;
 }
 
+/* ── Sign-out section (v2.41) ───────────────────────────────────────────── */
+.profile-signout-section {
+  background: linear-gradient(180deg, #fff 0%, #f7f9fc 100%);
+  border: 1px solid #cfd8e3;
+  border-radius: 20px;
+  padding: 24px 32px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.profile-signout-section h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0a1628;
+  margin: 0 0 8px;
+}
+.profile-signout-section p {
+  color: #5a5a5a;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  margin: 0 0 14px;
+}
+.profile-signout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #5b8cff 0%, #a855f7 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 22px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: .01em;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(91,140,255,0.32);
+  transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+}
+.profile-signout-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(91,140,255,0.45); }
+.profile-signout-btn:active { transform: translateY(0); opacity: .9; }
+
 /* ── Avatar URL modal ────────────────────────────────────────────────────── */
 .avatar-modal-overlay {
   display: none;
@@ -517,6 +557,17 @@ document.addEventListener('DOMContentLoaded', function() {
         '<div class="profile-error" id="profile-inactive-error"></div>' +
       '</div>' +
 
+      // v2.41: prominent Sign Out button. Logout used to be buried in the
+      // navbar dropdown / a separate top-level nav item — admins found it
+      // overcomplicated. Now it lives where you'd expect: on the profile page.
+      '<div class="profile-signout-section">' +
+        '<h3>Account</h3>' +
+        '<p>Done for now? Sign out of this device. You can sign back in anytime.</p>' +
+        '<button class="profile-signout-btn" id="profile-signout-btn" type="button">' +
+          '<span aria-hidden="true">↩</span> Sign out' +
+        '</button>' +
+      '</div>' +
+
       '<div style="margin-top:8px;">' +
         '<a href="' + siteBase + '/" class="btn btn-outline">← Back to Home</a>' +
       '</div>';
@@ -641,6 +692,41 @@ document.addEventListener('DOMContentLoaded', function() {
             inactiveBtn.disabled = false;
             inactiveBtn.textContent = 'Mark my account inactive';
           });
+      });
+    }
+
+    // ── Sign out (v2.41) ─────────────────────────────────────────────────
+    var signOutBtn = document.getElementById('profile-signout-btn');
+    // If the user arrived via the navbar "Sign out" link (#signout hash),
+    // scroll to + briefly highlight the button so it's instantly findable.
+    if (signOutBtn && window.location.hash === '#signout') {
+      try {
+        signOutBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        signOutBtn.style.outline = '3px solid #ec4899';
+        signOutBtn.style.outlineOffset = '4px';
+        setTimeout(function () { signOutBtn.style.outline = ''; }, 2000);
+      } catch (_e) {}
+    }
+    if (signOutBtn) {
+      signOutBtn.addEventListener('click', function () {
+        signOutBtn.disabled = true;
+        signOutBtn.textContent = 'Signing out…';
+        try {
+          // logoutUser() lives in auth-api.js — clears localStorage + posts to /api/auth/logout
+          if (typeof logoutUser === 'function') {
+            logoutUser().finally(function () {
+              window.location.href = (window.siteBase || '') + '/';
+            });
+            return;
+          }
+        } catch (_e) {}
+        // Fallback path: just clear local cache and redirect
+        try {
+          localStorage.removeItem('pnec_user');
+          localStorage.removeItem('pnec_token');
+          sessionStorage.removeItem('pnec_user');
+        } catch (_e) {}
+        window.location.href = (window.siteBase || '') + '/';
       });
     }
   }

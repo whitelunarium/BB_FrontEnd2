@@ -19,3 +19,8 @@
 @import "homepage";
 @import "chatbot";
 @import "pages";
+
+// 6. v2.41 — site-wide polish layer (smooth scroll, hover lifts, focus rings,
+// scroll-reveal, gradient selection, etc.). Imported LAST so it overrides
+// earlier rules where needed.
+@import "polish";

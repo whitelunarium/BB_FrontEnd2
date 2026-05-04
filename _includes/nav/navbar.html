@@ -32,7 +32,9 @@
             <li id="nav-dashboard-link" style="display:none"><a href="{{ '/pages/dashboard.html' | relative_url }}" class="user-menu-item" role="menuitem">Staff Dashboard</a></li>
             <li id="nav-admin-link" style="display:none"><a href="{{ '/pages/admin.html' | relative_url }}" class="user-menu-item" role="menuitem">⚙️ Admin Dashboard</a></li>
             <li id="nav-editor-link" style="display:none"><a href="{{ '/pages/admin-editor-v2.html' | relative_url }}" class="user-menu-item" role="menuitem">🎨 Live Theme Editor</a></li>
-            <li><button class="user-menu-item danger" id="navbar-logout-btn" role="menuitem">Sign Out</button></li>
+            <!-- v2.41: Sign Out lives on the profile page now (link below points there). The legacy navbar-logout-btn id is kept on a hidden stub so existing JS handlers don't error. -->
+            <li><a href="{{ '/pages/profile.html#signout' | relative_url }}" class="user-menu-item" role="menuitem">↩ Sign out</a></li>
+            <li style="display:none"><button id="navbar-logout-btn" type="button" aria-hidden="true"></button></li>
           </ul>
         </div>
 
@@ -46,6 +48,15 @@
 
     <div class="navbar-bottom">
       <ul class="navbar-nav" role="list">
+        <li class="nav-item nav-item-home">
+          <a href="{{ '/' | relative_url }}" class="nav-link nav-link-home{% if page.url == '/' %} active{% endif %}" aria-label="Home" title="Home">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 12L12 3l9 9"/>
+              <path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/>
+            </svg>
+            <span class="nav-link-home-label">Home</span>
+          </a>
+        </li>
         <li class="nav-item">
           <a href="{{ '/pages/about.html' | relative_url }}" class="nav-link{% if page.url contains '/about' %} active{% endif %}" data-cms-config="nav_label_about">About</a>
         </li>
@@ -108,7 +119,9 @@
       <a href="{{ '/pages/dashboard.html' | relative_url }}" id="mobile-dashboard-link" style="display:none">Staff Dashboard</a>
       <a href="{{ '/pages/admin.html' | relative_url }}" id="mobile-admin-link" style="display:none">⚙️ Admin Dashboard</a>
       <a href="{{ '/pages/admin-editor-v2.html' | relative_url }}" id="mobile-editor-link" style="display:none">🎨 Live Theme Editor</a>
-      <a href="#" id="mobile-logout-btn" style="color: #fc8181;">Sign Out</a>
+      <!-- v2.41: Sign Out → Profile (a single Sign-out button lives there). Kept hidden stub for legacy JS. -->
+      <a href="{{ '/pages/profile.html#signout' | relative_url }}" style="color: #fc8181;">↩ Sign out</a>
+      <a href="#" id="mobile-logout-btn" style="display:none" aria-hidden="true"></a>
     </li>
   </ul>
 

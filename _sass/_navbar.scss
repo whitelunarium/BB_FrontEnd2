@@ -109,7 +109,7 @@
   font-weight: 700;
   color: $color-white-pure;
   border-radius: $border-radius-sm;
-  transition: color $transition-fast, background-color $transition-fast;
+  transition: color $transition-fast, background-color $transition-fast, transform $transition-fast;
   letter-spacing: 0.01em;
   white-space: nowrap;
 
@@ -119,6 +119,30 @@
     background-color: rgba(255, 255, 255, 0.2);
     text-decoration: none;
   }
+  &:hover { transform: translateY(-1px); }
+}
+
+// Home button — icon + label, slightly larger and pulled left
+.nav-link-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 12px;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+
+  svg { display: block; }
+
+  &:hover,
+  &.active {
+    background: rgba(255, 255, 255, 0.26);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+.nav-link-home-label { font-size: 0.82rem; font-weight: 700; }
+@media (max-width: 720px) {
+  .nav-link-home-label { display: none; }
+  .nav-link-home { padding: 9px; }
 }
 
 .dropdown-menu {

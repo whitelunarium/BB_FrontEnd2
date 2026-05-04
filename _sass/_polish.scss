@@ -1,0 +1,146 @@
+// _sass/_polish.scss
+// v2.41 — site-wide polish layer.
+// Loaded LAST so it overrides any earlier rule. Goal: make scroll smoother,
+// hovers more vibrant, focus rings consistent, and typography rhythm feel
+// intentional. No HTML changes — pure CSS upgrade.
+
+/* ── 1. Smooth scrolling site-wide ──────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 96px;          // anchor jumps clear the fixed navbar
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+/* ── 2. Selection color uses brand gradient ─────────────────────────────── */
+::selection         { background: rgba(91, 140, 255, 0.30); color: #0a1628; }
+::-moz-selection    { background: rgba(91, 140, 255, 0.30); color: #0a1628; }
+
+/* ── 3. Vibrant link affordance on every default <a> ────────────────────── */
+.pnec-page-shell a:not(.btn):not(.elementor-item):not(.nav-link):not(.user-menu-item):not(.chatbot-utility-link),
+main a:not(.btn):not(.elementor-item):not(.nav-link):not(.user-menu-item):not(.chatbot-utility-link) {
+  color: #1d4ed8;
+  background-image: linear-gradient(transparent calc(100% - 2px), rgba(91, 140, 255, 0.55) 2px);
+  background-repeat: no-repeat;
+  background-size: 0% 100%;
+  transition: background-size 220ms ease, color 160ms ease;
+}
+.pnec-page-shell a:not(.btn):not(.elementor-item):not(.nav-link):not(.user-menu-item):not(.chatbot-utility-link):hover,
+main a:not(.btn):not(.elementor-item):not(.nav-link):not(.user-menu-item):not(.chatbot-utility-link):hover {
+  background-size: 100% 100%;
+  color: #1e3a8a;
+}
+
+/* ── 4. Buttons — softer rest state, more lift on hover ─────────────────── */
+.btn,
+.btn-primary,
+button.btn-primary {
+  transition: transform 140ms ease, box-shadow 180ms ease, background-color 160ms ease, opacity 160ms ease;
+  &:hover { transform: translateY(-1px); }
+  &:active { transform: translateY(0); }
+  &:focus-visible {
+    outline: 3px solid #5b8cff;
+    outline-offset: 3px;
+  }
+}
+
+/* ── 5. Reveal-on-scroll for any element marked .pnec-reveal ───────────── */
+/* JS toggles `.is-in` when the element scrolls into view (see polish.js).
+   Falls back to instantly visible when JS or IO is unavailable. */
+.pnec-reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 720ms cubic-bezier(.2,.8,.2,1), transform 720ms cubic-bezier(.2,.8,.2,1);
+  will-change: opacity, transform;
+}
+.pnec-reveal.is-in,
+.no-js .pnec-reveal {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pnec-reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* ── 6. Focus ring — single brand-aware default ────────────────────────── */
+:focus-visible {
+  outline-color: #5b8cff;
+  outline-offset: 3px;
+}
+.btn:focus-visible,
+.nav-link:focus-visible,
+.user-menu-trigger:focus-visible {
+  outline: 3px solid #5b8cff;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px rgba(91,140,255,0.20);
+}
+
+/* ── 7. Image polish — soft edges, gentle hover lift on cards ───────────── */
+.profile-avatar,
+.elementor-image img,
+.feature-card img,
+.card img {
+  transition: transform 320ms cubic-bezier(.2,.8,.2,1), box-shadow 320ms ease;
+}
+.feature-card:hover img,
+.card:hover img {
+  transform: scale(1.02);
+}
+
+/* ── 8. Subtle scrollbars (WebKit + Firefox) ───────────────────────────── */
+* { scrollbar-width: thin; scrollbar-color: rgba(91,140,255,0.45) transparent; }
+*::-webkit-scrollbar           { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track     { background: transparent; }
+*::-webkit-scrollbar-thumb     { background: rgba(91,140,255,0.30); border-radius: 999px; border: 2px solid transparent; background-clip: padding-box; }
+*::-webkit-scrollbar-thumb:hover { background: rgba(91,140,255,0.55); }
+
+/* ── 9. Cards — universal hover-lift ───────────────────────────────────── */
+.card,
+.feature-card,
+.event-card,
+.alert-card,
+.elementor-element-populated > .elementor-widget-wrap > .e-con-inner,
+.tile,
+.adm-stat,
+.profile-info-section,
+.profile-status-section,
+.profile-signout-section {
+  transition: transform 160ms ease, box-shadow 240ms ease;
+}
+.card:hover,
+.feature-card:hover,
+.event-card:hover,
+.alert-card:hover,
+.tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(10, 22, 40, 0.10);
+}
+
+/* ── 10. Heading rhythm — tighten + brand the H1/H2 a hair ──────────────── */
+h1, h2, h3 {
+  letter-spacing: -0.012em;
+}
+h1 { line-height: 1.12; }
+h2 { line-height: 1.18; }
+h3 { line-height: 1.25; }
+
+/* ── 11. Brand gradient utility for special moments (CTAs, hero) ────────── */
+.pnec-grad-text {
+  background: linear-gradient(135deg, #5b8cff 0%, #a855f7 50%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ── 12. Print: hide chrome ─────────────────────────────────────────────── */
+@media print {
+  .chatbot-trigger, .chatbot-panel, .chatbot-backdrop,
+  #pnec-edit-this-page,
+  .pnec-navbar, .navbar-bottom, .mobile-nav, .footer-newsletter {
+    display: none !important;
+  }
+}
