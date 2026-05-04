@@ -22,7 +22,7 @@ Legend: ✅ shipped · ⚠ partial · ❌ missing · ⛔ out of scope (single-te
 |---|---|---|
 | Sections with typed settings + repeatable blocks | Same — `add`, `remove`, `duplicate`, `reorder`, `set`, `bulk_set`, `add_block`, etc. | ✅ |
 | Add via "Add section" + categorized block picker | ✅ Categorized picker w/ tabs | ✅ |
-| Hover preview / block thumbnail in picker | Text-only cards | ❌ |
+| Hover preview / block thumbnail in picker | ✅ Hover popover with wireframe SVG, field list, presets-available note (v2.24) | ✅ |
 | Predictive search in picker | Yes (text filter) | ✅ |
 | Drag-reorder in sidebar AND in iframe canvas | ✅ Both shipped | ✅ |
 | Visibility toggle (eye icon) | Yes | ✅ |
@@ -115,7 +115,7 @@ Ranked by leverage:
 13. **Better section-type icons** ✅ shipped (v2.21) — `editor-v2-icons.js` ships 13 inline Lucide-style SVGs (one per section type) plus 11 action icons (rename / visibility / duplicate / delete / drag / move / copy / paste / edit). Used in tree rows, section picker cards, find-modal results, and action chips. Self-contained — no CDN, no external font.
 14. **AI-generated placeholder images** ✅ shipped (v2.22) — Every image field grows a "✨ AI image" button. Opens a modal that asks Groq to polish the user's prompt into a neutral, ethical photo brief, then shows a real generated image from Pollinations.ai (free, no key) with width/height presets. One click to "Use this image" sets both the URL and the matching alt-text field automatically.
 15. **Block-level cross-page copy/paste between Q&A items, gallery items, etc.** ✅ shipped (v2.23) — Single-block copy/paste was already in v2.17. v2.23 adds bulk: a "📋 All" button on the blocks list header copies every block as one payload, and paste accepts payloads with one OR many blocks (older `{type, settings}` payloads still work). Paste filters incompatible block types automatically and ships every accepted block as a single batched PATCH so undo rolls them all back at once. A 5-item localStorage history runs alongside the system clipboard so non-editor copying doesn't clobber it.
-16. **Hover thumbnail previews on picker cards** — still missing
+16. **Hover thumbnail previews on picker cards** ✅ shipped (v2.24) — Every picker card grows a hover popover (240ms hover delay) with a schematic SVG wireframe of what that section type renders, the section's first 6 settings fields, repeatable-block hint, and preset count. Self-contained — `editor-v2-icons.js` ships 13 inline wireframe SVGs (one per type) so the popover never hits the network. Auto-positions to the right of the card or flips left if the card is near the right edge.
 17. **Live PNEC chatbot brand-voice tuning** — out of scope for editor
 
 ## What's deliberately not building

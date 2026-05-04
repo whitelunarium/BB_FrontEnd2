@@ -1735,6 +1735,8 @@
         <h4>${escapeHtml(meta.label)}</h4>
         <p>${escapeHtml(meta.description || '')}</p>
       `;
+      // Hover preview: schematic wireframe popover after a 240ms hover
+      attachPickerPreview(card, meta);
       card.addEventListener('click', async () => {
         closePicker();
         const patch = { op: 'add', type: meta.type };
@@ -1784,6 +1786,7 @@
             postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: newSid });
           }
         });
+        attachPickerPreview(pcard, meta, preset);
         elPickerList.appendChild(pcard);
       });
     });
@@ -1791,6 +1794,75 @@
   }
   function closePicker() {
     elPicker.classList.remove('is-open');
+    closePickerPreview();
+  }
+
+  // ── Picker hover preview ───────────────────────────────────────────────────
+  // Single popover element reused across all cards.
+  let _pickerPreviewEl = null;
+  let _pickerPreviewTimer = null;
+  function attachPickerPreview(card, meta, preset) {
+    card.addEventListener('mouseenter', () => {
+      clearTimeout(_pickerPreviewTimer);
+      _pickerPreviewTimer = setTimeout(() => showPickerPreview(card, meta, preset), 240);
+    });
+    card.addEventListener('mouseleave', () => {
+      clearTimeout(_pickerPreviewTimer);
+      closePickerPreview();
+    });
+    // Close popover if the card is removed (e.g. category filter)
+    card.addEventListener('focusout', closePickerPreview);
+  }
+  function showPickerPreview(card, meta, preset) {
+    closePickerPreview();
+    if (!window.V2_ICONS) return;
+    const wireframe = window.V2_ICONS.hasWireframe(meta.type)
+      ? window.V2_ICONS.wireframe(meta.type)
+      : '';
+    const icon = window.V2_ICONS.svg(meta.type, { size: 24 });
+    const fields = (meta.settings || []).slice(0, 6).map(f => '· ' + (f.label || f.id)).join('<br>');
+    const blockCount = (meta.blocks || []).length;
+    const presetCount = (meta.presets || []).length;
+    const presetNote = preset
+      ? ('<p class="v2-picker-preview-meta">⭐ ' + escapeHtml(preset.name) + ' — ' +
+         (preset.blocks || []).length + ' item' + ((preset.blocks || []).length === 1 ? '' : 's') + ' pre-filled</p>')
+      : '';
+    const blockNote = blockCount ? `<p class="v2-picker-preview-meta">${blockCount} repeatable block type${blockCount === 1 ? '' : 's'}</p>` : '';
+    const presetNoteFromMeta = (!preset && presetCount)
+      ? `<p class="v2-picker-preview-meta">${presetCount} ready-to-use preset${presetCount === 1 ? '' : 's'} below ↓</p>`
+      : '';
+    _pickerPreviewEl = document.createElement('div');
+    _pickerPreviewEl.id = 'v2-picker-preview';
+    _pickerPreviewEl.className = 'v2-picker-preview';
+    _pickerPreviewEl.innerHTML = `
+      <div class="v2-picker-preview-head">
+        <span class="v2-picker-preview-icon">${icon}</span>
+        <span><strong>${escapeHtml(meta.label)}</strong></span>
+      </div>
+      ${wireframe ? '<div class="v2-picker-preview-wf">' + wireframe + '</div>' : ''}
+      <p class="v2-picker-preview-desc">${escapeHtml(meta.description || '')}</p>
+      ${fields ? `<div class="v2-picker-preview-fields"><b>Fields</b><br>${fields}</div>` : ''}
+      ${blockNote}
+      ${presetNote}
+      ${presetNoteFromMeta}
+    `;
+    document.body.appendChild(_pickerPreviewEl);
+    // Position to the right of the card if there's room, else to the left
+    const rect = card.getBoundingClientRect();
+    const popW = 320;
+    const popH = _pickerPreviewEl.offsetHeight || 220;
+    let left = rect.right + 12;
+    if (left + popW > window.innerWidth - 8) left = Math.max(8, rect.left - popW - 12);
+    let top = rect.top + (rect.height / 2) - (popH / 2);
+    top = Math.max(8, Math.min(top, window.innerHeight - popH - 8));
+    _pickerPreviewEl.style.left = left + 'px';
+    _pickerPreviewEl.style.top  = top + 'px';
+  }
+  function closePickerPreview() {
+    if (_pickerPreviewEl) {
+      _pickerPreviewEl.remove();
+      _pickerPreviewEl = null;
+    }
   }
 
   // ── Iframe communication ──────────────────────────────────────────────────

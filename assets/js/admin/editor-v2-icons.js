@@ -153,5 +153,116 @@
     return !!SECTION_ICONS[key];
   }
 
-  window.V2_ICONS = { svg, has };
+  // ── Wireframe previews — schematic SVG of what each section type renders ──
+  // Used in the picker hover popover. ViewBox is 200x120 so it sits cleanly
+  // in a card-sized preview tile. Stroke-only, currentColor for theming.
+  const WIREFRAMES = {
+    hero: `
+      <rect x="3" y="3" width="194" height="114" rx="6" fill="rgba(91,140,255,0.06)"/>
+      <rect x="40" y="40" width="120" height="14" rx="2" fill="rgba(91,140,255,0.45)"/>
+      <rect x="55" y="62" width="90"  height="8"  rx="2" fill="rgba(255,255,255,0.20)"/>
+      <rect x="78" y="80" width="44"  height="14" rx="7" fill="rgba(168,85,247,0.65)"/>`,
+    text_block: `
+      <rect x="3" y="3" width="194" height="114" rx="6" fill="rgba(91,140,255,0.04)"/>
+      <rect x="20" y="22" width="160" height="10" rx="2" fill="rgba(255,255,255,0.30)"/>
+      <rect x="20" y="40" width="160" height="6"  rx="2" fill="rgba(255,255,255,0.16)"/>
+      <rect x="20" y="52" width="160" height="6"  rx="2" fill="rgba(255,255,255,0.16)"/>
+      <rect x="20" y="64" width="120" height="6"  rx="2" fill="rgba(255,255,255,0.16)"/>
+      <rect x="20" y="80" width="160" height="6"  rx="2" fill="rgba(255,255,255,0.16)"/>
+      <rect x="20" y="92" width="100" height="6"  rx="2" fill="rgba(255,255,255,0.16)"/>`,
+    image_with_text: `
+      <rect x="3" y="3" width="194" height="114" rx="6" fill="rgba(91,140,255,0.04)"/>
+      <rect x="14" y="14" width="78" height="92" rx="4" fill="rgba(91,140,255,0.30)"/>
+      <circle cx="36" cy="38" r="6" fill="rgba(255,255,255,0.50)"/>
+      <polyline points="14,98 30,80 50,90 70,72 92,90 92,106 14,106" fill="rgba(255,255,255,0.18)"/>
+      <rect x="104" y="22" width="80" height="10" rx="2" fill="rgba(255,255,255,0.40)"/>
+      <rect x="104" y="40" width="80" height="6"  rx="2" fill="rgba(255,255,255,0.18)"/>
+      <rect x="104" y="52" width="80" height="6"  rx="2" fill="rgba(255,255,255,0.18)"/>
+      <rect x="104" y="64" width="56" height="6"  rx="2" fill="rgba(255,255,255,0.18)"/>
+      <rect x="104" y="84" width="40" height="12" rx="6" fill="rgba(168,85,247,0.55)"/>`,
+    faq: `
+      <rect x="3" y="3" width="194" height="114" rx="6" fill="rgba(91,140,255,0.04)"/>
+      <rect x="14" y="14" width="172" height="22" rx="4" fill="rgba(91,140,255,0.18)"/>
+      <text x="22" y="30" font-size="10" fill="rgba(255,255,255,0.6)">Q · How do I sign up?</text>
+      <rect x="14" y="44" width="172" height="22" rx="4" fill="rgba(91,140,255,0.10)"/>
+      <text x="22" y="60" font-size="10" fill="rgba(255,255,255,0.4)">Q · When are events?</text>
+      <rect x="14" y="74" width="172" height="22" rx="4" fill="rgba(91,140,255,0.10)"/>
+      <text x="22" y="90" font-size="10" fill="rgba(255,255,255,0.4)">Q · Who is this for?</text>`,
+    cta_banner: `
+      <rect x="3" y="3" width="194" height="114" rx="6" fill="rgba(168,85,247,0.18)"/>
+      <rect x="30" y="36" width="140" height="12" rx="2" fill="rgba(255,255,255,0.45)"/>
+      <rect x="50" y="56" width="100" height="6"  rx="2" fill="rgba(255,255,255,0.25)"/>
+      <rect x="74" y="78" width="52"  height="14" rx="7" fill="rgba(255,255,255,0.85)"/>`,
+    gallery: `
+      <rect x="3" y="3" width="194" height="114" rx="6" fill="rgba(91,140,255,0.04)"/>
+      <rect x="14" y="14" width="56" height="44" rx="3" fill="rgba(91,140,255,0.30)"/>
+      <rect x="76" y="14" width="56" height="44" rx="3" fill="rgba(91,140,255,0.30)"/>
+      <rect x="138" y="14" width="48" height="44" rx="3" fill="rgba(91,140,255,0.30)"/>
+      <rect x="14" y="64" width="56" height="44" rx="3" fill="rgba(91,140,255,0.30)"/>
+      <rect x="76" y="64" width="56" height="44" rx="3" fill="rgba(91,140,255,0.30)"/>
+      <rect x="138" y="64" width="48" height="44" rx="3" fill="rgba(91,140,255,0.30)"/>`,
+    card_list: `
+      <rect x="3" y="3" width="194" height="114" rx="6" fill="rgba(91,140,255,0.04)"/>
+      <rect x="14" y="20" width="54" height="80" rx="4" fill="rgba(91,140,255,0.16)"/>
+      <rect x="20" y="28" width="42" height="22" rx="2" fill="rgba(91,140,255,0.32)"/>
+      <rect x="20" y="56" width="42" height="6"  rx="1" fill="rgba(255,255,255,0.30)"/>
+      <rect x="73" y="20" width="54" height="80" rx="4" fill="rgba(91,140,255,0.16)"/>
+      <rect x="79" y="28" width="42" height="22" rx="2" fill="rgba(91,140,255,0.32)"/>
+      <rect x="79" y="56" width="42" height="6"  rx="1" fill="rgba(255,255,255,0.30)"/>
+      <rect x="132" y="20" width="54" height="80" rx="4" fill="rgba(91,140,255,0.16)"/>
+      <rect x="138" y="28" width="42" height="22" rx="2" fill="rgba(91,140,255,0.32)"/>
+      <rect x="138" y="56" width="42" height="6"  rx="1" fill="rgba(255,255,255,0.30)"/>`,
+    alert_box: `
+      <rect x="3" y="3" width="194" height="114" rx="6" fill="rgba(251,191,36,0.10)"/>
+      <rect x="20" y="40" width="160" height="40" rx="6" fill="rgba(251,191,36,0.22)" stroke="rgba(251,191,36,0.65)" stroke-width="1.5"/>
+      <circle cx="38" cy="60" r="8" fill="rgba(251,191,36,0.85)"/>
+      <text x="35" y="64" font-size="12" font-weight="bold" fill="#1e3a8a">!</text>
+      <rect x="56" y="50" width="110" height="6"  rx="2" fill="rgba(255,255,255,0.5)"/>
+      <rect x="56" y="62" width="80"  height="5"  rx="2" fill="rgba(255,255,255,0.3)"/>`,
+    quote: `
+      <rect x="3" y="3" width="194" height="114" rx="6" fill="rgba(91,140,255,0.04)"/>
+      <text x="20" y="56" font-size="48" fill="rgba(168,85,247,0.45)">“</text>
+      <rect x="50" y="34" width="130" height="6" rx="2" fill="rgba(255,255,255,0.40)"/>
+      <rect x="50" y="46" width="130" height="6" rx="2" fill="rgba(255,255,255,0.40)"/>
+      <rect x="50" y="58" width="100" height="6" rx="2" fill="rgba(255,255,255,0.40)"/>
+      <rect x="50" y="80" width="50"  height="5" rx="2" fill="rgba(168,85,247,0.55)"/>`,
+    two_column: `
+      <rect x="3" y="3" width="194" height="114" rx="6" fill="rgba(91,140,255,0.04)"/>
+      <rect x="14" y="14" width="84" height="92" rx="4" fill="rgba(91,140,255,0.20)"/>
+      <rect x="22" y="22" width="68" height="6" rx="1" fill="rgba(255,255,255,0.4)"/>
+      <rect x="22" y="34" width="60" height="4" rx="1" fill="rgba(255,255,255,0.25)"/>
+      <rect x="22" y="42" width="60" height="4" rx="1" fill="rgba(255,255,255,0.25)"/>
+      <rect x="102" y="14" width="84" height="92" rx="4" fill="rgba(168,85,247,0.20)"/>
+      <rect x="110" y="22" width="68" height="6" rx="1" fill="rgba(255,255,255,0.4)"/>
+      <rect x="110" y="34" width="60" height="4" rx="1" fill="rgba(255,255,255,0.25)"/>
+      <rect x="110" y="42" width="60" height="4" rx="1" fill="rgba(255,255,255,0.25)"/>`,
+    video_embed: `
+      <rect x="3" y="3" width="194" height="114" rx="6" fill="rgba(91,140,255,0.04)"/>
+      <rect x="20" y="14" width="160" height="92" rx="4" fill="#0b1220"/>
+      <polygon points="86,46 116,60 86,74" fill="rgba(255,255,255,0.85)"/>
+      <rect x="40" y="98" width="120" height="2" fill="rgba(255,255,255,0.45)"/>`,
+    contact_cta: `
+      <rect x="3" y="3" width="194" height="114" rx="6" fill="rgba(91,140,255,0.10)"/>
+      <rect x="20" y="20" width="160" height="80" rx="6" fill="rgba(91,140,255,0.30)"/>
+      <rect x="34" y="34" width="80" height="8" rx="2" fill="rgba(255,255,255,0.5)"/>
+      <rect x="34" y="50" width="60" height="6" rx="2" fill="rgba(255,255,255,0.35)"/>
+      <rect x="34" y="74" width="50" height="14" rx="7" fill="rgba(168,85,247,0.65)"/>`,
+    custom_html: `
+      <rect x="3" y="3" width="194" height="114" rx="6" fill="rgba(91,140,255,0.04)"/>
+      <text x="20" y="34" font-size="11" font-family="ui-monospace,monospace" fill="rgba(91,140,255,0.7)">&lt;div class="custom"&gt;</text>
+      <text x="32" y="52" font-size="11" font-family="ui-monospace,monospace" fill="rgba(255,255,255,0.55)">&lt;h2&gt;Hello&lt;/h2&gt;</text>
+      <text x="32" y="70" font-size="11" font-family="ui-monospace,monospace" fill="rgba(255,255,255,0.55)">&lt;p&gt;World&lt;/p&gt;</text>
+      <text x="20" y="92" font-size="11" font-family="ui-monospace,monospace" fill="rgba(91,140,255,0.7)">&lt;/div&gt;</text>`,
+  };
+  function wireframe(key) {
+    const inner = WIREFRAMES[key];
+    if (!inner) return '';
+    return (
+      '<svg viewBox="0 0 200 120" width="100%" height="100%"' +
+      ' xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' + inner + '</svg>'
+    );
+  }
+  function hasWireframe(key) { return !!WIREFRAMES[key]; }
+
+  window.V2_ICONS = { svg, has, wireframe, hasWireframe };
 })();
