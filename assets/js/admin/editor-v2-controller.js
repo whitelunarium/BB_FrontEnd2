@@ -1999,6 +1999,7 @@
       const items = Array.isArray(d.items) ? d.items : [];
       state.existingItems = items;
       state.lintIssues = Array.isArray(d.issues) ? d.issues : [];
+      state.autoTagged = typeof d.autoTagged === 'number' ? d.autoTagged : 0;
       // Pre-load site-config + overrides so we can render the labels with values
       Promise.all([
         fetch(_apiBase() + '/api/site-config').then(r => r.ok ? r.json() : null).catch(() => null),
@@ -2290,27 +2291,33 @@
     elBanner.style.display = 'none';
   }
   function updateEditableBanner() {
-    // Decide what to tell the admin about the page they just loaded.
-    // - If there are v2 sections → say so + how many are editable
-    // - If there are v1 [data-cms-config]/[data-cms-override] markers → say so
-    // - If neither → tell the user this page isn't yet editable + how to fix
+    // The page can have three kinds of editable content (any combination):
+    //   - v2 sections (state.template.order)
+    //   - manual v1 markers (data-cms-config / data-cms-override) — listed in
+    //     state.existingItems with kind=='site_config' or 'override'
+    //   - auto-tagged text elements (state.autoTagged from cms:scan:result)
     const sectionCount = (state.template && state.template.order) ? state.template.order.length : 0;
     const v1Items      = (state.existingItems || []).filter(i => i.kind === 'site_config' || i.kind === 'override');
-    if (sectionCount > 0) {
-      // v2 page — banner is unnecessary, the tree shows everything
-      hideBanner();
+    const autoCount    = state.autoTagged || 0;
+
+    const parts = [];
+    if (sectionCount) parts.push(sectionCount + ' v2 section' + (sectionCount === 1 ? '' : 's'));
+    if (v1Items.length) parts.push(v1Items.length + ' tagged element' + (v1Items.length === 1 ? '' : 's'));
+    if (autoCount) parts.push(autoCount + ' auto-detected text element' + (autoCount === 1 ? '' : 's'));
+
+    if (!parts.length) {
+      showBanner('⚠️ Nothing editable found on this page. Click "+ Add section" in the sidebar to add CMS content.');
       return;
     }
-    if (v1Items.length > 0) {
-      // Legacy page with some inline-editable hotspots
-      showBanner('💡 ' + v1Items.length + ' editable element' + (v1Items.length === 1 ? '' : 's') +
-        ' on this page. Hover any of them in the preview to edit, or use the "Existing content" group in the sidebar.');
+    if (autoCount && !sectionCount && !v1Items.length) {
+      // Pure auto-tagged page (most legacy pages) — make the hint actionable
+      showBanner('💡 ' + autoCount + ' text elements are hover-editable. ' +
+        'Mouse over any heading or paragraph in the preview → it lights up blue → double-click to edit.');
       return;
     }
-    // Nothing on this page is editable yet
-    showBanner('⚠️ This page has no editable content yet. ' +
-      'Click "+ Add section" in the sidebar to start adding CMS sections, or convert legacy ' +
-      'WordPress-style HTML by tagging elements with data-cms-config="some_key" attributes.');
+    // Mixed content — short summary, banner not strictly necessary
+    showBanner('💡 Editable on this page: ' + parts.join(' · ') +
+      '. Hover anything in the preview to edit it.');
   }
   function escapeHtml(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({

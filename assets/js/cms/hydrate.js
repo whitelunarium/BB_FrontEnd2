@@ -62,6 +62,107 @@
     applyThemeVars(config);
   }
 
+  // ── Universal auto-tagger ────────────────────────────────────────────────
+  // Makes EVERY meaningful text element on the page editable, even if no
+  // data-cms-config/data-cms-override marker was authored.
+  //
+  // Strategy: walk the DOM, find text-bearing elements (h1-h6, p, blockquote,
+  // li, button, a, span when leaf), generate a stable element_id from their
+  // path, tag them with `data-cms-override="auto__<id>"`, mark `.cms-editable`
+  // for hover styling, and apply any previously-saved override value.
+  //
+  // Stable id generation:
+  //   - tag name + index of element among same-tag siblings, walked up the
+  //     ancestor chain. e.g. "main>div:0>h2:0".
+  //   - SHA-ish hash of that path so it's URL-safe and short.
+  //
+  // Idempotent — running twice is a no-op. Handles dynamic re-renders by
+  // re-walking on each call.
+  const AUTO_TAG_PREFIX = 'auto__';
+  const AUTO_TAG_SELECTOR = 'h1, h2, h3, h4, h5, h6, p, blockquote, li, button';
+  // Don't auto-tag things inside these containers — they're either app
+  // chrome (nav, footer, search, modals) or interactive widgets that
+  // shouldn't be turned into editable text.
+  const AUTO_TAG_EXCLUDE_ANCESTORS = [
+    'nav', 'footer', 'form',
+    '[data-cms-section-host]',          // CMS v2 hosts handle their own editing
+    '[data-cms-section-id]',            // already inside a v2 section
+    '[data-cms-no-edit]',               // explicit opt-out
+    '#mobile-nav', '#mobile-nav-overlay',
+    '.pnec-chatbot-fab', '.chatbot-toggle', '[data-pnec-chatbot]',
+    '#v2-shell', '#v2-gate',            // editor itself (defensive)
+  ];
+
+  function _stableElementHash(str) {
+    // Tiny non-cryptographic hash → 8 hex chars. Good enough for unique
+    // element identity within a single page.
+    let h = 0;
+    for (let i = 0; i < str.length; i++) {
+      h = ((h << 5) - h) + str.charCodeAt(i);
+      h |= 0;
+    }
+    return (h >>> 0).toString(16).padStart(8, '0');
+  }
+
+  function _elementPath(el) {
+    // Walk up the ancestor chain, building "tag:index" segments. Stops at
+    // <body>. Index = position-among-siblings-of-same-tag (0-based).
+    const segments = [];
+    let cur = el;
+    while (cur && cur !== document.body && cur.parentElement) {
+      const tag = cur.tagName.toLowerCase();
+      const siblings = Array.from(cur.parentElement.children).filter(c => c.tagName === cur.tagName);
+      const idx = siblings.indexOf(cur);
+      segments.unshift(tag + ':' + idx);
+      cur = cur.parentElement;
+    }
+    return segments.join('>');
+  }
+
+  function _shouldAutoTag(el) {
+    if (!el || !el.tagName) return false;
+    // Already tagged
+    if (el.hasAttribute('data-cms-config'))   return false;
+    if (el.hasAttribute('data-cms-override')) return false;
+    // Inside an excluded ancestor
+    for (const sel of AUTO_TAG_EXCLUDE_ANCESTORS) {
+      if (el.closest(sel)) return false;
+    }
+    // Empty or whitespace-only
+    const text = (el.textContent || '').trim();
+    if (!text) return false;
+    // Skip elements that contain block-level children (we want to tag the leaf)
+    // — but allow inline children like <strong>, <em>, <a>.
+    const hasBlockChildren = Array.from(el.children).some(c =>
+      ['DIV','SECTION','ARTICLE','P','UL','OL','LI','H1','H2','H3','H4','H5','H6','BLOCKQUOTE','HEADER','FOOTER','NAV','MAIN','ASIDE','TABLE'].includes(c.tagName)
+    );
+    if (hasBlockChildren) return false;
+    // Skip absurdly long text (likely a wrapper, not a leaf)
+    if (text.length > 800) return false;
+    // Skip elements whose visible text is a single number (counters, dates)
+    if (/^[\s\d.,:%$\-+]+$/.test(text) && text.length < 12) return false;
+    return true;
+  }
+
+  function autoTagAll(slug, overrides) {
+    if (!slug) return [];
+    const tagged = [];
+    document.querySelectorAll(AUTO_TAG_SELECTOR).forEach(el => {
+      if (!_shouldAutoTag(el)) return;
+      const path = _elementPath(el);
+      const hash = _stableElementHash(slug + '|' + path + '|' + el.tagName);
+      const key  = AUTO_TAG_PREFIX + el.tagName.toLowerCase() + '_' + hash;
+      el.setAttribute('data-cms-override', key);
+      el.classList.add('cms-editable');
+      // Apply saved value if we have one for this generated key
+      if (overrides && Object.prototype.hasOwnProperty.call(overrides, key)) {
+        applyValue(el, overrides[key]);
+      }
+      tagged.push({ key, el });
+    });
+    return tagged;
+  }
+
   // ── v2: shared API base ──────────────────────────────────────────────────
 
   function _apiBase() {
@@ -285,6 +386,9 @@
     document.querySelectorAll('[data-cms-override]').forEach(el => {
       const key = el.dataset.cmsOverride;
       if (!key) return;
+      // Auto-tagged elements (from autoTagAll) are hover-editable directly in
+      // the iframe — listing every <p> on the page would drown the sidebar.
+      if (key.indexOf(AUTO_TAG_PREFIX) === 0) return;
       items.push({
         kind:    'override',
         key,
@@ -305,6 +409,16 @@
       });
     });
     return items;
+  }
+
+  function countAutoTagged() {
+    // Auto-tagged elements have data-cms-override starting with AUTO_TAG_PREFIX.
+    let n = 0;
+    document.querySelectorAll('[data-cms-override]').forEach(el => {
+      const k = el.dataset.cmsOverride || '';
+      if (k.indexOf(AUTO_TAG_PREFIX) === 0) n++;
+    });
+    return n;
   }
 
   function _humanLabel(key) {
@@ -619,8 +733,11 @@
           // Editor asked for an inventory of all editable elements on this page.
           const items = scanEditable();
           const issues = scanLinter();
+          const autoTagged = countAutoTagged();
           try {
-            window.parent.postMessage({ type: 'cms:scan:result', items, issues }, expectedOrigin);
+            window.parent.postMessage({
+              type: 'cms:scan:result', items, issues, autoTagged,
+            }, expectedOrigin);
           } catch (_e) {}
           break;
         }
@@ -756,8 +873,23 @@
   }
 
   async function hydrate() {
-    // v1: site-config + overrides (text/image swap on data-cms-config).
-    const slug = document.body && document.body.dataset && document.body.dataset.cmsPage;
+    // Determine the page slug for overrides:
+    //   1. <body data-cms-page="..."> if set
+    //   2. otherwise derive from URL (/ → home, /pages/X.html → X)
+    const explicit = document.body && document.body.dataset && document.body.dataset.cmsPage;
+    let slug = explicit;
+    if (!slug) {
+      const path = (window.location.pathname || '').toLowerCase();
+      if (path === '/' || path.endsWith('/index.html')) slug = 'home';
+      else {
+        const m = path.match(/\/pages\/([^/.]+)/);
+        if (m) slug = m[1];
+      }
+      // Tag the body so other code (e.g. inline-edit save) can find the slug
+      if (slug && document.body) document.body.dataset.cmsPage = slug;
+    }
+
+    // v1: site-config + overrides (text/image swap on data-cms-config + auto-tagged).
     if (slug) {
       let config = {}, overrides = {};
       try {
@@ -771,6 +903,9 @@
         console.warn('[cms] hydrate fetch failed; using fallback content', e);
       }
       applyAll(config, overrides);
+      // Auto-tag every text element we can find. Saved override values (the
+      // ones whose keys start with `auto__`) are applied here too.
+      autoTagAll(slug, overrides);
     }
 
     // v2: section hosts
