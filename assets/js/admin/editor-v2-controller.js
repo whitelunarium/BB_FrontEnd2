@@ -1737,13 +1737,25 @@
   async function copySectionToClipboard(sid) {
     const section = state.template.sections[sid];
     if (!section) return;
+    // BUG FIX (v2.37): use block_order so copy/paste preserves the order the
+    // admin sees in the editor. Previously Object.keys gave arbitrary order
+    // — pasting a FAQ with 5 ordered Q&As would scramble them.
+    const blockMap   = section.blocks || {};
+    const blockOrder = (section.block_order || []).filter(bid => blockMap[bid]);
+    // Fallback for sections that somehow have blocks but no order array
+    const orderedIds = blockOrder.length ? blockOrder : Object.keys(blockMap);
     const payload = {
       __cms_section_clipboard: true,
-      type:        section.type,
-      settings:    section.settings || {},
-      blocks:      Object.keys(section.blocks || {}).map(bid => ({
-        type: section.blocks[bid].type,
-        settings: section.blocks[bid].settings || {},
+      type:     section.type,
+      settings: section.settings || {},
+      // Preserve any custom layout/visibility/animation/name too
+      layout:               section.layout || {},
+      device_visibility:    section.device_visibility || null,
+      visible:              section.visible !== false,
+      name:                 section.name || null,
+      blocks: orderedIds.map(bid => ({
+        type:     blockMap[bid].type,
+        settings: blockMap[bid].settings || {},
       })),
     };
     try {
@@ -1776,6 +1788,24 @@
     });
     const newSid = (res && res.affected_sids || [])[0];
     if (newSid) {
+      // Carry over layout / device_visibility / visibility / name overrides
+      // from the source clipboard payload via follow-up patches.
+      const followups = [];
+      if (payload.layout && Object.keys(payload.layout).length) {
+        followups.push({ op: 'layout', sid: newSid, updates: payload.layout });
+      }
+      if (Array.isArray(payload.device_visibility) && payload.device_visibility.length) {
+        followups.push({ op: 'device_visibility', sid: newSid, devices: payload.device_visibility });
+      }
+      if (payload.visible === false) {
+        followups.push({ op: 'visibility', sid: newSid, visible: false });
+      }
+      if (payload.name) {
+        followups.push({ op: 'rename', sid: newSid, name: payload.name });
+      }
+      if (followups.length) {
+        await applyPatchBatch(followups);
+      }
       state.selectedSid = newSid;
       renderTree();
       renderSettings();
