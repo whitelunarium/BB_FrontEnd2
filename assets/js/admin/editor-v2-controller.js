@@ -257,6 +257,13 @@
     // ── Group A: Existing content (v1 site-config + page-overrides) ──
     const existing = (state.existingItems || []).filter(i => i.kind === 'site_config' || i.kind === 'override');
     if (existing.length) {
+      // Sort: site_config grouped + alphabetical, then overrides alphabetical.
+      // This makes navbar/footer keys (nav_*, brand_*, footer_*) cluster together
+      // and feel intentional rather than scattered.
+      existing.sort((a, b) => {
+        if (a.kind !== b.kind) return a.kind === 'site_config' ? -1 : 1;
+        return (a.label || a.key).localeCompare(b.label || b.key);
+      });
       const groupHead = document.createElement('div');
       groupHead.className = 'v2-tree-group-head';
       groupHead.textContent = 'Existing content';
@@ -265,10 +272,16 @@
         const row = document.createElement('div');
         row.className = 'v2-tree-row v2-tree-existing'
           + (state.selectedExisting && state.selectedExisting.key === item.key && state.selectedExisting.kind === item.kind ? ' is-selected' : '');
+        // Prefer the backend's friendly label from siteConfigMeta when available;
+        // fall back to the auto-generated _humanLabel(key) from hydrate.js.
+        let label = item.label;
+        if (item.kind === 'site_config' && state.siteConfigMeta && state.siteConfigMeta[item.key]) {
+          label = state.siteConfigMeta[item.key].label || label;
+        }
         const icon = item.kind === 'site_config' ? '🌐' : '✏️';
         row.innerHTML = `
           <span class="v2-tree-handle" style="visibility:hidden;">⋮⋮</span>
-          <span class="v2-tree-label">${icon} ${escapeHtml(item.label)}</span>
+          <span class="v2-tree-label">${icon} ${escapeHtml(label)}</span>
         `;
         const peek = document.createElement('span');
         peek.className = 'v2-tree-peek';
