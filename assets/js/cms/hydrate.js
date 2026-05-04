@@ -119,6 +119,10 @@
     '.pnec-chatbot-fab', '.chatbot-toggle', '[data-pnec-chatbot]',
     // Editor itself (defensive — editor isn't on a public page but just in case)
     '#v2-shell', '#v2-gate',
+    // The floating "Edit this page" admin button (added by edit-this-page.js
+    // after hydrate runs — this skip protects against any subsequent
+    // autoTagAll re-runs from picking up its own UI).
+    '#pnec-edit-this-page',
     // Risk widget / other floating UI
     '.risk-widget', '#risk-widget',
   ];
