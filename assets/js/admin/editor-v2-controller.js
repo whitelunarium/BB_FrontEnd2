@@ -655,8 +655,12 @@
       input.className = 'v2-input';
       input.value = initial;
     }
+    // BUG FIX (v2.37): capture the page slug at panel-render time, not at
+    // save-fire time. Otherwise typing fast + switching pages quickly would
+    // save the typed value to the NEW page's overrides instead of the old.
+    const slugAtRender = state.pageSlug;
     input.addEventListener('input', debounce(async () => {
-      await applyExistingChange(item, input.value);
+      await applyExistingChange(item, input.value, { slug: slugAtRender });
     }, 250));
     wrap.appendChild(input);
     elSettingsPanel.appendChild(wrap);
@@ -706,7 +710,11 @@
     }
   }
 
-  async function applyExistingChange(item, value) {
+  async function applyExistingChange(item, value, opts) {
+    opts = opts || {};
+    // For overrides, prefer the slug captured at the call site (typing-time);
+    // falls back to current state.pageSlug for back-compat with old callers.
+    const slug = opts.slug || state.pageSlug;
     if (item.kind === 'site_config') {
       // Patch site-config (v1 endpoint)
       try {
@@ -723,15 +731,21 @@
       } catch (e) { toast('Save failed.', 'error'); }
     } else if (item.kind === 'override') {
       try {
-        const res = await fetch(_apiBase() + '/api/overrides/' + encodeURIComponent(state.pageSlug), {
+        const res = await fetch(_apiBase() + '/api/overrides/' + encodeURIComponent(slug), {
           method: 'POST', credentials: 'include',
           headers: { 'Content-Type': 'application/json',
                      'Authorization': 'Bearer ' + (localStorage.getItem('pnec_token') || '') },
           body: JSON.stringify({ element_id: item.key, content: value }),
         });
         if (!res.ok) throw new Error('HTTP ' + res.status);
-        state.overrides[item.key] = value;
-        postToIframe({ type: 'cms-update', kind: 'override', key: item.key, value });
+        // Only update local state cache when we're STILL on the same page —
+        // otherwise we'd be polluting the new page's cached overrides.
+        if (slug === state.pageSlug && state.overrides) state.overrides[item.key] = value;
+        // Don't post cms-update if the iframe has navigated to a different
+        // page in the meantime (the new page wouldn't have this element).
+        if (slug === state.pageSlug) {
+          postToIframe({ type: 'cms-update', kind: 'override', key: item.key, value });
+        }
       } catch (e) { toast('Save failed.', 'error'); }
     }
   }
