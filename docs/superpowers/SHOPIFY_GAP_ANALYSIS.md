@@ -71,7 +71,7 @@ Legend: ✅ shipped · ⚠ partial · ❌ missing · ⛔ out of scope (single-te
 | Shopify | Us | Status |
 |---|---|---|
 | Theme library — unlimited draft themes per shop | **One draft per page**, one published | ⚠ — meaningful gap (multi-draft would let admins A/B-test) |
-| Publish a single draft theme; previously-live moves to drafts | Per-page publish overwrites published | ⚠ |
+| Publish a single draft theme; previously-live moves to drafts | Per-page publish overwrites published; **diff preview shipped (v2.26) — admin sees added/removed/modified before pressing 🚀** | ⚠ |
 | Tokenized share-preview link for non-admins | Yes (7-day token) | ✅ |
 | Cannot share published preview (only drafts) | Same | ✅ |
 | Multi-user collab | None | ⛔ — overkill for ~3 admins |
@@ -120,6 +120,7 @@ Ranked by leverage:
     a. **Fullscreen preview** (F shortcut, ⛶ button) — sidebar collapses, iframe takes full width. Reminder banner in status bar.
     b. **Per-section entrance animations** — `_animation` field in the layout panel with 6 modes (fade-in/up/down, slide-left/right, zoom-in). Backend renderer emits `cms-anim cms-anim-fade-up` classes; hydrate.js attaches a single shared IntersectionObserver that adds `.cms-anim-in` once each section enters the viewport. Honors `prefers-reduced-motion`. In admin preview mode, animations show immediately (no scroll needed).
     c. **Status-bar page stats** — three live pills next to the Saved indicator: section count (turns amber at the 25 limit), visible/hidden split, total block count, plus an ✨ animated count when any sections have animations. Updates on every renderTree() call.
+18. **Publish-time diff preview** ✅ shipped (v2.26) — Clicking 🚀 Publish now opens a "Review changes" modal instead of a `confirm()`. Backend endpoint `GET /api/cms/page/<slug>/diff` walks every section in the draft vs the published copy and returns a structured `{added, removed, modified, reordered}` payload (modified items include per-field before/after at the `settings.X`, `layout.X`, `block[bid]`, `block_order`, `name`, `visible` levels). Frontend renders the diff with color-coded rows (green/red/amber), collapsible per-field detail (capped at 8 fields per section), and a CTA button that says "🚀 Publish N changes" — disables itself when nothing has changed.
 17. **Live PNEC chatbot brand-voice tuning** — out of scope for editor
 
 ## What's deliberately not building

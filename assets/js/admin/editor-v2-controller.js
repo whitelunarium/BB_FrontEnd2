@@ -2074,13 +2074,133 @@
 
   // ── Publish + share ───────────────────────────────────────────────────────
   async function publish() {
-    if (!confirm('Publish current draft to live site?')) return;
+    // First show a "what's about to change" modal with the diff, then publish
+    // only if the user confirms. The modal also lets the user back out.
+    await openPublishDiffModal();
+  }
+
+  async function openPublishDiffModal() {
+    closePublishDiffModal();
+    const overlay = document.createElement('div');
+    overlay.id = 'v2-publish-diff-modal';
+    overlay.className = 'v2-publish-diff-modal is-open';
+    overlay.innerHTML = `
+      <div class="v2-publish-diff-shell">
+        <div class="v2-publish-diff-header">
+          <h3>🚀 Review changes before publishing</h3>
+          <button class="v2-btn v2-btn-ghost" data-act="close">✕</button>
+        </div>
+        <div id="v2-publish-diff-body" class="v2-publish-diff-body">
+          <p class="v2-publish-diff-loading">Computing diff…</p>
+        </div>
+        <div class="v2-publish-diff-footer">
+          <button class="v2-btn v2-btn-ghost" data-act="close">Cancel</button>
+          <button class="v2-btn"              data-act="confirm" id="v2-publish-diff-go" disabled>Publish anyway…</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', (ev) => { if (ev.target === overlay) closePublishDiffModal(); });
+    overlay.querySelectorAll('[data-act="close"]').forEach(b => b.addEventListener('click', closePublishDiffModal));
+    overlay.querySelector('[data-act="confirm"]').addEventListener('click', async () => {
+      try {
+        await window.v2Publish(state.pageSlug);
+        closePublishDiffModal();
+        toast('Published ✓', 'ok');
+      } catch (e) {
+        toast('Publish failed: ' + (e.message || 'error'), 'error');
+      }
+    });
+
+    // Fetch diff and render
     try {
-      await window.v2Publish(state.pageSlug);
-      toast('Published.', 'ok');
+      const res = await fetch(_apiBase() + '/api/cms/page/' + encodeURIComponent(state.pageSlug) + '/diff', {
+        credentials: 'include',
+        headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('pnec_token') || '') },
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const diff = await res.json();
+      renderPublishDiff(diff);
     } catch (e) {
-      toast('Publish failed: ' + (e.message || 'error'), 'error');
+      const body = overlay.querySelector('#v2-publish-diff-body');
+      body.innerHTML = '<p class="v2-ai-image-error">⚠ Could not compute diff: ' + escapeHtml(e.message || 'unknown') + '</p>';
     }
+  }
+  function closePublishDiffModal() {
+    const m = document.getElementById('v2-publish-diff-modal');
+    if (m) m.remove();
+  }
+  function renderPublishDiff(diff) {
+    const body = document.getElementById('v2-publish-diff-body');
+    const goBtn = document.getElementById('v2-publish-diff-go');
+    if (!body || !goBtn) return;
+
+    const total = (diff.added.length + diff.removed.length + diff.modified.length);
+    const noChanges = total === 0 && !diff.reordered && !diff.no_published;
+    const formatLabel = (item) => {
+      const meta = state.registry.find(t => t.type === item.type);
+      const label = item.name || (meta ? meta.label : item.type);
+      const pill  = item.name ? ' <span class="v2-find-row-pill">' + escapeHtml(meta ? meta.label : item.type) + '</span>' : '';
+      return escapeHtml(label) + pill;
+    };
+
+    let html = '';
+    if (diff.no_published) {
+      html += '<div class="v2-publish-diff-banner v2-publish-diff-banner-info">📢 First publish — every section below is brand new.</div>';
+    }
+    if (noChanges) {
+      html += '<div class="v2-publish-diff-banner v2-publish-diff-banner-ok">✓ Draft is identical to the live site. Nothing to publish.</div>';
+    }
+    html += '<div class="v2-publish-diff-summary">';
+    html += '<span class="v2-status-stat-pill" style="background:rgba(34,211,165,0.10);border-color:rgba(34,211,165,0.30);color:#86efac;">+ ' + diff.added.length    + ' added</span>';
+    html += '<span class="v2-status-stat-pill" style="background:rgba(248,113,113,0.10);border-color:rgba(248,113,113,0.30);color:#fecaca;">− ' + diff.removed.length  + ' removed</span>';
+    html += '<span class="v2-status-stat-pill" style="background:rgba(251,191,36,0.10);border-color:rgba(251,191,36,0.30);color:var(--v2-amber);">~ ' + diff.modified.length + ' modified</span>';
+    if (diff.reordered) html += '<span class="v2-status-stat-pill">↕ reordered</span>';
+    html += '</div>';
+
+    if (diff.added.length) {
+      html += '<h4 class="v2-publish-diff-section">+ Added (' + diff.added.length + ')</h4><ul class="v2-publish-diff-list">';
+      diff.added.forEach(item => {
+        html += '<li class="v2-publish-diff-row v2-publish-diff-add">' + formatLabel(item) + '</li>';
+      });
+      html += '</ul>';
+    }
+    if (diff.removed.length) {
+      html += '<h4 class="v2-publish-diff-section">− Removed (' + diff.removed.length + ')</h4><ul class="v2-publish-diff-list">';
+      diff.removed.forEach(item => {
+        html += '<li class="v2-publish-diff-row v2-publish-diff-rem">' + formatLabel(item) + '</li>';
+      });
+      html += '</ul>';
+    }
+    if (diff.modified.length) {
+      html += '<h4 class="v2-publish-diff-section">~ Modified (' + diff.modified.length + ')</h4><ul class="v2-publish-diff-list">';
+      diff.modified.forEach(item => {
+        const fields = (item.fields || []).slice(0, 8).map(f => {
+          const before = JSON.stringify(f.before);
+          const after  = JSON.stringify(f.after);
+          return '<li><code>' + escapeHtml(f.key) + '</code>: ' +
+                 '<s style="color:#fecaca;">' + escapeHtml(before.slice(0, 80)) + '</s> → ' +
+                 '<span style="color:#86efac;">' + escapeHtml(after.slice(0, 80)) + '</span></li>';
+        }).join('');
+        const more = (item.fields || []).length > 8
+          ? '<li style="color:var(--v2-muted);">…and ' + ((item.fields || []).length - 8) + ' more</li>'
+          : '';
+        html += '<li class="v2-publish-diff-row v2-publish-diff-mod">'
+          + formatLabel(item)
+          + '<details><summary style="font-size:.7rem; color:var(--v2-muted); cursor:pointer; margin-top:4px;">See ' + (item.fields || []).length + ' field change' + ((item.fields || []).length === 1 ? '' : 's') + '</summary>'
+          + '<ul class="v2-publish-diff-fields">' + fields + more + '</ul>'
+          + '</details></li>';
+      });
+      html += '</ul>';
+    }
+    if (noChanges) {
+      goBtn.disabled = true;
+      goBtn.textContent = 'Nothing to publish';
+    } else {
+      goBtn.disabled = false;
+      goBtn.textContent = '🚀 Publish ' + total + ' change' + (total === 1 ? '' : 's');
+    }
+    body.innerHTML = html;
   }
   async function shareDraft() {
     try {
