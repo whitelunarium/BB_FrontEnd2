@@ -1597,11 +1597,15 @@
       __cms_block_clipboard: true,
       blocks: [{ type: block.type, settings: block.settings || {} }],
     };
+    // Always push to local history first — this works even when the
+    // Clipboard API is unavailable (Safari, http://, embedded iframes).
+    _pushBlockHistory(payload);
     try {
       await navigator.clipboard.writeText(JSON.stringify(payload));
-      _pushBlockHistory(payload);
       toast('Block copied — paste into any matching section.', 'ok');
-    } catch (_e) { toast('Clipboard write failed.', 'error'); }
+    } catch (_e) {
+      toast('Block saved to local history (system clipboard unavailable). Paste works within this browser.', 'ok');
+    }
   }
 
   async function copyAllBlocksToClipboard(section) {
@@ -1615,21 +1619,33 @@
         .filter(Boolean)
         .map(b => ({ type: b.type, settings: b.settings || {} })),
     };
+    _pushBlockHistory(payload);
+    const n = payload.blocks.length;
     try {
       await navigator.clipboard.writeText(JSON.stringify(payload));
-      _pushBlockHistory(payload);
-      toast(`${payload.blocks.length} block${payload.blocks.length === 1 ? '' : 's'} copied — paste into any matching section.`, 'ok');
-    } catch (_e) { toast('Clipboard write failed.', 'error'); }
+      toast(`${n} block${n === 1 ? '' : 's'} copied — paste into any matching section.`, 'ok');
+    } catch (_e) {
+      toast(`${n} block${n === 1 ? '' : 's'} saved to local history (system clipboard unavailable).`, 'ok');
+    }
   }
 
   async function pasteBlockFromClipboard(section, meta) {
-    let txt;
+    let txt = null;
+    // Try the system clipboard first
     try { txt = await navigator.clipboard.readText(); }
-    catch (_e) { toast('Clipboard read failed.', 'error'); return; }
-    let payload;
-    try { payload = JSON.parse(txt); } catch (_e) { toast('Clipboard not a block.', 'error'); return; }
+    catch (_e) { /* will fall back to local history */ }
+    let payload = null;
+    if (txt) {
+      try { payload = JSON.parse(txt); } catch (_e) { /* not JSON, ignore */ }
+    }
+    // Fall back to localStorage history (most recent block payload)
     if (!payload || !payload.__cms_block_clipboard) {
-      toast('Clipboard not a block.', 'error');
+      const history = _readBlockHistory();
+      const recent  = history.find(h => h.payload && h.payload.__cms_block_clipboard);
+      if (recent) payload = recent.payload;
+    }
+    if (!payload || !payload.__cms_block_clipboard) {
+      toast('Nothing to paste — copy a block first.', 'error');
       return;
     }
     // Backwards-compat: old single-block payloads had {type, settings} at the top
@@ -2365,14 +2381,29 @@
     body.innerHTML = html;
   }
   async function shareDraft() {
+    // Section groups (_header/_footer) don't have a real public URL to share.
+    if (state.pageSlug === '_header' || state.pageSlug === '_footer') {
+      toast('Section groups are not standalone pages — share an actual page instead.', 'error');
+      return;
+    }
     try {
       const tok = await window.v2IssuePreviewToken(state.pageSlug, 7);
       const path = state.pageSlug === 'home' ? '/' : `/pages/${state.pageSlug}.html`;
       const url  = `${window.location.origin}${path}?preview=1&token=${encodeURIComponent(tok.token)}`;
-      try { await navigator.clipboard.writeText(url); } catch (_e) {}
-      toast('Preview link copied to clipboard (valid 7 days).', 'ok');
+      let copied = false;
+      try {
+        await navigator.clipboard.writeText(url);
+        copied = true;
+      } catch (_e) { /* clipboard API unavailable or denied */ }
+      if (copied) {
+        toast('Preview link copied to clipboard (valid 7 days).', 'ok');
+      } else {
+        // Fallback: prompt the user with the URL so they can copy manually.
+        // Common on http:// origins (Safari) where Clipboard API is blocked.
+        window.prompt('Copy this preview URL (valid 7 days). Clipboard API unavailable on this origin:', url);
+      }
     } catch (e) {
-      toast('Could not issue preview token.', 'error');
+      toast('Could not issue preview token: ' + (e && e.message || ''), 'error');
     }
   }
 
