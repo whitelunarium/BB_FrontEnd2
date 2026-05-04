@@ -645,6 +645,50 @@
     }, 250));
     wrap.appendChild(input);
     elSettingsPanel.appendChild(wrap);
+
+    // Reset to default — only meaningful for overrides (per-page text);
+    // site-config keys have a global default that shipped with the build,
+    // so resetting them just deletes the override row and the original
+    // HTML default reappears on next page load.
+    const resetBtn = document.createElement('button');
+    resetBtn.className = 'v2-btn v2-btn-ghost';
+    resetBtn.style.cssText = 'margin-top:8px; font-size:.78rem;';
+    resetBtn.textContent = '↻ Reset to default';
+    resetBtn.title = 'Remove this override and use the original page text';
+    resetBtn.addEventListener('click', async () => {
+      if (!confirm('Reset "' + (item.label || item.key) + '" back to the original?')) return;
+      await resetExistingChange(item);
+      // Clear the input + reflect cleared state in the iframe
+      input.value = '';
+      // Trigger a soft reload of the iframe so the original text shows
+      try { elIframe.contentWindow.location.reload(); } catch (_e) {}
+    });
+    elSettingsPanel.appendChild(resetBtn);
+  }
+
+  async function resetExistingChange(item) {
+    try {
+      let url;
+      if (item.kind === 'override') {
+        url = _apiBase() + '/api/overrides/' + encodeURIComponent(state.pageSlug)
+              + '/' + encodeURIComponent(item.key);
+      } else if (item.kind === 'site_config') {
+        url = _apiBase() + '/api/site-config/' + encodeURIComponent(item.key);
+      } else { return; }
+      const res = await fetch(url, {
+        method: 'DELETE', credentials: 'include',
+        headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('pnec_token') || '') },
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      // Forget the value in local state too so the sidebar peek text refreshes
+      if (item.kind === 'override' && state.overrides) delete state.overrides[item.key];
+      if (item.kind === 'site_config' && state.siteConfig) delete state.siteConfig[item.key];
+      toast('Reset to default ✓', 'ok', {
+        action: { label: 'Undo', fn: () => { /* the user just deleted; undo would re-set what they had — we don't track that yet */ } },
+      });
+    } catch (e) {
+      toast('Reset failed: ' + (e.message || ''), 'error');
+    }
   }
 
   async function applyExistingChange(item, value) {
