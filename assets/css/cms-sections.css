@@ -142,6 +142,22 @@ body.cms-inspector [data-cms-section-visible="false"],
   .cms-hide-mobile { display: none !important; }
 }
 
+/* Entrance animations — opt-in via per-section layout.animation
+   The base state hides the section; `.cms-anim-in` (added by hydrate.js's
+   IntersectionObserver once the section enters the viewport) plays it in. */
+.cms-anim                  { opacity: 0; transition: opacity 600ms cubic-bezier(.2,.7,.3,1.1), transform 600ms cubic-bezier(.2,.7,.3,1.1); will-change: opacity, transform; }
+.cms-anim-fade-in          { /* opacity only */ }
+.cms-anim-fade-up          { transform: translateY(28px); }
+.cms-anim-fade-down        { transform: translateY(-28px); }
+.cms-anim-slide-left       { transform: translateX(-40px); }
+.cms-anim-slide-right      { transform: translateX(40px); }
+.cms-anim-zoom-in          { transform: scale(.94); }
+.cms-anim.cms-anim-in      { opacity: 1; transform: none; }
+/* Respect users who have reduced motion turned on */
+@media (prefers-reduced-motion: reduce) {
+  .cms-anim, .cms-anim.cms-anim-in { opacity: 1; transform: none; transition: none; }
+}
+
 /* FAQ */
 .cms-faq__item summary::-webkit-details-marker { display: none; }
 .cms-faq__item summary::marker { content: ''; }

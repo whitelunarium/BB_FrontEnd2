@@ -113,9 +113,49 @@
     if (new URLSearchParams(window.location.search).get('preview') === '1') {
       insertAddButtonsBetween(host, order);
     }
+    // Wire entrance animations on any new .cms-anim section
+    armEntranceAnimations(host);
     // Re-init hook for any embedded section JS
     order.forEach(sid => {
       document.dispatchEvent(new CustomEvent('cms:section:load', { detail: { sectionId: sid } }));
+    });
+  }
+
+  // ── Entrance animations ───────────────────────────────────────────────────
+  // Sections rendered with an `_animation` layout setting get a class like
+  // `.cms-anim-fade-up`. CSS hides them; once they enter the viewport, we add
+  // `.cms-anim-in` to play them in. Idempotent — safe to call after every
+  // section re-render. Single shared observer for the whole page.
+  let _entranceObserver = null;
+  function armEntranceAnimations(rootEl) {
+    const root = rootEl || (typeof document !== 'undefined' ? document : null);
+    // Guard for non-browser environments (Node tests pass stub objects).
+    if (!root || typeof root.querySelectorAll !== 'function') return;
+    if (typeof IntersectionObserver === 'undefined') {
+      // Fallback: just unhide everything
+      root.querySelectorAll('.cms-anim').forEach(el => el.classList.add('cms-anim-in'));
+      return;
+    }
+    if (!_entranceObserver) {
+      _entranceObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('cms-anim-in');
+            _entranceObserver.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin: '0px 0px -10% 0px', threshold: 0.05 });
+    }
+    const previewMode = (typeof window !== 'undefined' && window.location)
+      ? new URLSearchParams(window.location.search).get('preview') === '1'
+      : false;
+    root.querySelectorAll('.cms-anim:not(.cms-anim-in)').forEach((el) => {
+      if (previewMode) {
+        // In admin preview, never delay — editors see the final state.
+        el.classList.add('cms-anim-in');
+        return;
+      }
+      _entranceObserver.observe(el);
     });
   }
 
@@ -717,6 +757,10 @@
 
     // v2: section hosts
     await hydrateSectionHosts();
+
+    // Arm any entrance animations on already-rendered sections (covers SSR
+    // pages and pages whose section hosts arrived before this script ran).
+    armEntranceAnimations(document);
 
     document.body.classList.add('cms-hydrated');
 

@@ -262,6 +262,28 @@ body {
 .v2-status-state.is-saving::before { content: '●'; animation: v2-pulse 1s infinite; }
 @keyframes v2-pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
 .v2-status-detail { color: var(--v2-muted); font-size: .72rem; }
+.v2-status-stats {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: 12px;
+  padding-left: 12px;
+  border-left: 1px solid var(--v2-border);
+  color: var(--v2-text-soft);
+  font-size: .72rem;
+}
+.v2-status-stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 6px;
+  background: rgba(91,140,255,0.10);
+  border: 1px solid rgba(91,140,255,0.22);
+  color: var(--v2-text);
+  border-radius: 999px;
+  font-weight: 600;
+}
+.v2-status-stat-pill.is-warn { background: rgba(251,191,36,0.10); border-color: rgba(251,191,36,0.30); color: var(--v2-amber); }
 .v2-status-btn {
   background: transparent; color: var(--v2-muted);
   border: 1px solid var(--v2-border);
@@ -552,9 +574,15 @@ body {
 
 /* Iframe viewport sizing */
 .v2-iframe-frame { flex: 1; display: flex; align-items: stretch; justify-content: center; min-height: 0; background: #475569; padding: 12px; transition: padding 200ms; }
-.v2-iframe-frame.v2-vp-desktop #v2-iframe { width: 100%; height: 100%; max-width: none; box-shadow: none; }
-.v2-iframe-frame.v2-vp-tablet  #v2-iframe { width: 768px; height: 100%; max-width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,.3); border-radius: 12px; }
-.v2-iframe-frame.v2-vp-mobile  #v2-iframe { width: 375px; height: 100%; max-width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,.3); border-radius: 28px; }
+.v2-iframe-frame.v2-vp-desktop    #v2-iframe { width: 100%;  height: 100%; max-width: none; box-shadow: none; }
+.v2-iframe-frame.v2-vp-tablet     #v2-iframe { width: 768px; height: 100%; max-width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,.3); border-radius: 12px; }
+.v2-iframe-frame.v2-vp-mobile     #v2-iframe { width: 375px; height: 100%; max-width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,.3); border-radius: 28px; }
+.v2-iframe-frame.v2-vp-fullscreen #v2-iframe { width: 100%;  height: 100%; max-width: none; box-shadow: none; }
+
+/* Fullscreen mode — sidebar collapses, preview expands edge-to-edge */
+#v2-shell.is-fullscreen .v2-sidebar { display: none; }
+#v2-shell.is-fullscreen .v2-preview { flex: 1 1 100%; min-width: 0; }
+#v2-shell.is-fullscreen .v2-statusbar::before { content: '⛶ Fullscreen mode — press F to exit'; color: var(--v2-violet); font-weight: 600; padding-right: 12px; }
 
 /* Theme panel — vibrant 2025 polish */
 #v2-panel-theme { background: linear-gradient(180deg, #0f1e36 0%, #0a1628 100%); }
@@ -1057,9 +1085,10 @@ body {
     <button id="v2-find" class="v2-btn v2-btn-ghost" title="Search every section across every page (⌘K)" aria-keyshortcuts="Meta+K">🔎 Find</button>
     <button id="v2-help" class="v2-btn v2-btn-ghost" title="Keyboard shortcuts (?)" aria-keyshortcuts="?">⌨</button>
     <div class="v2-viewport-toggle" role="group" aria-label="Viewport">
-      <button class="v2-viewport-btn is-active" data-viewport="desktop" title="Desktop">🖥</button>
-      <button class="v2-viewport-btn"            data-viewport="tablet"  title="Tablet">📱</button>
-      <button class="v2-viewport-btn"            data-viewport="mobile"  title="Mobile">📱</button>
+      <button class="v2-viewport-btn is-active" data-viewport="desktop"    title="Desktop (D)" aria-keyshortcuts="D">🖥</button>
+      <button class="v2-viewport-btn"            data-viewport="tablet"    title="Tablet (T)"  aria-keyshortcuts="T">📱</button>
+      <button class="v2-viewport-btn"            data-viewport="mobile"    title="Mobile (M)"  aria-keyshortcuts="M">📱</button>
+      <button class="v2-viewport-btn"            data-viewport="fullscreen" title="Fullscreen — hide the sidebar (F)" aria-keyshortcuts="F">⛶</button>
     </div>
     <button id="v2-undo" class="v2-btn v2-btn-ghost" title="Undo (⌘Z)">↶</button>
     <button id="v2-redo" class="v2-btn v2-btn-ghost" title="Redo (⌘⇧Z)">↷</button>
@@ -1076,6 +1105,7 @@ body {
   <div id="v2-statusbar" class="v2-statusbar">
     <span id="v2-status-state" class="v2-status-state">Ready</span>
     <span id="v2-status-detail" class="v2-status-detail"></span>
+    <span id="v2-status-stats"  class="v2-status-stats"></span>
     <span class="v2-spacer"></span>
     <button id="v2-create-page"    class="v2-status-btn" title="Create an empty new page">＋ New page</button>
     <button id="v2-duplicate-page" class="v2-status-btn" title="Save current draft as a new page">📋 Duplicate page</button>
@@ -1148,6 +1178,7 @@ body {
       <dt>⌘K</dt>            <dd>Find sections across every page</dd>
       <dt>1 / 2 / 3 / 4</dt> <dd>Sections / Theme / SEO / History tab</dd>
       <dt>D / T / M</dt>     <dd>Desktop / Tablet / Mobile viewport</dd>
+      <dt>F</dt>             <dd>Toggle fullscreen preview (hides sidebar)</dd>
       <dt>⌘Z</dt>            <dd>Undo last change</dd>
       <dt>⌘⇧Z</dt>           <dd>Redo</dd>
       <dt>/</dt>             <dd>Focus the section filter</dd>

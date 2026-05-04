@@ -231,6 +231,8 @@
   // ── Sidebar tree ──────────────────────────────────────────────────────────
   function renderTree() {
     elSidebarTree.innerHTML = '';
+    // Refresh status-bar stats whenever the tree changes
+    updateStatusStats();
 
     // ── Group A: Existing content (v1 site-config + page-overrides) ──
     const existing = (state.existingItems || []).filter(i => i.kind === 'site_config' || i.kind === 'override');
@@ -966,6 +968,36 @@
     schemeRow.appendChild(schemeBtns);
     body.appendChild(schemeRow);
 
+    // Entrance animation — applied as a CSS class on the rendered section
+    const animRow = document.createElement('div');
+    animRow.className = 'v2-field';
+    const animLbl = document.createElement('label');
+    animLbl.className = 'v2-field-label';
+    animLbl.textContent = 'Entrance animation (plays on first scroll-into-view)';
+    animRow.appendChild(animLbl);
+    const animSel = document.createElement('select');
+    animSel.className = 'v2-input';
+    [
+      { v: '',          t: 'None' },
+      { v: 'fade-in',   t: 'Fade in' },
+      { v: 'fade-up',   t: 'Fade up' },
+      { v: 'fade-down', t: 'Fade down' },
+      { v: 'slide-left',  t: 'Slide in from left' },
+      { v: 'slide-right', t: 'Slide in from right' },
+      { v: 'zoom-in',   t: 'Zoom in' },
+    ].forEach(opt => {
+      const o = document.createElement('option');
+      o.value = opt.v; o.textContent = opt.t;
+      if ((layout.animation || '') === opt.v) o.selected = true;
+      animSel.appendChild(o);
+    });
+    animSel.addEventListener('change', async () => {
+      await applyPatch({ op: 'layout', sid: state.selectedSid, updates: { animation: animSel.value } });
+      postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
+    });
+    animRow.appendChild(animSel);
+    body.appendChild(animRow);
+
     // Reset button
     const reset = document.createElement('button');
     reset.className = 'v2-btn v2-btn-ghost';
@@ -974,7 +1006,7 @@
     reset.textContent = 'Reset layout';
     reset.addEventListener('click', async () => {
       const updates = {};
-      ['padding_top','padding_bottom','background_color','background_image','text_color','max_width']
+      ['padding_top','padding_bottom','background_color','background_image','text_color','max_width','animation']
         .forEach(k => { updates[k] = ''; });
       await applyPatch({ op: 'layout', sid: state.selectedSid, updates });
       postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
@@ -1376,6 +1408,35 @@
     else if (state_ === 'error') { s.textContent = '⚠ Error'; s.classList.add('is-error'); }
     else { s.textContent = state_ || 'Ready'; }
     if (d) d.textContent = detail || '';
+  }
+
+  function updateStatusStats() {
+    const el = document.getElementById('v2-status-stats');
+    if (!el || !state.template) return;
+    const order = state.template.order || [];
+    const sections = state.template.sections || {};
+    const total    = order.length;
+    let visible = 0, hidden = 0, blocks = 0, animated = 0;
+    order.forEach(sid => {
+      const sec = sections[sid];
+      if (!sec) return;
+      if (sec.visible === false) hidden++; else visible++;
+      blocks += (sec.block_order || []).length;
+      if (sec.layout && sec.layout.animation) animated++;
+    });
+    const overLimit = total >= 25;
+    el.innerHTML = `
+      <span class="v2-status-stat-pill${overLimit ? ' is-warn' : ''}" title="Sections on this page (soft limit 25)">
+        ${total}/25 sections
+      </span>
+      <span class="v2-status-stat-pill" title="${visible} visible, ${hidden} hidden">
+        👁 ${visible} · 🙈 ${hidden}
+      </span>
+      <span class="v2-status-stat-pill" title="Total blocks across all sections">
+        ${blocks} block${blocks === 1 ? '' : 's'}
+      </span>
+      ${animated ? `<span class="v2-status-stat-pill" title="Sections with entrance animations">✨ ${animated} animated</span>` : ''}
+    `;
   }
 
   // ── Patch helper (single source of truth for backend writes) ─────────────
@@ -2392,8 +2453,11 @@
     state.viewport = name;
     if (elViewportBtns) elViewportBtns.forEach(b => b.classList.toggle('is-active', b.dataset.viewport === name));
     if (!elIframeFrame) return;
-    elIframeFrame.classList.remove('v2-vp-desktop', 'v2-vp-tablet', 'v2-vp-mobile');
+    elIframeFrame.classList.remove('v2-vp-desktop', 'v2-vp-tablet', 'v2-vp-mobile', 'v2-vp-fullscreen');
     elIframeFrame.classList.add('v2-vp-' + name);
+    // Fullscreen also collapses the sidebar by toggling a flag on the shell
+    const shell = document.getElementById('v2-shell');
+    if (shell) shell.classList.toggle('is-fullscreen', name === 'fullscreen');
   }
 
   // ── Undo / redo ─────────────────────────────────────────────────────────
@@ -2485,6 +2549,11 @@
     else if (e.key === 'd' || e.key === 'D') { e.preventDefault(); setViewport('desktop'); }
     else if (e.key === 't' || e.key === 'T') { e.preventDefault(); setViewport('tablet'); }
     else if (e.key === 'm' || e.key === 'M') { e.preventDefault(); setViewport('mobile'); }
+    else if (e.key === 'f' || e.key === 'F') {
+      e.preventDefault();
+      // F toggles in/out of fullscreen
+      setViewport(state.viewport === 'fullscreen' ? 'desktop' : 'fullscreen');
+    }
     else if (e.key === '/') {
       e.preventDefault();
       const search = document.getElementById('v2-tree-search');

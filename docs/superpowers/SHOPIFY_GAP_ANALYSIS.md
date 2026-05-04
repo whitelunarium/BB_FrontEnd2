@@ -14,7 +14,7 @@ Legend: ✅ shipped · ⚠ partial · ❌ missing · ⛔ out of scope (single-te
 | Page selector in top bar | Same, auto-discovers pages from `/api/cms/pages` | ✅ |
 | Save / Publish / undo / redo / view-live in top bar | Same — Publish, Share, View Live, Export, Import, Duplicate, Undo, Redo, Inspector, Help | ✅ |
 | Collapsed/expanded sidebar (single vs double layout) | Single sidebar; tabs (Sections / Theme / SEO / History) | ⚠ — no double-sidebar mode |
-| Iframe preview with desktop/mobile/tablet/fullscreen | Desktop / Tablet / Mobile (no fullscreen) | ⚠ — fullscreen would be 1 line of CSS |
+| Iframe preview with desktop/mobile/tablet/fullscreen | ✅ Desktop / Tablet / Mobile / Fullscreen (F shortcut, sidebar collapses) | ✅ |
 
 ## Sections + blocks model
 
@@ -55,7 +55,7 @@ Legend: ✅ shipped · ⚠ partial · ❌ missing · ⛔ out of scope (single-te
 | Reset-to-default per setting | Yes | ✅ |
 | **Per-section background color / image override** | **Not exposed** | ❌ |
 | **Per-section padding (top/bottom)** | **Not exposed** | ❌ |
-| Animation settings per section | Not exposed | ❌ — low priority |
+| Animation settings per section | ✅ Per-section entrance animation (fade-in/up/down, slide-left/right, zoom-in) wired to IntersectionObserver, prefers-reduced-motion safe (v2.25) | ✅ |
 
 ## Pages & templates
 
@@ -116,6 +116,10 @@ Ranked by leverage:
 14. **AI-generated placeholder images** ✅ shipped (v2.22) — Every image field grows a "✨ AI image" button. Opens a modal that asks Groq to polish the user's prompt into a neutral, ethical photo brief, then shows a real generated image from Pollinations.ai (free, no key) with width/height presets. One click to "Use this image" sets both the URL and the matching alt-text field automatically.
 15. **Block-level cross-page copy/paste between Q&A items, gallery items, etc.** ✅ shipped (v2.23) — Single-block copy/paste was already in v2.17. v2.23 adds bulk: a "📋 All" button on the blocks list header copies every block as one payload, and paste accepts payloads with one OR many blocks (older `{type, settings}` payloads still work). Paste filters incompatible block types automatically and ships every accepted block as a single batched PATCH so undo rolls them all back at once. A 5-item localStorage history runs alongside the system clipboard so non-editor copying doesn't clobber it.
 16. **Hover thumbnail previews on picker cards** ✅ shipped (v2.24) — Every picker card grows a hover popover (240ms hover delay) with a schematic SVG wireframe of what that section type renders, the section's first 6 settings fields, repeatable-block hint, and preset count. Self-contained — `editor-v2-icons.js` ships 13 inline wireframe SVGs (one per type) so the popover never hits the network. Auto-positions to the right of the card or flips left if the card is near the right edge.
+17. **Polish triple** ✅ shipped (v2.25) — three smaller wins bundled:
+    a. **Fullscreen preview** (F shortcut, ⛶ button) — sidebar collapses, iframe takes full width. Reminder banner in status bar.
+    b. **Per-section entrance animations** — `_animation` field in the layout panel with 6 modes (fade-in/up/down, slide-left/right, zoom-in). Backend renderer emits `cms-anim cms-anim-fade-up` classes; hydrate.js attaches a single shared IntersectionObserver that adds `.cms-anim-in` once each section enters the viewport. Honors `prefers-reduced-motion`. In admin preview mode, animations show immediately (no scroll needed).
+    c. **Status-bar page stats** — three live pills next to the Saved indicator: section count (turns amber at the 25 limit), visible/hidden split, total block count, plus an ✨ animated count when any sections have animations. Updates on every renderTree() call.
 17. **Live PNEC chatbot brand-voice tuning** — out of scope for editor
 
 ## What's deliberately not building
