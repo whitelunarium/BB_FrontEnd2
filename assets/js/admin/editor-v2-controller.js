@@ -189,6 +189,26 @@
       }
     } catch (_e) { /* ignore */ }
 
+    // Honor ?page=<slug> query param from "Edit this page" deep links so
+    // the editor opens the page the admin was just looking at.
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const want = (params.get('page') || '').trim();
+      if (want) {
+        // Add the option to the selector if not already present (e.g., a
+        // page that was created after the registry was last loaded).
+        const known = new Set(Array.from(elPageSel.options).map(o => o.value));
+        if (!known.has(want)) {
+          const opt = document.createElement('option');
+          opt.value = want;
+          opt.textContent = want.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+          elPageSel.appendChild(opt);
+        }
+        elPageSel.value = want;
+        state.pageSlug  = want;
+      }
+    } catch (_e) { /* ignore */ }
+
     await loadPage(state.pageSlug);
   }
 

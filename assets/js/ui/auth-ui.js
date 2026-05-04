@@ -124,6 +124,13 @@ function showRoleGatedNavItems(role) {
   toggleNavItem('mobile-dashboard-link', isStaffPlus);
   toggleNavItem('nav-admin-link',        isAdmin);
   toggleNavItem('mobile-admin-link',     isAdmin);
+  // v2.28: live theme editor link
+  toggleNavItem('nav-editor-link',       isAdmin);
+  toggleNavItem('mobile-editor-link',    isAdmin);
+  // Tell the floating "Edit this page" button it can re-check now (covers
+  // the case where it ran before pnec_user was cached).
+  try { window.dispatchEvent(new CustomEvent('pnec:auth-ready', { detail: { role: role } })); }
+  catch (_e) { /* IE never */ }
 }
 
 /**
