@@ -307,9 +307,15 @@
       background: transparent;
     }
     .auth-field input:focus + label,
-    .auth-field input:not(:placeholder-shown) + label,
-    .auth-field select:focus + label,
-    .auth-field select.has-value + label {
+    .auth-field input:not(:placeholder-shown) + label {
+      top: -8px;
+      transform: scale(0.78);
+      color: #5b8cff;
+      background: #fff;
+      font-weight: 600;
+    }
+    .auth-field select + label,
+    .auth-field select:focus + label {
       top: -8px;
       transform: scale(0.78);
       color: #5b8cff;
@@ -321,6 +327,12 @@
       color: #64748b;
       margin: 6px 0 0 4px;
       line-height: 1.5;
+    }
+    
+    .auth-field select {
+      padding-top: 14px;
+      padding-bottom: 14px;
+      color: #64748b;
     }
 
     /* Password show/hide toggle */
@@ -629,7 +641,7 @@
 
               <div class="auth-field">
                 <select id="register-neighborhood-select" autocomplete="address-level2">
-                  <option value="">Loading neighborhoods…</option>
+                  <option value="" disabled selected></option>
                 </select>
                 <label for="register-neighborhood-select">Neighborhood</label>
               </div>
