@@ -30,6 +30,29 @@ body_class: inner-page auth-page-body
 -->
 
 <style>
+  /* Defensive: hide any auto-rendered page-title bar / hero slider that
+     fires when the layout detects an inner page. The auth flow needs the
+     full-bleed wildfire ambience to land cleanly without any duplicate
+     hero stacked above it (UI/UX skill flagged this as the main "odd"
+     visual seam in the previous render). */
+  .auth-page-body .hero-slider,
+  .auth-page-body .auth-page-hero,
+  .auth-page-body .raven-heading-h2,
+  .auth-page-body section.elementor-section.elementor-element-8e2da25,
+  .auth-page-body main#jupiterx-main > div.elementor:first-of-type > section:first-of-type,
+  .auth-page-body main#jupiterx-main > .auth-shell-section:first-child,
+  .auth-page-body section[data-id="8e2da25"] {
+    display: none !important;
+  }
+  /* The page's main wrapper from layouts shouldn't add its own padding —
+     the wildfire hero owns the full bleed. */
+  .auth-page-body .pnec-page-shell,
+  .auth-page-body main#jupiterx-main {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+  }
+
   /* ─── Cinematic hero band — full-bleed wildfire photo + Ken Burns zoom +
      gradient overlay + drifting embers. Uses the PNEC-published Poway_Fire
      image so the page feels rooted in the org's actual mission. ───── */
@@ -42,7 +65,10 @@ body_class: inner-page auth-page-body
     background: #0a1628;            /* fallback if image still loading */
   }
 
-  /* Layer 1 — the wildfire photo, slow Ken Burns zoom + pan. */
+  /* Layer 1 — the wildfire photo, slow Ken Burns zoom + pan.
+     Slightly desaturated so it reads as atmospheric backdrop, not a
+     billboard. Brightness bumped down so the white-text intro reads
+     comfortably (4.5:1 contrast minimum per UI/UX skill rules). */
   .auth-hero-bg {
     position: absolute; inset: 0;
     z-index: -3;
@@ -51,7 +77,7 @@ body_class: inner-page auth-page-body
     background-position: center 40%;
     transform: scale(1.08);
     animation: auth-kenburns 28s ease-in-out infinite alternate;
-    filter: saturate(1.05) contrast(1.04);
+    filter: saturate(0.78) brightness(0.72) contrast(1.06);
     will-change: transform;
   }
   @keyframes auth-kenburns {
@@ -280,33 +306,43 @@ body_class: inner-page auth-page-body
   }
 
   /* ─── Right side: floating-glass auth card ──────────────────────────── */
-  /* Sits on the dark wildfire photo with a soft glow halo + warm gradient
-     border. Body of the card stays white-ish with a barely-visible blur
-     so the form inside reads as cleanly as a normal page. */
+  /* Warm off-white (#fcfaf6) instead of stark white — integrates with the
+     dusk-toned backdrop so the card doesn't read as a "stuck-on" UI panel.
+     A soft radial scrim sits underneath (drawn via the parent .auth-card-
+     wrap) anchoring the card visually against the photo. */
+  .auth-card-wrap { position: relative; }
+  .auth-card-wrap::before {
+    /* Soft dark radial scrim under the card so it visually anchors to the
+       photo without feeling glued on. Sits BEHIND the card. */
+    content: '';
+    position: absolute;
+    inset: -40px -40px -60px -40px;
+    background: radial-gradient(60% 70% at 50% 55%, rgba(0, 0, 0, 0.45), transparent 70%);
+    filter: blur(20px);
+    z-index: -1;
+    pointer-events: none;
+  }
   .auth-card {
     position: relative;
-    background: rgba(255, 255, 255, 0.97);
-    border-radius: 20px;
+    background: #fcfaf6;
+    border-radius: 22px;
     overflow: hidden;
-    backdrop-filter: blur(20px) saturate(1.1);
-    -webkit-backdrop-filter: blur(20px) saturate(1.1);
     box-shadow:
-      0 30px 80px rgba(0, 0, 0, 0.45),
-      0 12px 28px rgba(192, 57, 43, 0.18),
-      0 0 0 1px rgba(255, 255, 255, 0.30);
+      0 40px 90px rgba(0, 0, 0, 0.40),
+      0 14px 28px rgba(10, 22, 40, 0.18),
+      0 0 0 1px rgba(255, 255, 255, 0.10);
     animation: auth-card-in 720ms cubic-bezier(.2,.8,.2,1.05);
   }
-  /* Gradient border halo — drawn via a pseudo-element so it sits above the
-     card edge but behind the content. */
+  /* Subtle gradient border halo — restrained warm gradient, not a billboard. */
   .auth-card::before {
     content: '';
     position: absolute; inset: 0;
     border-radius: inherit;
     padding: 1px;
     background: linear-gradient(135deg,
-      rgba(255, 168, 96, 0.85) 0%,
-      rgba(192, 57, 43, 0.60) 35%,
-      rgba(39, 174, 96, 0.40) 100%);
+      rgba(255, 200, 140, 0.45) 0%,
+      rgba(192, 57, 43, 0.30) 50%,
+      rgba(255, 200, 140, 0.20) 100%);
     -webkit-mask:
       linear-gradient(#000, #000) content-box,
       linear-gradient(#000, #000);
@@ -621,7 +657,8 @@ body_class: inner-page auth-page-body
       </ul>
     </div>
 
-    <!-- ── Right: auth card ─────────────────────────────────────────── -->
+    <!-- ── Right: auth card with soft underlying scrim ────────────── -->
+    <div class="auth-card-wrap">
     <div class="auth-card">
       <div class="auth-tabs" role="tablist" aria-label="Choose action" data-active="login">
         <span class="auth-tab-pill" aria-hidden="true"></span>
@@ -732,6 +769,7 @@ body_class: inner-page auth-page-body
 
       </div>
     </div>
+    </div><!-- /.auth-card-wrap -->
 
   </div>
 </section>
