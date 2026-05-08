@@ -1,786 +1,680 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Sign in or Create Account — Poway NEC &amp; FSC</title>
-  <meta name="description" content="Sign in or create your PNEC member account to access neighborhood preparedness tools.">
-  <meta name="theme-color" content="#0b1426">
-  <meta name="robots" content="noindex,nofollow">
-  <link rel="icon" href="/images/capstone/powaynec.png" sizes="32x32">
+---
+layout: pnec-base
+title: "Sign in or Create Account"
+description: "Sign in or create your PNEC member account."
+body_class: inner-page auth-page-body
+---
 
-  <!--
-    Login + Register page (v2.42 — full UI revamp).
+<!--
+  Login + Register page (v2.43 — re-themed to match the rest of the PNEC site).
 
-    Self-contained: no Jekyll layout, no WordPress chrome, no Elementor cruft.
-    All the form IDs the existing register-page.js depends on are preserved
-    (login-form, login-email, login-password, login-submit-btn, login-error,
-     register-form, register-name, register-email, register-password,
-     register-confirm-password, register-neighborhood-select,
-     register-find-neighborhood, register-address-fallback,
-     register-address-query, register-address-search,
-     register-neighborhood-help, register-error). The hash navigation
-    (#login / #register / #forgot-password) still routes to the right tab.
+  Uses the standard Jekyll `pnec-base` layout so this page gets the real
+  green PNEC navbar, the real footer, and the Helper Bot — exactly like
+  every other page. Just a warm, well-designed auth card on a hero band.
 
-    Design: split-screen for desktop (animated brand panel on the left,
-    glassmorphism form panel on the right). Single column on mobile with the
-    brand collapsed to a header. Smooth tab switch between Sign In and
-    Create Account. Floating-label inputs, password visibility toggle,
-    submit-button loading states, scroll-locked background gradient mesh.
-  -->
+  All the form IDs the existing register-page.js depends on are preserved
+  (login-form, login-email, login-password, login-submit-btn, login-error,
+   register-form, register-name, register-email, register-password,
+   register-confirm-password, register-neighborhood-select,
+   register-find-neighborhood, register-address-fallback,
+   register-address-query, register-address-search,
+   register-neighborhood-help, register-error). Hash navigation
+  (#login / #register) still routes to the right tab.
 
-  <style>
-    /* ─── 1. Reset + brand fonts ─────────────────────────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; }
-    html, body {
-      margin: 0; padding: 0;
-      min-height: 100vh; min-height: 100dvh;
-      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      color: #0a1628;
-      background: #060c1c;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  Palette: PNEC brand colors only —
+    navy   #0a1628  (text + headlines)
+    red    #c0392b  (CTAs + active states)
+    green  #27ae60  (success accents, navbar in layout)
+    cream  #f8f5f0  (warm page background)
+    white  #ffffff  (card)
+-->
 
-    a { color: inherit; text-decoration: none; }
+<style>
+  /* ─── Page background ───────────────────────────────────────────────── */
+  /* Warm hero band with a subtle topographic-style overlay so the auth
+     screen feels like a real PNEC page, not a generic SaaS login. */
+  .auth-hero-band {
+    position: relative;
+    padding: 64px 24px 96px;
+    background:
+      radial-gradient(900px 480px at 12% -10%, rgba(39, 174, 96, 0.16), transparent 60%),
+      radial-gradient(800px 480px at 95% 110%, rgba(192, 57, 43, 0.10), transparent 60%),
+      linear-gradient(180deg, #f8f5f0 0%, #f1ece2 100%);
+    min-height: calc(100vh - 200px);
+    overflow: hidden;
+  }
+  .auth-hero-band::before {
+    /* Soft ambient light — drifting blob, very subtle, brand-tinted. */
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(420px 320px at 80% 30%, rgba(39, 174, 96, 0.10), transparent 60%);
+    animation: auth-glow 16s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+  @keyframes auth-glow {
+    0%   { transform: translate3d(0, 0, 0); opacity: 0.85; }
+    100% { transform: translate3d(-2%, 2%, 0); opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .auth-hero-band::before { animation: none; }
+  }
 
-    /* ─── 2. Page shell — split for desktop, stacked for mobile ─────────── */
-    .auth-page {
-      min-height: 100vh; min-height: 100dvh;
-      display: grid;
-      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-      position: relative;
-      overflow: hidden;
-    }
-    @media (max-width: 880px) {
-      .auth-page { grid-template-columns: 1fr; }
-    }
+  /* ─── Layout: hero copy on the left, card on the right ─────────────── */
+  .auth-shell {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 56px;
+    align-items: center;
+    position: relative;
+  }
+  @media (max-width: 880px) {
+    .auth-shell { grid-template-columns: 1fr; gap: 32px; }
+    .auth-hero-band { padding: 40px 20px 64px; }
+  }
 
-    /* ─── 3. Brand panel (left, animated gradient mesh) ─────────────────── */
-    .auth-brand {
-      position: relative;
-      padding: 56px 56px 80px;
-      color: #fff;
-      background:
-        radial-gradient(1100px 700px at 20% 110%, rgba(168,85,247,0.55), transparent 60%),
-        radial-gradient(900px 700px at 110% 10%, rgba(236,72,153,0.40), transparent 55%),
-        radial-gradient(800px 600px at 90% 90%, rgba(91,140,255,0.55), transparent 55%),
-        linear-gradient(135deg, #1e1b4b 0%, #0a1628 60%, #1e3a8a 100%);
-      display: flex; flex-direction: column; justify-content: space-between;
-      overflow: hidden;
-      isolation: isolate;
-    }
-    .auth-brand::before {
-      /* Subtle animated noise + drifting blobs */
-      content: '';
-      position: absolute; inset: -10%;
-      background:
-        radial-gradient(420px 420px at var(--mx, 30%) var(--my, 40%), rgba(168, 85, 247, 0.50), transparent 65%),
-        radial-gradient(380px 380px at calc(100% - var(--mx, 30%)) calc(100% - var(--my, 40%)), rgba(236, 72, 153, 0.40), transparent 65%);
-      filter: blur(40px);
-      animation: auth-drift 22s ease-in-out infinite alternate;
-      z-index: -1;
-      pointer-events: none;
-    }
-    @keyframes auth-drift {
-      0%   { transform: translate3d(0,0,0)   scale(1); }
-      50%  { transform: translate3d(2%,-3%,0) scale(1.08); }
-      100% { transform: translate3d(-2%,3%,0) scale(0.96); }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .auth-brand::before { animation: none; }
-    }
+  /* ─── Left side: brand intro ────────────────────────────────────────── */
+  .auth-intro { color: #0a1628; }
+  .auth-intro-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 12px;
+    background: #fff;
+    border: 1px solid rgba(39, 174, 96, 0.30);
+    color: #1e8449;
+    border-radius: 999px;
+    font-size: 0.78rem; font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    box-shadow: 0 2px 8px rgba(10, 22, 40, 0.04);
+  }
+  .auth-intro-eyebrow-dot {
+    width: 8px; height: 8px;
+    background: #27ae60;
+    border-radius: 50%;
+    box-shadow: 0 0 0 4px rgba(39, 174, 96, 0.20);
+  }
+  .auth-intro h1 {
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    line-height: 1.1;
+    letter-spacing: -0.022em;
+    font-weight: 800;
+    margin: 18px 0 14px;
+    color: #0a1628;
+  }
+  .auth-intro h1 em {
+    font-style: normal;
+    color: #c0392b;
+    position: relative;
+    white-space: nowrap;
+  }
+  .auth-intro h1 em::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: -2px;
+    height: 6px;
+    background: rgba(192, 57, 43, 0.18);
+    border-radius: 4px;
+    z-index: -1;
+  }
+  .auth-intro > p {
+    font-size: 1.02rem; line-height: 1.6;
+    color: #5a5a5a;
+    margin: 0 0 28px;
+    max-width: 460px;
+  }
 
-    .auth-brand-logo {
-      display: inline-flex; align-items: center; gap: 12px;
-      font-weight: 800; font-size: 1.05rem; letter-spacing: -0.01em;
-    }
-    .auth-brand-logo img {
-      width: 44px; height: 44px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.10);
-      padding: 4px;
-      object-fit: cover;
-    }
-    .auth-brand-logo-text { display: flex; flex-direction: column; line-height: 1.05; }
-    .auth-brand-logo-text small { font-size: 0.72rem; font-weight: 500; opacity: 0.7; letter-spacing: 0.04em; text-transform: uppercase; margin-top: 2px; }
+  .auth-intro-features {
+    display: grid; gap: 14px;
+    margin: 0; padding: 0;
+    list-style: none;
+    max-width: 460px;
+  }
+  .auth-intro-feature {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 14px 16px;
+    background: #fff;
+    border: 1px solid #e8e6e1;
+    border-radius: 14px;
+    box-shadow: 0 2px 6px rgba(10, 22, 40, 0.03);
+    transition: transform 180ms ease, box-shadow 220ms ease, border-color 180ms ease;
+  }
+  .auth-intro-feature:hover {
+    transform: translateY(-2px);
+    border-color: rgba(39, 174, 96, 0.35);
+    box-shadow: 0 12px 24px rgba(10, 22, 40, 0.06);
+  }
+  .auth-intro-feature-icon {
+    width: 38px; height: 38px;
+    flex-shrink: 0;
+    background: rgba(39, 174, 96, 0.10);
+    color: #1e8449;
+    border-radius: 10px;
+    display: grid; place-items: center;
+  }
+  .auth-intro-feature-text strong {
+    display: block;
+    font-size: 0.96rem;
+    font-weight: 700;
+    color: #0a1628;
+    margin-bottom: 2px;
+  }
+  .auth-intro-feature-text span {
+    color: #5a5a5a;
+    font-size: 0.86rem;
+    line-height: 1.45;
+  }
+  @media (max-width: 880px) {
+    .auth-intro-features { grid-template-columns: 1fr; }
+  }
 
-    .auth-brand-headline {
-      max-width: 480px;
-      margin: 0;
-      font-size: clamp(2rem, 4.5vw, 3.4rem);
-      line-height: 1.04;
-      letter-spacing: -0.025em;
-      font-weight: 800;
-    }
-    .auth-brand-headline em {
-      font-style: normal;
-      background: linear-gradient(135deg, #fbcfe8 0%, #c084fc 50%, #93c5fd 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .auth-brand-sub {
-      max-width: 460px;
-      margin: 18px 0 0;
-      font-size: 1.02rem;
-      line-height: 1.55;
-      color: rgba(255,255,255,0.78);
-    }
+  /* ─── Right side: auth card ─────────────────────────────────────────── */
+  .auth-card {
+    background: #fff;
+    border-radius: 18px;
+    border: 1px solid #e8e6e1;
+    box-shadow:
+      0 24px 48px rgba(10, 22, 40, 0.08),
+      0 4px 12px rgba(10, 22, 40, 0.04);
+    overflow: hidden;
+    animation: auth-card-in 600ms cubic-bezier(.2,.8,.2,1.05);
+  }
+  @keyframes auth-card-in {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { .auth-card { animation: none; } }
 
-    .auth-brand-features {
-      display: grid; gap: 14px;
-      margin-top: 36px;
-    }
-    .auth-brand-feature {
-      display: flex; align-items: flex-start; gap: 14px;
-      color: rgba(255,255,255,0.92);
-    }
-    .auth-brand-feature-icon {
-      width: 38px; height: 38px;
-      flex-shrink: 0;
-      background: rgba(255,255,255,0.10);
-      border: 1px solid rgba(255,255,255,0.16);
-      border-radius: 11px;
-      display: grid; place-items: center;
-      backdrop-filter: blur(6px);
-    }
-    .auth-brand-feature-text { line-height: 1.45; font-size: 0.94rem; }
-    .auth-brand-feature-text strong { display: block; font-weight: 700; font-size: 1rem; margin-bottom: 1px; }
-    .auth-brand-feature-text span  { color: rgba(255,255,255,0.66); }
+  /* Tabs */
+  .auth-tabs {
+    display: grid; grid-template-columns: 1fr 1fr;
+    position: relative;
+    background: #f5f5f0;
+    padding: 5px;
+    margin: 14px 14px 0;
+    border-radius: 12px;
+  }
+  .auth-tab {
+    position: relative; z-index: 2;
+    padding: 11px 14px;
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: #5a5a5a;
+    background: transparent;
+    border: 0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: color 200ms ease;
+    letter-spacing: -0.005em;
+    font-family: inherit;
+  }
+  .auth-tab.is-active { color: #fff; }
+  .auth-tab-pill {
+    position: absolute; top: 5px; bottom: 5px; left: 5px;
+    width: calc(50% - 5px);
+    background: linear-gradient(135deg, #c0392b 0%, #962d22 100%);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(192, 57, 43, 0.32);
+    transition: transform 280ms cubic-bezier(.2,.8,.2,1);
+    z-index: 1;
+  }
+  .auth-tabs[data-active="register"] .auth-tab-pill { transform: translateX(100%); }
 
-    .auth-brand-footer {
-      font-size: 0.78rem;
-      color: rgba(255,255,255,0.55);
-      letter-spacing: 0.02em;
-      display: flex; gap: 18px; flex-wrap: wrap;
-    }
-    .auth-brand-footer a:hover { color: rgba(255,255,255,0.95); }
+  .auth-panes { padding: 26px 28px 28px; }
+  .auth-pane { display: none; animation: auth-pane-in 280ms cubic-bezier(.2,.8,.2,1); }
+  .auth-pane.is-active { display: block; }
+  @keyframes auth-pane-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { .auth-pane { animation: none; } }
 
-    @media (max-width: 880px) {
-      .auth-brand { padding: 32px 28px 24px; }
-      .auth-brand-features { display: none; }
-      .auth-brand-footer { display: none; }
-    }
+  .auth-pane h2 {
+    margin: 0 0 4px;
+    font-size: 1.42rem;
+    font-weight: 800;
+    color: #0a1628;
+    letter-spacing: -0.018em;
+  }
+  .auth-pane > p {
+    margin: 0 0 22px;
+    color: #5a5a5a;
+    font-size: 0.92rem;
+    line-height: 1.5;
+  }
 
-    /* ─── 4. Form panel (right, glassmorphism card) ─────────────────────── */
-    .auth-form-panel {
-      background: linear-gradient(180deg, #f9fafb 0%, #eef2f7 100%);
-      padding: 56px 56px 64px;
-      display: flex; align-items: center; justify-content: center;
-      position: relative;
-    }
-    .auth-form-panel::before {
-      /* Soft brand-tinted halo behind the card */
-      content: '';
-      position: absolute;
-      width: 720px; height: 720px;
-      top: 50%; left: 50%; transform: translate(-50%, -50%);
-      background: radial-gradient(circle, rgba(91,140,255,0.10), transparent 60%);
-      pointer-events: none;
-    }
+  /* Floating-label fields — warm tones */
+  .auth-field { position: relative; margin-bottom: 14px; }
+  .auth-field input,
+  .auth-field select {
+    width: 100%;
+    padding: 18px 14px 8px;
+    font-size: 0.96rem;
+    font-family: inherit;
+    color: #0a1628;
+    background: #fff;
+    border: 1.5px solid #e8e6e1;
+    border-radius: 10px;
+    transition: border-color 160ms ease, box-shadow 160ms ease;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .auth-field input:hover,
+  .auth-field select:hover { border-color: #cfc9bd; }
+  .auth-field input:focus,
+  .auth-field select:focus {
+    outline: none;
+    border-color: #c0392b;
+    box-shadow: 0 0 0 4px rgba(192, 57, 43, 0.12);
+  }
+  .auth-field label {
+    position: absolute;
+    top: 14px; left: 14px;
+    padding: 0 4px;
+    font-size: 0.94rem;
+    color: #9e9e9e;
+    pointer-events: none;
+    transform-origin: left center;
+    transition: transform 160ms ease, color 160ms ease, top 160ms ease, background 160ms ease;
+    background: transparent;
+  }
+  .auth-field input:focus + label,
+  .auth-field input:not(:placeholder-shown) + label {
+    top: -8px;
+    transform: scale(0.78);
+    color: #c0392b;
+    background: #fff;
+    font-weight: 700;
+  }
+  .auth-field select + label,
+  .auth-field select:focus + label {
+    top: -8px;
+    transform: scale(0.78);
+    color: #c0392b;
+    background: #fff;
+    font-weight: 700;
+  }
+  .auth-field select { padding-top: 14px; padding-bottom: 14px; color: #5a5a5a; }
+  .auth-field-hint {
+    font-size: 0.78rem;
+    color: #9e9e9e;
+    margin: 6px 0 0 4px;
+    line-height: 1.5;
+  }
 
-    .auth-card {
-      position: relative;
-      width: 100%; max-width: 480px;
-      background: #fff;
-      border-radius: 20px;
-      box-shadow:
-        0 24px 60px rgba(15, 23, 42, 0.08),
-        0 6px 12px rgba(15, 23, 42, 0.04),
-        0 0 0 1px rgba(15, 23, 42, 0.04);
-      overflow: hidden;
-      animation: auth-card-in 600ms cubic-bezier(.2,.8,.2,1.05);
-    }
-    @keyframes auth-card-in {
-      from { opacity: 0; transform: translateY(16px) scale(0.98); }
-      to   { opacity: 1; transform: none; }
-    }
-    @media (prefers-reduced-motion: reduce) { .auth-card { animation: none; } }
+  /* Password show/hide */
+  .auth-field-pass { position: relative; }
+  .auth-field-pass input { padding-right: 44px; }
+  .auth-eye-toggle {
+    position: absolute;
+    top: 13px; right: 8px;
+    width: 32px; height: 32px;
+    background: transparent;
+    border: 0; border-radius: 6px;
+    cursor: pointer;
+    color: #9e9e9e;
+    display: grid; place-items: center;
+    transition: background 120ms ease, color 120ms ease;
+  }
+  .auth-eye-toggle:hover { background: #f5f5f0; color: #0a1628; }
+  .auth-eye-toggle:focus-visible { outline: 2px solid #c0392b; outline-offset: 2px; }
 
-    /* Tab switcher */
-    .auth-tabs {
-      display: grid; grid-template-columns: 1fr 1fr;
-      position: relative;
-      background: #f1f5f9;
-      padding: 6px;
-      margin: 16px 16px 0;
-      border-radius: 12px;
-    }
-    .auth-tab {
-      position: relative; z-index: 2;
-      padding: 11px 14px;
-      font-size: 0.86rem;
-      font-weight: 700;
-      color: #475569;
-      background: transparent;
-      border: 0;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: color 200ms ease;
-      letter-spacing: -0.005em;
-    }
-    .auth-tab.is-active { color: #0a1628; }
-    .auth-tab-pill {
-      position: absolute; top: 6px; bottom: 6px; left: 6px;
-      width: calc(50% - 6px);
-      background: linear-gradient(135deg, #5b8cff 0%, #a855f7 50%, #ec4899 100%);
-      border-radius: 8px;
-      box-shadow: 0 4px 14px rgba(91,140,255,0.40);
-      transition: transform 280ms cubic-bezier(.2,.8,.2,1);
-      z-index: 1;
-    }
-    .auth-tab-pill::after {
-      content: ''; position: absolute; inset: 0;
-      border-radius: 8px;
-      background: inherit;
-      filter: blur(0.4px);
-    }
-    .auth-tabs[data-active="register"] .auth-tab-pill { transform: translateX(100%); }
-    .auth-tabs[data-active="register"] .auth-tab-login { color: #475569; }
-    .auth-tabs[data-active="login"] .auth-tab-login,
-    .auth-tabs[data-active="register"] .auth-tab-register {
-      color: #fff;
-    }
+  .auth-row-between {
+    display: flex; align-items: center; justify-content: space-between;
+    margin: 6px 0 18px;
+    flex-wrap: wrap; gap: 10px;
+  }
+  .auth-checkbox {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 0.85rem; color: #5a5a5a;
+    cursor: pointer; user-select: none;
+  }
+  .auth-checkbox input { width: 16px; height: 16px; accent-color: #c0392b; cursor: pointer; }
+  .auth-link {
+    font-size: 0.85rem;
+    color: #c0392b; font-weight: 700;
+    transition: color 120ms ease;
+  }
+  .auth-link:hover { color: #962d22; text-decoration: underline; text-underline-offset: 3px; }
 
-    .auth-panes { padding: 28px 32px 32px; }
-    .auth-pane { display: none; animation: auth-pane-in 320ms cubic-bezier(.2,.8,.2,1.0); }
-    .auth-pane.is-active { display: block; }
-    @keyframes auth-pane-in {
-      from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: none; }
-    }
-    @media (prefers-reduced-motion: reduce) { .auth-pane { animation: none; } }
+  /* Primary submit button — PNEC red */
+  .auth-submit {
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 1rem; font-weight: 700;
+    font-family: inherit;
+    color: #fff;
+    background: linear-gradient(135deg, #c0392b 0%, #962d22 100%);
+    border: 0; border-radius: 12px;
+    cursor: pointer;
+    box-shadow:
+      0 8px 22px rgba(192, 57, 43, 0.30),
+      0 0 0 1px rgba(255,255,255,0.05) inset;
+    transition: transform 120ms ease, box-shadow 200ms ease, opacity 160ms ease;
+    position: relative;
+    overflow: hidden;
+    letter-spacing: -0.005em;
+  }
+  .auth-submit:hover { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(192, 57, 43, 0.42); }
+  .auth-submit:active { transform: translateY(0); opacity: 0.93; }
+  .auth-submit:focus-visible { outline: 3px solid #c0392b; outline-offset: 4px; }
+  .auth-submit[disabled],
+  .auth-submit.is-loading { cursor: progress; opacity: 0.85; transform: none; }
+  .auth-submit.is-loading::after {
+    content: '';
+    position: absolute; top: 50%; right: 18px; width: 16px; height: 16px;
+    margin-top: -8px;
+    border: 2px solid rgba(255,255,255,0.55);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: auth-spin 600ms linear infinite;
+  }
+  @keyframes auth-spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) {
+    .auth-submit.is-loading::after { animation: none; }
+    .auth-submit:hover { transform: none; }
+  }
 
-    .auth-pane h1 {
-      margin: 0 0 6px;
-      font-size: 1.62rem;
-      font-weight: 800;
-      letter-spacing: -0.022em;
-      color: #0a1628;
-    }
-    .auth-pane > p {
-      margin: 0 0 22px;
-      color: #64748b;
-      font-size: 0.94rem;
-      line-height: 1.5;
-    }
+  /* Error box */
+  .auth-error-box {
+    margin: 0 0 16px;
+    padding: 11px 14px;
+    background: linear-gradient(180deg, #fdf3f1 0%, #fbe5e1 100%);
+    border: 1px solid #f1c7c1;
+    color: #962d22;
+    border-radius: 10px;
+    font-size: 0.86rem; line-height: 1.45;
+    display: none;
+  }
+  .auth-error-box.is-visible { display: block; animation: auth-shake 320ms ease-in-out; }
+  @keyframes auth-shake {
+    0%, 100% { transform: translateX(0); }
+    25%      { transform: translateX(-4px); }
+    75%      { transform: translateX(4px); }
+  }
+  @media (prefers-reduced-motion: reduce) { .auth-error-box.is-visible { animation: none; } }
 
-    /* Floating-label fields */
-    .auth-field {
-      position: relative;
-      margin-bottom: 14px;
-    }
-    .auth-field input,
-    .auth-field select {
-      width: 100%;
-      padding: 19px 14px 9px;
-      font-size: 0.96rem;
-      font-family: inherit;
-      color: #0a1628;
-      background: #fff;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 10px;
-      transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
-      appearance: none;
-      -webkit-appearance: none;
-    }
-    .auth-field input:hover,
-    .auth-field select:hover { border-color: #cbd5e1; }
-    .auth-field input:focus,
-    .auth-field select:focus {
-      outline: none;
-      border-color: #5b8cff;
-      box-shadow: 0 0 0 4px rgba(91,140,255,0.18);
-      background: #fff;
-    }
-    .auth-field label {
-      position: absolute;
-      top: 14px; left: 14px;
-      padding: 0 4px;
-      font-size: 0.94rem;
-      color: #64748b;
-      pointer-events: none;
-      transform-origin: left center;
-      transition: transform 160ms ease, color 160ms ease, top 160ms ease, background 160ms ease;
-      background: transparent;
-    }
-    .auth-field input:focus + label,
-    .auth-field input:not(:placeholder-shown) + label {
-      top: -8px;
-      transform: scale(0.78);
-      color: #5b8cff;
-      background: #fff;
-      font-weight: 600;
-    }
-    .auth-field select + label,
-    .auth-field select:focus + label {
-      top: -8px;
-      transform: scale(0.78);
-      color: #5b8cff;
-      background: #fff;
-      font-weight: 600;
-    }
-    .auth-field-hint {
-      font-size: 0.78rem;
-      color: #64748b;
-      margin: 6px 0 0 4px;
-      line-height: 1.5;
-    }
-    
-    .auth-field select {
-      padding-top: 14px;
-      padding-bottom: 14px;
-      color: #64748b;
-    }
+  /* Address-fallback row */
+  .auth-find-btn,
+  .auth-address-search-btn {
+    padding: 0 16px;
+    font-size: 0.84rem; font-weight: 700;
+    font-family: inherit;
+    color: #c0392b;
+    background: #fff;
+    border: 1.5px solid #e8e6e1;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 120ms ease;
+    white-space: nowrap;
+  }
+  .auth-find-btn:hover,
+  .auth-address-search-btn:hover {
+    background: #fdf3f1;
+    border-color: #c0392b;
+  }
+  .auth-address-fallback { display: none; gap: 8px; margin-top: 10px; }
+  .auth-address-fallback.is-visible { display: grid; grid-template-columns: 1fr auto; }
+  .auth-address-fallback input {
+    padding: 11px 14px;
+    border: 1.5px solid #e8e6e1;
+    border-radius: 10px;
+    font: inherit;
+    background: #fff;
+  }
 
-    /* Password show/hide toggle */
-    .auth-field-pass { position: relative; }
-    .auth-field-pass input { padding-right: 44px; }
-    .auth-eye-toggle {
-      position: absolute;
-      top: 50%; right: 8px; transform: translateY(-50%);
-      width: 32px; height: 32px;
-      background: transparent;
-      border: 0; border-radius: 6px;
-      cursor: pointer;
-      color: #64748b;
-      display: grid; place-items: center;
-      transition: background 120ms ease, color 120ms ease;
-    }
-    .auth-eye-toggle:hover { background: #f1f5f9; color: #0a1628; }
-    .auth-eye-toggle:focus-visible { outline: 2px solid #5b8cff; outline-offset: 2px; }
+  /* Switch link under each pane */
+  .auth-switch-row {
+    margin: 18px 0 0;
+    text-align: center;
+    font-size: 0.86rem;
+    color: #5a5a5a;
+  }
+</style>
 
-    .auth-row-between {
-      display: flex; align-items: center; justify-content: space-between;
-      margin: 6px 0 18px;
-    }
-    .auth-checkbox {
-      display: inline-flex; align-items: center; gap: 8px;
-      font-size: 0.85rem; color: #475569;
-      cursor: pointer; user-select: none;
-    }
-    .auth-checkbox input { width: 16px; height: 16px; accent-color: #5b8cff; cursor: pointer; }
-    .auth-link {
-      font-size: 0.85rem;
-      color: #5b8cff; font-weight: 600;
-      transition: color 120ms ease;
-    }
-    .auth-link:hover { color: #1e3a8a; text-decoration: underline; text-underline-offset: 3px; }
+<section class="auth-hero-band">
+  <div class="auth-shell">
 
-    /* Primary submit button */
-    .auth-submit {
-      width: 100%;
-      padding: 14px 20px;
-      font-size: 1rem; font-weight: 700;
-      letter-spacing: -0.005em;
-      color: #fff;
-      background: linear-gradient(135deg, #5b8cff 0%, #a855f7 50%, #ec4899 100%);
-      border: 0; border-radius: 12px;
-      cursor: pointer;
-      box-shadow:
-        0 10px 24px rgba(91,140,255,0.32),
-        0 0 0 1px rgba(255,255,255,0.05) inset;
-      transition: transform 120ms ease, box-shadow 200ms ease, opacity 160ms ease;
-      position: relative;
-      overflow: hidden;
-    }
-    .auth-submit:hover { transform: translateY(-1px); box-shadow: 0 14px 30px rgba(91,140,255,0.45); }
-    .auth-submit:active { transform: translateY(0); opacity: 0.92; }
-    .auth-submit:focus-visible { outline: 3px solid #5b8cff; outline-offset: 4px; }
-    .auth-submit[disabled],
-    .auth-submit.is-loading {
-      cursor: progress;
-      opacity: 0.85;
-      transform: none;
-    }
-    .auth-submit.is-loading::after {
-      content: '';
-      position: absolute; top: 50%; right: 16px; width: 16px; height: 16px;
-      margin-top: -8px;
-      border: 2px solid rgba(255,255,255,0.55);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: auth-spin 600ms linear infinite;
-    }
-    @keyframes auth-spin { to { transform: rotate(360deg); } }
-    @media (prefers-reduced-motion: reduce) {
-      .auth-submit.is-loading::after { animation: none; }
-      .auth-submit:hover { transform: none; }
-    }
+    <!-- ── Left: brand intro ─────────────────────────────────────────── -->
+    <div class="auth-intro">
+      <span class="auth-intro-eyebrow">
+        <span class="auth-intro-eyebrow-dot" aria-hidden="true"></span>
+        Member access
+      </span>
+      <h1>Get ready, <em>together.</em></h1>
+      <p>
+        Sign in to access your neighborhood's preparedness toolkit — coordinator info,
+        local risk briefings, event RSVPs, and a personal kit checklist tailored to where you live.
+      </p>
 
-    /* Error / success messaging */
-    .auth-error-box {
-      margin: 0 0 16px;
-      padding: 11px 14px;
-      background: linear-gradient(180deg, #fef2f2 0%, #fee2e2 100%);
-      border: 1px solid #fecaca;
-      color: #991b1b;
-      border-radius: 10px;
-      font-size: 0.86rem; line-height: 1.45;
-      display: none;
-    }
-    .auth-error-box.is-visible { display: block; animation: auth-shake 320ms ease-in-out; }
-    @keyframes auth-shake {
-      0%, 100% { transform: translateX(0); }
-      25%      { transform: translateX(-4px); }
-      75%      { transform: translateX(4px); }
-    }
-    @media (prefers-reduced-motion: reduce) { .auth-error-box.is-visible { animation: none; } }
-
-    /* Address-fallback row */
-    .auth-inline-row {
-      display: grid; grid-template-columns: 1fr auto; gap: 8px;
-    }
-    .auth-find-btn,
-    .auth-address-search-btn {
-      padding: 0 16px;
-      font-size: 0.84rem; font-weight: 600;
-      color: #5b8cff;
-      background: #fff;
-      border: 1.5px solid #cfd8e3;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: all 120ms ease;
-      white-space: nowrap;
-    }
-    .auth-find-btn:hover,
-    .auth-address-search-btn:hover { background: #f1f5f9; border-color: #5b8cff; }
-    .auth-address-fallback { display: none; gap: 8px; margin-top: 10px; }
-    .auth-address-fallback.is-visible { display: grid; grid-template-columns: 1fr auto; }
-
-    /* ─── 5. Top header (logo + back-to-home link) ──────────────────────── */
-    .auth-topbar {
-      position: absolute;
-      top: 18px; right: 24px;
-      z-index: 5;
-    }
-    .auth-back-link {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 8px 14px;
-      background: rgba(255,255,255,0.10);
-      border: 1px solid rgba(255,255,255,0.20);
-      color: #fff;
-      border-radius: 999px;
-      font-size: 0.84rem; font-weight: 600;
-      backdrop-filter: blur(8px);
-      transition: background 160ms ease, transform 120ms ease;
-    }
-    .auth-back-link:hover { background: rgba(255,255,255,0.20); transform: translateY(-1px); }
-    @media (max-width: 880px) {
-      .auth-topbar { top: 14px; right: 14px; }
-      .auth-back-link { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.16); }
-    }
-
-    /* Skip-link for accessibility */
-    .auth-skip {
-      position: absolute; top: -40px; left: 12px;
-      background: #0a1628; color: #fff; padding: 8px 14px; border-radius: 6px;
-      transition: top 200ms ease;
-    }
-    .auth-skip:focus { top: 12px; }
-  </style>
-</head>
-<body>
-  <a href="#auth-form" class="auth-skip">Skip to form</a>
-
-  <div class="auth-page">
-    <!-- Top-right back-to-home link, floats over both panels on mobile -->
-    <div class="auth-topbar">
-      <a class="auth-back-link" href="/" aria-label="Back to homepage">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M3 12L12 3l9 9"/>
-          <path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/>
-        </svg>
-        Home
-      </a>
+      <ul class="auth-intro-features">
+        <li class="auth-intro-feature">
+          <span class="auth-intro-feature-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </span>
+          <div class="auth-intro-feature-text">
+            <strong>Find your neighborhood</strong>
+            <span>Pinpoint your block and connect to the right local coordinator.</span>
+          </div>
+        </li>
+        <li class="auth-intro-feature">
+          <span class="auth-intro-feature-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 2v4M17 2v4M3 10h18"/></svg>
+          </span>
+          <div class="auth-intro-feature-text">
+            <strong>Track community events</strong>
+            <span>Workshops, drills, fairs — RSVP and add to your calendar.</span>
+          </div>
+        </li>
+        <li class="auth-intro-feature">
+          <span class="auth-intro-feature-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7v6c0 5 4 9 10 11 6-2 10-6 10-11V7l-10-5z"/></svg>
+          </span>
+          <div class="auth-intro-feature-text">
+            <strong>Personal kit checklist</strong>
+            <span>Build your 72-hour kit with a guided, step-by-step list.</span>
+          </div>
+        </li>
+      </ul>
     </div>
 
-    <!-- ── Brand panel (left) ───────────────────────────────────────────── -->
-    <aside class="auth-brand" aria-hidden="false">
-      <a href="/" class="auth-brand-logo" aria-label="Poway NEC home">
-        <img src="/images/capstone/powaynec.png" alt="">
-        <span class="auth-brand-logo-text">
-          Poway NEC &amp; FSC
-          <small>Neighbors helping neighbors</small>
-        </span>
-      </a>
-
-      <div>
-        <h1 class="auth-brand-headline">
-          Get ready, <em>together.</em>
-        </h1>
-        <p class="auth-brand-sub">
-          Sign in to access your neighborhood's preparedness toolkit — coordinator info,
-          local risk briefings, event RSVPs, and personal kit checklists tailored to where you live.
-        </p>
-
-        <ul class="auth-brand-features" role="list" style="list-style:none; padding:0;">
-          <li class="auth-brand-feature">
-            <span class="auth-brand-feature-icon" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            </span>
-            <div class="auth-brand-feature-text">
-              <strong>Find your neighborhood</strong>
-              <span>Pinpoint your block and connect to the right local coordinator.</span>
-            </div>
-          </li>
-          <li class="auth-brand-feature">
-            <span class="auth-brand-feature-icon" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 2v4M17 2v4M3 10h18"/></svg>
-            </span>
-            <div class="auth-brand-feature-text">
-              <strong>Track community events</strong>
-              <span>Workshops, drills, fairs — RSVP and add to your calendar.</span>
-            </div>
-          </li>
-          <li class="auth-brand-feature">
-            <span class="auth-brand-feature-icon" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7v6c0 5 4 9 10 11 6-2 10-6 10-11V7l-10-5z"/></svg>
-            </span>
-            <div class="auth-brand-feature-text">
-              <strong>Personal kit checklist</strong>
-              <span>Build your 72-hour kit with a guided, step-by-step list.</span>
-            </div>
-          </li>
-        </ul>
+    <!-- ── Right: auth card ─────────────────────────────────────────── -->
+    <div class="auth-card">
+      <div class="auth-tabs" role="tablist" aria-label="Choose action" data-active="login">
+        <span class="auth-tab-pill" aria-hidden="true"></span>
+        <button id="auth-tab-login"    class="auth-tab is-active" role="tab" aria-selected="true"  aria-controls="pane-login"    data-pane="login">Sign in</button>
+        <button id="auth-tab-register" class="auth-tab"           role="tab" aria-selected="false" aria-controls="pane-register" data-pane="register">Create account</button>
       </div>
 
-      <div class="auth-brand-footer">
-        <span>© <span id="auth-copy-year"></span> Poway Neighborhood Emergency Corps</span>
-        <a href="/pages/privacy.html">Privacy</a>
-        <a href="/pages/contact.html">Contact</a>
-      </div>
-    </aside>
+      <div class="auth-panes">
 
-    <!-- ── Form panel (right) ───────────────────────────────────────────── -->
-    <main class="auth-form-panel" id="auth-form">
-      <div class="auth-card">
+        <!-- ── Pane: Sign In ──────────────────────────────────────────── -->
+        <section id="pane-login" class="auth-pane is-active" role="tabpanel" aria-labelledby="auth-tab-login">
+          <h2>Welcome back 👋</h2>
+          <p>Sign in to your PNEC member account.</p>
 
-        <!-- Tab switch -->
-        <div class="auth-tabs" role="tablist" aria-label="Choose action" data-active="login">
-          <span class="auth-tab-pill" aria-hidden="true"></span>
-          <button id="auth-tab-login"    class="auth-tab auth-tab-login    is-active" role="tab" aria-selected="true"  aria-controls="pane-login"    data-pane="login">Sign in</button>
-          <button id="auth-tab-register" class="auth-tab auth-tab-register"            role="tab" aria-selected="false" aria-controls="pane-register" data-pane="register">Create account</button>
-        </div>
+          <div id="login-error" class="auth-error-box" role="alert" aria-live="polite"></div>
 
-        <div class="auth-panes">
+          <form id="login-form" novalidate>
+            <div class="auth-field">
+              <input id="login-email" name="email" type="email" placeholder=" " autocomplete="email" required>
+              <label for="login-email">Email address</label>
+            </div>
 
-          <!-- ── Pane: Sign In ──────────────────────────────────────────── -->
-          <section id="pane-login" class="auth-pane is-active" role="tabpanel" aria-labelledby="auth-tab-login">
-            <h1>Welcome back 👋</h1>
-            <p>Sign in to your PNEC member account.</p>
+            <div class="auth-field auth-field-pass">
+              <input id="login-password" name="password" type="password" placeholder=" " autocomplete="current-password" required>
+              <label for="login-password">Password</label>
+              <button type="button" class="auth-eye-toggle" aria-label="Show password" data-target="login-password">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
 
-            <div id="login-error" class="auth-error-box" role="alert" aria-live="polite"></div>
+            <div class="auth-row-between">
+              <label class="auth-checkbox">
+                <input id="login-remember" type="checkbox">
+                Remember me
+              </label>
+              <a class="auth-link" href="{{ '/pages/forgot-password.html' | relative_url }}">Forgot password?</a>
+            </div>
 
-            <form id="login-form" novalidate>
-              <div class="auth-field">
-                <input id="login-email" name="email" type="email" placeholder=" " autocomplete="email" required>
-                <label for="login-email">Email address</label>
-              </div>
+            <button id="login-submit-btn" type="submit" class="auth-submit">Sign in</button>
+          </form>
 
-              <div class="auth-field auth-field-pass">
-                <input id="login-password" name="password" type="password" placeholder=" " autocomplete="current-password" required>
-                <label for="login-password">Password</label>
-                <button type="button" class="auth-eye-toggle" aria-label="Show password" data-target="login-password">
-                  <svg class="auth-eye" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
-                </button>
-              </div>
+          <p class="auth-switch-row">
+            New to PNEC? <a class="auth-link" href="#register" data-switch-pane="register">Create an account</a>
+          </p>
+        </section>
 
-              <div class="auth-row-between">
-                <label class="auth-checkbox">
-                  <input id="login-remember" type="checkbox">
-                  Remember me
-                </label>
-                <a class="auth-link" href="/pages/forgot-password.html">Forgot password?</a>
-              </div>
+        <!-- ── Pane: Create Account ──────────────────────────────────── -->
+        <section id="pane-register" class="auth-pane" role="tabpanel" aria-labelledby="auth-tab-register" hidden>
+          <h2>Join your neighborhood ✨</h2>
+          <p>It takes a minute. We'll connect you to your block's coordinator and tools.</p>
 
-              <button id="login-submit-btn" type="submit" class="auth-submit">Sign in</button>
-            </form>
+          <div id="register-error" class="auth-error-box" role="alert" aria-live="polite"></div>
 
-            <p style="margin: 18px 0 0; text-align: center; font-size: 0.86rem; color: #64748b;">
-              New to PNEC? <a class="auth-link" href="#register" data-switch-pane="register">Create an account</a>
+          <form id="register-form" novalidate>
+            <div class="auth-field">
+              <input id="register-name" name="display_name" type="text" placeholder=" " autocomplete="nickname" required>
+              <label for="register-name">Display name</label>
+            </div>
+
+            <div class="auth-field">
+              <input id="register-email" name="email" type="email" placeholder=" " autocomplete="email" required>
+              <label for="register-email">Email address</label>
+            </div>
+
+            <div class="auth-field auth-field-pass">
+              <input id="register-password" name="password" type="password" placeholder=" " autocomplete="new-password" required minlength="8">
+              <label for="register-password">Password</label>
+              <button type="button" class="auth-eye-toggle" aria-label="Show password" data-target="register-password">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+              <p class="auth-field-hint">At least 8 characters. Mix letters and numbers for a stronger password.</p>
+            </div>
+
+            <div class="auth-field auth-field-pass">
+              <input id="register-confirm-password" name="confirm_password" type="password" placeholder=" " autocomplete="new-password" required>
+              <label for="register-confirm-password">Confirm password</label>
+              <button type="button" class="auth-eye-toggle" aria-label="Show password" data-target="register-confirm-password">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+
+            <div class="auth-field">
+              <select id="register-neighborhood-select" autocomplete="address-level2">
+                <option value="" disabled selected></option>
+              </select>
+              <label for="register-neighborhood-select">Neighborhood</label>
+            </div>
+            <div style="display:flex; gap:8px; margin:-6px 0 10px; flex-wrap:wrap;">
+              <button type="button" class="auth-find-btn" id="register-find-neighborhood">📍 Use my location</button>
+            </div>
+
+            <div class="auth-address-fallback" id="register-address-fallback">
+              <input id="register-address-query" type="text" placeholder="Street address or neighborhood number" autocomplete="street-address">
+              <button type="button" class="auth-address-search-btn" id="register-address-search">Search</button>
+            </div>
+
+            <p class="auth-field-hint" id="register-neighborhood-help">
+              We use your neighborhood to connect you with your local coordinator. You can change it later.
             </p>
-          </section>
 
-          <!-- ── Pane: Create Account ──────────────────────────────────── -->
-          <section id="pane-register" class="auth-pane" role="tabpanel" aria-labelledby="auth-tab-register" hidden>
-            <h1>Join your neighborhood ✨</h1>
-            <p>It takes a minute. We'll connect you to your block's coordinator and tools.</p>
+            <button type="submit" class="auth-submit" style="margin-top:12px;">Create account</button>
+          </form>
 
-            <div id="register-error" class="auth-error-box" role="alert" aria-live="polite"></div>
+          <p class="auth-switch-row">
+            Already have an account? <a class="auth-link" href="#login" data-switch-pane="login">Sign in</a>
+          </p>
+        </section>
 
-            <form id="register-form" novalidate>
-              <div class="auth-field">
-                <input id="register-name" name="display_name" type="text" placeholder=" " autocomplete="nickname" required>
-                <label for="register-name">Display name</label>
-              </div>
-
-              <div class="auth-field">
-                <input id="register-email" name="email" type="email" placeholder=" " autocomplete="email" required>
-                <label for="register-email">Email address</label>
-              </div>
-
-              <div class="auth-field auth-field-pass">
-                <input id="register-password" name="password" type="password" placeholder=" " autocomplete="new-password" required minlength="8">
-                <label for="register-password">Password</label>
-                <button type="button" class="auth-eye-toggle" aria-label="Show password" data-target="register-password">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
-                </button>
-                <p class="auth-field-hint">At least 8 characters. Mix letters and numbers for a stronger password.</p>
-              </div>
-
-              <div class="auth-field auth-field-pass">
-                <input id="register-confirm-password" name="confirm_password" type="password" placeholder=" " autocomplete="new-password" required>
-                <label for="register-confirm-password">Confirm password</label>
-                <button type="button" class="auth-eye-toggle" aria-label="Show password" data-target="register-confirm-password">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
-                </button>
-              </div>
-
-              <div class="auth-field">
-                <select id="register-neighborhood-select" autocomplete="address-level2">
-                  <option value="" disabled selected></option>
-                </select>
-                <label for="register-neighborhood-select">Neighborhood</label>
-              </div>
-              <div style="display: flex; gap: 8px; margin: -6px 0 10px; flex-wrap: wrap;">
-                <button type="button" class="auth-find-btn" id="register-find-neighborhood">📍 Use my location</button>
-              </div>
-
-              <div class="auth-address-fallback" id="register-address-fallback">
-                <input id="register-address-query" type="text" placeholder="Street address or neighborhood number" autocomplete="street-address" style="padding:11px 14px; border:1.5px solid #e2e8f0; border-radius:10px; font:inherit;">
-                <button type="button" class="auth-address-search-btn" id="register-address-search">Search</button>
-              </div>
-
-              <p class="auth-field-hint" id="register-neighborhood-help">
-                We use your neighborhood to connect you with your local coordinator. You can change it later.
-              </p>
-
-              <button type="submit" class="auth-submit" style="margin-top: 12px;">Create account</button>
-            </form>
-
-            <p style="margin: 18px 0 0; text-align: center; font-size: 0.86rem; color: #64748b;">
-              Already have an account? <a class="auth-link" href="#login" data-switch-pane="login">Sign in</a>
-            </p>
-          </section>
-        </div>
       </div>
-    </main>
+    </div>
+
   </div>
+</section>
 
-  <!-- ─── 6. Page logic — tab switch + password toggle + JS init ─────────── -->
-  <script>
-  (function () {
-    'use strict';
-    document.getElementById('auth-copy-year').textContent = new Date().getFullYear();
+<script>
+(function () {
+  'use strict';
 
-    const tabsEl  = document.querySelector('.auth-tabs');
-    const tabBtns = document.querySelectorAll('.auth-tab');
-    const panes   = document.querySelectorAll('.auth-pane');
+  const tabsEl  = document.querySelector('.auth-tabs');
+  const tabBtns = document.querySelectorAll('.auth-tab');
+  const panes   = document.querySelectorAll('.auth-pane');
 
-    function switchPane(name) {
-      if (name !== 'login' && name !== 'register') name = 'login';
-      tabsEl.setAttribute('data-active', name);
-      tabBtns.forEach(b => {
-        const active = b.dataset.pane === name;
-        b.classList.toggle('is-active', active);
-        b.setAttribute('aria-selected', active ? 'true' : 'false');
-      });
-      panes.forEach(p => {
-        const active = p.id === ('pane-' + name);
-        p.classList.toggle('is-active', active);
-        if (active) p.removeAttribute('hidden');
-        else        p.setAttribute('hidden', '');
-      });
-      // Update hash without jumping
-      try { history.replaceState(null, '', '#' + name); } catch (_e) {}
-      // Focus first input in the now-visible pane
-      const firstInput = document.querySelector('#pane-' + name + ' input:not([type="checkbox"])');
-      if (firstInput) setTimeout(() => firstInput.focus({ preventScroll: true }), 30);
-    }
-
-    tabBtns.forEach(b => b.addEventListener('click', () => switchPane(b.dataset.pane)));
-    document.querySelectorAll('[data-switch-pane]').forEach(a => {
-      a.addEventListener('click', (e) => { e.preventDefault(); switchPane(a.dataset.switchPane); });
+  function switchPane(name) {
+    if (name !== 'login' && name !== 'register') name = 'login';
+    tabsEl.setAttribute('data-active', name);
+    tabBtns.forEach(b => {
+      const active = b.dataset.pane === name;
+      b.classList.toggle('is-active', active);
+      b.setAttribute('aria-selected', active ? 'true' : 'false');
     });
-
-    // Hash-based deep linking (#login, #register, #forgot-password, #signin)
-    function fromHash() {
-      const h = (window.location.hash || '').replace('#', '').toLowerCase();
-      if (h === 'register' || h === 'signup') switchPane('register');
-      else                                    switchPane('login');
-    }
-    fromHash();
-    window.addEventListener('hashchange', fromHash);
-
-    // Password show/hide toggle
-    document.querySelectorAll('.auth-eye-toggle').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const target = document.getElementById(btn.dataset.target);
-        if (!target) return;
-        const next = target.type === 'password' ? 'text' : 'password';
-        target.type = next;
-        btn.setAttribute('aria-label', next === 'text' ? 'Hide password' : 'Show password');
-      });
+    panes.forEach(p => {
+      const active = p.id === ('pane-' + name);
+      p.classList.toggle('is-active', active);
+      if (active) p.removeAttribute('hidden');
+      else        p.setAttribute('hidden', '');
     });
+    try { history.replaceState(null, '', '#' + name); } catch (_e) {}
+    const firstInput = document.querySelector('#pane-' + name + ' input:not([type="checkbox"])');
+    if (firstInput) setTimeout(() => firstInput.focus({ preventScroll: true }), 30);
+  }
 
-    // ── Loading state on submit (UX polish) ──────────────────────────────
-    // Wraps the existing submit handlers so the button shows a spinner while
-    // the network request is in flight. The handler inside register-page.js
-    // also disables the button explicitly; this just adds the spinner CSS.
-    document.querySelectorAll('form').forEach(form => {
-      form.addEventListener('submit', () => {
-        const btn = form.querySelector('button[type="submit"]');
-        if (btn) {
-          btn.classList.add('is-loading');
-          // Remove the loading state if validation rejects (register-page.js
-          // re-enables the button). We poll briefly to clear the state.
-          let tries = 30;
-          const t = setInterval(() => {
-            if (!btn.disabled || tries-- <= 0) {
-              btn.classList.remove('is-loading');
-              clearInterval(t);
-            }
-          }, 150);
-        }
-      });
+  tabBtns.forEach(b => b.addEventListener('click', () => switchPane(b.dataset.pane)));
+  document.querySelectorAll('[data-switch-pane]').forEach(a => {
+    a.addEventListener('click', (e) => { e.preventDefault(); switchPane(a.dataset.switchPane); });
+  });
+
+  function fromHash() {
+    const h = (window.location.hash || '').replace('#', '').toLowerCase();
+    if (h === 'register' || h === 'signup') switchPane('register');
+    else                                    switchPane('login');
+  }
+  fromHash();
+  window.addEventListener('hashchange', fromHash);
+
+  // Password show/hide toggle
+  document.querySelectorAll('.auth-eye-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = document.getElementById(btn.dataset.target);
+      if (!target) return;
+      const next = target.type === 'password' ? 'text' : 'password';
+      target.type = next;
+      btn.setAttribute('aria-label', next === 'text' ? 'Hide password' : 'Show password');
     });
+  });
 
-    // Show the floating-label "filled" state for selects after they have a value
-    document.querySelectorAll('.auth-field select').forEach(sel => {
-      const sync = () => sel.classList.toggle('has-value', !!sel.value);
-      sel.addEventListener('change', sync);
-      // Initial pass after register-page.js populates the dropdown
-      const obs = new MutationObserver(sync);
-      obs.observe(sel, { childList: true });
-      sync();
+  // Loading state on submit
+  document.querySelectorAll('form').forEach(form => {
+    form.addEventListener('submit', () => {
+      const btn = form.querySelector('button[type="submit"]');
+      if (btn) {
+        btn.classList.add('is-loading');
+        let tries = 30;
+        const t = setInterval(() => {
+          if (!btn.disabled || tries-- <= 0) {
+            btn.classList.remove('is-loading');
+            clearInterval(t);
+          }
+        }, 150);
+      }
     });
+  });
 
-    // Make the .is-visible class stick when register-page.js writes into the
-    // error boxes (it sets .textContent only — we want the styled error
-    // panel to actually show).
-    ['login-error', 'register-error'].forEach(id => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      const obs = new MutationObserver(() => {
-        const has = (el.textContent || '').trim().length > 0;
-        el.classList.toggle('is-visible', has);
-      });
-      obs.observe(el, { childList: true, characterData: true, subtree: true });
+  // Mirror register-page.js's textContent writes into our styled error box
+  ['login-error', 'register-error'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const obs = new MutationObserver(() => {
+      const has = (el.textContent || '').trim().length > 0;
+      el.classList.toggle('is-visible', has);
     });
-  })();
-  </script>
+    obs.observe(el, { childList: true, characterData: true, subtree: true });
+  });
+})();
+</script>
 
-  <!-- API base + auth API + the existing page orchestrator (unchanged form IDs) -->
-  <script>
-    window.API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
-      ? 'http://127.0.0.1:8425'
-      : 'https://beasts.opencodingsociety.com';
-  </script>
-  <script src="/assets/js/utils/errors.js"></script>
-  <script src="/assets/js/api/auth-api.js"></script>
-  <script src="/assets/js/pages/register-page.js"></script>
-</body>
-</html>
+<!-- Existing register-page.js handles validation + submission against the API.
+     pnec-base.html already loaded auth-api.js + utils/errors.js earlier. -->
+<script src="{{ '/assets/js/pages/register-page.js' | relative_url }}"></script>
