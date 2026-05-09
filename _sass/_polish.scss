@@ -190,3 +190,187 @@ html::before {
 }
 body.cms-preview html::before,
 body[class*='admin-fullscreen'] html::before { display: none; }
+
+/* ── 15. Cloned-WP footer overhaul (v2.59) ──────────────────────────────
+   Site-wide upgrade to the .jupiterx-footer block (the elementor-built
+   footer used on every public page when use_poway_live_styles: true).
+   Was: transparent over whatever bg was behind it → unreadable when
+   stacked on the auth page's wildfire photo, bland everywhere else.
+   Now: solid navy→deep-green gradient with proper contrast, branded
+   accents, and refined hierarchy. */
+.jupiterx-footer {
+  position: relative;
+  isolation: isolate;
+  /* Solid gradient backdrop — kills any photo bleed from above and
+     gives the footer real visual weight as the page anchor. */
+  background:
+    radial-gradient(900px 600px at 15% 0%, rgba(30, 132, 73, 0.30), transparent 55%),
+    radial-gradient(1100px 700px at 100% 100%, rgba(192, 57, 43, 0.20), transparent 55%),
+    linear-gradient(180deg, #0a1628 0%, #0f2436 50%, #102e1d 100%);
+  color: #f5f5f0;
+}
+/* Soft top border — a thin gradient hairline so the footer doesn't slam
+   into the page above it. */
+.jupiterx-footer::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(39, 174, 96, 0.55) 25%,
+    rgba(192, 57, 43, 0.35) 50%,
+    rgba(39, 174, 96, 0.55) 75%,
+    transparent 100%);
+}
+
+/* Typography overrides — ensure everything reads cleanly on the dark bg. */
+.jupiterx-footer h3,
+.jupiterx-footer h4,
+.jupiterx-footer .raven-heading-title,
+.jupiterx-footer .raven-heading-text-wrapper {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.005em !important;
+}
+/* The animated "PREPARED" highlight word in "STAY PREPARED" */
+.jupiterx-footer .raven-heading-dynamic-text {
+  background: linear-gradient(135deg, #fbcfe8 0%, #ffd6a8 50%, #b9f6ca 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 900 !important;
+}
+.jupiterx-footer p,
+.jupiterx-footer li,
+.jupiterx-footer .elementor-text-editor,
+.jupiterx-footer .elementor-text-editor p {
+  color: rgba(255, 255, 255, 0.78) !important;
+  line-height: 1.65 !important;
+}
+.jupiterx-footer a,
+.jupiterx-footer .elementor-post__title a,
+.jupiterx-footer .elementor-post__read-more {
+  color: #b9f6ca !important;
+  transition: color 180ms ease, text-decoration-color 180ms ease;
+}
+.jupiterx-footer a:hover,
+.jupiterx-footer .elementor-post__title a:hover,
+.jupiterx-footer .elementor-post__read-more:hover {
+  color: #ffffff !important;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+/* Quick-links list — bullets become subtle green dots, items get
+   hover-shift for a tactile feel. */
+.jupiterx-footer ul {
+  list-style: none !important;
+  padding-left: 0 !important;
+}
+.jupiterx-footer ul li {
+  padding: 6px 0 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  position: relative;
+  padding-left: 18px !important;
+  transition: padding-left 200ms ease;
+}
+.jupiterx-footer ul li::before {
+  content: '';
+  position: absolute;
+  left: 4px; top: 50%;
+  width: 6px; height: 6px;
+  margin-top: -3px;
+  background: #27ae60;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.18);
+}
+.jupiterx-footer ul li:hover { padding-left: 22px !important; }
+.jupiterx-footer ul li:last-child { border-bottom: 0; }
+
+/* Newsletter form — better field + button contrast on dark bg */
+.jupiterx-footer .ctct-email,
+.jupiterx-footer input[type="email"] {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+  border-radius: 10px !important;
+  padding: 12px 14px !important;
+  font: inherit !important;
+  font-size: 0.95rem !important;
+  transition: border-color 200ms ease, box-shadow 200ms ease, background 200ms ease;
+}
+.jupiterx-footer .ctct-email::placeholder,
+.jupiterx-footer input[type="email"]::placeholder {
+  color: rgba(255, 255, 255, 0.50) !important;
+}
+.jupiterx-footer .ctct-email:focus,
+.jupiterx-footer input[type="email"]:focus {
+  outline: none !important;
+  border-color: #27ae60 !important;
+  background: rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 0 0 4px rgba(39, 174, 96, 0.20) !important;
+}
+.jupiterx-footer .ctct-submit,
+.jupiterx-footer input[type="submit"] {
+  background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%) !important;
+  color: #ffffff !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  padding: 12px 22px !important;
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+  cursor: pointer;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.15) inset,
+    0 4px 12px rgba(39, 174, 96, 0.30);
+  transition: transform 160ms ease, box-shadow 220ms ease, filter 160ms ease;
+}
+.jupiterx-footer .ctct-submit:hover,
+.jupiterx-footer input[type="submit"]:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.20) inset,
+    0 8px 18px rgba(39, 174, 96, 0.42);
+}
+.jupiterx-footer .ctct-disclosure { color: rgba(255, 255, 255, 0.55) !important; }
+
+/* Social icons — modern pill treatment with hover */
+.jupiterx-footer .elementor-social-icon,
+.jupiterx-footer .elementor-icon.elementor-social-icon {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff !important;
+  transition: transform 200ms ease, background 200ms ease, border-color 200ms ease;
+}
+.jupiterx-footer .elementor-social-icon:hover {
+  transform: translateY(-2px);
+  background: rgba(39, 174, 96, 0.30) !important;
+  border-color: rgba(39, 174, 96, 0.55);
+}
+
+/* "Recent Updates" article cards — subtle dark-glass treatment */
+.jupiterx-footer .elementor-post {
+  padding: 12px 0 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.jupiterx-footer .elementor-post:last-child { border-bottom: 0; }
+.jupiterx-footer .elementor-post__title { font-size: 0.98rem !important; line-height: 1.3 !important; }
+.jupiterx-footer .elementor-post__excerpt {
+  font-size: 0.84rem !important;
+  color: rgba(255, 255, 255, 0.65) !important;
+  margin-top: 4px !important;
+}
+
+/* The "elementor-background-overlay" sits over our gradient — make sure
+   it doesn't add an extra dark-out layer on top. */
+.jupiterx-footer .elementor-background-overlay { display: none !important; }
+
+/* Final copyright bar — small caps, muted */
+.jupiterx-footer .copyright,
+.jupiterx-footer .footer-copyright,
+.jupiterx-footer p:last-child {
+  /* Generic safety net — most copyright lines are <p>'s in the deepest
+     elementor section. Keep them readable but quiet. */
+  color: rgba(255, 255, 255, 0.55) !important;
+}
