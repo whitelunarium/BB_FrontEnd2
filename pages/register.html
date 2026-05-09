@@ -3,10 +3,12 @@ layout: pnec-base
 title: "Sign in or Create Account"
 description: "Sign in or create your PNEC member account."
 body_class: inner-page auth-page-body
-# Force the modern green-transparent navbar (nav/navbar.html). The default
-# from _config.yml is the WP-cloned header which doesn't fit this single
-# focused page.
-use_poway_live_styles: false
+# Use the standard PNEC site header (poway-header.html) — green-transparent
+# nav floating over the photo carousel, exactly like every other page on
+# the site. Inherited from _config.yml (use_poway_live_styles: true).
+# We hide just the page-title text overlay below to avoid the duplicate
+# "Sign in or Create Account" big-text on the carousel — the auth card
+# below this header has its own header.
 ---
 
 <!--
@@ -20,6 +22,12 @@ use_poway_live_styles: false
 -->
 
 <style>
+  /* Hide the auto-rendered page-title overlay from the cloned-WP header
+     so we don't get a giant "Sign in or Create Account" sitting on top
+     of the photo. The carousel + nav itself stay (we want them — they
+     match every other page on the site). */
+  .auth-page-body .pnec-header-title { display: none !important; }
+
   /* Reset the layout's default page padding for this auth page only. */
   .auth-page-body .pnec-page-shell,
   .auth-page-body main#jupiterx-main {
@@ -28,37 +36,13 @@ use_poway_live_styles: false
   }
   .auth-page-body { background: #f8f5f0; }
 
-  /* ─── Auth wrapper — single centered column with a soft photo strip ─ */
+  /* ─── Auth wrapper — single centered column on warm cream ─────────── */
   .auth-wrapper {
     min-height: calc(100vh - 200px);
-    padding: 40px 20px 80px;
+    padding: 56px 20px 80px;
     background: #f8f5f0;
     display: flex; flex-direction: column; align-items: center;
     position: relative;
-  }
-
-  /* Faded wildfire strip at the top — sits as a quiet visual anchor under
-     the navbar, NOT a hero. About 200px tall, fades into the cream below. */
-  .auth-photo-strip {
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 280px;
-    background-image: url('{{ "/assets/images/Poway_Fire.webp" | relative_url }}');
-    background-size: cover;
-    background-position: center 35%;
-    filter: saturate(0.85) brightness(0.85);
-    pointer-events: none;
-    z-index: 0;
-  }
-  .auth-photo-strip::after {
-    /* Hard fade from photo to cream so the strip dissolves into the page. */
-    content: '';
-    position: absolute; inset: 0;
-    background: linear-gradient(180deg,
-      rgba(248, 245, 240, 0.20) 0%,
-      rgba(248, 245, 240, 0.45) 40%,
-      rgba(248, 245, 240, 0.85) 75%,
-      #f8f5f0 100%);
   }
 
   /* ─── The card itself ───────────────────────────────────────────────── */
@@ -67,7 +51,7 @@ use_poway_live_styles: false
     z-index: 1;
     width: 100%;
     max-width: 460px;
-    margin: 80px 0 0;
+    margin: 0;
     background: #fff;
     border: 1px solid #e8e6e1;
     border-radius: 16px;
@@ -357,8 +341,6 @@ use_poway_live_styles: false
 </style>
 
 <div class="auth-wrapper">
-  <div class="auth-photo-strip" aria-hidden="true"></div>
-
   <div class="auth-card">
     <div class="auth-card-head">
       <div class="auth-card-mark">
