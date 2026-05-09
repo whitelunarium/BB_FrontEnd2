@@ -51,6 +51,64 @@
       : 'https://beasts.opencodingsociety.com';
   }
 
+  // ── v3 Phase 3: in-editor dialogs (replace native confirm/prompt) ────
+  // Three flavors: showConfirm, showPrompt, showAlert. All return Promises.
+  // The overlay traps focus, ESC = cancel, Enter = confirm/submit.
+  function _openDialog(opts = {}) {
+    return new Promise(resolve => {
+      const overlay = document.createElement('div');
+      overlay.className = 'v2-dialog-overlay';
+      const tone = opts.tone || 'info';
+      const icon = opts.icon || ({
+        info: 'ℹ', warn: '⚠', danger: '⚠', success: '✓'
+      }[tone] || 'ℹ');
+
+      const html = `
+        <div class="v2-dialog is-${tone}" role="dialog" aria-modal="true" aria-labelledby="v2d-title">
+          <div class="v2-dialog-icon" aria-hidden="true">${icon}</div>
+          <h4 id="v2d-title">${escapeHtml(opts.title || 'Confirm')}</h4>
+          <div class="v2-dialog-body">${opts.body || ''}</div>
+          ${opts.kind === 'prompt' ? `<input class="v2-dialog-input" type="text" value="${escapeHtml(opts.defaultValue || '')}" placeholder="${escapeHtml(opts.placeholder || '')}">` : ''}
+          <div class="v2-dialog-actions">
+            ${opts.kind === 'alert' ? '' :
+              `<button class="v2-dialog-btn" data-action="cancel">${escapeHtml(opts.cancelLabel || 'Cancel')}</button>`}
+            <button class="v2-dialog-btn ${tone === 'danger' ? 'v2-dialog-btn-danger' : 'v2-dialog-btn-primary'}" data-action="confirm">${escapeHtml(opts.confirmLabel || 'OK')}</button>
+          </div>
+        </div>`;
+      overlay.innerHTML = html;
+      document.body.appendChild(overlay);
+
+      const input = overlay.querySelector('.v2-dialog-input');
+      const close = (result) => { overlay.remove(); document.removeEventListener('keydown', onKey); resolve(result); };
+      const confirm = () => {
+        if (opts.kind === 'prompt') close((input?.value || '').trim() || null);
+        else if (opts.kind === 'alert') close(undefined);
+        else close(true);
+      };
+      const cancel  = () => close(opts.kind === 'prompt' ? null : false);
+
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) cancel(); });
+      overlay.querySelector('[data-action="confirm"]').addEventListener('click', confirm);
+      overlay.querySelector('[data-action="cancel"]')?.addEventListener('click', cancel);
+
+      function onKey(e) {
+        if (e.key === 'Escape') { e.preventDefault(); cancel(); }
+        else if (e.key === 'Enter' && (e.target === input || opts.kind !== 'prompt')) {
+          e.preventDefault(); confirm();
+        }
+      }
+      document.addEventListener('keydown', onKey);
+      // Auto-focus
+      setTimeout(() => (input || overlay.querySelector('[data-action="confirm"]'))?.focus(), 30);
+    });
+  }
+  function showConfirm(opts) { return _openDialog({ kind: 'confirm', tone: 'warn', confirmLabel: 'Confirm', ...opts }); }
+  function showPrompt(opts)  { return _openDialog({ kind: 'prompt',  tone: 'info', confirmLabel: 'OK',      ...opts }); }
+  function showAlert(opts)   { return _openDialog({ kind: 'alert',   tone: 'info', confirmLabel: 'Got it',  ...opts }); }
+  function showDanger(opts)  { return _openDialog({ kind: 'confirm', tone: 'danger', confirmLabel: 'Delete', ...opts }); }
+  // expose for inline use elsewhere
+  window.__v2Dialog = { showConfirm, showPrompt, showAlert, showDanger };
+
   // ── DOM refs (resolved on init) ──────────────────────────────────────────
   let elPageSel, elSidebarTree, elSettingsPanel, elAddSectionBtn;
   let elSavePub, elPreviewBtn, elInspectorBtn, elShareBtn;
@@ -704,7 +762,13 @@
     resetBtn.textContent = '↻ Reset to default';
     resetBtn.title = 'Remove this override and use the original page text';
     resetBtn.addEventListener('click', async () => {
-      if (!confirm('Reset "' + (item.label || item.key) + '" back to the original?')) return;
+      const ok = await showConfirm({
+        title: 'Reset to default?',
+        body: `Resets <strong>${escapeHtml(item.label || item.key)}</strong> back to the original page text. The override row is deleted.`,
+        confirmLabel: 'Reset',
+        tone: 'warn',
+      });
+      if (!ok) return;
       await resetExistingChange(item);
       // Clear the input + reflect cleared state in the iframe
       input.value = '';
@@ -796,10 +860,13 @@
       const meta = state.registry.find(t => t.type === section.type);
       const fallback = meta ? meta.label : section.type;
       const current  = section.name || '';
-      const next     = window.prompt(
-        'Rename this section\n\nLeave blank to reset to the default ("' + fallback + '").',
-        current,
-      );
+      const next     = await showPrompt({
+        title: 'Rename section',
+        body: `Leave blank to reset to the default ("<strong>${escapeHtml(fallback)}</strong>").`,
+        defaultValue: current,
+        placeholder: fallback,
+        confirmLabel: 'Rename',
+      });
       if (next === null) return; // user cancelled
       await applyPatch({ op: 'rename', sid, name: next });
       // Tree row content changed — settings panel header is unaffected
@@ -1017,7 +1084,12 @@
   async function handleBlockAction(section, bid, action) {
     const order = section.block_order || [];
     if (action === 'delete') {
-      if (!confirm('Delete this item?')) return;
+      const ok = await showDanger({
+        title: 'Delete this block?',
+        body: "The block and its content will be removed. You can revert from the History panel.",
+        confirmLabel: 'Delete',
+      });
+      if (!ok) return;
       await applyPatch({ op: 'remove_block', sid: state.selectedSid, bid });
       postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
     } else if (action === 'up' || action === 'down') {
@@ -1032,6 +1104,147 @@
     }
   }
 
+  // ── Layout panel field builders (v3 Phase 3) ─────────────────────────────
+  // Replace the 6 raw text inputs of the original layout panel with slider /
+  // color / URL controls so admins don't have to type "64px" by hand.
+
+  function _parseLengthPx(v) {
+    if (v == null || v === '') return null;
+    const s = String(v).trim();
+    if (/^-?\d+(\.\d+)?px$/.test(s)) return parseFloat(s);
+    if (/^-?\d+(\.\d+)?$/.test(s))    return parseFloat(s);
+    return null;  // 100%, var(...), em — caller falls back to "auto"
+  }
+
+  function buildLayoutSlider(layout, key, label, min, max, step, allowFreeform) {
+    // allowFreeform: when truthy, render an extra "Use literal value" toggle
+    // so admins can still type "100%" or a CSS var instead of a px number.
+    const wrap = document.createElement('div');
+    wrap.className = 'v2-field';
+    const initial = (layout[key] || '').trim();
+    const initialPx = _parseLengthPx(initial);
+
+    const lbl = document.createElement('label');
+    lbl.className = 'v2-field-label';
+    lbl.style.display = 'flex';
+    lbl.style.justifyContent = 'space-between';
+    lbl.style.alignItems = 'center';
+    lbl.innerHTML = `<span>${escapeHtml(label)}</span>`;
+    const valueDisplay = document.createElement('span');
+    valueDisplay.style.cssText = 'font-variant-numeric:tabular-nums; font-weight:700; color:var(--v2-violet); font-size:.78rem;';
+    valueDisplay.textContent = initialPx != null ? (initialPx + 'px') : (initial || '0px');
+    lbl.appendChild(valueDisplay);
+    wrap.appendChild(lbl);
+
+    const slider = document.createElement('input');
+    slider.type = 'range';
+    slider.min = String(min);
+    slider.max = String(max);
+    slider.step = String(step);
+    slider.className = 'v2-layout-slider';
+    slider.value = String(initialPx != null ? Math.max(min, Math.min(max, initialPx)) : min);
+    slider.style.cssText = 'width:100%; accent-color: var(--v2-violet);';
+    wrap.appendChild(slider);
+
+    const apply = debounce(async (val) => {
+      const out = (val === '' || val == null) ? '' : (typeof val === 'number' ? val + 'px' : String(val));
+      await applyPatch({ op: 'layout', sid: state.selectedSid, updates: { [key]: out } });
+      postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
+    }, 200);
+
+    slider.addEventListener('input', () => {
+      const n = parseFloat(slider.value);
+      valueDisplay.textContent = n + 'px';
+      apply(n);
+    });
+
+    if (allowFreeform) {
+      // Allow literal values like "100%" too
+      const freeWrap = document.createElement('div');
+      freeWrap.style.cssText = 'display:flex; gap:6px; margin-top:6px; align-items:center;';
+      const freeLabel = document.createElement('span');
+      freeLabel.textContent = 'or:';
+      freeLabel.style.cssText = 'font-size:.74rem; color:var(--v2-muted);';
+      const freeIn = document.createElement('input');
+      freeIn.type = 'text';
+      freeIn.className = 'v2-input';
+      freeIn.placeholder = allowFreeform;
+      freeIn.value = initialPx == null ? initial : '';
+      freeIn.style.cssText = 'flex:1; font-size:.82rem;';
+      freeIn.addEventListener('input', debounce(async () => {
+        const v = freeIn.value.trim();
+        if (!v) return;
+        valueDisplay.textContent = v;
+        await applyPatch({ op: 'layout', sid: state.selectedSid, updates: { [key]: v } });
+        postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
+      }, 300));
+      freeWrap.appendChild(freeLabel);
+      freeWrap.appendChild(freeIn);
+      wrap.appendChild(freeWrap);
+    }
+    return wrap;
+  }
+
+  function buildLayoutColor(layout, key, label) {
+    const wrap = document.createElement('div');
+    wrap.className = 'v2-field';
+    const lbl = document.createElement('label');
+    lbl.className = 'v2-field-label';
+    lbl.textContent = label;
+    wrap.appendChild(lbl);
+
+    const initial = (layout[key] || '').trim();
+    const isHex = /^#[0-9a-fA-F]{6}$/.test(initial);
+
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex; gap:8px; align-items:center;';
+    const swatch = document.createElement('input');
+    swatch.type = 'color';
+    swatch.className = 'v2-color-swatch';
+    swatch.value = isHex ? initial : '#000000';
+    const text = document.createElement('input');
+    text.type = 'text';
+    text.className = 'v2-input';
+    text.style.flex = '1';
+    text.value = initial;
+    text.placeholder = '#fff or var(--cms-scheme-2-bg)';
+
+    const apply = debounce(async (val) => {
+      await applyPatch({ op: 'layout', sid: state.selectedSid, updates: { [key]: val } });
+      postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
+    }, 200);
+    swatch.addEventListener('input', () => { text.value = swatch.value; apply(swatch.value); });
+    text.addEventListener('input', () => {
+      const v = text.value.trim();
+      if (/^#[0-9a-fA-F]{6}$/.test(v)) swatch.value = v;
+      apply(v);
+    });
+    row.appendChild(swatch);
+    row.appendChild(text);
+    wrap.appendChild(row);
+    return wrap;
+  }
+
+  function buildLayoutText(layout, key, label, placeholder) {
+    const wrap = document.createElement('div');
+    wrap.className = 'v2-field';
+    const lbl = document.createElement('label');
+    lbl.className = 'v2-field-label';
+    lbl.textContent = label;
+    wrap.appendChild(lbl);
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'v2-input';
+    input.value = layout[key] || '';
+    input.placeholder = placeholder || '';
+    input.addEventListener('input', debounce(async () => {
+      await applyPatch({ op: 'layout', sid: state.selectedSid, updates: { [key]: input.value } });
+      postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
+    }, 300));
+    wrap.appendChild(input);
+    return wrap;
+  }
+
   function buildLayoutSection(section) {
     const wrap = document.createElement('details');
     wrap.className = 'v2-layout-section';
@@ -1043,33 +1256,15 @@
     const body = document.createElement('div');
     body.className = 'v2-layout-body';
 
-    const fields = [
-      { key: 'padding_top',      label: 'Padding top',     placeholder: 'e.g. 64px' },
-      { key: 'padding_bottom',   label: 'Padding bottom',  placeholder: 'e.g. 64px' },
-      { key: 'background_color', label: 'Background color (hex or scheme var)', placeholder: '#fff or var(--cms-scheme-2-bg)' },
-      { key: 'text_color',       label: 'Text color',      placeholder: '#1e293b' },
-      { key: 'background_image', label: 'Background image URL', placeholder: 'https://…' },
-      { key: 'max_width',        label: 'Max content width', placeholder: 'e.g. 720px or 100%' },
-    ];
-    fields.forEach(f => {
-      const row = document.createElement('div');
-      row.className = 'v2-field';
-      const lbl = document.createElement('label');
-      lbl.className = 'v2-field-label';
-      lbl.textContent = f.label;
-      row.appendChild(lbl);
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.className = 'v2-input';
-      input.value = layout[f.key] || '';
-      input.placeholder = f.placeholder;
-      input.addEventListener('input', debounce(async () => {
-        await applyPatch({ op: 'layout', sid: state.selectedSid, updates: { [f.key]: input.value } });
-        postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
-      }, 300));
-      row.appendChild(input);
-      body.appendChild(row);
-    });
+    // v3 Phase 3: spacing as sliders (range + numeric mirror) instead of
+    // raw text inputs. Color fields stay as hex/swatch inputs. Image stays
+    // as a URL field.
+    body.appendChild(buildLayoutSlider(layout, 'padding_top',    'Padding top',    0, 200, 4));
+    body.appendChild(buildLayoutSlider(layout, 'padding_bottom', 'Padding bottom', 0, 200, 4));
+    body.appendChild(buildLayoutColor (layout, 'background_color', 'Background color'));
+    body.appendChild(buildLayoutColor (layout, 'text_color',       'Text color'));
+    body.appendChild(buildLayoutText  (layout, 'background_image', 'Background image URL', 'https://…'));
+    body.appendChild(buildLayoutSlider(layout, 'max_width',     'Max content width', 320, 1600, 20, '100%'));
 
     // Color scheme buttons — quick presets that fill BG + text together
     const schemeRow = document.createElement('div');
@@ -1898,7 +2093,12 @@
 
   // ── Create blank page ────────────────────────────────────────────────────
   async function createBlankPage() {
-    const target = prompt('New page slug (lowercase, hyphens):');
+    const target = await showPrompt({
+      title: 'New page',
+      body: 'The slug becomes the page URL: <code>/pages/&lt;slug&gt;.html</code>. Use lowercase letters, digits, and hyphens.',
+      placeholder: 'e.g. neighborhood-resources',
+      confirmLabel: 'Create page',
+    });
     if (!target) return;
     const slug = target.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
     if (!slug) { toast('Invalid slug.', 'error'); return; }
@@ -1925,7 +2125,12 @@
 
   // ── Duplicate page ───────────────────────────────────────────────────────
   async function duplicatePage() {
-    const target = prompt('New page slug (e.g. "neighborhood-resources"):');
+    const target = await showPrompt({
+      title: 'Duplicate page',
+      body: `Copies <strong>${escapeHtml(state.pageSlug)}</strong> as a new page. Pick a slug for the copy.`,
+      placeholder: 'e.g. neighborhood-resources-copy',
+      confirmLabel: 'Duplicate',
+    });
     if (!target) return;
     const cleaned = target.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
     if (!cleaned) { toast('Invalid slug.', 'error'); return; }
@@ -2474,9 +2679,14 @@
       if (copied) {
         toast('Preview link copied to clipboard (valid 7 days).', 'ok');
       } else {
-        // Fallback: prompt the user with the URL so they can copy manually.
-        // Common on http:// origins (Safari) where Clipboard API is blocked.
-        window.prompt('Copy this preview URL (valid 7 days). Clipboard API unavailable on this origin:', url);
+        // Fallback: surface the URL in our own dialog so the user can copy it
+        // manually. Common on http:// origins (Safari) where Clipboard API is blocked.
+        await showAlert({
+          title: 'Preview link (valid 7 days)',
+          body: `<input type="text" readonly value="${escapeHtml(url)}" style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--v2-border-strong); background:var(--v2-bg); color:var(--v2-text); font-size:.84rem;" onclick="this.select()" />`,
+          confirmLabel: 'Done',
+          tone: 'info',
+        });
       }
     } catch (e) {
       toast('Could not issue preview token: ' + (e && e.message || ''), 'error');
@@ -2770,7 +2980,12 @@
 
   async function handleHistoryRevert(btn, m, refresh) {
     const detail = btn.previousElementSibling?.querySelector('.v2-history-detail')?.textContent || '';
-    const ok = confirm('Revert this change?\n\n' + detail);
+    const ok = await showConfirm({
+      title: 'Revert this change?',
+      body: `<strong>${escapeHtml(detail)}</strong><br><br>The page will return to its state before this edit. The revert itself records a new history entry, so you can undo it.`,
+      confirmLabel: 'Revert',
+      tone: 'warn',
+    });
     if (!ok) return;
     try {
       let res;
@@ -2884,7 +3099,13 @@
     pubBtn.className = 'v2-btn v2-btn-publish-theme';
     pubBtn.innerHTML = '<span style="font-size:1rem;">🚀</span>&nbsp; Publish theme to live site';
     pubBtn.addEventListener('click', async () => {
-      if (!confirm('Publish theme tokens to the live site?')) return;
+      const ok = await showConfirm({
+        title: 'Publish theme to live site?',
+        body: 'All theme tokens (colors, fonts, layout, brand) will become visible on the public site immediately. The previous published theme is kept in history if you need to revert.',
+        confirmLabel: 'Publish theme',
+        tone: 'info',
+      });
+      if (!ok) return;
       try {
         await window.v2PublishTheme();
         toast('Theme published.', 'ok');
@@ -3150,7 +3371,13 @@
     const f = e.target.files && e.target.files[0];
     if (!f) return;
     e.target.value = '';
-    if (!confirm('Replace this page\'s draft with the imported template? You can undo with ⌘Z.')) return;
+    const ok = await showConfirm({
+      title: 'Replace this page with the imported template?',
+      body: `Reads <strong>${escapeHtml(f.name)}</strong> and replaces the current page's draft. You can undo from the History panel or with ⌘Z.`,
+      confirmLabel: 'Import',
+      tone: 'warn',
+    });
+    if (!ok) return;
     try {
       const text = await f.text();
       let parsed;
@@ -3448,9 +3675,14 @@
   async function generatePageFromAi() {
     const prompt = (elAiPrompt && elAiPrompt.value || '').trim();
     if (!prompt) { toast('Type a prompt first.', 'error'); return; }
-    if (state.template.order.length && !confirm(
-      'This will REPLACE all sections on this page with AI-generated content. ' +
-      'Your current draft is snapshotted so ⌘Z will undo. Continue?')) return;
+    if (state.template.order.length) {
+      const ok = await showDanger({
+        title: 'Replace all sections on this page?',
+        body: `This page currently has <strong>${state.template.order.length} section${state.template.order.length === 1 ? '' : 's'}</strong>. The AI will replace them all with new generated content. Your current draft is snapshotted in the History panel — you can revert anytime.`,
+        confirmLabel: 'Replace with AI',
+      });
+      if (!ok) return;
+    }
 
     const aiBtn = document.getElementById('v2-ai-go-page');
     if (aiBtn) { aiBtn.disabled = true; aiBtn.textContent = 'Thinking…'; }
