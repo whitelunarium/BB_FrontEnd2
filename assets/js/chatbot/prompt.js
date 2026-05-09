@@ -8,6 +8,17 @@
 
 import { fetchAllFaq, searchFaq, searchNews } from './api.js';
 
+// Phase 2: optional TF-IDF retrieval upgrade. We try to import the
+// tools module and use its tfidfRerank; fall back to keyword scoring
+// if Phase 2 hasn't shipped yet.
+let _tfidfModule = null;
+async function getTfidf() {
+  if (_tfidfModule !== null) return _tfidfModule;
+  try { _tfidfModule = await import('./tools.js'); }
+  catch (_e) { _tfidfModule = false; }
+  return _tfidfModule;
+}
+
 const PNEC_BASE = `You are Helper Bot — the friendly, plainspoken AI guide for the Poway Neighborhood Emergency Corps (PNEC), a 100% volunteer organization founded in 2003 that helps Poway, California households prepare for emergencies (wildfire, earthquake, extreme heat, power outages, flooding).
 
 Tone: warm, neighborly, never alarmist. Concrete actions over abstract advice. Cite the FAQ source ID when answering from the FAQ.
@@ -89,6 +100,25 @@ function scoreFaqItem(tokens, item) {
 }
 
 export async function retrieveFaqContext(query, limit = 6) {
+  // Phase 2: prefer TF-IDF rerank when tools.js is loaded.
+  const tools = await getTfidf();
+  if (tools && typeof tools.tfidfRerank === 'function') {
+    try {
+      const scored = await tools.tfidfRerank(query, limit);
+      if (scored.length) {
+        // Augment with API search (synonyms it might know)
+        let extra = [];
+        try { extra = await searchFaq(query); } catch (_e) { extra = []; }
+        const merged = [...scored];
+        (extra || []).slice(0, 4).forEach(e => {
+          if (!merged.find(m => (m.id || m.faq_id) === (e.id || e.faq_id))) merged.push(e);
+        });
+        return merged;
+      }
+    } catch (_e) { /* fall through */ }
+  }
+
+  // Phase 1 fallback — substring keyword scoring
   const tokens = tokenize(query);
   if (!tokens.length) return [];
   const all = await getFaqIndex();
@@ -99,11 +129,10 @@ export async function retrieveFaqContext(query, limit = 6) {
     .slice(0, limit)
     .map(x => x.item);
 
-  // Augment with API-side search (it may know synonyms)
   let extra = [];
   try { extra = await searchFaq(query); } catch (_e) { extra = []; }
   const merged = [...scored];
-  extra.slice(0, 4).forEach(e => {
+  (extra || []).slice(0, 4).forEach(e => {
     if (!merged.find(m => (m.id || m.faq_id) === (e.id || e.faq_id))) merged.push(e);
   });
   return merged;
