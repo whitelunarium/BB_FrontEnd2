@@ -101,15 +101,24 @@ body_class: inner-page auth-page-body
       0 28px 56px rgba(20, 90, 50, 0.10);
   }
 
-  /* ─── Auth wrapper — wildfire fades from header into the auth section
-     ───────────────────────────────────────────────────────────────────
-     Three stacked layers of atmosphere, creating a cinematic top-to-bottom
-     fade from the wildfire (which the navbar above already shows) into
-     warm cream (where the auth card sits): */
+  /* ─── Auth wrapper — soft warm fade from the navbar's wildfire into the
+     calm cream where the auth card lives. No photo extension (the photo
+     never aligns cleanly across the navbar boundary at all viewport
+     sizes). Just a vertical color gradient that picks up the fire's
+     warm amber tone at the top and dissolves into cream by the time the
+     card area starts. */
   .auth-wrapper {
     min-height: calc(100vh - 200px);
-    padding: 0 20px 120px;             /* card pushed down via spacer below */
-    background: #f8f5f0;
+    padding: 0 20px 120px;
+    /* Vertical wash: amber top → soft cream by 30% → solid cream below.
+       Reads as "smoke from the fire above settling into the page." */
+    background:
+      linear-gradient(180deg,
+        rgba(192, 90, 50, 0.18) 0%,
+        rgba(255, 168, 96, 0.16) 12%,
+        rgba(248, 220, 180, 0.18) 24%,
+        rgba(248, 245, 240, 0.85) 40%,
+        #f8f5f0 60%);
     display: flex; flex-direction: column; align-items: center;
     position: relative;
     overflow: hidden;
@@ -117,79 +126,30 @@ body_class: inner-page auth-page-body
     font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 
-  /* Layer 1 — the wildfire photo extending down from the header.
-     Same image as the carousel above, positioned to "continue" visually
-     from where the header crops it. Saturate/brightness lowered slightly
-     so the bottom half of the bleed reads as smoke + dusk light, not a
-     billboard. */
-  .auth-wrapper::before {
-    content: '';
-    position: absolute; inset: 0;
-    background-image: url('{{ "/assets/images/Poway_Fire.webp" | relative_url }}');
-    background-size: cover;
-    background-position: center 8%;     /* aligns roughly where header crop ends */
-    filter: saturate(0.85) brightness(0.95);
-    /* Hard fade from full visibility at top → cream by 60% down. The auth
-       card sits in the cream-dominant lower portion. */
-    -webkit-mask-image: linear-gradient(180deg,
-      #000 0%,
-      #000 18%,
-      rgba(0,0,0,0.65) 35%,
-      rgba(0,0,0,0.30) 50%,
-      transparent 65%);
-            mask-image: linear-gradient(180deg,
-      #000 0%,
-      #000 18%,
-      rgba(0,0,0,0.65) 35%,
-      rgba(0,0,0,0.30) 50%,
-      transparent 65%);
-    pointer-events: none;
-    z-index: -2;
-  }
-
-  /* Layer 2 — warm color overlay on the photo bleed: amber at top,
-     cream-warm at bottom. Pulls the wildfire's natural orange into the
-     PNEC palette so the fade feels like the fire's smoke dissolving
-     into warm dusk light, not just a faded photograph. */
-  .auth-wrapper::after {
-    content: '';
-    position: absolute; inset: 0;
-    background:
-      linear-gradient(180deg,
-        rgba(255, 168, 96, 0.20) 0%,
-        rgba(255, 200, 140, 0.15) 25%,
-        rgba(248, 245, 240, 0.50) 55%,
-        rgba(248, 245, 240, 0.95) 75%,
-        #f8f5f0 100%),
-      radial-gradient(900px 600px at 50% 0%, rgba(192, 57, 43, 0.10), transparent 60%);
-    pointer-events: none;
-    z-index: -1;
-  }
-
-  /* Layer 3 — slowly drifting amber/green ambient orb deep in the bg.
-     Adds breathing motion to the otherwise still photo. */
+  /* Drifting amber/green ambient orb — adds breathing motion behind the
+     card. Subtle, low-opacity, blurred. */
   .auth-orb {
     position: absolute;
     width: 1100px; height: 1100px;
-    top: 0; left: 50%; transform: translateX(-50%) translateY(-30%);
+    top: 0; left: 50%; transform: translateX(-50%) translateY(-25%);
     background:
-      radial-gradient(circle at 35% 40%, rgba(255, 168, 96, 0.18), transparent 55%),
-      radial-gradient(circle at 65% 60%, rgba(30, 132, 73, 0.12), transparent 55%);
-    filter: blur(28px);
+      radial-gradient(circle at 35% 40%, rgba(255, 168, 96, 0.16), transparent 55%),
+      radial-gradient(circle at 65% 60%, rgba(30, 132, 73, 0.10), transparent 55%);
+    filter: blur(32px);
     animation: auth-orb-drift 24s ease-in-out infinite alternate;
     pointer-events: none;
     z-index: -1;
   }
   @keyframes auth-orb-drift {
-    0%   { transform: translateX(-50%) translateY(-30%) scale(1); }
-    100% { transform: translateX(-48%) translateY(-26%) scale(1.06); }
+    0%   { transform: translateX(-50%) translateY(-25%) scale(1); }
+    100% { transform: translateX(-48%) translateY(-22%) scale(1.05); }
   }
   @media (prefers-reduced-motion: reduce) { .auth-orb { animation: none; } }
 
-  /* Spacer at the top of the wrapper so the card lands AFTER the fade
-     has reached cream — the photo bleed needs vertical room to fade. */
+  /* Top spacer so the card lands after the warm fade has settled into
+     cream — the gradient needs vertical room to dissolve. */
   .auth-spacer {
-    height: clamp(120px, 14vw, 220px);
+    height: clamp(96px, 11vw, 180px);
     width: 100%;
     flex-shrink: 0;
     pointer-events: none;
