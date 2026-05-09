@@ -490,6 +490,9 @@ class HelperBot {
     });
     this._appendMessage(userMsg);
 
+    // Stash the image so _runAssistantTurn can pass it to the LLM
+    this.activeImageForTurn = this.activeImage ? { ...this.activeImage } : null;
+
     // Reset composer
     this.dom.input.value = '';
     this._clearAttachment();
@@ -553,7 +556,10 @@ class HelperBot {
 
     if (!usedStream) {
       try {
-        const { text } = await sendCompletion({ systemPrompt, userMessage: userText, history });
+        const { text } = await sendCompletion({
+          systemPrompt, userMessage: userText, history,
+          image: this.activeImageForTurn || null
+        });
         assistantText = text;
         placeholderEl.classList.remove('is-loading');
         placeholderEl.classList.add('is-streaming');
@@ -600,6 +606,7 @@ class HelperBot {
     }
 
     this.streamingState = null;
+    this.activeImageForTurn = null;
     this._setStatus('idle', this.t('status.ready'));
     this._renderRail();
 

@@ -1,0 +1,496 @@
+---
+layout: pnec-base
+title: "Helper Bot Analytics"
+description: "Per-user chatbot usage and feedback analytics for PNEC admins."
+body_class: inner-page admin-analytics-body
+permalink: /pages/admin-chatbot-analytics.html
+---
+
+<!--
+  Helper Bot v3 — admin analytics page (Phase 4).
+
+  Renders two views:
+    1. Local view (always available): aggregates this browser's
+       localStorage conversation history into volume / topic / feedback
+       summaries. Useful for admins to inspect their own usage and
+       sanity-check the bot.
+    2. Server view (when backend endpoint /api/chat/analytics is
+       available): same layout but fed by aggregate metrics across all
+       users. Falls back to the local view if the endpoint isn't there.
+-->
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');
+
+  .admin-analytics-body {
+    --pal-bg:    #fbf8f1;
+    --pal-card:  #fff;
+    --pal-fg:    #0a1628;
+    --pal-mute:  #5a6975;
+    --pal-faint: #8b96a1;
+    --pal-green: #1e8449;
+    --pal-deep:  #145a32;
+    --pal-soft:  #d4efdf;
+    --pal-red:   #c0392b;
+    --pal-amber: #d97706;
+    --pal-border: rgba(15, 30, 25, 0.10);
+    background: var(--pal-bg);
+  }
+  .admin-analytics-body main#jupiterx-main { padding: 0 !important; background: transparent !important; }
+
+  .aa-wrap {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    color: var(--pal-fg);
+  }
+  .aa-head {
+    margin-bottom: 28px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 14px;
+    justify-content: space-between;
+  }
+  .aa-head h1 {
+    margin: 0 0 4px;
+    font-size: clamp(1.6rem, 2.5vw, 2.1rem);
+    font-weight: 900;
+    letter-spacing: -0.025em;
+  }
+  .aa-head p { margin: 0; color: var(--pal-mute); font-size: 0.95rem; }
+  .aa-head .aa-source-pill {
+    display: inline-flex; gap: 7px; align-items: center;
+    padding: 6px 12px;
+    background: var(--pal-soft);
+    color: var(--pal-deep);
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    border: 1px solid rgba(30, 132, 73, 0.25);
+  }
+  .aa-source-pill.is-server { background: rgba(30, 132, 73, 0.12); }
+
+  .aa-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+  .aa-stat {
+    background: var(--pal-card);
+    padding: 18px 18px 16px;
+    border-radius: 14px;
+    border: 1px solid var(--pal-border);
+    box-shadow: 0 1px 2px rgba(15, 30, 25, 0.04);
+  }
+  .aa-stat-label {
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    color: var(--pal-mute);
+  }
+  .aa-stat-value {
+    margin: 6px 0 4px;
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: -0.025em;
+    color: var(--pal-fg);
+    line-height: 1;
+  }
+  .aa-stat-trend { font-size: 0.78rem; color: var(--pal-mute); }
+  .aa-stat-trend.is-good { color: var(--pal-green); }
+  .aa-stat-trend.is-warn { color: var(--pal-amber); }
+
+  .aa-row {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+  @media (max-width: 800px) { .aa-row { grid-template-columns: 1fr; } }
+  .aa-card {
+    background: var(--pal-card);
+    border: 1px solid var(--pal-border);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 1px 2px rgba(15, 30, 25, 0.04);
+  }
+  .aa-card h2 {
+    margin: 0 0 14px;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--pal-fg);
+    letter-spacing: -0.012em;
+  }
+  .aa-card h2 .aa-card-sub {
+    margin-left: 8px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--pal-mute);
+    letter-spacing: 0;
+  }
+
+  .aa-bar-row {
+    display: grid;
+    grid-template-columns: 130px 1fr 50px;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 0.86rem;
+  }
+  .aa-bar-track {
+    height: 8px;
+    background: rgba(15, 30, 25, 0.06);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .aa-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--pal-green), var(--pal-deep));
+    border-radius: 999px;
+  }
+  .aa-bar-count {
+    text-align: right;
+    font-weight: 700;
+    color: var(--pal-deep);
+    font-variant-numeric: tabular-nums;
+  }
+  .aa-bar-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--pal-fg);
+    font-weight: 600;
+  }
+
+  .aa-feedback {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .aa-feedback-cell {
+    padding: 12px;
+    border-radius: 10px;
+    text-align: center;
+  }
+  .aa-feedback-cell.up   { background: rgba(30, 132, 73, 0.10); color: var(--pal-deep); }
+  .aa-feedback-cell.down { background: rgba(192, 57, 43, 0.10); color: var(--pal-red); }
+  .aa-feedback-cell .v { font-size: 1.6rem; font-weight: 900; line-height: 1; }
+  .aa-feedback-cell .l { font-size: 0.74rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; margin-top: 4px; }
+
+  .aa-recent { list-style: none; padding: 0; margin: 0; }
+  .aa-recent li {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--pal-border);
+    font-size: 0.86rem;
+    line-height: 1.5;
+  }
+  .aa-recent li:last-child { border-bottom: 0; }
+  .aa-recent li .meta {
+    color: var(--pal-faint);
+    font-size: 0.72rem;
+    margin-bottom: 2px;
+  }
+
+  .aa-hour-grid {
+    display: grid;
+    grid-template-columns: repeat(24, 1fr);
+    gap: 2px;
+    margin-top: 8px;
+  }
+  .aa-hour-cell {
+    height: 28px;
+    background: rgba(30, 132, 73, 0.08);
+    border-radius: 3px;
+    position: relative;
+  }
+  .aa-hour-cell .fill {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(180deg, var(--pal-green) 0%, var(--pal-deep) 100%);
+    border-radius: 3px;
+    transition: height 220ms ease;
+  }
+  .aa-hour-axis {
+    display: grid;
+    grid-template-columns: repeat(24, 1fr);
+    margin-top: 4px;
+    font-size: 0.66rem;
+    color: var(--pal-faint);
+    text-align: center;
+  }
+
+  .aa-empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--pal-mute);
+  }
+  .aa-empty h3 { font-size: 1.1rem; margin: 0 0 6px; color: var(--pal-fg); }
+  .aa-empty p  { margin: 0; font-size: 0.92rem; }
+
+  .aa-not-admin {
+    margin: 80px auto;
+    max-width: 480px;
+    padding: 32px;
+    background: #fff;
+    border: 1px solid var(--pal-border);
+    border-radius: 16px;
+    text-align: center;
+  }
+  .aa-not-admin h2 { margin: 0 0 8px; font-size: 1.2rem; }
+  .aa-not-admin p  { margin: 0; color: var(--pal-mute); }
+
+  .aa-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .aa-btn {
+    padding: 8px 14px;
+    font-family: inherit;
+    font-size: 0.84rem;
+    font-weight: 700;
+    background: var(--pal-card);
+    color: var(--pal-fg);
+    border: 1px solid var(--pal-border);
+    border-radius: 9px;
+    cursor: pointer;
+    transition: background 140ms ease, color 140ms ease;
+  }
+  .aa-btn:hover { background: var(--pal-soft); color: var(--pal-deep); border-color: var(--pal-green); }
+  .aa-btn.primary {
+    background: linear-gradient(135deg, var(--pal-green) 0%, var(--pal-deep) 100%);
+    color: #fff;
+    border-color: transparent;
+  }
+  .aa-btn.primary:hover { filter: brightness(1.05); color: #fff; }
+</style>
+
+<div class="aa-wrap" id="aa-root">
+  <!-- Filled by JS -->
+  <div class="aa-empty"><p>Loading analytics…</p></div>
+</div>
+
+<script type="module">
+import { listConversations } from '{{ "/assets/js/chatbot/store.js" | relative_url }}';
+
+const root = document.getElementById('aa-root');
+
+function isAdmin() {
+  try {
+    const raw = localStorage.getItem('pnec_user') || sessionStorage.getItem('pnec_user');
+    if (!raw) return false;
+    const u = JSON.parse(raw);
+    return u && u.role === 'admin';
+  } catch (_e) { return false; }
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, ch =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])
+  );
+}
+
+if (!isAdmin()) {
+  root.innerHTML = `
+    <div class="aa-not-admin">
+      <h2>Admins only</h2>
+      <p>Sign in with an admin account to see Helper Bot analytics.</p>
+    </div>`;
+} else {
+  // Try server endpoint first; fall back to local aggregation.
+  const apiBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+    ? 'http://127.0.0.1:8425' : 'https://beasts.opencodingsociety.com';
+  fetch(`${apiBase}/api/chat/analytics`, {
+    credentials: 'include',
+    headers: { 'Accept': 'application/json' }
+  })
+    .then(r => (r.ok ? r.json() : Promise.reject('no-server')))
+    .then(serverData => render(serverData, true))
+    .catch(() => render(aggregateLocal(), false));
+}
+
+function aggregateLocal() {
+  const convos = listConversations();
+  const totalConvos = convos.length;
+  const allMsgs = convos.flatMap(c => c.messages || []);
+  const totalMsgs = allMsgs.length;
+  const userMsgs = allMsgs.filter(m => m.role === 'user');
+  const botMsgs  = allMsgs.filter(m => m.role === 'assistant');
+  const lastActive = convos[0]?.updatedAt || 0;
+
+  // Topic clusters via a simple keyword bucket
+  const buckets = {
+    'Wildfire prep':         /\b(fire|wildfire|smoke|red.flag|santa ana|defensible)\b/i,
+    'Emergency kit':         /\b(kit|72.hour|72.hr|water|food|supplies)\b/i,
+    'Evacuation':            /\b(evacuat|escape|leave|shelter|route)\b/i,
+    'Block coordinator':     /\b(coordinator|block|neighbor.{0,3}coord|who.s my)\b/i,
+    'Volunteer / programs':  /\b(volunteer|program|help out|sign up|join)\b/i,
+    'Earthquake':            /\b(earthquake|shake|drop cover hold)\b/i,
+    'Power outage':          /\b(outage|power.{0,3}out|blackout|electricity)\b/i,
+    'Events / drills':       /\b(event|drill|fair|training|class)\b/i,
+    'Other':                 /./,
+  };
+  const topics = Object.fromEntries(Object.keys(buckets).map(k => [k, 0]));
+  userMsgs.forEach(m => {
+    for (const [k, re] of Object.entries(buckets)) {
+      if (re.test(m.content || '')) { topics[k]++; break; }
+    }
+  });
+  // Drop the "Other" bucket if it dominates noise
+  if (topics.Other > 0 && Object.values(topics).reduce((a, b) => a + b, 0) > 1) {
+    // keep
+  }
+
+  // Feedback
+  const fbUp   = botMsgs.filter(m => m.feedback === 'up').length;
+  const fbDown = botMsgs.filter(m => m.feedback === 'down').length;
+
+  // Recent down-voted items
+  const recentDown = botMsgs.filter(m => m.feedback === 'down').slice(-5).reverse();
+
+  // Hour-of-day distribution
+  const hours = new Array(24).fill(0);
+  userMsgs.forEach(m => { hours[new Date(m.timestamp).getHours()]++; });
+
+  // Avg assistant response chars
+  const avgRespChars = botMsgs.length
+    ? Math.round(botMsgs.reduce((a, m) => a + (m.content || '').length, 0) / botMsgs.length)
+    : 0;
+
+  return {
+    totalConvos, totalMsgs, userMsgs: userMsgs.length, botMsgs: botMsgs.length,
+    lastActive, topics, fbUp, fbDown, recentDown, hours, avgRespChars,
+  };
+}
+
+function render(d, isServer) {
+  if (!d.totalConvos && !d.totalMsgs) {
+    root.innerHTML = `
+      <div class="aa-empty">
+        <h3>No data yet</h3>
+        <p>Once people chat with Helper Bot, their interactions will appear here.</p>
+      </div>`;
+    return;
+  }
+
+  const topicEntries = Object.entries(d.topics || {})
+    .filter(([, n]) => n > 0)
+    .sort((a, b) => b[1] - a[1]);
+  const maxTopic = topicEntries.length ? topicEntries[0][1] : 1;
+
+  const totalFb = (d.fbUp || 0) + (d.fbDown || 0);
+  const upPct   = totalFb ? Math.round(100 * (d.fbUp || 0) / totalFb) : 0;
+
+  const lastActive = d.lastActive
+    ? new Date(d.lastActive).toLocaleString()
+    : '—';
+
+  const maxHour = d.hours ? Math.max(...d.hours, 1) : 1;
+
+  root.innerHTML = `
+    <header class="aa-head">
+      <div>
+        <h1>Helper Bot Analytics</h1>
+        <p>Topics, feedback, and timing of conversations${isServer ? ' across all users' : ' on this device'}.</p>
+      </div>
+      <span class="aa-source-pill ${isServer ? 'is-server' : ''}">
+        ${isServer ? 'Server-aggregated' : 'Local (this browser only)'}
+      </span>
+    </header>
+
+    <div class="aa-grid">
+      <div class="aa-stat">
+        <div class="aa-stat-label">Conversations</div>
+        <div class="aa-stat-value">${d.totalConvos || 0}</div>
+        <div class="aa-stat-trend">${d.totalConvos === 1 ? '1 thread' : (d.totalConvos || 0) + ' threads'}</div>
+      </div>
+      <div class="aa-stat">
+        <div class="aa-stat-label">Messages</div>
+        <div class="aa-stat-value">${d.totalMsgs || 0}</div>
+        <div class="aa-stat-trend">${d.userMsgs || 0} from users · ${d.botMsgs || 0} from bot</div>
+      </div>
+      <div class="aa-stat">
+        <div class="aa-stat-label">Avg response</div>
+        <div class="aa-stat-value">${d.avgRespChars || 0}<span style="font-size:.78rem;color:#5a6975;font-weight:600;"> chars</span></div>
+        <div class="aa-stat-trend">Across all assistant messages</div>
+      </div>
+      <div class="aa-stat">
+        <div class="aa-stat-label">Last activity</div>
+        <div class="aa-stat-value" style="font-size:1.05rem;">${escapeHtml(lastActive)}</div>
+        <div class="aa-stat-trend">Most recent message</div>
+      </div>
+    </div>
+
+    <div class="aa-row">
+      <div class="aa-card">
+        <h2>Top topics <span class="aa-card-sub">${topicEntries.length} clusters</span></h2>
+        ${topicEntries.length ? topicEntries.map(([t, n]) => `
+          <div class="aa-bar-row">
+            <span class="aa-bar-label">${escapeHtml(t)}</span>
+            <span class="aa-bar-track"><span class="aa-bar-fill" style="width:${Math.round(100 * n / maxTopic)}%"></span></span>
+            <span class="aa-bar-count">${n}</span>
+          </div>`).join('') : '<p class="aa-stat-trend">No topics tagged yet.</p>'}
+      </div>
+
+      <div class="aa-card">
+        <h2>Feedback <span class="aa-card-sub">${totalFb} ratings</span></h2>
+        <div class="aa-feedback">
+          <div class="aa-feedback-cell up">
+            <div class="v">${d.fbUp || 0}</div>
+            <div class="l">Helpful</div>
+          </div>
+          <div class="aa-feedback-cell down">
+            <div class="v">${d.fbDown || 0}</div>
+            <div class="l">Not helpful</div>
+          </div>
+        </div>
+        ${totalFb ? `<div class="aa-stat-trend ${upPct >= 70 ? 'is-good' : (upPct >= 40 ? '' : 'is-warn')}" style="text-align:center;">${upPct}% positive overall</div>` : '<p class="aa-stat-trend">No ratings yet.</p>'}
+
+        ${(d.recentDown && d.recentDown.length) ? `
+          <h2 style="margin-top:18px;">Recent not-helpful</h2>
+          <ul class="aa-recent">
+            ${d.recentDown.map(m => `
+              <li>
+                <div class="meta">${escapeHtml(new Date(m.timestamp).toLocaleString())}</div>
+                ${escapeHtml((m.content || '').slice(0, 220))}${(m.content || '').length > 220 ? '…' : ''}
+              </li>`).join('')}
+          </ul>` : ''}
+      </div>
+    </div>
+
+    <div class="aa-card">
+      <h2>Activity by hour of day <span class="aa-card-sub">user messages</span></h2>
+      <div class="aa-hour-grid">
+        ${(d.hours || []).map(n => {
+          const h = Math.round(100 * n / maxHour);
+          return `<div class="aa-hour-cell" title="${n} messages"><span class="fill" style="height:${h}%"></span></div>`;
+        }).join('')}
+      </div>
+      <div class="aa-hour-axis">
+        ${Array.from({ length: 24 }, (_, i) => i % 3 === 0 ? `<span>${i}</span>` : '<span></span>').join('')}
+      </div>
+    </div>
+
+    <div class="aa-actions" style="margin-top:18px;">
+      <button class="aa-btn" id="aa-refresh">Refresh</button>
+      <button class="aa-btn primary" id="aa-export-data">Export raw data</button>
+      <a class="aa-btn" href="${'{{ "/pages/admin.html" | relative_url }}'}">← Admin Dashboard</a>
+    </div>
+  `;
+
+  document.getElementById('aa-refresh').addEventListener('click', () => location.reload());
+  document.getElementById('aa-export-data').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(d, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `pnec-helper-bot-analytics-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+}
+</script>

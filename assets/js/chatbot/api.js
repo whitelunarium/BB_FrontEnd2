@@ -45,9 +45,17 @@ function streamEndpoint() {
 
 // ─── One-shot completion (today's Flask /api/gemini) ──────────────
 
-export async function sendCompletion({ systemPrompt, userMessage, history = [] }) {
+export async function sendCompletion({ systemPrompt, userMessage, history = [], image }) {
   const endpoint = defaultEndpoint();
-  const body = JSON.stringify({ prompt: systemPrompt, text: userMessage, history });
+  // Phase 4: include image bytes in the payload when present. Backend
+  // proxy may ignore the field; that's fine — the user message still
+  // goes through with the text component.
+  const payload = { prompt: systemPrompt, text: userMessage, history };
+  if (image && image.dataUrl) {
+    payload.image_base64 = image.dataUrl.replace(/^data:image\/[^;]+;base64,/, '');
+    payload.image_mime   = image.mime || 'image/jpeg';
+  }
+  const body = JSON.stringify(payload);
 
   const res = await withTimeout(fetch(endpoint, {
     method: 'POST',

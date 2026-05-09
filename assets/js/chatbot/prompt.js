@@ -199,6 +199,14 @@ export async function buildSystemPrompt({ userMessage, user, history }) {
 
   blocks.push(citationsInstructions());
 
+  // Phase 4: append a language directive if i18n.js is loaded and the
+  // active language isn't English.
+  try {
+    const i18n = await import('./i18n.js');
+    const lb = i18n.languageBlock?.();
+    if (lb) blocks.push(lb);
+  } catch (_e) { /* fine — Phase 4 not loaded */ }
+
   return blocks.join('\n\n────────────────\n\n');
 }
 
