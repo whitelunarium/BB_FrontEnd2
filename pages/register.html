@@ -101,51 +101,73 @@ body_class: inner-page auth-page-body
       0 28px 56px rgba(20, 90, 50, 0.10);
   }
 
-  /* ─── Auth wrapper — single centered column on warm cream w/ pattern ─ */
+  /* ─── Auth wrapper — atmospheric backdrop ──────────────────────────
+     Multi-layer ambient composition: a stylized topographic-line SVG
+     suggesting Poway's hills, drifting green/amber mesh blobs in the
+     background, and a vignette to focus the eye on the card. */
   .auth-wrapper {
     min-height: calc(100vh - 200px);
-    padding: 72px 20px 96px;
-    background: #f8f5f0;
+    padding: 96px 20px 120px;
+    background:
+      radial-gradient(900px 600px at 80% 110%, rgba(192, 57, 43, 0.06), transparent 60%),
+      radial-gradient(800px 600px at 18% 0%, rgba(30, 132, 73, 0.10), transparent 60%),
+      linear-gradient(180deg, #f8f5f0 0%, #efe9da 100%);
     display: flex; flex-direction: column; align-items: center;
     position: relative;
     overflow: hidden;
     font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
-  /* Decorative dot-grid pattern (very faint, hand-design feel). */
+
+  /* Layer 1 — topographic contour lines (stylized Poway hills feeling).
+     Inline SVG via data URI so no extra HTTP request. Very faint —
+     reads as background texture, not foreground art. */
   .auth-wrapper::before {
     content: '';
     position: absolute; inset: 0;
-    background-image: radial-gradient(rgba(30, 132, 73, 0.10) 1px, transparent 1px);
-    background-size: 22px 22px;
-    background-position: 0 0;
-    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 75%);
-            mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 75%);
-    pointer-events: none;
-    z-index: 0;
-  }
-  /* Soft green ambient glow behind the card. */
-  .auth-wrapper::after {
-    content: '';
-    position: absolute;
-    width: 720px; height: 720px;
-    top: 50%; left: 50%; transform: translate(-50%, -50%);
-    background: radial-gradient(circle, rgba(30, 132, 73, 0.10), transparent 60%);
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 800' preserveAspectRatio='none'><g fill='none' stroke='%231e8449' stroke-width='1' stroke-opacity='0.10'><path d='M0,500 Q200,440 400,470 T800,460 T1200,500'/><path d='M0,540 Q220,480 440,505 T880,500 T1200,540'/><path d='M0,580 Q240,525 480,550 T960,540 T1200,580'/><path d='M0,620 Q260,565 520,590 T1040,585 T1200,625'/><path d='M0,660 Q280,610 560,630 T1120,625 T1200,665'/><path d='M0,700 Q300,650 600,675 T1200,705'/><path d='M0,460 Q200,400 400,430 T800,420 T1200,460'/><path d='M0,420 Q220,360 440,385 T880,380 T1200,420'/></g></svg>");
+    background-size: 100% auto;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 30%, #000 100%);
+            mask-image: linear-gradient(180deg, transparent 0%, #000 30%, #000 100%);
     pointer-events: none;
     z-index: 0;
   }
 
+  /* Layer 2 — drifting mesh orb behind the card, very slow alternation. */
+  .auth-wrapper::after {
+    content: '';
+    position: absolute;
+    width: 880px; height: 880px;
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background:
+      radial-gradient(circle at 40% 40%, rgba(30, 132, 73, 0.18), transparent 55%),
+      radial-gradient(circle at 60% 60%, rgba(255, 168, 96, 0.10), transparent 55%);
+    filter: blur(20px);
+    animation: auth-mesh-drift 22s ease-in-out infinite alternate;
+    pointer-events: none;
+    z-index: 0;
+  }
+  @keyframes auth-mesh-drift {
+    0%   { transform: translate(-50%, -50%) scale(1); }
+    100% { transform: translate(-48%, -52%) scale(1.06); }
+  }
+  @media (prefers-reduced-motion: reduce) { .auth-wrapper::after { animation: none; } }
+
   /* ─── The card itself ───────────────────────────────────────────────── */
-  /* Premium layered card: multiple soft shadows simulating real light,
-     a subtle hover-lift, and a forest-green gradient strip up top as a
-     branded visual marker. */
+  /* Premium layered card: subtle warm gradient surface (not stark white),
+     multiple soft shadows simulating real light, a forest-green gradient
+     ribbon at the top edge, and a hover-lift. */
   .auth-card {
     position: relative;
     z-index: 1;
     width: 100%;
     max-width: 480px;
     margin: 0;
-    background: #fff;
-    border-radius: 18px;
+    /* Subtle warm gradient — top is paper-white, bottom is faintly cream-
+       tinted so the card has its own light direction (not flat fill). */
+    background: linear-gradient(180deg, #ffffff 0%, #fbf8f1 100%);
+    border-radius: 20px;
     overflow: hidden;
     box-shadow: var(--pnec-card-shadow);
     animation: auth-card-in 600ms cubic-bezier(.2,.85,.25,1.0) both;
@@ -178,52 +200,61 @@ body_class: inner-page auth-page-body
     .auth-card:hover { transform: none; }
   }
 
-  /* Header — refined, generous padding, sophisticated logo + descriptor. */
+  /* Header — generous padding, custom SVG mark (no PNG logo) */
   .auth-card-head {
-    padding: 36px 36px 24px;
+    padding: 40px 36px 18px;
     text-align: center;
     position: relative;
   }
   .auth-card-mark {
-    display: inline-flex; align-items: center; gap: 14px;
+    display: inline-flex; flex-direction: column; align-items: center;
+    gap: 14px;
   }
+  /* Custom SVG mark — a stylized shield with a peaked roof + heart, both
+     of which echo PNEC's mission (neighborhood, protection, care). All
+     geometry, no PNG. Looks intentional + bespoke at any size. */
   .auth-card-mark-logo {
-    width: 52px; height: 52px;
+    width: 64px; height: 64px;
     flex-shrink: 0;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--pnec-green) 0%, var(--pnec-green-deep) 100%);
     display: grid; place-items: center;
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.30) inset,
-      0 6px 14px rgba(20, 90, 50, 0.30),
-      0 0 0 4px var(--pnec-green-soft);
+    position: relative;
   }
-  .auth-card-mark-logo img {
-    width: 30px; height: 30px;
-    object-fit: contain;
-    filter: brightness(0) invert(1);
+  .auth-card-mark-logo svg { width: 100%; height: 100%; display: block; }
+  /* Soft gradient halo behind the mark for depth. */
+  .auth-card-mark-logo::before {
+    content: '';
+    position: absolute;
+    inset: -10px;
+    background: radial-gradient(circle, var(--pnec-green-soft), transparent 70%);
+    border-radius: 50%;
+    z-index: -1;
   }
-  .auth-card-mark-text { display: flex; flex-direction: column; line-height: 1.08; text-align: left; }
+
+  .auth-card-mark-text {
+    display: flex; flex-direction: column;
+    align-items: center;
+    line-height: 1.15;
+  }
   .auth-card-mark-text strong {
     font-family: 'DM Sans', sans-serif;
     font-weight: 800;
-    font-size: 1.15rem;
+    font-size: 1.32rem;
     color: #0a1628;
-    letter-spacing: -0.018em;
+    letter-spacing: -0.024em;
   }
   .auth-card-mark-text small {
     font-size: 0.7rem; font-weight: 700;
-    color: var(--pnec-green); letter-spacing: 0.10em;
+    color: var(--pnec-green); letter-spacing: 0.14em;
     text-transform: uppercase;
-    margin-top: 4px;
+    margin-top: 6px;
   }
   /* Subtle hairline divider under the head */
   .auth-card-head::after {
     content: '';
     display: block;
-    margin: 24px auto 0;
-    width: 56px; height: 2px;
-    background: linear-gradient(90deg, transparent, var(--pnec-green-soft), transparent);
+    margin: 22px auto 0;
+    width: 72px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--pnec-green-soft) 40%, var(--pnec-green-soft) 60%, transparent);
   }
 
   /* Tabs — forest-green active pill, sophisticated easing */
@@ -532,7 +563,40 @@ body_class: inner-page auth-page-body
     <div class="auth-card-head">
       <div class="auth-card-mark">
         <span class="auth-card-mark-logo" aria-hidden="true">
-          <img src="{{ '/images/capstone/powaynec.png' | relative_url }}" alt="">
+          <!-- Custom mark: shield silhouette with a stylized roof-line + heart
+               inside. Nods to neighborhood (roof), protection (shield), care
+               (heart). Pure geometry, no raster — sharp at every size. -->
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="pnec-mark-grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%"  stop-color="#27ae60"/>
+                <stop offset="55%" stop-color="#1e8449"/>
+                <stop offset="100%" stop-color="#145a32"/>
+              </linearGradient>
+              <linearGradient id="pnec-mark-shine" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.30"/>
+                <stop offset="60%" stop-color="#ffffff" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <!-- Shield base -->
+            <path d="M32 4 L56 12 V30 C56 44 46 54 32 60 C18 54 8 44 8 30 V12 Z"
+                  fill="url(#pnec-mark-grad)"
+                  stroke="rgba(255,255,255,0.16)" stroke-width="1"/>
+            <!-- Light catching the top half -->
+            <path d="M32 4 L56 12 V30 C56 36 53 41 49 45 C45 39 41 35 32 32 C23 35 19 39 15 45 C11 41 8 36 8 30 V12 Z"
+                  fill="url(#pnec-mark-shine)"/>
+            <!-- Roofline — two diagonals meeting at the peak -->
+            <path d="M19 36 L32 23 L45 36"
+                  fill="none" stroke="#ffffff" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- House body / door (subtle vertical line) -->
+            <path d="M32 36 V44"
+                  stroke="#ffffff" stroke-width="2.5"
+                  stroke-linecap="round" stroke-opacity="0.85"/>
+            <!-- Heart at the base — care/community -->
+            <path d="M32 50 C30 47 26 47 26 44 C26 42 28 41 30 42 C30.6 42.3 31.4 42.8 32 43.5 C32.6 42.8 33.4 42.3 34 42 C36 41 38 42 38 44 C38 47 34 47 32 50 Z"
+                  fill="#ffffff" fill-opacity="0.92"/>
+          </svg>
         </span>
         <span class="auth-card-mark-text">
           <strong>Poway NEC</strong>
