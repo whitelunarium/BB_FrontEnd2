@@ -2670,81 +2670,153 @@
     if (!elPanelHistory) return;
     elPanelHistory.innerHTML = '<p style="color:var(--v2-muted);">Loading…</p>';
     try {
-      const res = await fetch(_apiBase() + '/api/cms/audit?page=' + encodeURIComponent(state.pageSlug) + '&limit=80', {
-        credentials: 'include',
-        headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('pnec_token') || '') },
-      });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const body = await res.json();
-      renderHistory(body.events || []);
+      // v3 Phase 2: load BOTH the legacy audit log AND the new
+      // page_template_revisions feed. Sections-history rows let us revert
+      // any specific page edit; the audit log keeps overrides + site_config
+      // + theme in the same panel.
+      const headers = { 'Authorization': 'Bearer ' + (localStorage.getItem('pnec_token') || '') };
+      const [auditRes, revRes] = await Promise.all([
+        fetch(_apiBase() + '/api/cms/audit?page=' + encodeURIComponent(state.pageSlug) + '&limit=60',
+              { credentials: 'include', headers }),
+        fetch(_apiBase() + '/api/cms/page/' + encodeURIComponent(state.pageSlug) + '/revisions?limit=60',
+              { credentials: 'include', headers }),
+      ]);
+      const audit = auditRes.ok ? (await auditRes.json()).events || [] : [];
+      // Revisions endpoint may 404 on older backends — degrade gracefully
+      const revisions = revRes.ok ? (await revRes.json()).revisions || [] : [];
+      renderHistory(audit, revisions);
     } catch (e) {
       elPanelHistory.innerHTML = '<p style="color:var(--v2-red);">Could not load history.</p>';
     }
   }
 
-  function renderHistory(events) {
+  function renderHistory(events, revisions) {
     elPanelHistory.innerHTML = '';
     const head = document.createElement('div');
     head.className = 'v2-settings-head';
-    head.innerHTML = `<h3>History</h3><p>Recent edits across pages, theme, and overrides. Click ↻ to revert any inline edit.</p>`;
+    head.innerHTML = `<h3>History</h3><p>Recent edits across pages, theme, and overrides. Click ↻ to revert.</p>`;
     elPanelHistory.appendChild(head);
-    if (!events.length) {
+
+    // Phase 2: merge revisions into the timeline so the editor shows
+    // every page edit with a real revert action.
+    const merged = [];
+    (events || []).forEach(e => merged.push({ kind: e.kind, ts: e.updated_at, raw: e, source: 'audit' }));
+    (revisions || []).forEach(r => merged.push({ kind: 'revision', ts: r.created_at, raw: r, source: 'revision' }));
+    merged.sort((a, b) => new Date(b.ts || 0) - new Date(a.ts || 0));
+
+    if (!merged.length) {
       const p = document.createElement('p');
       p.style.cssText = 'color:var(--v2-muted); padding:8px 0;';
       p.textContent = 'No history yet — your first edit will appear here.';
       elPanelHistory.appendChild(p);
       return;
     }
-    events.forEach(e => {
+
+    const iconMap = {
+      revision:      '📝',
+      page_template: '📄',
+      page_publish:  '🚀',
+      theme:         '🎨',
+      override:      '✏️',
+      site_config:   '🌐',
+    };
+
+    merged.forEach(m => {
       const row = document.createElement('div');
       row.className = 'v2-history-row';
-      const when = e.updated_at ? new Date(e.updated_at) : null;
+      const when = m.ts ? new Date(m.ts) : null;
       const ago  = when ? _timeAgo(when) : '?';
-      const iconMap = {
-        page_template: '📄',
-        page_publish:  '🚀',
-        theme:         '🎨',
-        override:      '✏️',
-        site_config:   '🌐',
-      };
-      // Detail-level revert: only meaningful for `override` and `site_config`
-      const canRevert = (e.kind === 'override'    && e.element_id && e.page_slug)
-                     || (e.kind === 'site_config' && e.cfg_key);
-      const revertBtn = canRevert ? '<button class="v2-icon-btn v2-history-revert" title="Reset this change to default">↻</button>' : '';
+
+      let detail, who, revertBtn = '';
+      if (m.source === 'revision') {
+        // New revision rows — every one has a real revert button
+        detail = m.raw.op_summary || ('Edit: ' + m.raw.op);
+        who = m.raw.created_by_name || '?';
+        revertBtn = '<button class="v2-icon-btn v2-history-revert" data-revision-id="' + m.raw.id +
+                    '" title="Restore the page to before this edit">↻</button>';
+      } else {
+        const e = m.raw;
+        detail = e.detail || '';
+        who = e.updated_by_name || '?';
+        // Suppress duplicate page_template events when we have richer
+        // revision rows for the same page+state
+        if (e.kind === 'page_template' && (revisions || []).length) return;
+        const canRevert = (e.kind === 'override'    && e.element_id && e.page_slug)
+                       || (e.kind === 'site_config' && e.cfg_key);
+        if (canRevert) {
+          revertBtn = '<button class="v2-icon-btn v2-history-revert" data-kind="' + e.kind +
+                      '" data-page="' + escapeHtml(e.page_slug || '') +
+                      '" data-element-id="' + escapeHtml(e.element_id || '') +
+                      '" data-cfg-key="' + escapeHtml(e.cfg_key || '') +
+                      '" title="Reset this change to default">↻</button>';
+        }
+      }
+      const kind = m.source === 'revision' ? 'revision' : (m.raw.kind || 'page_template');
       row.innerHTML = `
-        <div class="v2-history-row-icon">${iconMap[e.kind] || '·'}</div>
+        <div class="v2-history-row-icon">${iconMap[kind] || '·'}</div>
         <div class="v2-history-row-body">
-          <div class="v2-history-detail">${escapeHtml(e.detail || '')}</div>
-          <div class="v2-history-meta">${escapeHtml(e.updated_by_name || '?')} · ${escapeHtml(ago)}</div>
+          <div class="v2-history-detail">${escapeHtml(detail)}</div>
+          <div class="v2-history-meta">${escapeHtml(who)} · ${escapeHtml(ago)}</div>
         </div>
         ${revertBtn}
       `;
       const btn = row.querySelector('.v2-history-revert');
       if (btn) {
-        btn.addEventListener('click', async () => {
-          const ok = confirm('Revert this change?\n\n' + (e.detail || ''));
-          if (!ok) return;
-          try {
-            let url;
-            if (e.kind === 'override') {
-              url = _apiBase() + '/api/overrides/' + encodeURIComponent(e.page_slug)
-                    + '/' + encodeURIComponent(e.element_id);
-            } else if (e.kind === 'site_config') {
-              url = _apiBase() + '/api/site-config/' + encodeURIComponent(e.cfg_key);
-            }
-            const res = await fetch(url, {
-              method: 'DELETE', credentials: 'include',
-              headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('pnec_token') || '') },
-            });
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            toast('Reverted ✓', 'ok');
-            loadHistory();
-            try { elIframe.contentWindow.location.reload(); } catch (_e) {}
-          } catch (e2) { toast('Revert failed: ' + (e2.message || ''), 'error'); }
-        });
+        btn.addEventListener('click', () => handleHistoryRevert(btn, m, () => loadHistory()));
       }
       elPanelHistory.appendChild(row);
     });
+  }
+
+  async function handleHistoryRevert(btn, m, refresh) {
+    const detail = btn.previousElementSibling?.querySelector('.v2-history-detail')?.textContent || '';
+    const ok = confirm('Revert this change?\n\n' + detail);
+    if (!ok) return;
+    try {
+      let res;
+      if (m.source === 'revision') {
+        const revisionId = btn.dataset.revisionId;
+        res = await fetch(_apiBase() + '/api/cms/page/' + encodeURIComponent(state.pageSlug) +
+                          '/revert/' + encodeURIComponent(revisionId), {
+          method: 'POST', credentials: 'include',
+          headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('pnec_token') || '') },
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const body = await res.json();
+        // Hot-swap the iframe contents from the rendered sections in the response
+        if (body.template) {
+          state.template = body.template;
+          renderTree();
+          if (body.sections_html) {
+            Object.entries(body.sections_html).forEach(([sid, html]) => {
+              postToIframe({ type: 'cms:section:rerender', sid, html });
+            });
+          }
+          // Force a fresh reorder so removed sids are gone from the iframe
+          postToIframe({ type: 'cms:section:reorder', order: state.template.order });
+        }
+        toast('Reverted ✓', 'ok');
+      } else {
+        const kind = btn.dataset.kind;
+        let url;
+        if (kind === 'override') {
+          url = _apiBase() + '/api/overrides/' + encodeURIComponent(btn.dataset.page) +
+                '/' + encodeURIComponent(btn.dataset.elementId);
+        } else if (kind === 'site_config') {
+          url = _apiBase() + '/api/site-config/' + encodeURIComponent(btn.dataset.cfgKey);
+        } else {
+          throw new Error('Cannot revert ' + kind);
+        }
+        res = await fetch(url, {
+          method: 'DELETE', credentials: 'include',
+          headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('pnec_token') || '') },
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        toast('Reverted ✓', 'ok');
+        try { elIframe.contentWindow.location.reload(); } catch (_e) {}
+      }
+      refresh();
+    } catch (e2) { toast('Revert failed: ' + (e2.message || ''), 'error'); }
   }
 
   function _timeAgo(d) {
