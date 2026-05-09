@@ -662,6 +662,25 @@ body {
 
 .v2-token-field { margin-bottom: 12px; }
 .v2-token-field:last-child { margin-bottom: 0; }
+
+/* v3 Phase 1: flash highlight used when cross-page search jumps to a
+   field. Triggered by adding .v2-flash for ~1.4s. */
+.v2-flash {
+  animation: v2-flash-anim 1.4s cubic-bezier(.2,.7,.3,1.1);
+  border-radius: 8px;
+}
+@keyframes v2-flash-anim {
+  0%   { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.55); }
+  20%  { box-shadow: 0 0 0 8px rgba(168, 85, 247, 0.45); }
+  100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); }
+}
+.v2-find-row--site_config .v2-find-row-icon,
+.v2-find-row--override .v2-find-row-icon,
+.v2-find-row--theme .v2-find-row-icon {
+  font-size: 1.1rem;
+  display: grid;
+  place-items: center;
+}
 .v2-token-label {
   display: block;
   font-size: .8rem;

@@ -297,6 +297,12 @@
         const row = document.createElement('div');
         row.className = 'v2-tree-row v2-tree-existing'
           + (state.selectedExisting && state.selectedExisting.key === item.key && state.selectedExisting.kind === item.kind ? ' is-selected' : '');
+        // v3: stamp a stable key on the row so the cross-page search
+        // jumper can land on it directly (`data-existing-key`).
+        const existingKey = item.kind === 'site_config'
+          ? 'site_config:' + item.key
+          : 'override:' + (state.pageSlug || '') + ':' + item.key;
+        row.setAttribute('data-existing-key', existingKey);
         // Prefer the backend's friendly label from siteConfigMeta when available;
         // fall back to the auto-generated _humanLabel(key) from hydrate.js.
         let label = item.label;
@@ -2145,13 +2151,25 @@
       const m = state.queue.shift();
       try { elIframe.contentWindow.postMessage(m, window.location.origin); } catch (_e) {}
     }
-    // Auto-turn-on Inspector mode so the user always sees hover outlines
-    // (instead of having to remember to click 🔍). The button still works
-    // as a manual toggle.
-    if (!state.inspectorOn) {
+    // v3 fix: respect the user's inspector preference instead of force-
+    // re-activating on every iframe ready. Was a long-standing UX bug —
+    // clicking the 🔍 toggle off lasted only until the next iframe reload
+    // because flushQueue would unconditionally set inspectorOn=true.
+    // Default to ON for first-ever visits, but if the user has explicitly
+    // turned it off, keep it off across reloads.
+    const inspectorPref = (() => {
+      try { return localStorage.getItem('v2_inspector_pref'); }
+      catch (_e) { return null; }
+    })();
+    const wantInspectorOn = inspectorPref === null ? true : inspectorPref === '1';
+    if (wantInspectorOn) {
       state.inspectorOn = true;
       elInspectorBtn.classList.add('is-on');
       postToIframe({ type: 'cms:inspector:activate' });
+    } else {
+      state.inspectorOn = false;
+      elInspectorBtn.classList.remove('is-on');
+      postToIframe({ type: 'cms:inspector:deactivate' });
     }
     // After iframe loads, ask it for an inventory of editable items
     setTimeout(() => requestScan(), 600);
@@ -2301,6 +2319,11 @@
     state.inspectorOn = !state.inspectorOn;
     elInspectorBtn.classList.toggle('is-on', state.inspectorOn);
     postToIframe({ type: state.inspectorOn ? 'cms:inspector:activate' : 'cms:inspector:deactivate' });
+    // v3: persist preference so flushQueue respects it on the next iframe
+    // reload. Was the bug: user clicks off → iframe reloads → inspector
+    // forced back on.
+    try { localStorage.setItem('v2_inspector_pref', state.inspectorOn ? '1' : '0'); }
+    catch (_e) { /* private browsing — best effort */ }
   }
 
   // ── Publish + share ───────────────────────────────────────────────────────
@@ -2801,6 +2824,8 @@
   function buildTokenField(token) {
     const wrap = document.createElement('div');
     wrap.className = 'v2-token-field';
+    // v3: stamp the token key so cross-page search jumper can land here
+    wrap.setAttribute('data-token-key', token.key);
     const label = document.createElement('label');
     label.className = 'v2-token-label';
     label.textContent = token.label;
@@ -3142,22 +3167,47 @@
         return;
       }
       hits.forEach((hit, idx) => {
-        const meta = state.registry.find(t => t.type === hit.type);
-        const typeLabel = meta ? meta.label : hit.type;
-        const typeIcon  = (window.V2_ICONS ? window.V2_ICONS.svg(hit.type, { size: 18 }) : '');
+        // v3: kind can now be 'section' | 'site_config' | 'override' | 'theme'
+        // — older backends omit kind entirely; default to 'section' so this
+        // works either way.
+        const kind = hit.kind || 'section';
+        let typeLabel, typeIcon, locLabel;
+        if (kind === 'section') {
+          const meta = state.registry.find(t => t.type === hit.type);
+          typeLabel = meta ? meta.label : hit.type;
+          typeIcon  = (window.V2_ICONS ? window.V2_ICONS.svg(hit.type, { size: 18 }) : '');
+          locLabel  = '📄 ' + (hit.page_slug || '');
+        } else if (kind === 'site_config') {
+          typeLabel = 'Site config';
+          typeIcon  = '🌐';
+          locLabel  = '🌐 ' + (hit.cfg_key || '');
+        } else if (kind === 'override') {
+          typeLabel = 'Page override';
+          typeIcon  = '✏️';
+          locLabel  = '✏️ ' + (hit.page_slug || '') + ' → ' + (hit.element_id || '');
+        } else if (kind === 'theme') {
+          typeLabel = 'Theme token';
+          typeIcon  = '🎨';
+          locLabel  = '🎨 ' + (hit.cfg_key || '');
+        } else {
+          typeLabel = kind; typeIcon = '·'; locLabel = '';
+        }
         const row = document.createElement('div');
-        row.className = 'v2-find-row' + (idx === 0 ? ' is-active' : '');
+        row.className = 'v2-find-row v2-find-row--' + kind + (idx === 0 ? ' is-active' : '');
         row.tabIndex = 0;
-        row.dataset.pageSlug = hit.page_slug;
-        row.dataset.sid = hit.sid;
+        row.dataset.kind = kind;
+        if (hit.page_slug) row.dataset.pageSlug = hit.page_slug;
+        if (hit.sid)        row.dataset.sid       = hit.sid;
+        if (hit.cfg_key)    row.dataset.cfgKey    = hit.cfg_key;
+        if (hit.element_id) row.dataset.elementId = hit.element_id;
         row.innerHTML = `
           <div class="v2-find-row-icon" aria-hidden="true">${typeIcon}</div>
           <div class="v2-find-row-body">
             <p class="v2-find-row-title">
               <span>${escapeHtml(hit.name || typeLabel)}</span>
-              ${hit.name ? '<span class="v2-find-row-pill">' + escapeHtml(typeLabel) + '</span>' : ''}
+              <span class="v2-find-row-pill">${escapeHtml(typeLabel)}</span>
             </p>
-            <p class="v2-find-row-page">📄 ${escapeHtml(hit.page_slug)}</p>
+            <p class="v2-find-row-page">${escapeHtml(locLabel)}</p>
             <p class="v2-find-row-preview">${escapeHtml(hit.preview || '')}</p>
           </div>
         `;
@@ -3200,10 +3250,27 @@
   }
   async function jumpToHit(hit) {
     closeFindModal();
+    const kind = hit.kind || 'section';
+
+    if (kind === 'theme') {
+      // Theme tokens live in the Theme tab — switch the sidebar there and
+      // try to focus the matching field.
+      switchSidebarTab('theme');
+      setTimeout(() => {
+        const input = document.querySelector('[data-token-key="' + (hit.cfg_key || '') + '"]');
+        if (input) {
+          input.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          if (typeof input.focus === 'function') input.focus();
+          input.classList.add('v2-flash');
+          setTimeout(() => input.classList.remove('v2-flash'), 1400);
+        }
+      }, 80);
+      return;
+    }
+
     if (hit.page_slug && hit.page_slug !== state.pageSlug) {
       // Switch the page picker first so the URL reflects the new page
       if (elPageSel) {
-        // Make sure the option exists (auto-discovered pages may not yet)
         const known = Array.from(elPageSel.options).some(o => o.value === hit.page_slug);
         if (!known) {
           const opt = document.createElement('option');
@@ -3215,9 +3282,30 @@
       }
       await switchPage(hit.page_slug);
     }
-    if (hit.sid) {
+
+    if (kind === 'section' && hit.sid) {
       // Wait one tick for the tree to render after page switch
       setTimeout(() => selectSection(hit.sid), 50);
+      return;
+    }
+
+    if (kind === 'site_config' || kind === 'override') {
+      // Existing-content rows live in the Sections sidebar's "Existing
+      // content" group. We open the sidebar, then look for the row and
+      // simulate a click so the user sees the field highlighted.
+      switchSidebarTab('sections');
+      setTimeout(() => {
+        const targetKey = kind === 'site_config'
+          ? 'site_config:' + (hit.cfg_key || '')
+          : 'override:' + (hit.page_slug || '') + ':' + (hit.element_id || '');
+        const row = document.querySelector('[data-existing-key="' + CSS.escape(targetKey) + '"]');
+        if (row) {
+          row.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          row.click();
+          row.classList.add('v2-flash');
+          setTimeout(() => row.classList.remove('v2-flash'), 1400);
+        }
+      }, 100);
     }
   }
 
