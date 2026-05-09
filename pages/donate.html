@@ -1,80 +1,401 @@
 ---
 layout: pnec-base
 title: "Support PNEC"
-description: "Your donation supports PNEC's mission to train and equip Poway neighborhoods for emergencies."
+description: "Your donation supports PNEC's mission to train and equip Poway neighborhoods for emergencies. 100% volunteer-run since 2003."
+# Every Donate Now button across the site links to /donation-form/
+# (navbar, hero, footer, headers, 8 standalone pages). Without this
+# permalink the donate page lived at /pages/donate.html and every
+# button 404'd. Publishing here matches the existing href targets.
+permalink: /donation-form/
+body_class: inner-page donate-page-body
 ---
 
-<section class="elementor-section elementor-top-section elementor-section-boxed" style="padding:60px 0 40px; background:#fff;">
-  <div class="elementor-container" style="max-width:1100px; margin:0 auto; padding:0 24px;">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');
 
-    <div style="text-align:center; margin-bottom:48px;">
-      <h1 style="font-size:2rem; font-weight:700; color:#1a1a1a; margin-bottom:12px;">Support PNEC's Mission</h1>
-      <p style="color:#555; max-width:560px; margin:0 auto; line-height:1.7;">
-        PNEC is a 501(c)(3) nonprofit that operates entirely on donations and volunteer effort.
-        Every dollar goes directly toward training, equipment, and keeping Poway's neighborhoods prepared.
-      </p>
-    </div>
+  .donate-page-body {
+    --pnec-green:        #1e8449;
+    --pnec-green-deep:   #145a32;
+    --pnec-green-soft:   #d4efdf;
+    --pnec-cream:        #fbf8f1;
+    --pnec-fg:           #0a1628;
+    --pnec-fg-mute:      #5a6975;
+    --pnec-border:       rgba(15, 30, 25, 0.10);
+    background: var(--pnec-cream);
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  .donate-page-body main#jupiterx-main { padding: 0 !important; background: transparent !important; }
 
-    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:24px; margin-bottom:48px;">
-      <div style="background:#f8f8f8; border-radius:8px; padding:28px; text-align:center;">
-        <div style="font-size:2.2rem; margin-bottom:10px;">📚</div>
-        <h3 style="font-size:1rem; margin:0 0 8px; color:#1a1a1a;">Training Materials</h3>
-        <p style="font-size:13px; color:#666; margin:0; line-height:1.6;">CERT manuals, first-aid cards, and preparedness guides for every coordinator and workshop participant.</p>
-      </div>
-      <div style="background:#f8f8f8; border-radius:8px; padding:28px; text-align:center;">
-        <div style="font-size:2.2rem; margin-bottom:10px;">🎒</div>
-        <h3 style="font-size:1rem; margin:0 0 8px; color:#1a1a1a;">CERT Equipment</h3>
-        <p style="font-size:13px; color:#666; margin:0; line-height:1.6;">Hard hats, safety vests, first-aid kits, and search lights for CERT response teams.</p>
-      </div>
-      <div style="background:#f8f8f8; border-radius:8px; padding:28px; text-align:center;">
-        <div style="font-size:2.2rem; margin-bottom:10px;">🏘️</div>
-        <h3 style="font-size:1rem; margin:0 0 8px; color:#1a1a1a;">Community Outreach</h3>
-        <p style="font-size:13px; color:#666; margin:0; line-height:1.6;">Neighborhood fliers, multilingual materials, and door-to-door coordinator campaigns.</p>
-      </div>
-      <div style="background:#f8f8f8; border-radius:8px; padding:28px; text-align:center;">
-        <div style="font-size:2.2rem; margin-bottom:10px;">📻</div>
-        <h3 style="font-size:1rem; margin:0 0 8px; color:#1a1a1a;">Radio Infrastructure</h3>
-        <p style="font-size:13px; color:#666; margin:0; line-height:1.6;">PACT amateur radios, repeater maintenance, and equipment for emergency communications.</p>
-      </div>
-    </div>
+  .donate-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 60px 24px 40px;
+  }
 
-    <div style="max-width:520px; margin:0 auto; text-align:center; border:1px solid #e0e0e0; border-radius:10px; padding:40px 32px;">
-      <div style="font-size:2.5rem; margin-bottom:14px;">❤️</div>
-      <h2 style="font-size:1.4rem; margin:0 0 10px; color:#1a1a1a;">Make a Donation</h2>
-      <p style="color:#666; margin:0 0 24px; font-size:14px; line-height:1.6;">
-        Donations are processed securely. You will receive a receipt for tax purposes.
-      </p>
-      <a href="https://www.paypal.com/donate?hosted_button_id=PNEC"
-         style="display:inline-block; background:#c0392b; color:#fff; padding:14px 36px; border-radius:4px; text-decoration:none; font-weight:600; font-size:1rem;"
-         target="_blank" rel="noopener">
-        Donate Now
-      </a>
-      <p style="font-size:12px; color:#999; margin:18px 0 0;">
-        Checks: PNEC, P.O. Box 789, Poway, CA 92074
-      </p>
-    </div>
+  /* ── Hero ────────────────────────────────────────────────────────── */
+  .donate-hero {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+  .donate-hero-eyebrow {
+    display: inline-block;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--pnec-green-deep);
+    margin-bottom: 14px;
+  }
+  .donate-hero h1 {
+    margin: 0 0 14px;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    color: var(--pnec-fg);
+  }
+  .donate-hero p {
+    margin: 0 auto;
+    max-width: 600px;
+    color: var(--pnec-fg-mute);
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
 
+  /* ── Where it goes (4 cards) ────────────────────────────────────── */
+  .donate-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+    margin-bottom: 56px;
+  }
+  .donate-card {
+    background: #fff;
+    border: 1px solid var(--pnec-border);
+    border-radius: 16px;
+    padding: 28px 22px;
+    text-align: center;
+    transition: transform 200ms cubic-bezier(.2,.85,.25,1), box-shadow 240ms ease, border-color 200ms ease;
+  }
+  .donate-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(30, 132, 73, 0.30);
+    box-shadow: 0 8px 22px rgba(20, 90, 50, 0.10), 0 16px 40px rgba(20, 90, 50, 0.08);
+  }
+  .donate-card-icon {
+    width: 56px; height: 56px;
+    margin: 0 auto 14px;
+    display: grid; place-items: center;
+    background: var(--pnec-green-soft);
+    border-radius: 14px;
+    font-size: 1.6rem;
+  }
+  .donate-card h3 {
+    margin: 0 0 8px;
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--pnec-fg);
+    letter-spacing: -0.012em;
+  }
+  .donate-card p {
+    margin: 0;
+    font-size: 0.86rem;
+    color: var(--pnec-fg-mute);
+    line-height: 1.55;
+  }
+
+  /* ── Donate card ─────────────────────────────────────────────────── */
+  .donate-cta-card {
+    max-width: 560px;
+    margin: 0 auto 56px;
+    background: #fff;
+    border: 1px solid var(--pnec-border);
+    border-radius: 22px;
+    padding: 44px 36px;
+    text-align: center;
+    position: relative;
+    box-shadow:
+      0 0 0 1px rgba(20, 90, 50, 0.06),
+      0 1px 0 rgba(255,255,255,0.65) inset,
+      0 2px 4px rgba(0, 0, 0, 0.04),
+      0 12px 28px rgba(0, 0, 0, 0.10),
+      0 30px 56px rgba(0, 0, 0, 0.14);
+  }
+  .donate-cta-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, var(--pnec-green-deep) 0%, var(--pnec-green) 50%, #27ae60 100%);
+    border-radius: 22px 22px 0 0;
+    box-shadow: 0 1px 6px rgba(20, 90, 50, 0.30);
+  }
+  .donate-cta-icon {
+    width: 64px; height: 64px;
+    margin: 0 auto 16px;
+    display: grid; place-items: center;
+    background: linear-gradient(135deg, #fef2f2, #fde6e1);
+    border: 1px solid rgba(192, 57, 43, 0.20);
+    border-radius: 16px;
+    font-size: 1.9rem;
+  }
+  .donate-cta-card h2 {
+    margin: 0 0 10px;
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: var(--pnec-fg);
+    letter-spacing: -0.022em;
+  }
+  .donate-cta-card .donate-cta-sub {
+    margin: 0 0 28px;
+    color: var(--pnec-fg-mute);
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+  .donate-amounts {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 22px;
+  }
+  .donate-amount-btn {
+    padding: 11px 20px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--pnec-green-deep);
+    background: var(--pnec-cream);
+    border: 1.5px solid var(--pnec-border);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 160ms cubic-bezier(.2,.85,.25,1);
+    text-decoration: none;
+  }
+  .donate-amount-btn:hover {
+    background: var(--pnec-green-soft);
+    border-color: var(--pnec-green);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(20, 90, 50, 0.14);
+  }
+  .donate-cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 17px 36px;
+    font-family: inherit;
+    font-size: 1.06rem;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(180deg, var(--pnec-green) 0%, var(--pnec-green-deep) 100%);
+    border-radius: 14px;
+    text-decoration: none;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.30) inset,
+      0 -1px 0 rgba(0, 0, 0, 0.20) inset,
+      0 2px 4px rgba(20, 90, 50, 0.30),
+      0 8px 18px rgba(20, 90, 50, 0.32);
+    transition: transform 220ms cubic-bezier(.2,.85,.25,1), filter 200ms ease, box-shadow 320ms ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .donate-cta-btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -120%;
+    width: 60%; height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.20), transparent);
+    transform: skewX(-20deg);
+    transition: left 720ms cubic-bezier(.4,0,.2,1);
+    pointer-events: none;
+  }
+  .donate-cta-btn:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.06);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.35) inset,
+      0 -1px 0 rgba(0, 0, 0, 0.25) inset,
+      0 2px 4px rgba(20, 90, 50, 0.32),
+      0 12px 28px rgba(20, 90, 50, 0.40);
+  }
+  .donate-cta-btn:hover::before { left: 220%; }
+  .donate-cta-btn svg { width: 18px; height: 18px; }
+  .donate-cta-foot {
+    margin: 22px 0 0;
+    font-size: 0.82rem;
+    color: var(--pnec-fg-mute);
+    line-height: 1.5;
+  }
+  .donate-cta-foot strong { color: var(--pnec-fg); }
+  .donate-trust-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 16px;
+  }
+  .donate-trust-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 11px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--pnec-green-deep);
+    background: rgba(212, 239, 223, 0.55);
+    border: 1px solid rgba(30, 132, 73, 0.22);
+    border-radius: 999px;
+  }
+
+  /* ── Other ways to help ────────────────────────────────────────── */
+  .donate-other {
+    background: #fff;
+    border-top: 1px solid var(--pnec-border);
+    padding: 56px 24px;
+  }
+  .donate-other-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .donate-other h2 {
+    text-align: center;
+    margin: 0 0 32px;
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: var(--pnec-fg);
+    letter-spacing: -0.022em;
+  }
+  .donate-other-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 18px;
+  }
+  .donate-other-card {
+    background: var(--pnec-cream);
+    border: 1px solid var(--pnec-border);
+    border-radius: 14px;
+    padding: 24px;
+  }
+  .donate-other-card h3 {
+    margin: 0 0 8px;
+    font-size: 1.02rem;
+    font-weight: 800;
+    color: var(--pnec-fg);
+    letter-spacing: -0.012em;
+  }
+  .donate-other-card p {
+    margin: 0 0 16px;
+    font-size: 0.86rem;
+    color: var(--pnec-fg-mute);
+    line-height: 1.55;
+  }
+  .donate-other-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--pnec-green-deep);
+    font-weight: 700;
+    font-size: 0.86rem;
+    text-decoration: none;
+    transition: gap 200ms ease, color 160ms ease;
+  }
+  .donate-other-link:hover { color: var(--pnec-green); gap: 8px; }
+</style>
+
+<div class="donate-wrap">
+  <!-- Hero -->
+  <div class="donate-hero">
+    <span class="donate-hero-eyebrow">100% volunteer-run · 501(c)(3)</span>
+    <h1>Keep PNEC ready.</h1>
+    <p>PNEC operates entirely on donations and volunteer hours. Every dollar funds drills, kits, training, and outreach across all 14 Poway neighborhoods.</p>
   </div>
-</section>
 
-<section style="background:#f5f5f0; padding:48px 0;">
-  <div style="max-width:1100px; margin:0 auto; padding:0 24px;">
-    <h2 style="text-align:center; font-size:1.4rem; margin:0 0 32px; color:#1a1a1a;">Other Ways to Help</h2>
-    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:20px;">
-      <div style="background:#fff; border-radius:8px; padding:24px;">
-        <h3 style="font-size:1rem; margin:0 0 8px; color:#1a1a1a;">Volunteer Your Time</h3>
-        <p style="font-size:13px; color:#666; margin:0 0 16px; line-height:1.6;">Join PNEC as a coordinator, CERT volunteer, or board supporter.</p>
-        <a href="{{ '/pages/volunteer.html' | relative_url }}" style="color:#c0392b; font-weight:600; font-size:13px; text-decoration:none;">Get Involved →</a>
+  <!-- Where the money goes -->
+  <div class="donate-cards">
+    <div class="donate-card">
+      <div class="donate-card-icon" aria-hidden="true">📚</div>
+      <h3>Training materials</h3>
+      <p>CERT manuals, first-aid cards, and preparedness guides for every coordinator and workshop participant.</p>
+    </div>
+    <div class="donate-card">
+      <div class="donate-card-icon" aria-hidden="true">🎒</div>
+      <h3>CERT equipment</h3>
+      <p>Hard hats, safety vests, first-aid kits, and search lights for response teams.</p>
+    </div>
+    <div class="donate-card">
+      <div class="donate-card-icon" aria-hidden="true">🏘️</div>
+      <h3>Community outreach</h3>
+      <p>Neighborhood fliers, multilingual materials, and door-to-door coordinator campaigns.</p>
+    </div>
+    <div class="donate-card">
+      <div class="donate-card-icon" aria-hidden="true">📻</div>
+      <h3>Radio infrastructure</h3>
+      <p>PACT amateur radios, repeater maintenance, and equipment for emergency communications.</p>
+    </div>
+  </div>
+
+  <!-- CTA card -->
+  <div class="donate-cta-card">
+    <div class="donate-cta-icon" aria-hidden="true">❤️</div>
+    <h2>Make a donation</h2>
+    <p class="donate-cta-sub">Donations are processed securely through PayPal. You'll receive a tax receipt by email.</p>
+
+    <!-- Suggested amounts — each preselects the PayPal donation amount via &amount=
+         param. Real button-id below should be set in the next admin update. -->
+    <div class="donate-amounts" role="list">
+      <a class="donate-amount-btn" href="https://www.paypal.com/donate?hosted_button_id=PNEC&amount=25"  target="_blank" rel="noopener">$25</a>
+      <a class="donate-amount-btn" href="https://www.paypal.com/donate?hosted_button_id=PNEC&amount=50"  target="_blank" rel="noopener">$50</a>
+      <a class="donate-amount-btn" href="https://www.paypal.com/donate?hosted_button_id=PNEC&amount=100" target="_blank" rel="noopener">$100</a>
+      <a class="donate-amount-btn" href="https://www.paypal.com/donate?hosted_button_id=PNEC&amount=250" target="_blank" rel="noopener">$250</a>
+    </div>
+
+    <a class="donate-cta-btn" href="https://www.paypal.com/donate?hosted_button_id=PNEC" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      </svg>
+      Donate any amount
+    </a>
+
+    <p class="donate-cta-foot">
+      Or mail a check: <strong>PNEC, P.O. Box 789, Poway, CA 92074</strong>
+    </p>
+
+    <div class="donate-trust-row">
+      <span class="donate-trust-pill">
+        <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Secure (PayPal)
+      </span>
+      <span class="donate-trust-pill">
+        <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+        Tax-deductible
+      </span>
+      <span class="donate-trust-pill">
+        <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Local to Poway
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- Other ways to help -->
+<section class="donate-other">
+  <div class="donate-other-wrap">
+    <h2>Other ways to help</h2>
+    <div class="donate-other-grid">
+      <div class="donate-other-card">
+        <h3>Volunteer your time</h3>
+        <p>Block coordinators, CERT volunteers, event helpers — every role gets training and PNEC welcomes you no matter how much time you have.</p>
+        <a class="donate-other-link" href="{{ '/pages/volunteer.html' | relative_url }}">Get involved →</a>
       </div>
-      <div style="background:#fff; border-radius:8px; padding:24px;">
-        <h3 style="font-size:1rem; margin:0 0 8px; color:#1a1a1a;">Spread the Word</h3>
-        <p style="font-size:13px; color:#666; margin:0 0 16px; line-height:1.6;">Share PNEC's resources with neighbors, at your HOA, or on Nextdoor.</p>
-        <a href="{{ '/pages/contact.html' | relative_url }}" style="color:#c0392b; font-weight:600; font-size:13px; text-decoration:none;">Contact Us →</a>
+      <div class="donate-other-card">
+        <h3>Spread the word</h3>
+        <p>Share PNEC's resources with neighbors, at your HOA meeting, on Nextdoor, or at the next community event you attend.</p>
+        <a class="donate-other-link" href="{{ '/pages/contact.html' | relative_url }}">Contact us →</a>
       </div>
-      <div style="background:#fff; border-radius:8px; padding:24px;">
-        <h3 style="font-size:1rem; margin:0 0 8px; color:#1a1a1a;">Corporate Sponsorship</h3>
-        <p style="font-size:13px; color:#666; margin:0 0 16px; line-height:1.6;">Sponsor CERT training courses, supply kits, or fund neighborhood outreach campaigns.</p>
-        <a href="mailto:info@powaynec.com" style="color:#c0392b; font-weight:600; font-size:13px; text-decoration:none;">Email Us →</a>
+      <div class="donate-other-card">
+        <h3>Corporate sponsorship</h3>
+        <p>Sponsor CERT training courses, supply kits, or fund neighborhood outreach campaigns. Sponsors are recognized at events and on the site.</p>
+        <a class="donate-other-link" href="mailto:info@powaynec.com">Email us →</a>
       </div>
     </div>
   </div>
