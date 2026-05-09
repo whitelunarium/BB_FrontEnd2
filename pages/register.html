@@ -43,10 +43,18 @@ body_class: inner-page auth-page-body
   /* Keep logo + Donate visible — they sit on the body-level photo now */
   .auth-page-body .pnec-header-top { padding: 14px 36px 18px; }
 
-  /* ─── Body-level fixed wildfire photo ────────────────────────────────
-     One continuous Poway_Fire image fixed to the viewport. The navbar
-     floats on its top half; the auth-wrapper sits in its faded lower
-     half. No two-photo seam, no alignment-across-elements problem. */
+  /* ─── Body-level fixed wildfire photo (perf-tuned for smooth scroll)
+     ─────────────────────────────────────────────────────────────────
+     Lessons learned from the scroll-lag in v2.57:
+       • mask-image on a fixed-position element forces a full GPU
+         repaint every scroll frame
+       • filter: saturate/brightness on a fixed element forces the
+         same repaint
+       • mix-blend-mode in the global polish layer compounded it
+     Solution: one fixed photo with NO mask + NO filter, promoted to
+     its own GPU layer via translateZ(0). The fade work is done by
+     a SECOND fixed pseudo (the warm overlay) that has alpha stops
+     in its gradient — alpha-blending is cheap on the GPU. */
   .auth-page-body { position: relative; }
   .auth-page-body::before {
     content: '';
@@ -55,40 +63,47 @@ body_class: inner-page auth-page-body
     background-image: url('{{ "/assets/images/Poway_Fire.webp" | relative_url }}');
     background-size: cover;
     background-position: center 25%;
-    filter: saturate(0.92) brightness(0.92);
-    /* Fade the photo from visible at top → cream by 60% down. The auth
-       card lives in the cream-dominant lower portion. */
-    -webkit-mask-image: linear-gradient(180deg,
-      #000 0%,
-      #000 25%,
-      rgba(0,0,0,0.65) 42%,
-      rgba(0,0,0,0.30) 55%,
-      transparent 68%);
-            mask-image: linear-gradient(180deg,
-      #000 0%,
-      #000 25%,
-      rgba(0,0,0,0.65) 42%,
-      rgba(0,0,0,0.30) 55%,
-      transparent 68%);
+    /* Promote to its own composite layer so the rasterized photo is
+       cached and never repainted during scroll. */
+    transform: translateZ(0);
+    will-change: transform;
     pointer-events: none;
     z-index: -10;
   }
-  /* Warm color wash on top of the photo so the orange tones lift the
-     PNEC palette (cream + green) rather than feeling like a generic
-     stock photo. */
+  /* Warm color wash with cream at the bottom — does the fade work
+     that the mask used to do, but with cheap alpha gradient instead
+     of expensive mask-image. */
   .auth-page-body::after {
     content: '';
     position: fixed;
     inset: 0;
     background:
       linear-gradient(180deg,
-        rgba(192, 90, 50, 0.18) 0%,
-        rgba(255, 168, 96, 0.08) 25%,
-        rgba(248, 245, 240, 0.30) 55%,
-        rgba(248, 245, 240, 0.95) 75%,
-        #f8f5f0 100%);
+        rgba(192, 90, 50, 0.20) 0%,
+        rgba(255, 168, 96, 0.10) 22%,
+        rgba(248, 245, 240, 0.45) 42%,
+        rgba(248, 245, 240, 0.92) 60%,
+        #f8f5f0 75%);
+    transform: translateZ(0);
+    will-change: transform;
     pointer-events: none;
     z-index: -9;
+  }
+
+  /* Disable the global film-grain (_sass/_polish.scss body::after)
+     on this page only — its mix-blend-mode: overlay was the heaviest
+     contributor to the scroll lag. */
+  body.auth-page-body::after {
+    /* Override the global film grain selector. The auth ::after above
+       already wins by being defined later in the cascade, but make
+       absolutely sure no SVG noise + blend-mode kicks in. */
+    background-image: none, linear-gradient(180deg,
+      rgba(192, 90, 50, 0.20) 0%,
+      rgba(255, 168, 96, 0.10) 22%,
+      rgba(248, 245, 240, 0.45) 42%,
+      rgba(248, 245, 240, 0.92) 60%,
+      #f8f5f0 75%);
+    mix-blend-mode: normal !important;
   }
 
   /* By default, poway-header.html positions the nav at the BOTTOM of the
@@ -175,25 +190,18 @@ body_class: inner-page auth-page-body
     font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 
-  /* Drifting amber/green ambient orb — adds breathing motion behind the
-     card. Subtle, low-opacity, blurred. */
-  .auth-orb {
-    position: absolute;
-    width: 1100px; height: 1100px;
-    top: 0; left: 50%; transform: translateX(-50%) translateY(-25%);
-    background:
-      radial-gradient(circle at 35% 40%, rgba(255, 168, 96, 0.16), transparent 55%),
-      radial-gradient(circle at 65% 60%, rgba(30, 132, 73, 0.10), transparent 55%);
-    filter: blur(32px);
-    animation: auth-orb-drift 24s ease-in-out infinite alternate;
-    pointer-events: none;
-    z-index: -1;
-  }
-  @keyframes auth-orb-drift {
-    0%   { transform: translateX(-50%) translateY(-25%) scale(1); }
-    100% { transform: translateX(-48%) translateY(-22%) scale(1.05); }
-  }
-  @media (prefers-reduced-motion: reduce) { .auth-orb { animation: none; } }
+  /* Removed the drifting ambient orb in v2.58 — its 1100x1100 element
+     with filter:blur(32px) + scrolling animated transform was a third
+     heavy contributor to the scroll lag. The fixed photo + warm fade
+     already provide the ambient feeling without per-frame compositing. */
+  .auth-orb { display: none !important; }
+
+  /* Disable the global corner vignette (_sass/_polish.scss html::before)
+     on this page — it stacks on top of our fixed photo and adds another
+     fixed-position composite layer that the browser has to repaint. */
+  body.auth-page-body { /* placeholder anchor */ }
+  /* Suppress html::before vignette via a higher-specificity rule. */
+  html:has(body.auth-page-body)::before { display: none !important; }
 
   /* Top spacer so the card lands after the warm fade has settled into
      cream — the gradient needs vertical room to dissolve. */
