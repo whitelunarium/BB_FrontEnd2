@@ -113,8 +113,8 @@
   let elPageSel, elSidebarTree, elSettingsPanel, elAddSectionBtn;
   let elSavePub, elPreviewBtn, elInspectorBtn, elShareBtn;
   let elIframe, elIframeUrl, elBanner, elToast, elPicker, elPickerList, elPickerClose;
-  let elTabSections, elTabTheme, elTabSeo, elTabHistory;
-  let elPanelSections, elPanelTheme, elPanelSeo, elPanelHistory;
+  let elTabSections, elTabTheme, elTabSeo, elTabA11y, elTabHistory;
+  let elPanelSections, elPanelTheme, elPanelSeo, elPanelA11y, elPanelHistory;
   let elViewportBtns, elIframeFrame;
   let elUndoBtn, elRedoBtn;
   let elPickerSearch, elAiPrompt, elAiGo;
@@ -142,10 +142,12 @@
     elTabSections   = document.getElementById('v2-tab-sections');
     elTabTheme      = document.getElementById('v2-tab-theme');
     elTabSeo        = document.getElementById('v2-tab-seo');
+    elTabA11y       = document.getElementById('v2-tab-a11y');
     elTabHistory    = document.getElementById('v2-tab-history');
     elPanelSections = document.getElementById('v2-panel-sections');
     elPanelTheme    = document.getElementById('v2-panel-theme');
     elPanelSeo      = document.getElementById('v2-panel-seo');
+    elPanelA11y     = document.getElementById('v2-panel-a11y');
     elPanelHistory  = document.getElementById('v2-panel-history');
     elViewportBtns  = document.querySelectorAll('.v2-viewport-btn');
     elIframeFrame   = document.getElementById('v2-iframe-frame');
@@ -166,6 +168,7 @@
     if (elTabSections) elTabSections.addEventListener('click', () => switchSidebarTab('sections'));
     if (elTabTheme)    elTabTheme.addEventListener('click',    () => switchSidebarTab('theme'));
     if (elTabSeo)      elTabSeo.addEventListener('click',      () => switchSidebarTab('seo'));
+    if (elTabA11y)     elTabA11y.addEventListener('click',     () => switchSidebarTab('a11y'));
     if (elTabHistory)  elTabHistory.addEventListener('click',  () => switchSidebarTab('history'));
     const treeSearch = document.getElementById('v2-tree-search');
     if (treeSearch) treeSearch.addEventListener('input', filterTree);
@@ -446,10 +449,17 @@
         : '';
       const typeIcon = (window.V2_ICONS ? window.V2_ICONS.svg(section.type, { size: 14 }) : '');
       const ic = (key) => (window.V2_ICONS ? window.V2_ICONS.svg('action.' + key, { size: 14 }) : '');
+      // v3 Phase 5: surface admin-notes badge on tree row so other admins
+      // know there's a coordination note inside before they open it.
+      const hasNotes = !!(section.settings && section.settings._notes && String(section.settings._notes).trim());
+      const notesBadge = hasNotes
+        ? '<span class="v2-tree-notes-badge" title="This section has admin notes — open it to read">📝</span>'
+        : '';
       row.innerHTML = `
         <span class="v2-tree-handle" title="Drag to reorder">${(window.V2_ICONS ? window.V2_ICONS.svg('action.drag', { size: 12 }) : '⋮⋮')}</span>
         <span class="v2-tree-type-icon" aria-hidden="true">${typeIcon}</span>
         <span class="v2-tree-label" title="${escapeHtml(meta ? meta.label : section.type)}">${escapeHtml(displayLabel)}${section.name ? ' <span class=\"v2-tree-type-pill\">' + escapeHtml(meta ? meta.label : section.type) + '</span>' : ''}</span>
+        ${notesBadge}
         ${warnBadge}
         <span class="v2-tree-actions">
           <button class="v2-icon-btn" data-act="rename"     title="Rename">${ic('rename')}</button>
@@ -930,6 +940,12 @@
     // Layout overrides (spacing + background) — collapsible
     elSettingsPanel.appendChild(buildLayoutSection(section));
 
+    // v3 Phase 5: Per-section admin notes — internal-only coordination
+    // for the volunteer admin team. Stored in section.settings._notes
+    // (underscore prefix means the renderer ignores it). Visible only
+    // in this editor.
+    elSettingsPanel.appendChild(buildNotesSection(section));
+
     // Lint issues for the selected section
     const issues = (state.lintIssues || []).filter(i => i.sectionId === state.selectedSid);
     if (issues.length) {
@@ -1242,6 +1258,43 @@
       postToIframe({ type: 'cms:section:rerender', page: state.pageSlug, sectionId: state.selectedSid });
     }, 300));
     wrap.appendChild(input);
+    return wrap;
+  }
+
+  // ── v3 Phase 5: per-section admin notes ─────────────────────────────────
+  // The notes are stored at section.settings._notes (underscore prefix → the
+  // renderer ignores it). Other admins see them when they open the section
+  // in this editor. Not rendered on the public page.
+  function buildNotesSection(section) {
+    const wrap = document.createElement('details');
+    wrap.className = 'v2-layout-section';
+    const initial = (section.settings && section.settings._notes) || '';
+    if (initial) wrap.open = true; // auto-expand if there's existing content
+    const summary = document.createElement('summary');
+    summary.innerHTML = `
+      <span class="v2-layout-summary-icon">📝</span>
+      Admin notes
+      ${initial ? '<span style="background:rgba(59,130,246,0.20); color:#93c5fd; padding:1px 6px; border-radius:8px; margin-left:8px; font-size:.7rem; font-weight:700;">●</span>' : ''}
+    `;
+    wrap.appendChild(summary);
+
+    const body = document.createElement('div');
+    body.className = 'v2-layout-body';
+    const help = document.createElement('p');
+    help.style.cssText = 'color:var(--v2-muted); font-size:.78rem; margin:0 0 8px; line-height:1.45;';
+    help.textContent = 'Internal-only — visible to admins in this editor, NOT rendered on the public page. Useful for "next step" reminders, why a section was added, or coordination between volunteer admins.';
+    body.appendChild(help);
+
+    const ta = document.createElement('textarea');
+    ta.className = 'v2-input v2-textarea';
+    ta.rows = 4;
+    ta.value = initial;
+    ta.placeholder = 'e.g. "Update event date by May 1" or "Mary R. quote — confirm wording"';
+    ta.addEventListener('input', debounce(async () => {
+      await applyPatch({ op: 'set', sid: state.selectedSid, key: '_notes', value: ta.value });
+    }, 400));
+    body.appendChild(ta);
+    wrap.appendChild(body);
     return wrap;
   }
 
@@ -2770,10 +2823,230 @@
     };
   }
 
+  // ── A11y panel (v3 Phase 5) ─────────────────────────────────────────────
+  // Scans the iframe document and reports the most common accessibility
+  // problems we can detect statically: missing alt, missing form labels,
+  // heading-hierarchy gaps, low-contrast text, links/buttons with no
+  // accessible name, and click handlers attached to non-button elements.
+  // Each issue links back to the offending node — clicking it asks the
+  // iframe to scroll-and-highlight via the existing cms:scroll-to message.
+
+  function _a11yLuminance(rgb) {
+    // Standard sRGB → relative luminance per WCAG 2.x
+    const [r, g, b] = rgb.map(c => {
+      c = c / 255;
+      return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  }
+  function _a11yParseRgb(str) {
+    if (!str) return null;
+    const m = str.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+    if (!m) return null;
+    return [+m[1], +m[2], +m[3]];
+  }
+  function _a11yContrast(c1, c2) {
+    const L1 = _a11yLuminance(c1);
+    const L2 = _a11yLuminance(c2);
+    return ((Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05));
+  }
+  function _a11yElPath(el) {
+    // Compact CSS-ish path for "scroll to" — close enough for our
+    // postMessage handler which uses querySelector.
+    const seg = (n) => {
+      const t = (n.tagName || '').toLowerCase();
+      if (n.id) return t + '#' + n.id;
+      const cls = (n.className || '').toString().split(/\s+/).filter(Boolean).slice(0, 2);
+      return t + (cls.length ? '.' + cls.join('.') : '');
+    };
+    const stack = [];
+    let n = el;
+    let depth = 0;
+    while (n && n.nodeType === 1 && depth < 6) {
+      stack.unshift(seg(n));
+      n = n.parentElement;
+      depth++;
+    }
+    return stack.join(' > ');
+  }
+
+  function runA11yScan() {
+    const iframeDoc = elIframe?.contentDocument;
+    if (!iframeDoc) return [];
+    const issues = [];
+    const push = (severity, kind, el, message) => issues.push({
+      severity, kind, message,
+      selector: _a11yElPath(el),
+      preview: (el.outerHTML || '').slice(0, 120).replace(/\s+/g, ' '),
+    });
+
+    // 1. Missing alt on <img>
+    iframeDoc.querySelectorAll('img').forEach(img => {
+      if (img.alt == null) {
+        push('error', 'alt', img, 'Image has no alt attribute (use alt="" if decorative)');
+      } else if (!img.alt.trim() && !img.closest('a, button')) {
+        // Empty alt is fine for decorative images, but flag if it's a
+        // standalone img not inside a link/button (probably content)
+        if (img.naturalWidth > 80) {
+          push('warning', 'alt', img, 'Empty alt — okay if decorative; provide one if meaningful');
+        }
+      }
+    });
+
+    // 2. Form inputs without labels
+    iframeDoc.querySelectorAll('input:not([type="hidden"]):not([type="submit"]):not([type="button"]), select, textarea').forEach(input => {
+      const id = input.id;
+      const hasLabel = id && iframeDoc.querySelector(`label[for="${CSS.escape(id)}"]`);
+      const hasAria = input.getAttribute('aria-label') || input.getAttribute('aria-labelledby');
+      const hasWrap = input.closest('label');
+      if (!hasLabel && !hasAria && !hasWrap) {
+        push('error', 'label', input, 'Form control has no label, aria-label, or aria-labelledby');
+      }
+    });
+
+    // 3. Heading hierarchy (skipped levels)
+    const headings = Array.from(iframeDoc.querySelectorAll('h1, h2, h3, h4, h5, h6'));
+    if (headings.length) {
+      let prev = 0;
+      headings.forEach(h => {
+        const lvl = parseInt(h.tagName[1], 10);
+        if (prev && lvl > prev + 1) {
+          push('warning', 'heading',  h, `Heading skips from h${prev} to h${lvl}`);
+        }
+        prev = lvl;
+      });
+      const h1Count = iframeDoc.querySelectorAll('h1').length;
+      if (h1Count === 0) {
+        push('warning', 'heading', iframeDoc.body, 'Page has no h1 (the navbar has its own; not counted here unless tagged)');
+      } else if (h1Count > 1) {
+        push('info', 'heading', iframeDoc.body, `Page has ${h1Count} h1 elements (1 is recommended)`);
+      }
+    }
+
+    // 4. Buttons / links without accessible names
+    iframeDoc.querySelectorAll('a, button').forEach(el => {
+      const text = (el.textContent || '').trim();
+      const aria = el.getAttribute('aria-label');
+      const labelledby = el.getAttribute('aria-labelledby');
+      const title = el.getAttribute('title');
+      const hasImg = el.querySelector('img[alt]:not([alt=""])');
+      if (!text && !aria && !labelledby && !title && !hasImg) {
+        push('error', 'name', el, `${el.tagName.toLowerCase()} has no accessible name (text, aria-label, or labelled image)`);
+      }
+    });
+
+    // 5. Low-contrast text — sample text-bearing elements once each
+    //    (skip if there's >300 to avoid stalling the editor)
+    const candidates = iframeDoc.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, a, button, span');
+    let sampled = 0;
+    for (const el of candidates) {
+      if (sampled >= 300) break;
+      const text = (el.textContent || '').trim();
+      if (!text || text.length < 2) continue;
+      // Avoid double-flagging — only check elements where text is the
+      // direct child (so we don't flag a wrapper that's bigger than its
+      // text-bearing descendant).
+      const hasOwnText = Array.from(el.childNodes).some(n => n.nodeType === 3 && n.textContent.trim());
+      if (!hasOwnText) continue;
+      sampled++;
+      const cs = iframeDoc.defaultView.getComputedStyle(el);
+      const fg = _a11yParseRgb(cs.color);
+      // Resolve background via parent walk — look for first non-transparent bg
+      let bg = null;
+      let bgEl = el;
+      while (bgEl && !bg) {
+        const bs = iframeDoc.defaultView.getComputedStyle(bgEl).backgroundColor;
+        const parsed = _a11yParseRgb(bs);
+        if (parsed && !/rgba\(.*,\s*0\)/.test(bs)) bg = parsed;
+        bgEl = bgEl.parentElement;
+      }
+      if (!fg || !bg) continue;
+      const ratio = _a11yContrast(fg, bg);
+      // Large/bold text needs 3.0; normal needs 4.5
+      const fontSize = parseFloat(cs.fontSize) || 16;
+      const fontWeight = parseInt(cs.fontWeight, 10) || 400;
+      const isLarge = fontSize >= 18.66 || (fontSize >= 14 && fontWeight >= 700);
+      const min = isLarge ? 3.0 : 4.5;
+      if (ratio < min) {
+        push(ratio < 2.5 ? 'error' : 'warning', 'contrast', el,
+          `Contrast ${ratio.toFixed(2)}:1 (need ${min}:1 for ${isLarge ? 'large' : 'normal'} text)`);
+      }
+    }
+
+    return issues;
+  }
+
+  function loadA11y() {
+    if (!elPanelA11y) return;
+    elPanelA11y.innerHTML = `
+      <div class="v2-settings-head">
+        <h3>Accessibility</h3>
+        <p>Static scan for common issues. Click an issue to highlight the element on the page.</p>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <button id="v2-a11y-rescan" class="v2-btn v2-btn-primary">↻ Re-scan</button>
+        </div>
+      </div>
+      <div id="v2-a11y-results" style="margin-top:12px;"></div>`;
+    const rescanBtn = document.getElementById('v2-a11y-rescan');
+    if (rescanBtn) rescanBtn.addEventListener('click', () => renderA11yResults(runA11yScan()));
+    renderA11yResults(runA11yScan());
+  }
+
+  function renderA11yResults(issues) {
+    const out = document.getElementById('v2-a11y-results');
+    if (!out) return;
+    if (!issues.length) {
+      out.innerHTML = `
+        <div style="padding:24px 16px; text-align:center; background:var(--v2-surface2); border:1px solid var(--v2-border); border-radius:12px;">
+          <div style="font-size:2rem; margin-bottom:6px;">✅</div>
+          <div style="font-weight:700; color:var(--v2-text);">No accessibility issues found</div>
+          <div style="color:var(--v2-muted); font-size:.84rem; margin-top:4px;">
+            We checked alt text, labels, heading hierarchy, link/button names,
+            and text contrast. Re-scan after edits.
+          </div>
+        </div>`;
+      return;
+    }
+    const counts = issues.reduce((acc, i) => { acc[i.severity] = (acc[i.severity] || 0) + 1; return acc; }, {});
+    const summary = `${counts.error || 0} error${counts.error === 1 ? '' : 's'} · ${counts.warning || 0} warning${counts.warning === 1 ? '' : 's'} · ${counts.info || 0} info`;
+    const sevColor = { error: '#ef4444', warning: '#d97706', info: '#3b82f6' };
+    const sevIcon  = { error: '✖',     warning: '⚠',     info: 'ℹ'   };
+    const kindLabel = {
+      alt: 'Missing alt', label: 'Missing label', heading: 'Heading hierarchy',
+      name: 'No accessible name', contrast: 'Low contrast'
+    };
+    out.innerHTML = `
+      <div style="margin-bottom:10px; color:var(--v2-muted); font-size:.84rem;">${escapeHtml(summary)}</div>
+      ${issues.map((i, idx) => `
+        <div class="v2-a11y-row" data-idx="${idx}" tabindex="0" style="
+          padding:10px 12px; margin-bottom:6px; cursor:pointer;
+          background:var(--v2-surface2); border:1px solid var(--v2-border); border-radius:10px;
+          border-left:3px solid ${sevColor[i.severity] || '#6b7280'};
+          transition:background 140ms ease, transform 140ms ease;">
+          <div style="display:flex; gap:8px; align-items:center;">
+            <span style="color:${sevColor[i.severity]}; font-weight:700;">${sevIcon[i.severity] || '·'}</span>
+            <span style="font-weight:700; color:var(--v2-text); font-size:.86rem;">${escapeHtml(kindLabel[i.kind] || i.kind)}</span>
+          </div>
+          <div style="margin-top:4px; color:var(--v2-text); font-size:.84rem; line-height:1.45;">${escapeHtml(i.message)}</div>
+          <code style="display:block; margin-top:6px; font-size:.74rem; color:var(--v2-muted); word-break:break-all;">${escapeHtml(i.selector)}</code>
+        </div>
+      `).join('')}`;
+
+    out.querySelectorAll('.v2-a11y-row').forEach(row => {
+      row.addEventListener('mouseenter', () => row.style.background = 'var(--v2-surface)');
+      row.addEventListener('mouseleave', () => row.style.background = 'var(--v2-surface2)');
+      row.addEventListener('click', () => {
+        const idx = +row.dataset.idx;
+        const issue = issues[idx];
+        if (issue) postToIframe({ type: 'cms:scroll-to', selector: issue.selector });
+      });
+    });
+  }
+
   // ── Sidebar tabs ────────────────────────────────────────────────────────
   function switchSidebarTab(name) {
     state.sidebarTab = name;
-    [['sections', elTabSections], ['theme', elTabTheme], ['seo', elTabSeo], ['history', elTabHistory]].forEach(([n, el]) => {
+    [['sections', elTabSections], ['theme', elTabTheme], ['seo', elTabSeo], ['a11y', elTabA11y], ['history', elTabHistory]].forEach(([n, el]) => {
       if (!el) return;
       const active = (n === name);
       el.classList.toggle('is-active', active);
@@ -2782,9 +3055,11 @@
     if (elPanelSections) elPanelSections.style.display = name === 'sections' ? 'flex'  : 'none';
     if (elPanelTheme)    elPanelTheme.style.display    = name === 'theme'    ? 'block' : 'none';
     if (elPanelSeo)      elPanelSeo.style.display      = name === 'seo'      ? 'block' : 'none';
+    if (elPanelA11y)     elPanelA11y.style.display     = name === 'a11y'     ? 'block' : 'none';
     if (elPanelHistory)  elPanelHistory.style.display  = name === 'history'  ? 'block' : 'none';
     if (name === 'theme'   && !state.themeSchema) loadTheme();
     if (name === 'seo')    loadSeo();
+    if (name === 'a11y')   loadA11y();
     if (name === 'history') loadHistory();
   }
 

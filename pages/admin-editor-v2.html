@@ -675,6 +675,18 @@ body {
   100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); }
 }
 
+/* v3 Phase 5: admin-notes tree badge */
+.v2-tree-notes-badge {
+  display: inline-grid; place-items: center;
+  width: 18px; height: 18px;
+  font-size: .76rem;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.20);
+  border: 1px solid rgba(59, 130, 246, 0.45);
+  margin-left: 6px;
+  cursor: help;
+}
+
 /* v3 Phase 3: layout slider styles */
 .v2-layout-slider {
   -webkit-appearance: none;
@@ -1374,6 +1386,7 @@ body {
         <button id="v2-tab-sections" class="v2-sidebar-tab is-active" role="tab" aria-selected="true"  aria-controls="v2-panel-sections">Sections</button>
         <button id="v2-tab-theme"    class="v2-sidebar-tab"           role="tab" aria-selected="false" aria-controls="v2-panel-theme">Theme</button>
         <button id="v2-tab-seo"      class="v2-sidebar-tab"           role="tab" aria-selected="false" aria-controls="v2-panel-seo">SEO</button>
+        <button id="v2-tab-a11y"     class="v2-sidebar-tab"           role="tab" aria-selected="false" aria-controls="v2-panel-a11y">A11y</button>
         <button id="v2-tab-history"  class="v2-sidebar-tab"           role="tab" aria-selected="false" aria-controls="v2-panel-history">History</button>
       </div>
       <div id="v2-panel-sections" role="tabpanel" aria-labelledby="v2-tab-sections" style="display:flex; flex-direction:column; flex:1; min-height:0;">
@@ -1389,6 +1402,7 @@ body {
       </div>
       <div id="v2-panel-theme" role="tabpanel" aria-labelledby="v2-tab-theme" style="display:none; padding:14px; overflow-y:auto; flex:1;"></div>
       <div id="v2-panel-seo" role="tabpanel" aria-labelledby="v2-tab-seo" style="display:none; padding:14px; overflow-y:auto; flex:1;"></div>
+      <div id="v2-panel-a11y" role="tabpanel" aria-labelledby="v2-tab-a11y" style="display:none; padding:14px; overflow-y:auto; flex:1;"></div>
       <div id="v2-panel-history" role="tabpanel" aria-labelledby="v2-tab-history" style="display:none; padding:14px; overflow-y:auto; flex:1;"></div>
     </aside>
     <section class="v2-preview">
