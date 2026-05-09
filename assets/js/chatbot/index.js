@@ -24,7 +24,7 @@ import {
 import { buildSystemPrompt, formatHistory } from './prompt.js';
 import { sendCompletion, sendCompletionStream, generateSuggestions } from './api.js';
 import { buildMessageEl, buildLoadingMsgEl, streamIntoBubble, renderMarkdown, _escape } from './render.js';
-import { pickEmptyStateSuggestions, renderSuggestionList, renderFollowupChips } from './suggestions.js';
+import { pickEmptyStateSuggestions, renderSuggestionList, renderFollowupChips, renderAllTopics, totalTopicCount } from './suggestions.js';
 
 // Lazy modules — created in subsequent phases. Wrapped so missing
 // files just degrade gracefully (Phase 1 ships even if Phases 2–4
@@ -146,6 +146,11 @@ class HelperBot {
       emptyGreeting:       $('pnec-bot-empty-greeting'),
       emptySub:            $('pnec-bot-greeting'),
       emptySuggestions:    $('pnec-bot-empty-suggestions'),
+      browseTopicsBtn:     $('pnec-bot-browse-topics'),
+      browseCount:         $('pnec-bot-browse-count'),
+      topicsPanel:         $('pnec-bot-topics-panel'),
+      topicsBack:          $('pnec-bot-topics-back'),
+      topicsBody:          $('pnec-bot-topics-body'),
       transcript:          $('pnec-bot-transcript'),
       followups:           $('pnec-bot-followups'),
       composer:            $('pnec-bot-composer'),
@@ -205,6 +210,10 @@ class HelperBot {
 
     d.exportBtn.addEventListener('click', () => this._exportConversation());
     d.clearBtn.addEventListener('click', () => this._confirmClearAll());
+
+    // v3.6: Browse all topics expand / collapse
+    if (d.browseTopicsBtn) d.browseTopicsBtn.addEventListener('click', () => this._showAllTopics());
+    if (d.topicsBack)      d.topicsBack.addEventListener('click', () => this._hideAllTopics());
 
     // Action drawer (Phase 3 enriches this)
     d.actionDrawer.addEventListener('click', (e) => {
@@ -335,6 +344,34 @@ class HelperBot {
       this._onInputChange();
       this._submitInput();
     });
+    // v3.6: populate the "Browse all topics" pill count
+    if (this.dom.browseCount) this.dom.browseCount.textContent = totalTopicCount();
+  }
+
+  // v3.6: expand the curated suggestion strip into the full categorized
+  // topic library. Reverse-toggle goes back to the small picker.
+  _showAllTopics() {
+    if (!this.dom.topicsBody || !this.dom.topicsPanel) return;
+    renderAllTopics(this.dom.topicsBody, (prompt) => {
+      this._hideAllTopics();
+      this.dom.input.value = prompt;
+      this._onInputChange();
+      this._submitInput();
+    });
+    // Hide the curated strip + the browse link + the trust tips,
+    // show the full panel
+    if (this.dom.emptySuggestions) this.dom.emptySuggestions.hidden = true;
+    if (this.dom.browseTopicsBtn)  this.dom.browseTopicsBtn.hidden  = true;
+    const tips = this.dom.empty?.querySelector('.pnec-bot-tips');
+    if (tips) tips.hidden = true;
+    this.dom.topicsPanel.hidden = false;
+  }
+  _hideAllTopics() {
+    if (this.dom.topicsPanel)      this.dom.topicsPanel.hidden = true;
+    if (this.dom.emptySuggestions) this.dom.emptySuggestions.hidden = false;
+    if (this.dom.browseTopicsBtn)  this.dom.browseTopicsBtn.hidden = false;
+    const tips = this.dom.empty?.querySelector('.pnec-bot-tips');
+    if (tips) tips.hidden = false;
   }
 
   // ─── Rail (conversation list) ───────────────────────────────────

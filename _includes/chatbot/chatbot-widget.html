@@ -118,6 +118,24 @@
         </p>
       </div>
       <div class="pnec-bot-suggestions" id="pnec-bot-empty-suggestions" role="list"></div>
+      <button id="pnec-bot-browse-topics" type="button" class="pnec-bot-browse-link">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12" y2="16"/></svg>
+        Browse all topics
+        <span class="pnec-bot-browse-count" id="pnec-bot-browse-count"></span>
+      </button>
+
+      <!-- Expanded "all topics" panel (hidden by default) -->
+      <section id="pnec-bot-topics-panel" class="pnec-bot-topics-panel" hidden>
+        <div class="pnec-bot-topics-head">
+          <button id="pnec-bot-topics-back" type="button" class="pnec-bot-topics-back">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Back
+          </button>
+          <h4>What can I help with?</h4>
+        </div>
+        <div id="pnec-bot-topics-body" class="pnec-bot-topics-body"></div>
+      </section>
+
       <div class="pnec-bot-tips">
         <span class="pnec-bot-tip">
           <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
