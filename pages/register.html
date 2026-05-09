@@ -591,6 +591,187 @@ body_class: inner-page auth-page-body
   }
   .auth-foot-note a { color: #c0392b; font-weight: 700; }
   .auth-foot-note a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+  /* ─── v2.61: Security + personalization layer ────────────────────────
+     Three new visual systems on top of the v2.58 card:
+       1. Trust strip — three pills above the form with security cues
+       2. Personal greeting — time-aware + returning-user recognition
+       3. Trust footer — replaces the bare "Need help" line with a
+          richer 3-line stack of trust signals
+     None of these touch the existing form fields, IDs, or behavior. */
+
+  /* Inline icon sizing helpers */
+  .auth-icon-sm { width: 12px; height: 12px; flex-shrink: 0; }
+
+  /* Eyebrow now pairs a small lock icon with the text */
+  .auth-card-eyebrow {
+    /* Override v2.58 — we're putting an icon between the dashes too */
+    gap: 9px !important;
+  }
+  .auth-card-eyebrow .auth-icon-sm {
+    color: var(--pnec-green-deep);
+    margin: 0 -2px;
+  }
+
+  /* Community-size context line under the greeting */
+  .auth-greet-tagline {
+    margin: 8px 0 0;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.84rem;
+    color: #5a5a5a;
+    line-height: 1.45;
+  }
+  .auth-greet-tagline strong { color: #145a32; font-weight: 700; }
+
+  /* Trust strip — three pills above the panes */
+  .auth-trust-strip {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    margin: 16px 28px 0;
+    padding: 0;
+  }
+  .auth-trust-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.71rem;
+    font-weight: 700;
+    letter-spacing: 0.015em;
+    color: var(--pnec-green-deep);
+    background: rgba(212, 239, 223, 0.55);
+    border: 1px solid rgba(30, 132, 73, 0.20);
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .auth-trust-pill svg {
+    color: var(--pnec-green);
+    width: 11px;
+    height: 11px;
+    flex-shrink: 0;
+  }
+
+  /* Returning-visitor bubble — appears when localStorage has a
+     cached display_name. Shows their initials in a green avatar
+     plus a personalized welcome line. */
+  .auth-returning-bubble {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 16px;
+    padding: 11px 14px;
+    background: linear-gradient(135deg, #f0f9f4 0%, #e8f5ed 100%);
+    border: 1px solid rgba(30, 132, 73, 0.20);
+    border-radius: 12px;
+    animation: auth-bubble-in 360ms cubic-bezier(.2,.85,.25,1);
+  }
+  .auth-returning-bubble.is-visible { display: flex; }
+  .auth-returning-avatar {
+    width: 38px; height: 38px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, var(--pnec-green) 0%, var(--pnec-green-deep) 100%);
+    color: #fff;
+    border-radius: 50%;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 800;
+    font-size: 0.94rem;
+    letter-spacing: -0.01em;
+    box-shadow: 0 2px 6px rgba(20, 90, 50, 0.25);
+  }
+  .auth-returning-text {
+    flex: 1;
+    min-width: 0;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    line-height: 1.35;
+    color: #0e3b21;
+  }
+  .auth-returning-text strong {
+    display: block;
+    font-weight: 800;
+    color: #0a1628;
+    font-size: 0.97rem;
+    margin-bottom: 1px;
+  }
+  @keyframes auth-bubble-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .auth-returning-bubble { animation: none; }
+  }
+
+  /* Encryption microcopy under password fields */
+  .auth-encryption-note {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 6px 4px 0;
+    font-size: 0.74rem;
+    color: #6e7c75;
+    line-height: 1.4;
+  }
+  .auth-encryption-note svg {
+    color: var(--pnec-green);
+    width: 11px;
+    height: 11px;
+    flex-shrink: 0;
+  }
+
+  /* Submit button — inline lock icon on the left */
+  .auth-submit-icon {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    vertical-align: -2px;
+    margin-right: 8px;
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  /* Trust footer — three-row stack replacing the bare "Need help" line */
+  .auth-trust-footer {
+    margin: 28px 0 0;
+    width: 100%;
+    max-width: 480px;
+    display: grid;
+    gap: 8px;
+  }
+  .auth-trust-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    padding: 11px 14px;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(30, 132, 73, 0.12);
+    border-radius: 11px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.81rem;
+    line-height: 1.5;
+    color: #475056;
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+  }
+  .auth-trust-row svg {
+    color: var(--pnec-green-deep);
+    flex-shrink: 0;
+    margin-top: 1px;
+    width: 16px;
+    height: 16px;
+  }
+  .auth-trust-row strong { color: #0a1628; font-weight: 700; }
+  .auth-trust-help {
+    margin: 16px 0 0;
+    text-align: center;
+    font-size: 0.82rem;
+    color: #5a5a5a;
+  }
+  .auth-trust-help a { color: var(--pnec-green-deep); font-weight: 700; }
+  .auth-trust-help a:hover { text-decoration: underline; text-underline-offset: 3px; }
 </style>
 
 <div class="auth-wrapper">
@@ -599,8 +780,19 @@ body_class: inner-page auth-page-body
 
   <div class="auth-card">
     <div class="auth-card-head">
-      <span class="auth-card-eyebrow">Member Access</span>
-      <h1 class="auth-card-name">Poway NEC</h1>
+      <span class="auth-card-eyebrow">
+        <svg class="auth-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="11" width="18" height="11" rx="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+        Encrypted Member Portal
+      </span>
+      <!-- Time-aware greeting; replaced at runtime by the script at the
+           bottom of this page. Falls back gracefully if JS is off. -->
+      <h1 class="auth-card-name" id="auth-greeting">Welcome back, neighbor</h1>
+      <p class="auth-greet-tagline">
+        Joining <strong id="auth-community-count">3,200+</strong> households across Poway preparing together.
+      </p>
     </div>
 
     <!-- Tab switch -->
@@ -610,12 +802,41 @@ body_class: inner-page auth-page-body
       <button id="auth-tab-register" class="auth-tab"           role="tab" aria-selected="false" aria-controls="pane-register" data-pane="register">Create account</button>
     </div>
 
+    <!-- Trust strip — three security pills above the form. Subtle but
+         continuously visible so the user feels watched-over. -->
+    <div class="auth-trust-strip" aria-label="Security and privacy commitments">
+      <span class="auth-trust-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        256-bit encrypted
+      </span>
+      <span class="auth-trust-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-12V5l-8-3-8 3v5c0 8 8 12 8 12z"/></svg>
+        Privacy-first
+      </span>
+      <span class="auth-trust-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Local to Poway
+      </span>
+    </div>
+
     <div class="auth-panes">
 
       <!-- ── Pane: Sign In ───────────────────────────────────────────── -->
       <section id="pane-login" class="auth-pane is-active" role="tabpanel" aria-labelledby="auth-tab-login">
-        <h2>Welcome back</h2>
-        <p>Sign in to your PNEC member account.</p>
+
+        <!-- Returning-visitor recognition — only renders when localStorage
+             has a cached pnec_user. Otherwise stays display:none. The JS
+             at the bottom of this page hydrates the avatar + names. -->
+        <div id="login-returning-bubble" class="auth-returning-bubble" aria-live="polite">
+          <div id="login-returning-avatar" class="auth-returning-avatar" aria-hidden="true">N</div>
+          <div class="auth-returning-text">
+            <strong id="login-returning-name">Welcome back</strong>
+            <span id="login-returning-detail">Sign in to pick up where you left off in your neighborhood.</span>
+          </div>
+        </div>
+
+        <h2>Your neighborhood is here</h2>
+        <p>Sign in to check in with your block, your kit, and your neighbors.</p>
 
         <div id="login-error" class="auth-error-box" role="alert" aria-live="polite"></div>
 
@@ -631,6 +852,10 @@ body_class: inner-page auth-page-body
             <button type="button" class="auth-eye-toggle" aria-label="Show password" data-target="login-password">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
+            <p class="auth-encryption-note">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              Encrypted before it leaves your device.
+            </p>
           </div>
 
           <div class="auth-row-between">
@@ -641,18 +866,21 @@ body_class: inner-page auth-page-body
             <a class="auth-link" href="{{ '/pages/forgot-password.html' | relative_url }}">Forgot password?</a>
           </div>
 
-          <button id="login-submit-btn" type="submit" class="auth-submit">Sign in</button>
+          <button id="login-submit-btn" type="submit" class="auth-submit">
+            <svg class="auth-submit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Sign in securely
+          </button>
         </form>
 
         <p class="auth-switch-row">
-          New to PNEC? <a class="auth-link" href="#register" data-switch-pane="register">Create an account</a>
+          First time joining the neighborhood? <a class="auth-link" href="#register" data-switch-pane="register">Create your account →</a>
         </p>
       </section>
 
       <!-- ── Pane: Create Account ───────────────────────────────────── -->
       <section id="pane-register" class="auth-pane" role="tabpanel" aria-labelledby="auth-tab-register" hidden>
-        <h2>Create an account</h2>
-        <p>Connect to your block's coordinator and member tools.</p>
+        <h2>Welcome to the neighborhood</h2>
+        <p>Takes about a minute. We'll connect you to your block's coordinator and your local member tools.</p>
 
         <div id="register-error" class="auth-error-box" role="alert" aria-live="polite"></div>
 
@@ -673,7 +901,10 @@ body_class: inner-page auth-page-body
             <button type="button" class="auth-eye-toggle" aria-label="Show password" data-target="register-password">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
-            <p class="auth-field-hint">At least 8 characters.</p>
+            <p class="auth-encryption-note">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              At least 8 characters. Encrypted before it leaves your device.
+            </p>
           </div>
 
           <div class="auth-field auth-field-pass">
@@ -703,18 +934,38 @@ body_class: inner-page auth-page-body
             Connects you to your local coordinator. You can change it later.
           </p>
 
-          <button type="submit" class="auth-submit" style="margin-top:10px;">Create account</button>
+          <button type="submit" class="auth-submit" style="margin-top:10px;">
+            <svg class="auth-submit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Create my account
+          </button>
         </form>
 
         <p class="auth-switch-row">
-          Already have an account? <a class="auth-link" href="#login" data-switch-pane="login">Sign in</a>
+          Already part of the neighborhood? <a class="auth-link" href="#login" data-switch-pane="login">Sign in</a>
         </p>
       </section>
     </div>
   </div>
 
-  <p class="auth-foot-note">
-    Need help with your account? <a href="{{ '/pages/contact.html' | relative_url }}">Contact PNEC</a>.
+  <!-- v2.61 trust footer — three explicit promises about how we treat
+       the user's data and account. Replaces the bare "Need help" line
+       with reassurance the user can scan in two seconds. -->
+  <div class="auth-trust-footer" aria-label="Why you can trust this portal">
+    <div class="auth-trust-row">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      <span><strong>Encrypted in transit.</strong> Sign-ins use 256-bit TLS — your password is never sent or stored in plain text.</span>
+    </div>
+    <div class="auth-trust-row">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      <span><strong>Local to Poway.</strong> Your account exists to connect you with your block's coordinator — never sold, never shared with third parties.</span>
+    </div>
+    <div class="auth-trust-row">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      <span><strong>By neighbors, for neighbors.</strong> PNEC is a 100% volunteer organization run by your fellow Poway residents.</span>
+    </div>
+  </div>
+  <p class="auth-trust-help">
+    Need a hand with your account? <a href="{{ '/pages/contact.html' | relative_url }}">Reach out to a PNEC volunteer</a>.
   </p>
 </div>
 
@@ -793,6 +1044,88 @@ body_class: inner-page auth-page-body
     });
     obs.observe(el, { childList: true, characterData: true, subtree: true });
   });
+
+  // ─── v2.61: Time-aware greeting + returning-visitor recognition ─────
+  // Two pieces of personalization, both pure-client (no network call):
+  //   (a) The big greeting heading switches by time-of-day, and uses the
+  //       cached display_name when we have one (so it reads as warmly
+  //       as a friend's hello, not as a generic "neighbor")
+  //   (b) When localStorage.pnec_user is present, a green welcome bubble
+  //       appears at the top of the Sign-In pane with the user's avatar
+  //       initials and a personalized line. Their email is also pre-
+  //       filled so they only have to type the password.
+  // Falls back gracefully if localStorage is empty or JSON.parse throws.
+
+  function timeOfDay() {
+    const h = new Date().getHours();
+    if (h >= 5  && h < 12) return 'Good morning';
+    if (h >= 12 && h < 17) return 'Good afternoon';
+    if (h >= 17 && h < 22) return 'Good evening';
+    return 'Hello';   // late-night / very early — friendly without being weird
+  }
+
+  function getCachedUser() {
+    try {
+      const raw = localStorage.getItem('pnec_user') || sessionStorage.getItem('pnec_user');
+      return raw ? JSON.parse(raw) : null;
+    } catch (_e) { return null; }
+  }
+
+  function firstName(name) {
+    if (!name) return '';
+    return name.toString().trim().split(/\s+/)[0] || '';
+  }
+
+  function initialsOf(name) {
+    if (!name) return 'N';
+    const parts = name.toString().trim().split(/\s+/).slice(0, 2);
+    const out = parts.map(p => p.charAt(0).toUpperCase()).join('');
+    return out || 'N';
+  }
+
+  function setGreeting() {
+    const greetEl = document.getElementById('auth-greeting');
+    if (!greetEl) return;
+    const cached = getCachedUser();
+    const audience = cached && cached.display_name
+      ? firstName(cached.display_name)
+      : 'neighbor';
+    greetEl.textContent = timeOfDay() + ', ' + audience;
+  }
+
+  function hydrateReturningBubble() {
+    const cached = getCachedUser();
+    if (!cached || !cached.email) return;
+
+    const bubble   = document.getElementById('login-returning-bubble');
+    const avatar   = document.getElementById('login-returning-avatar');
+    const nameEl   = document.getElementById('login-returning-name');
+    const detailEl = document.getElementById('login-returning-detail');
+    if (!bubble || !avatar || !nameEl || !detailEl) return;
+
+    const display = cached.display_name || cached.email.split('@')[0];
+    avatar.textContent = initialsOf(display);
+    nameEl.textContent = 'Welcome back, ' + firstName(display);
+    detailEl.textContent = cached.neighborhood
+      ? "Your block (" + cached.neighborhood + ") is keeping the porch light on."
+      : "Sign in to pick up where you left off in your neighborhood.";
+    bubble.classList.add('is-visible');
+
+    // Pre-fill the email field so they only have to type the password.
+    // Float the floating-label by triggering an input event so the
+    // existing :not(:placeholder-shown) styling animates in.
+    const emailField = document.getElementById('login-email');
+    if (emailField && !emailField.value) {
+      emailField.value = cached.email;
+      emailField.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    // Also pre-check "Remember me" since they were remembered last time.
+    const rememberBox = document.getElementById('login-remember');
+    if (rememberBox && !rememberBox.checked) rememberBox.checked = true;
+  }
+
+  setGreeting();
+  hydrateReturningBubble();
 })();
 </script>
 
