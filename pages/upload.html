@@ -76,10 +76,22 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
+    // Client-side size pre-check so the user gets a real error message
+    // instead of a silent 413 Werkzeug response. Mirrors backend cap.
+    var MAX_BYTES = 20 * 1024 * 1024; // 20 MB — matches Flask MAX_CONTENT_LENGTH
+    var file = fileEl.files[0];
+    if (file && file.size > MAX_BYTES) {
+      statusEl.className = 'alert alert-error';
+      statusEl.style.display = 'flex';
+      statusEl.textContent = 'File is too big (' +
+        (file.size / 1024 / 1024).toFixed(1) + ' MB). Max 20 MB.';
+      return;
+    }
+
     var fd = new FormData();
     fd.append('title',   title);
     fd.append('caption', caption);
-    fd.append('file',    fileEl.files[0]);
+    fd.append('file',    file);
 
     submitBtn.disabled = true;
     submitBtn.textContent = 'Uploading…';
@@ -92,10 +104,12 @@ document.addEventListener('DOMContentLoaded', function() {
         statusEl.textContent = 'Uploaded successfully! Redirecting to gallery…';
         setTimeout(function() { window.location.href = '/pages/gallery.html'; }, 1500);
       })
-      .catch(function() {
+      .catch(function(err) {
         statusEl.className = 'alert alert-error';
         statusEl.style.display = 'flex';
-        statusEl.textContent = 'Upload failed. Please check the file size and try again.';
+        // Surface the backend's actual error if available; fall back to generic
+        var msg = (err && err.message) ? err.message : 'Upload failed. Please try again.';
+        statusEl.textContent = msg;
         submitBtn.disabled = false;
         submitBtn.textContent = 'Upload';
       });
