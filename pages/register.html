@@ -3,34 +3,38 @@ layout: pnec-base
 title: "Sign in or Create Account"
 description: "Sign in or create your PNEC member account."
 body_class: inner-page auth-page-body
-# Use the standard PNEC site header (poway-header.html) — green-transparent
-# nav floating over the photo carousel, exactly like every other page on
-# the site. Inherited from _config.yml (use_poway_live_styles: true).
-# We hide just the page-title text overlay below to avoid the duplicate
-# "Sign in or Create Account" big-text on the carousel — the auth card
-# below this header has its own header.
 ---
 
 <!--
-  Login + Register page (v2.48 — simplified). Single centered card under
-  the standard PNEC navbar. No marketing copy, no two-column SaaS intro,
-  no synthetic "Get ready together" headline. Just a small welcome and
-  the form. Wildfire ambience comes from a soft photo strip at the top of
-  the auth area, not a full-bleed hero competing with the navbar above.
+  Login + Register page (v2.62 — split-screen layout).
 
-  All form IDs / hash navigation / register-page.js wiring preserved.
+  Two-column professional layout patterned after Stripe / Vercel / Notion
+  sign-in pages: brand panel on the left (wildfire photo + mission +
+  social proof + trust messaging), form panel on the right (compact,
+  focused, breathable). Below 1024px the columns stack with the brand
+  panel collapsing to a short hero strip.
+
+  Why split:
+    • Solves the "narrow form / long page" problem of v2.61 by giving
+      the form panel its own breathing room and moving trust messaging
+      OFF the bottom of the page (where it stretches scroll height) and
+      ALONGSIDE the form (where it reinforces security at the moment
+      of action).
+    • Modern, professional pattern users recognize from every SaaS auth
+      page they've used in the last five years.
+    • The wildfire photo finally has a clear job — set ambient context
+      for the brand side — without bleeding into the form fields and
+      hurting readability.
+
+  Form IDs / hash navigation / register-page.js wiring all preserved.
 -->
 
 <style>
-  /* Hide the auto-rendered page-title overlay from the cloned-WP header
-     (giant "Sign in or Create Account" big-text overlaid on the carousel). */
-  .auth-page-body .pnec-header-title { display: none !important; }
-
-  /* Hide the navbar's photo carousel + dark overlay. The auth-page now
-     uses ONE single wildfire photo as a fixed page-level backdrop (see
-     .auth-page-body::before below), so a duplicate photo here in the
-     header would just compete. The green nav bar still floats on top
-     of the body-level photo. */
+  /* ─── Header treatment ─────────────────────────────────────────────
+     Hide the cloned-WP page-title overlay and the header carousel.
+     The brand panel below provides all the photographic ambience this
+     page needs — a duplicate carousel up top would compete. */
+  .auth-page-body .pnec-header-title,
   .auth-page-body .pnec-header-track,
   .auth-page-body .pnec-header-overlay {
     display: none !important;
@@ -40,95 +44,22 @@ body_class: inner-page auth-page-body
     background: transparent !important;
   }
   .auth-page-body .pnec-header-ui { position: relative !important; padding-top: 0 !important; }
-  /* Keep logo + Donate visible — they sit on the body-level photo now */
   .auth-page-body .pnec-header-top { padding: 14px 36px 18px; }
 
-  /* ─── Body-level fixed wildfire photo (perf-tuned for smooth scroll)
-     ─────────────────────────────────────────────────────────────────
-     Lessons learned from the scroll-lag in v2.57:
-       • mask-image on a fixed-position element forces a full GPU
-         repaint every scroll frame
-       • filter: saturate/brightness on a fixed element forces the
-         same repaint
-       • mix-blend-mode in the global polish layer compounded it
-     Solution: one fixed photo with NO mask + NO filter, promoted to
-     its own GPU layer via translateZ(0). The fade work is done by
-     a SECOND fixed pseudo (the warm overlay) that has alpha stops
-     in its gradient — alpha-blending is cheap on the GPU. */
-  .auth-page-body { position: relative; }
-  .auth-page-body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url('{{ "/assets/images/Poway_Fire.webp" | relative_url }}');
-    background-size: cover;
-    background-position: center 25%;
-    /* Promote to its own composite layer so the rasterized photo is
-       cached and never repainted during scroll. */
-    transform: translateZ(0);
-    will-change: transform;
-    pointer-events: none;
-    z-index: -10;
-  }
-  /* Warm color wash with cream at the bottom — does the fade work
-     that the mask used to do, but with cheap alpha gradient instead
-     of expensive mask-image. */
-  .auth-page-body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-      linear-gradient(180deg,
-        rgba(192, 90, 50, 0.20) 0%,
-        rgba(255, 168, 96, 0.10) 22%,
-        rgba(248, 245, 240, 0.45) 42%,
-        rgba(248, 245, 240, 0.92) 60%,
-        #f8f5f0 75%);
-    transform: translateZ(0);
-    will-change: transform;
-    pointer-events: none;
-    z-index: -9;
-  }
-
-  /* Disable the global film-grain (_sass/_polish.scss body::after)
-     on this page only — its mix-blend-mode: overlay was the heaviest
-     contributor to the scroll lag. */
-  body.auth-page-body::after {
-    /* Override the global film grain selector. The auth ::after above
-       already wins by being defined later in the cascade, but make
-       absolutely sure no SVG noise + blend-mode kicks in. */
-    background-image: none, linear-gradient(180deg,
-      rgba(192, 90, 50, 0.20) 0%,
-      rgba(255, 168, 96, 0.10) 22%,
-      rgba(248, 245, 240, 0.45) 42%,
-      rgba(248, 245, 240, 0.92) 60%,
-      #f8f5f0 75%);
-    mix-blend-mode: normal !important;
-  }
-
-  /* By default, poway-header.html positions the nav at the BOTTOM of the
-     carousel as a dark-navy bar. The rest of the site shows the nav at
-     the TOP of the photo as a green-transparent bar. Re-order + restyle
-     the auth page's nav to match. */
+  /* Pin the navbar flush with the top edge, restyled green-translucent
+     to match the rest of the site. */
   .auth-page-body .pnec-header-ui {
     justify-content: flex-start !important;
-    padding-top: 0 !important;     /* nav goes flush with the top edge */
+    padding-top: 0 !important;
   }
-  /* CSS order: pin the nav to the very top (order: -1), then logo+donate,
-     then (hidden) title. Padding moves to the children that need it so
-     the nav itself can be edge-to-edge. */
   .auth-page-body .pnec-header-nav  { order: -1; margin: 0 -36px !important; }
-  .auth-page-body .pnec-header-top  { order:  0; padding-top: 24px; }
+  .auth-page-body .pnec-header-top  { order:  0; padding-top: 16px; }
   .auth-page-body .pnec-header-title{ order:  1; }
-
   .auth-page-body .pnec-header-nav {
-    /* Green semi-transparent — matches .pnec-navbar across the rest
-       of the site (rgba(39, 174, 96, 0.78)). Slightly more transparent
-       here so the carousel still reads through. */
-    background: rgba(39, 174, 96, 0.62) !important;
+    background: rgba(39, 174, 96, 0.78) !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.18);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
   .auth-page-body .pnec-header-nav li a {
     color: #fff !important;
@@ -142,171 +73,370 @@ body_class: inner-page auth-page-body
     border-bottom-color: #fff !important;
   }
 
-  /* Soften the carousel's dark overlay a touch so the photo reads more
-     vibrantly (the green nav already provides plenty of contrast). */
-  .auth-page-body .pnec-header-overlay {
-    background: rgba(10, 22, 40, 0.30) !important;
-  }
-
-  /* Tighten the header height — without the giant title in the middle
-     we don't need 500px of carousel. */
-  .auth-page-body .pnec-unified-header { height: 320px !important; }
-
-  /* Reset the layout's default page padding for this auth page only. */
+  /* Reset layout's default page padding for this auth page only. */
   .auth-page-body .pnec-page-shell,
   .auth-page-body main#jupiterx-main {
     padding: 0 !important;
     background: transparent !important;
+    margin: 0 !important;
+    max-width: none !important;
   }
-  .auth-page-body { background: #f8f5f0; }
+  .auth-page-body { background: #fbf8f1; }
 
-  /* Premium typography — DM Sans pairs cleanly with the existing system
-     stack and reads as bespoke without feeling out of brand. */
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+  /* Suppress the global corner vignette from _polish.scss */
+  html:has(body.auth-page-body)::before { display: none !important; }
 
-  /* AOPS / forest-green palette tokens (locally scoped to the auth page
-     so the rest of the site keeps using its red CTAs unchanged). */
+  /* DM Sans premium typography */
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');
+
+  /* AOPS forest-green palette (scoped to this page only) */
   .auth-page-body {
     --pnec-green:        #1e8449;
     --pnec-green-deep:   #145a32;
     --pnec-green-soft:   #d4efdf;
     --pnec-green-text:   #0e3b21;
-    --pnec-card-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.65) inset,
-      0 1px 1px rgba(20, 90, 50, 0.04),
-      0 4px 8px rgba(20, 90, 50, 0.06),
-      0 12px 24px rgba(20, 90, 50, 0.08),
-      0 28px 56px rgba(20, 90, 50, 0.10);
   }
 
-  /* ─── Auth wrapper — transparent so the body-level photo backdrop
-     reads through. Just spacing + the drifting orb live here now. */
-  .auth-wrapper {
-    min-height: calc(100vh - 200px);
-    padding: 0 20px 120px;
-    background: transparent;
-    display: flex; flex-direction: column; align-items: center;
-    position: relative;
+  /* ─── Split-screen layout grid ───────────────────────────────────────
+     50/50 columns on desktop (>= 1024px). Stacks below that with the
+     brand panel becoming a short hero strip on top. */
+  .auth-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: calc(100vh - 88px); /* roughly the navbar height */
+    width: 100%;
     font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
-
-  /* Removed the drifting ambient orb in v2.58 — its 1100x1100 element
-     with filter:blur(32px) + scrolling animated transform was a third
-     heavy contributor to the scroll lag. The fixed photo + warm fade
-     already provide the ambient feeling without per-frame compositing. */
-  .auth-orb { display: none !important; }
-
-  /* Disable the global corner vignette (_sass/_polish.scss html::before)
-     on this page — it stacks on top of our fixed photo and adds another
-     fixed-position composite layer that the browser has to repaint. */
-  body.auth-page-body { /* placeholder anchor */ }
-  /* Suppress html::before vignette via a higher-specificity rule. */
-  html:has(body.auth-page-body)::before { display: none !important; }
-
-  /* Top spacer so the card lands after the warm fade has settled into
-     cream — the gradient needs vertical room to dissolve. */
-  .auth-spacer {
-    height: clamp(96px, 11vw, 180px);
-    width: 100%;
-    flex-shrink: 0;
-    pointer-events: none;
+  @media (max-width: 1023px) {
+    .auth-split {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+      min-height: 0;
+    }
   }
 
-  /* ─── The card itself ───────────────────────────────────────────────── */
-  /* Premium layered card: subtle warm gradient surface (not stark white),
-     multiple soft shadows simulating real light, a forest-green gradient
-     ribbon at the top edge, and a hover-lift. */
-  .auth-card {
+  /* ─── BRAND PANEL (left on desktop, top on mobile) ─────────────────
+     Wildfire photo backdrop + warm gradient overlay + white overlay
+     text. Houses the mission, social-proof stats, customer quote, and
+     trust messaging. */
+  .auth-brand {
     position: relative;
-    z-index: 1;
-    width: 100%;
-    max-width: 480px;
-    margin: 0;
-    /* Subtle warm gradient — top is paper-white, bottom is faintly cream-
-       tinted so the card has its own light direction (not flat fill). */
-    background: linear-gradient(180deg, #ffffff 0%, #fbf8f1 100%);
-    border-radius: 20px;
+    padding: clamp(64px, 6vw, 96px) clamp(40px, 5vw, 80px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: clamp(40px, 5vw, 60px);
+    color: #fff;
     overflow: hidden;
-    box-shadow: var(--pnec-card-shadow);
-    animation: auth-card-in 600ms cubic-bezier(.2,.85,.25,1.0) both;
-    transition: transform 320ms cubic-bezier(.2,.8,.2,1), box-shadow 320ms cubic-bezier(.2,.8,.2,1);
+    isolation: isolate;
   }
-  .auth-card:hover {
-    transform: translateY(-2px);
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.65) inset,
-      0 2px 2px rgba(20, 90, 50, 0.05),
-      0 8px 14px rgba(20, 90, 50, 0.08),
-      0 22px 40px rgba(20, 90, 50, 0.12),
-      0 40px 72px rgba(20, 90, 50, 0.14);
-  }
-  /* Forest-green ribbon at the very top edge of the card — hand-crafted
-     hierarchy marker that catches the eye without being loud. */
-  .auth-card::before {
+  .auth-brand::before {
     content: '';
     position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--pnec-green-deep) 0%, var(--pnec-green) 50%, #27ae60 100%);
+    inset: 0;
+    background-image: url('{{ "/assets/images/Poway_Fire.webp" | relative_url }}');
+    background-size: cover;
+    background-position: center 30%;
+    transform: translateZ(0);
+    will-change: transform;
+    z-index: -2;
   }
-  @keyframes auth-card-in {
-    from { opacity: 0; transform: translateY(16px) scale(0.985); }
-    to   { opacity: 1; transform: none; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .auth-card { animation: none; }
-    .auth-card:hover { transform: none; }
+  .auth-brand::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    /* Forest-green → navy → ember-red diagonal — matches PNEC brand
+       and ensures all overlay text is legible regardless of where it
+       sits on the photo. */
+    background:
+      linear-gradient(135deg,
+        rgba(20, 90, 50, 0.85) 0%,
+        rgba(10, 22, 40, 0.74) 50%,
+        rgba(192, 57, 43, 0.55) 100%);
+    z-index: -1;
   }
 
-  /* Header — clean typographic treatment, NO logo. Brand name as the
-     centerpiece with a small green eyebrow above it for context. */
-  .auth-card-head {
-    padding: 36px 36px 22px;
-    text-align: center;
-    position: relative;
+  @media (max-width: 1023px) {
+    .auth-brand {
+      padding: 36px clamp(24px, 5vw, 40px) 40px;
+      min-height: 0;
+      gap: 18px;
+    }
   }
-  .auth-card-eyebrow {
-    display: inline-flex; align-items: center; gap: 8px;
-    font-size: 0.68rem; font-weight: 700;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--pnec-green);
-  }
-  .auth-card-eyebrow::before,
-  .auth-card-eyebrow::after {
-    content: '';
-    width: 18px; height: 1.5px;
-    background: linear-gradient(90deg, transparent, var(--pnec-green));
-    border-radius: 1px;
-  }
-  .auth-card-eyebrow::after {
-    background: linear-gradient(90deg, var(--pnec-green), transparent);
-  }
-  .auth-card-name {
-    margin: 14px 0 0;
+
+  /* Logo lockup at the top of the brand panel */
+  .auth-brand-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
     font-family: 'DM Sans', sans-serif;
     font-weight: 800;
-    font-size: 1.62rem;
+    font-size: 0.84rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.94);
+  }
+  .auth-brand-mark-icon {
+    width: 38px; height: 38px;
+    display: grid;
+    place-items: center;
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 10px;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .auth-brand-mark-icon svg { color: #fff; width: 20px; height: 20px; }
+
+  /* Hero — the mission statement that sets the emotional tone */
+  .auth-brand-hero {
+    max-width: 540px;
+  }
+  .auth-brand-hero-eyebrow {
+    display: inline-block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #b9f6ca;
+    margin-bottom: 16px;
+  }
+  .auth-brand-hero h2 {
+    margin: 0 0 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: clamp(2rem, 3.4vw, 2.8rem);
+    font-weight: 900;
+    line-height: 1.04;
+    letter-spacing: -0.028em;
+    color: #fff;
+    text-shadow: 0 2px 14px rgba(10, 22, 40, 0.40);
+  }
+  .auth-brand-hero p {
+    margin: 0;
+    font-size: clamp(0.98rem, 1.2vw, 1.08rem);
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.92);
+    font-weight: 500;
+  }
+
+  /* Customer quote card — testimonial that humanizes the page */
+  .auth-brand-quote {
+    margin: 4px 0 0;
+    padding: 18px 22px;
+    background: rgba(255, 255, 255, 0.10);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 14px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    max-width: 540px;
+  }
+  .auth-brand-quote p {
+    margin: 0 0 10px;
+    font-size: 0.98rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.96);
+    font-style: italic;
+  }
+  .auth-brand-quote-attr {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.78);
+    font-weight: 600;
+  }
+  .auth-brand-quote-avatar {
+    width: 28px; height: 28px;
+    display: grid; place-items: center;
+    background: linear-gradient(135deg, #d4efdf, #b9f6ca);
+    color: #0e3b21;
+    font-weight: 800;
+    font-size: 0.78rem;
+    border-radius: 50%;
+  }
+
+  /* Stat row */
+  .auth-brand-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(16px, 2vw, 32px);
+    padding-top: 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.20);
+    max-width: 540px;
+  }
+  .auth-brand-stat-num {
+    font-family: 'DM Sans', sans-serif;
+    font-size: clamp(1.4rem, 2.1vw, 1.85rem);
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .auth-brand-stat-label {
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: rgba(255, 255, 255, 0.78);
+    margin-top: 5px;
+    line-height: 1.3;
+  }
+
+  /* On mobile, hide the stats and quote — they repeat info that's in
+     the form panel. The brand strip stays short. */
+  @media (max-width: 1023px) {
+    .auth-brand-quote,
+    .auth-brand-stats { display: none; }
+    .auth-brand-hero h2 { font-size: 1.55rem; line-height: 1.1; margin-bottom: 8px; }
+    .auth-brand-hero p { font-size: 0.92rem; }
+    .auth-brand-hero-eyebrow { font-size: 0.7rem; margin-bottom: 10px; }
+  }
+
+  /* ─── FORM PANEL (right on desktop, below brand on mobile) ───────── */
+  .auth-form-panel {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: clamp(48px, 5vw, 88px) clamp(28px, 4vw, 60px);
+    background: #fbf8f1;
+    position: relative;
+    /* Subtle paper-grain via gradient — adds warmth without an SVG */
+    background:
+      radial-gradient(1200px 800px at 100% 0%, rgba(212, 239, 223, 0.35) 0%, transparent 55%),
+      radial-gradient(900px 600px at 0% 100%, rgba(248, 215, 200, 0.28) 0%, transparent 55%),
+      #fbf8f1;
+  }
+
+  .auth-form-stack {
+    width: 100%;
+    max-width: 480px;
+  }
+
+  /* Eyebrow with lock icon */
+  .auth-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--pnec-green-deep);
+  }
+  .auth-eyebrow-icon {
+    width: 26px; height: 26px;
+    display: grid;
+    place-items: center;
+    background: var(--pnec-green-soft);
+    border-radius: 7px;
+  }
+  .auth-eyebrow-icon svg { color: var(--pnec-green-deep); width: 13px; height: 13px; }
+
+  /* Greeting heading — time-aware via JS */
+  .auth-greeting {
+    margin: 16px 0 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: clamp(1.7rem, 2.6vw, 2.1rem);
+    font-weight: 900;
     line-height: 1.05;
     color: #0a1628;
     letter-spacing: -0.028em;
   }
+  .auth-tagline {
+    margin: 0;
+    font-size: 0.96rem;
+    color: #5a5a5a;
+    line-height: 1.5;
+  }
+  .auth-tagline strong { color: var(--pnec-green-deep); font-weight: 700; }
 
-  /* Tabs — forest-green active pill, sophisticated easing */
+  /* Trust pills — single horizontal row above the tabs */
+  .auth-trust-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin: 22px 0 26px;
+  }
+  .auth-trust-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 11px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    color: var(--pnec-green-deep);
+    background: rgba(212, 239, 223, 0.55);
+    border: 1px solid rgba(30, 132, 73, 0.22);
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .auth-trust-pill svg {
+    color: var(--pnec-green);
+    width: 11px; height: 11px;
+    flex-shrink: 0;
+  }
+
+  /* Returning-visitor bubble */
+  .auth-returning-bubble {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 20px;
+    padding: 13px 16px;
+    background: linear-gradient(135deg, #f0f9f4 0%, #e8f5ed 100%);
+    border: 1px solid rgba(30, 132, 73, 0.22);
+    border-radius: 12px;
+    animation: auth-fade-in 360ms cubic-bezier(.2,.85,.25,1);
+  }
+  .auth-returning-bubble.is-visible { display: flex; }
+  .auth-returning-avatar {
+    width: 40px; height: 40px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, var(--pnec-green) 0%, var(--pnec-green-deep) 100%);
+    color: #fff;
+    border-radius: 50%;
+    font-weight: 800;
+    font-size: 0.96rem;
+    box-shadow: 0 2px 8px rgba(20, 90, 50, 0.28);
+  }
+  .auth-returning-text {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.86rem;
+    line-height: 1.4;
+    color: #0e3b21;
+  }
+  .auth-returning-text strong {
+    display: block;
+    font-weight: 800;
+    font-size: 0.98rem;
+    color: #0a1628;
+    margin-bottom: 2px;
+  }
+  @keyframes auth-fade-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* Tabs — forest-green active pill */
   .auth-tabs {
-    display: grid; grid-template-columns: 1fr 1fr;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     position: relative;
     background: #f3f0ea;
     padding: 5px;
-    margin: 0 28px 0;
+    margin: 0 0 22px;
     border-radius: 12px;
     border: 1px solid #e8e4dc;
   }
   .auth-tab {
-    position: relative; z-index: 2;
+    position: relative;
+    z-index: 2;
     padding: 11px 12px;
     font-family: 'DM Sans', sans-serif;
-    font-size: 0.86rem;
+    font-size: 0.88rem;
     font-weight: 700;
     color: #5a5a5a;
     background: transparent;
@@ -319,7 +449,8 @@ body_class: inner-page auth-page-body
   .auth-tab.is-active { color: #fff; }
   .auth-tab:not(.is-active):hover { color: var(--pnec-green-deep); }
   .auth-tab-pill {
-    position: absolute; top: 5px; bottom: 5px; left: 5px;
+    position: absolute;
+    top: 5px; bottom: 5px; left: 5px;
     width: calc(50% - 5px);
     background: linear-gradient(135deg, var(--pnec-green) 0%, var(--pnec-green-deep) 100%);
     border-radius: 8px;
@@ -331,33 +462,22 @@ body_class: inner-page auth-page-body
   }
   .auth-tabs[data-active="register"] .auth-tab-pill { transform: translateX(100%); }
 
-  .auth-panes { padding: 24px 36px 32px; }
+  /* Panes — hide their built-in h2/p since the greeting at top handles
+     it. Keeps the form panel from feeling like it has 5 headings. */
   .auth-pane { display: none; }
   .auth-pane.is-active { display: block; animation: auth-pane-in 220ms ease; }
+  .auth-pane > h2,
+  .auth-pane > p:first-of-type { display: none; }
   @keyframes auth-pane-in {
     from { opacity: 0; transform: translateY(4px); }
     to   { opacity: 1; transform: none; }
   }
-  @media (prefers-reduced-motion: reduce) { .auth-pane.is-active { animation: none; } }
-
-  .auth-pane h2 {
-    margin: 18px 0 6px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 1.42rem;
-    font-weight: 800;
-    color: #0a1628;
-    letter-spacing: -0.022em;
-    text-align: center;
-  }
-  .auth-pane > p {
-    margin: 0 0 22px;
-    color: #5a5a5a;
-    font-size: 0.92rem;
-    line-height: 1.5;
-    text-align: center;
+  @media (prefers-reduced-motion: reduce) {
+    .auth-pane.is-active,
+    .auth-returning-bubble { animation: none; }
   }
 
-  /* Floating-label fields — forest-green focus accent, refined timing */
+  /* Floating-label fields */
   .auth-field { position: relative; margin-bottom: 14px; }
   .auth-field input,
   .auth-field select {
@@ -371,12 +491,12 @@ body_class: inner-page auth-page-body
     border-radius: 11px;
     transition:
       border-color 220ms cubic-bezier(.4,0,.2,1),
-      box-shadow 220ms cubic-bezier(.4,0,.2,1),
-      background 220ms ease;
-    -webkit-appearance: none; appearance: none;
+      box-shadow 220ms cubic-bezier(.4,0,.2,1);
+    -webkit-appearance: none;
+    appearance: none;
   }
   .auth-field input:hover,
-  .auth-field select:hover { border-color: #c5beac; background: #fefcf8; }
+  .auth-field select:hover { border-color: #c5beac; }
   .auth-field input:focus,
   .auth-field select:focus {
     outline: none;
@@ -384,7 +504,6 @@ body_class: inner-page auth-page-body
     box-shadow:
       0 0 0 4px rgba(30, 132, 73, 0.14),
       0 1px 0 rgba(30, 132, 73, 0.05) inset;
-    background: #fff;
   }
   .auth-field label {
     position: absolute;
@@ -399,13 +518,7 @@ body_class: inner-page auth-page-body
     background: transparent;
   }
   .auth-field input:focus + label,
-  .auth-field input:not(:placeholder-shown) + label {
-    top: -8px;
-    transform: scale(0.78);
-    color: var(--pnec-green);
-    background: #fff;
-    font-weight: 700;
-  }
+  .auth-field input:not(:placeholder-shown) + label,
   .auth-field select + label,
   .auth-field select:focus + label {
     top: -8px;
@@ -422,7 +535,6 @@ body_class: inner-page auth-page-body
     line-height: 1.5;
   }
 
-  /* Password show/hide */
   .auth-field-pass { position: relative; }
   .auth-field-pass input { padding-right: 42px; }
   .auth-eye-toggle {
@@ -439,38 +551,53 @@ body_class: inner-page auth-page-body
   .auth-eye-toggle:hover { background: var(--pnec-green-soft); color: var(--pnec-green-deep); }
   .auth-eye-toggle:focus-visible { outline: 2px solid var(--pnec-green); outline-offset: 2px; }
 
+  /* Encryption microcopy under password fields */
+  .auth-encryption-note {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 6px 4px 0;
+    font-size: 0.74rem;
+    color: #6e7c75;
+    line-height: 1.4;
+  }
+  .auth-encryption-note svg {
+    color: var(--pnec-green);
+    width: 11px; height: 11px;
+    flex-shrink: 0;
+  }
+
   .auth-row-between {
     display: flex; align-items: center; justify-content: space-between;
-    margin: 4px 0 16px;
+    margin: 4px 0 18px;
     flex-wrap: wrap; gap: 8px;
   }
   .auth-checkbox {
     display: inline-flex; align-items: center; gap: 7px;
-    font-size: 0.83rem; color: #5a5a5a;
+    font-size: 0.85rem; color: #5a5a5a;
     cursor: pointer; user-select: none;
   }
   .auth-checkbox input { width: 16px; height: 16px; accent-color: var(--pnec-green); cursor: pointer; }
   .auth-link {
-    font-size: 0.84rem;
-    color: var(--pnec-green-deep); font-weight: 700;
+    font-size: 0.86rem;
+    color: var(--pnec-green-deep);
+    font-weight: 700;
     transition: color 160ms ease;
   }
   .auth-link:hover { color: var(--pnec-green); text-decoration: underline; text-underline-offset: 3px; }
 
-  /* Primary submit button — forest-green AOPS, layered shadow + sheen */
+  /* Submit button — forest-green AOPS, layered shadow, sheen */
   .auth-submit {
     width: 100%;
     padding: 15px 22px;
-    margin-top: 6px;
+    margin-top: 4px;
     font-family: 'DM Sans', sans-serif;
-    font-size: 0.98rem; font-weight: 700;
+    font-size: 1rem; font-weight: 700;
     letter-spacing: -0.005em;
     color: #fff;
     background: linear-gradient(180deg, var(--pnec-green) 0%, var(--pnec-green-deep) 100%);
     border: 0; border-radius: 12px;
     cursor: pointer;
-    /* Layered shadows for tactile depth — top highlight inset, drop
-       shadow tinted with the brand color, plus a soft glow halo. */
     box-shadow:
       0 1px 0 rgba(255, 255, 255, 0.30) inset,
       0 -1px 0 rgba(0, 0, 0, 0.20) inset,
@@ -484,7 +611,6 @@ body_class: inner-page auth-page-body
     position: relative;
     overflow: hidden;
   }
-  /* Diagonal light sheen that sweeps across on hover. */
   .auth-submit::before {
     content: '';
     position: absolute;
@@ -528,6 +654,13 @@ body_class: inner-page auth-page-body
     .auth-submit:hover { transform: none; filter: none; }
     .auth-submit::before, .auth-submit:hover::before { display: none; }
   }
+  .auth-submit-icon {
+    display: inline-block;
+    width: 14px; height: 14px;
+    vertical-align: -2px;
+    margin-right: 8px;
+    color: rgba(255, 255, 255, 0.92);
+  }
 
   /* Error box */
   .auth-error-box {
@@ -542,7 +675,7 @@ body_class: inner-page auth-page-body
   }
   .auth-error-box.is-visible { display: block; }
 
-  /* Address fallback row — green-themed secondary buttons */
+  /* Address fallback row */
   .auth-find-btn,
   .auth-address-search-btn {
     padding: 9px 16px;
@@ -574,259 +707,121 @@ body_class: inner-page auth-page-body
   }
 
   .auth-switch-row {
-    margin: 16px 0 0;
+    margin: 18px 0 0;
     text-align: center;
-    font-size: 0.84rem;
+    font-size: 0.86rem;
     color: #5a5a5a;
   }
 
-  /* Caption under the card — small note about why an account exists. */
-  .auth-foot-note {
-    margin: 22px 0 0;
-    max-width: 460px;
+  /* Footer help line at bottom of form panel */
+  .auth-help-foot {
+    margin: 32px 0 0;
     text-align: center;
     font-size: 0.82rem;
-    color: #5a5a5a;
-    line-height: 1.55;
-  }
-  .auth-foot-note a { color: #c0392b; font-weight: 700; }
-  .auth-foot-note a:hover { text-decoration: underline; text-underline-offset: 3px; }
-
-  /* ─── v2.61: Security + personalization layer ────────────────────────
-     Three new visual systems on top of the v2.58 card:
-       1. Trust strip — three pills above the form with security cues
-       2. Personal greeting — time-aware + returning-user recognition
-       3. Trust footer — replaces the bare "Need help" line with a
-          richer 3-line stack of trust signals
-     None of these touch the existing form fields, IDs, or behavior. */
-
-  /* Inline icon sizing helpers */
-  .auth-icon-sm { width: 12px; height: 12px; flex-shrink: 0; }
-
-  /* Eyebrow now pairs a small lock icon with the text */
-  .auth-card-eyebrow {
-    /* Override v2.58 — we're putting an icon between the dashes too */
-    gap: 9px !important;
-  }
-  .auth-card-eyebrow .auth-icon-sm {
-    color: var(--pnec-green-deep);
-    margin: 0 -2px;
-  }
-
-  /* Community-size context line under the greeting */
-  .auth-greet-tagline {
-    margin: 8px 0 0;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.84rem;
-    color: #5a5a5a;
-    line-height: 1.45;
-  }
-  .auth-greet-tagline strong { color: #145a32; font-weight: 700; }
-
-  /* Trust strip — three pills above the panes */
-  .auth-trust-strip {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 6px;
-    margin: 16px 28px 0;
-    padding: 0;
-  }
-  .auth-trust-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 5px 10px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.71rem;
-    font-weight: 700;
-    letter-spacing: 0.015em;
-    color: var(--pnec-green-deep);
-    background: rgba(212, 239, 223, 0.55);
-    border: 1px solid rgba(30, 132, 73, 0.20);
-    border-radius: 999px;
-    white-space: nowrap;
-  }
-  .auth-trust-pill svg {
-    color: var(--pnec-green);
-    width: 11px;
-    height: 11px;
-    flex-shrink: 0;
-  }
-
-  /* Returning-visitor bubble — appears when localStorage has a
-     cached display_name. Shows their initials in a green avatar
-     plus a personalized welcome line. */
-  .auth-returning-bubble {
-    display: none;
-    align-items: center;
-    gap: 10px;
-    margin: 0 0 16px;
-    padding: 11px 14px;
-    background: linear-gradient(135deg, #f0f9f4 0%, #e8f5ed 100%);
-    border: 1px solid rgba(30, 132, 73, 0.20);
-    border-radius: 12px;
-    animation: auth-bubble-in 360ms cubic-bezier(.2,.85,.25,1);
-  }
-  .auth-returning-bubble.is-visible { display: flex; }
-  .auth-returning-avatar {
-    width: 38px; height: 38px;
-    flex-shrink: 0;
-    display: grid;
-    place-items: center;
-    background: linear-gradient(135deg, var(--pnec-green) 0%, var(--pnec-green-deep) 100%);
-    color: #fff;
-    border-radius: 50%;
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 800;
-    font-size: 0.94rem;
-    letter-spacing: -0.01em;
-    box-shadow: 0 2px 6px rgba(20, 90, 50, 0.25);
-  }
-  .auth-returning-text {
-    flex: 1;
-    min-width: 0;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.85rem;
-    line-height: 1.35;
-    color: #0e3b21;
-  }
-  .auth-returning-text strong {
-    display: block;
-    font-weight: 800;
-    color: #0a1628;
-    font-size: 0.97rem;
-    margin-bottom: 1px;
-  }
-  @keyframes auth-bubble-in {
-    from { opacity: 0; transform: translateY(-4px); }
-    to   { opacity: 1; transform: none; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .auth-returning-bubble { animation: none; }
-  }
-
-  /* Encryption microcopy under password fields */
-  .auth-encryption-note {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    margin: 6px 4px 0;
-    font-size: 0.74rem;
-    color: #6e7c75;
-    line-height: 1.4;
-  }
-  .auth-encryption-note svg {
-    color: var(--pnec-green);
-    width: 11px;
-    height: 11px;
-    flex-shrink: 0;
-  }
-
-  /* Submit button — inline lock icon on the left */
-  .auth-submit-icon {
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    vertical-align: -2px;
-    margin-right: 8px;
-    color: rgba(255, 255, 255, 0.92);
-  }
-
-  /* Trust footer — three-row stack replacing the bare "Need help" line */
-  .auth-trust-footer {
-    margin: 28px 0 0;
-    width: 100%;
-    max-width: 480px;
-    display: grid;
-    gap: 8px;
-  }
-  .auth-trust-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 11px;
-    padding: 11px 14px;
-    background: rgba(255, 255, 255, 0.72);
-    border: 1px solid rgba(30, 132, 73, 0.12);
-    border-radius: 11px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.81rem;
+    color: #6a6a6a;
     line-height: 1.5;
-    color: #475056;
-    -webkit-backdrop-filter: blur(2px);
-    backdrop-filter: blur(2px);
   }
-  .auth-trust-row svg {
-    color: var(--pnec-green-deep);
-    flex-shrink: 0;
-    margin-top: 1px;
-    width: 16px;
-    height: 16px;
+  .auth-help-foot a { color: var(--pnec-green-deep); font-weight: 700; }
+  .auth-help-foot a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+  .auth-divider-dot {
+    display: inline-block;
+    margin: 0 7px;
+    color: #c8c2b3;
   }
-  .auth-trust-row strong { color: #0a1628; font-weight: 700; }
-  .auth-trust-help {
-    margin: 16px 0 0;
-    text-align: center;
-    font-size: 0.82rem;
-    color: #5a5a5a;
-  }
-  .auth-trust-help a { color: var(--pnec-green-deep); font-weight: 700; }
-  .auth-trust-help a:hover { text-decoration: underline; text-underline-offset: 3px; }
 </style>
 
-<div class="auth-wrapper">
-  <div class="auth-orb" aria-hidden="true"></div>
-  <div class="auth-spacer" aria-hidden="true"></div>
+<div class="auth-split">
 
-  <div class="auth-card">
-    <div class="auth-card-head">
-      <span class="auth-card-eyebrow">
-        <svg class="auth-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <rect x="3" y="11" width="18" height="11" rx="2"/>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+  <!-- ── BRAND PANEL (left on desktop, top on mobile) ────────────── -->
+  <aside class="auth-brand">
+    <header class="auth-brand-mark">
+      <span class="auth-brand-mark-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-12V5l-8-3-8 3v5c0 8 8 12 8 12z"/>
         </svg>
+      </span>
+      Poway Neighborhood Emergency Corps
+    </header>
+
+    <div class="auth-brand-hero">
+      <span class="auth-brand-hero-eyebrow">Since 2003 · Volunteer-run</span>
+      <h2>Neighbors helping neighbors prepare for what's next.</h2>
+      <p>One in three Poway households loses power, water, or shelter during fire season. PNEC connects you to your block — so when the moment comes, you don't face it alone.</p>
+    </div>
+
+    <!-- Customer quote — humanizes the page beyond mission copy alone. -->
+    <blockquote class="auth-brand-quote">
+      <p>"When the grid went out last summer, my block coordinator had medication delivered within an hour. We'd never met before that. Now they feel like family."</p>
+      <div class="auth-brand-quote-attr">
+        <span class="auth-brand-quote-avatar" aria-hidden="true">M</span>
+        <span>Mary R. · Rancho Arbolitos resident</span>
+      </div>
+    </blockquote>
+
+    <div class="auth-brand-stats">
+      <div>
+        <div class="auth-brand-stat-num">3,200+</div>
+        <div class="auth-brand-stat-label">Households connected</div>
+      </div>
+      <div>
+        <div class="auth-brand-stat-num">22</div>
+        <div class="auth-brand-stat-label">Years of service</div>
+      </div>
+      <div>
+        <div class="auth-brand-stat-num">100%</div>
+        <div class="auth-brand-stat-label">Volunteer-run</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── FORM PANEL (right on desktop, below brand on mobile) ────── -->
+  <div class="auth-form-panel">
+    <div class="auth-form-stack">
+
+      <span class="auth-eyebrow">
+        <span class="auth-eyebrow-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </span>
         Encrypted Member Portal
       </span>
-      <!-- Time-aware greeting; replaced at runtime by the script at the
-           bottom of this page. Falls back gracefully if JS is off. -->
-      <h1 class="auth-card-name" id="auth-greeting">Welcome back, neighbor</h1>
-      <p class="auth-greet-tagline">
+
+      <!-- Time-aware greeting; replaced at runtime by the script at
+           the bottom. Falls back gracefully if JS is off. -->
+      <h1 class="auth-greeting" id="auth-greeting">Welcome back, neighbor</h1>
+      <p class="auth-tagline">
         Joining <strong id="auth-community-count">3,200+</strong> households across Poway preparing together.
       </p>
-    </div>
 
-    <!-- Tab switch -->
-    <div class="auth-tabs" role="tablist" aria-label="Choose action" data-active="login">
-      <span class="auth-tab-pill" aria-hidden="true"></span>
-      <button id="auth-tab-login"    class="auth-tab is-active" role="tab" aria-selected="true"  aria-controls="pane-login"    data-pane="login">Sign in</button>
-      <button id="auth-tab-register" class="auth-tab"           role="tab" aria-selected="false" aria-controls="pane-register" data-pane="register">Create account</button>
-    </div>
+      <!-- Single-row trust pills (now horizontal because the form
+           panel is wide enough to fit them on one line). -->
+      <div class="auth-trust-pills" aria-label="Security and privacy commitments">
+        <span class="auth-trust-pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          256-bit encrypted
+        </span>
+        <span class="auth-trust-pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-12V5l-8-3-8 3v5c0 8 8 12 8 12z"/></svg>
+          Privacy-first
+        </span>
+        <span class="auth-trust-pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Local to Poway
+        </span>
+      </div>
 
-    <!-- Trust strip — three security pills above the form. Subtle but
-         continuously visible so the user feels watched-over. -->
-    <div class="auth-trust-strip" aria-label="Security and privacy commitments">
-      <span class="auth-trust-pill">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        256-bit encrypted
-      </span>
-      <span class="auth-trust-pill">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-12V5l-8-3-8 3v5c0 8 8 12 8 12z"/></svg>
-        Privacy-first
-      </span>
-      <span class="auth-trust-pill">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        Local to Poway
-      </span>
-    </div>
+      <!-- Tabs -->
+      <div class="auth-tabs" role="tablist" aria-label="Choose action" data-active="login">
+        <span class="auth-tab-pill" aria-hidden="true"></span>
+        <button id="auth-tab-login"    class="auth-tab is-active" role="tab" aria-selected="true"  aria-controls="pane-login"    data-pane="login">Sign in</button>
+        <button id="auth-tab-register" class="auth-tab"           role="tab" aria-selected="false" aria-controls="pane-register" data-pane="register">Create account</button>
+      </div>
 
-    <div class="auth-panes">
-
-      <!-- ── Pane: Sign In ───────────────────────────────────────────── -->
+      <!-- ── Pane: Sign In ─────────────────────────────────────────── -->
       <section id="pane-login" class="auth-pane is-active" role="tabpanel" aria-labelledby="auth-tab-login">
-
-        <!-- Returning-visitor recognition — only renders when localStorage
-             has a cached pnec_user. Otherwise stays display:none. The JS
-             at the bottom of this page hydrates the avatar + names. -->
         <div id="login-returning-bubble" class="auth-returning-bubble" aria-live="polite">
           <div id="login-returning-avatar" class="auth-returning-avatar" aria-hidden="true">N</div>
           <div class="auth-returning-text">
@@ -873,11 +868,11 @@ body_class: inner-page auth-page-body
         </form>
 
         <p class="auth-switch-row">
-          First time joining the neighborhood? <a class="auth-link" href="#register" data-switch-pane="register">Create your account →</a>
+          First time here? <a class="auth-link" href="#register" data-switch-pane="register">Create your account →</a>
         </p>
       </section>
 
-      <!-- ── Pane: Create Account ───────────────────────────────────── -->
+      <!-- ── Pane: Create Account ────────────────────────────────── -->
       <section id="pane-register" class="auth-pane" role="tabpanel" aria-labelledby="auth-tab-register" hidden>
         <h2>Welcome to the neighborhood</h2>
         <p>Takes about a minute. We'll connect you to your block's coordinator and your local member tools.</p>
@@ -944,29 +939,15 @@ body_class: inner-page auth-page-body
           Already part of the neighborhood? <a class="auth-link" href="#login" data-switch-pane="login">Sign in</a>
         </p>
       </section>
-    </div>
-  </div>
 
-  <!-- v2.61 trust footer — three explicit promises about how we treat
-       the user's data and account. Replaces the bare "Need help" line
-       with reassurance the user can scan in two seconds. -->
-  <div class="auth-trust-footer" aria-label="Why you can trust this portal">
-    <div class="auth-trust-row">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-      <span><strong>Encrypted in transit.</strong> Sign-ins use 256-bit TLS — your password is never sent or stored in plain text.</span>
-    </div>
-    <div class="auth-trust-row">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-      <span><strong>Local to Poway.</strong> Your account exists to connect you with your block's coordinator — never sold, never shared with third parties.</span>
-    </div>
-    <div class="auth-trust-row">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-      <span><strong>By neighbors, for neighbors.</strong> PNEC is a 100% volunteer organization run by your fellow Poway residents.</span>
+      <p class="auth-help-foot">
+        Need a hand? <a href="{{ '/pages/contact.html' | relative_url }}">Reach out to a PNEC volunteer</a>
+        <span class="auth-divider-dot">·</span>
+        <a href="{{ '/pages/about.html' | relative_url }}">About PNEC</a>
+      </p>
+
     </div>
   </div>
-  <p class="auth-trust-help">
-    Need a hand with your account? <a href="{{ '/pages/contact.html' | relative_url }}">Reach out to a PNEC volunteer</a>.
-  </p>
 </div>
 
 <script>
@@ -1045,23 +1026,16 @@ body_class: inner-page auth-page-body
     obs.observe(el, { childList: true, characterData: true, subtree: true });
   });
 
-  // ─── v2.61: Time-aware greeting + returning-visitor recognition ─────
-  // Two pieces of personalization, both pure-client (no network call):
-  //   (a) The big greeting heading switches by time-of-day, and uses the
-  //       cached display_name when we have one (so it reads as warmly
-  //       as a friend's hello, not as a generic "neighbor")
-  //   (b) When localStorage.pnec_user is present, a green welcome bubble
-  //       appears at the top of the Sign-In pane with the user's avatar
-  //       initials and a personalized line. Their email is also pre-
-  //       filled so they only have to type the password.
-  // Falls back gracefully if localStorage is empty or JSON.parse throws.
+  // ─── Time-aware greeting + returning-visitor recognition ──────────
+  // Pure-client personalization — no network call. Falls back gracefully
+  // if localStorage is empty or JSON.parse throws.
 
   function timeOfDay() {
     const h = new Date().getHours();
     if (h >= 5  && h < 12) return 'Good morning';
     if (h >= 12 && h < 17) return 'Good afternoon';
     if (h >= 17 && h < 22) return 'Good evening';
-    return 'Hello';   // late-night / very early — friendly without being weird
+    return 'Hello';
   }
 
   function getCachedUser() {
@@ -1111,15 +1085,11 @@ body_class: inner-page auth-page-body
       : "Sign in to pick up where you left off in your neighborhood.";
     bubble.classList.add('is-visible');
 
-    // Pre-fill the email field so they only have to type the password.
-    // Float the floating-label by triggering an input event so the
-    // existing :not(:placeholder-shown) styling animates in.
     const emailField = document.getElementById('login-email');
     if (emailField && !emailField.value) {
       emailField.value = cached.email;
       emailField.dispatchEvent(new Event('input', { bubbles: true }));
     }
-    // Also pre-check "Remember me" since they were remembered last time.
     const rememberBox = document.getElementById('login-remember');
     if (rememberBox && !rememberBox.checked) rememberBox.checked = true;
   }
