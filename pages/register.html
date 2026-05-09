@@ -304,43 +304,67 @@ body_class: inner-page auth-page-body
   }
 
   /* ─── FORM PANEL (right on desktop, below brand on mobile) ─────────
-     v2.63: panel is fully transparent — the form card itself supplies
-     the cream surface, with proper card shadows so it floats on the
-     photo backdrop. Vertically centered so the card breathes. */
+     v2.64: panel is fully transparent; the floating form card supplies
+     the cream surface. Card is bigger now (560px max instead of 480)
+     with more generous padding so it reads as the primary subject of
+     the right half — the focal point your eye should land on. */
   .auth-form-panel {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: clamp(48px, 5vw, 88px) clamp(24px, 4vw, 60px);
+    padding: clamp(40px, 4vw, 72px) clamp(20px, 3vw, 48px);
     background: transparent;
     position: relative;
   }
 
   /* The form card — opaque cream surface with a green ribbon at the
-     top edge, layered shadow for real "floating on photo" depth. */
+     top edge, layered shadow for real "floating on photo" depth.
+     v2.64: width up to 560px, padding 56px desktop, 7-layer shadow
+     for substantial weight, soft inner border highlight. */
   .auth-form-stack {
     width: 100%;
-    max-width: 480px;
+    max-width: 560px;
     background: #fbf8f1;
-    padding: clamp(36px, 4vw, 52px) clamp(28px, 3.5vw, 44px);
-    border-radius: 22px;
+    padding: clamp(40px, 4.5vw, 64px) clamp(32px, 4vw, 56px);
+    border-radius: 26px;
     position: relative;
     box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.65) inset,
-      0 1px 2px rgba(20, 90, 50, 0.08),
-      0 8px 22px rgba(0, 0, 0, 0.18),
-      0 28px 56px rgba(0, 0, 0, 0.24),
-      0 48px 96px rgba(0, 0, 0, 0.18);
+      0 0 0 1px rgba(20, 90, 50, 0.08),                /* hairline border */
+      0 1px 0 rgba(255, 255, 255, 0.72) inset,         /* top sheen */
+      0 -1px 0 rgba(20, 90, 50, 0.04) inset,           /* bottom inner shade */
+      0 2px 4px rgba(0, 0, 0, 0.06),                   /* close shadow */
+      0 12px 28px rgba(0, 0, 0, 0.16),                 /* mid shadow */
+      0 32px 64px rgba(0, 0, 0, 0.22),                 /* drop shadow */
+      0 56px 112px rgba(0, 0, 0, 0.18);                /* far diffuse */
     animation: auth-card-in 600ms cubic-bezier(.2,.85,.25,1) both;
+    /* Subtle paper-grain via gradient — adds warmth without an SVG */
+    background-image:
+      radial-gradient(900px 600px at 100% 0%, rgba(212, 239, 223, 0.30) 0%, transparent 60%),
+      radial-gradient(700px 500px at 0% 100%, rgba(248, 215, 200, 0.22) 0%, transparent 60%),
+      linear-gradient(180deg, #ffffff 0%, #fbf8f1 100%);
   }
-  /* Forest-green hairline ribbon at the top edge of the card */
+  /* Forest-green ribbon at the top edge of the card — 5px now (was 4),
+     with subtle inner glow for that "premium product" feel. */
   .auth-form-stack::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
-    height: 4px;
+    height: 5px;
     background: linear-gradient(90deg, var(--pnec-green-deep) 0%, var(--pnec-green) 50%, #27ae60 100%);
-    border-radius: 22px 22px 0 0;
+    border-radius: 26px 26px 0 0;
+    box-shadow: 0 1px 6px rgba(20, 90, 50, 0.40);
+  }
+  /* Soft corner accent — barely-there forest-green glow in the
+     top-right corner so the card has direction + depth even when
+     stationary. */
+  .auth-form-stack::after {
+    content: '';
+    position: absolute;
+    top: -1px; right: -1px;
+    width: 140px; height: 140px;
+    background: radial-gradient(120px 120px at 100% 0%, rgba(30, 132, 73, 0.10), transparent 70%);
+    border-radius: 0 26px 0 0;
+    pointer-events: none;
   }
   @keyframes auth-card-in {
     from { opacity: 0; transform: translateY(20px) scale(0.985); }
@@ -350,7 +374,12 @@ body_class: inner-page auth-page-body
     .auth-form-stack { animation: none; }
   }
   @media (max-width: 1023px) {
-    .auth-form-stack { padding: clamp(28px, 5vw, 40px) clamp(22px, 5vw, 32px); }
+    .auth-form-stack {
+      max-width: 480px;
+      padding: clamp(32px, 5vw, 44px) clamp(24px, 5vw, 36px);
+      border-radius: 22px;
+    }
+    .auth-form-stack::before { border-radius: 22px 22px 0 0; }
   }
 
   /* Eyebrow with lock icon */
@@ -373,19 +402,20 @@ body_class: inner-page auth-page-body
   }
   .auth-eyebrow-icon svg { color: var(--pnec-green-deep); width: 13px; height: 13px; }
 
-  /* Greeting heading — time-aware via JS */
+  /* Greeting heading — time-aware via JS. v2.64 bumped sizes to match
+     the larger card. */
   .auth-greeting {
-    margin: 16px 0 6px;
+    margin: 18px 0 8px;
     font-family: 'DM Sans', sans-serif;
-    font-size: clamp(1.7rem, 2.6vw, 2.1rem);
+    font-size: clamp(2rem, 3vw, 2.5rem);
     font-weight: 900;
-    line-height: 1.05;
+    line-height: 1.04;
     color: #0a1628;
-    letter-spacing: -0.028em;
+    letter-spacing: -0.030em;
   }
   .auth-tagline {
     margin: 0;
-    font-size: 0.96rem;
+    font-size: 1.02rem;
     color: #5a5a5a;
     line-height: 1.5;
   }
