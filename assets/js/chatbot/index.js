@@ -112,6 +112,16 @@ class HelperBot {
     // and not previously dismissed in the last 24h. Phase 3 risk-aware
     // logic can later upgrade this to "open when red-flag warning."
     this._maybeAutoOpen(prefs);
+
+    // Phase 3: register the service worker for offline cache.
+    // Best-effort — most browsers, swallow failures silently.
+    if ('serviceWorker' in navigator) {
+      const swUrl = new URL('./sw.js', import.meta.url).href;
+      try {
+        navigator.serviceWorker.register(swUrl, { scope: '/assets/js/chatbot/' })
+          .catch(() => { /* fine */ });
+      } catch (_e) { /* fine */ }
+    }
   }
 
   _collectDom() {
