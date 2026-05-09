@@ -5,6 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{% if page.title %}{{ page.title }} &#8211; {% endif %}Poway NEC &amp; FSC</title>
   <meta name="robots" content="max-image-preview:large" />
+  <!-- v3 SEO meta — was missing entirely. Critical pages (register/login/
+       forgot-password) use this layout and need shareable previews. -->
+  {% assign _desc = page.description | default: "Poway Neighborhood Emergency Corps — neighbors helping neighbors prepare for wildfire, earthquake, outage, and more. 100% volunteer-run since 2003." %}
+  {% assign _canonical = "https://pnec.opencodingsociety.com" | append: page.url %}
+  <meta name="description" content="{{ _desc }}">
+  <link rel="canonical" href="{{ _canonical }}">
+  <meta property="og:title" content="{% if page.title %}{{ page.title }} — {% endif %}Poway NEC &amp; FSC">
+  <meta property="og:description" content="{{ _desc }}">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="{{ _canonical }}">
+  <meta property="og:image" content="{{ '/assets/images/Poway_Fire.webp' | relative_url }}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{% if page.title %}{{ page.title }} — {% endif %}Poway NEC &amp; FSC">
+  <meta name="twitter:description" content="{{ _desc }}">
   <link rel="stylesheet" href="https://powaynec.com/wp-content/plugins/elementor/assets/lib/font-awesome/css/all.min.css?ver=3.35.9" />
   <link rel="stylesheet" href="https://powaynec.com/wp-content/plugins/elementor/assets/lib/font-awesome/css/v4-shims.min.css?ver=3.35.9" />
   <link rel="stylesheet" href="https://powaynec.com/wp-content/plugins/constant-contact-forms/assets/css/style.css?ver=2.17.0" />
