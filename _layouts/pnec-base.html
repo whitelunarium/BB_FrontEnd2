@@ -22,6 +22,10 @@
   {% endunless %}
   <link rel="stylesheet" href="{{ '/assets/css/chatbot.css' | relative_url }}">
   <link rel="stylesheet" href="{{ '/assets/css/cms-sections.css' | relative_url }}">
+  <!-- v2.59: site-wide footer polish — loaded on EVERY page (including
+       use_poway_source_clone pages that skip main.css) so the cloned-WP
+       .jupiterx-footer block has consistent contrast + branding. -->
+  <link rel="stylesheet" href="{{ '/assets/css/footer-polish.css' | relative_url }}">
 
   <!-- CMS SEO meta — fetched at runtime so admins can edit without rebuilding -->
   <script>
