@@ -28,6 +28,48 @@ body_class: inner-page auth-page-body
      match every other page on the site). */
   .auth-page-body .pnec-header-title { display: none !important; }
 
+  /* By default, poway-header.html positions the nav at the BOTTOM of the
+     carousel as a dark-navy bar. The rest of the site (Programs, About,
+     etc) shows the nav at the TOP of the photo as a green-transparent
+     bar. Re-style the auth page's nav to match the rest of the site. */
+  .auth-page-body .pnec-header-ui {
+    /* Keep top row (logo + Donate) where it is, but pin nav to TOP via
+       reordering: top row → nav → flexible spacer → (no title). */
+    justify-content: flex-start !important;
+  }
+  .auth-page-body .pnec-header-nav {
+    /* Green semi-transparent — matches .pnec-navbar across the rest
+       of the site (rgba(39, 174, 96, 0.78)). Slightly more transparent
+       here so the carousel still reads through. */
+    background: rgba(39, 174, 96, 0.62) !important;
+    margin-top: 18px;
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .auth-page-body .pnec-header-nav li a {
+    color: #fff !important;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .auth-page-body .pnec-header-nav li a:hover,
+  .auth-page-body .pnec-header-nav li a.active {
+    color: #fff !important;
+    background: rgba(255, 255, 255, 0.20);
+    border-bottom-color: #fff !important;
+  }
+
+  /* Soften the carousel's dark overlay a touch so the photo reads more
+     vibrantly (the green nav already provides plenty of contrast). */
+  .auth-page-body .pnec-header-overlay {
+    background: rgba(10, 22, 40, 0.30) !important;
+  }
+
+  /* Tighten the header height — without the giant title in the middle
+     we don't need 500px of carousel. */
+  .auth-page-body .pnec-unified-header { height: 320px !important; }
+
   /* Reset the layout's default page padding for this auth page only. */
   .auth-page-body .pnec-page-shell,
   .auth-page-body main#jupiterx-main {
