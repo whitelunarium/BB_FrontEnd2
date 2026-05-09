@@ -3,6 +3,13 @@ layout: pnec-base
 title: "Sign in or Create Account"
 description: "Sign in or create your PNEC member account."
 body_class: inner-page auth-page-body
+# IMPORTANT: _config.yml defaults set use_poway_live_styles: true for every
+# page in /pages/. That triggers _includes/poway-header.html to render a
+# lightning-carousel hero with the page title — which stacks above this
+# page's own cinematic wildfire hero, creating the "duplicate hero / odd"
+# look the user reported. Override to false so we get just the standard
+# green PNEC navbar instead.
+use_poway_live_styles: false
 ---
 
 <!--
