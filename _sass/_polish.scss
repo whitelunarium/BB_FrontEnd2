@@ -138,7 +138,9 @@ h3 { line-height: 1.25; }
 
 /* ── 12. Print: hide chrome ─────────────────────────────────────────────── */
 @media print {
-  .chatbot-trigger, .chatbot-panel, .chatbot-backdrop,
+  /* v3 chatbot widget IDs (chatbot.css already has @media print rules,
+     but listing here keeps print-hide logic discoverable in one place) */
+  #pnec-bot-fab, #pnec-bot-panel, #pnec-bot-backdrop,
   #pnec-edit-this-page,
   .pnec-navbar, .navbar-bottom, .mobile-nav, .footer-newsletter {
     display: none !important;

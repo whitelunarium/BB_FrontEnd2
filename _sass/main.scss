@@ -17,7 +17,10 @@
 
 // 5. Feature-specific styles
 @import "homepage";
-@import "chatbot";
+// _chatbot.scss removed in v3 — the new chatbot ships its own
+// stylesheet at assets/css/chatbot.css and uses .pnec-bot-* selectors.
+// The v2 .chatbot-trigger / .chatbot-panel rules were 489 lines of dead
+// CSS shipped on every page.
 @import "pages";
 
 // 6. v2.41 — site-wide polish layer (smooth scroll, hover lifts, focus rings,
