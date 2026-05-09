@@ -101,58 +101,99 @@ body_class: inner-page auth-page-body
       0 28px 56px rgba(20, 90, 50, 0.10);
   }
 
-  /* ─── Auth wrapper — atmospheric backdrop ──────────────────────────
-     Multi-layer ambient composition: a stylized topographic-line SVG
-     suggesting Poway's hills, drifting green/amber mesh blobs in the
-     background, and a vignette to focus the eye on the card. */
+  /* ─── Auth wrapper — wildfire fades from header into the auth section
+     ───────────────────────────────────────────────────────────────────
+     Three stacked layers of atmosphere, creating a cinematic top-to-bottom
+     fade from the wildfire (which the navbar above already shows) into
+     warm cream (where the auth card sits): */
   .auth-wrapper {
     min-height: calc(100vh - 200px);
-    padding: 96px 20px 120px;
-    background:
-      radial-gradient(900px 600px at 80% 110%, rgba(192, 57, 43, 0.06), transparent 60%),
-      radial-gradient(800px 600px at 18% 0%, rgba(30, 132, 73, 0.10), transparent 60%),
-      linear-gradient(180deg, #f8f5f0 0%, #efe9da 100%);
+    padding: 0 20px 120px;             /* card pushed down via spacer below */
+    background: #f8f5f0;
     display: flex; flex-direction: column; align-items: center;
     position: relative;
     overflow: hidden;
+    isolation: isolate;
     font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 
-  /* Layer 1 — topographic contour lines (stylized Poway hills feeling).
-     Inline SVG via data URI so no extra HTTP request. Very faint —
-     reads as background texture, not foreground art. */
+  /* Layer 1 — the wildfire photo extending down from the header.
+     Same image as the carousel above, positioned to "continue" visually
+     from where the header crops it. Saturate/brightness lowered slightly
+     so the bottom half of the bleed reads as smoke + dusk light, not a
+     billboard. */
   .auth-wrapper::before {
     content: '';
     position: absolute; inset: 0;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 800' preserveAspectRatio='none'><g fill='none' stroke='%231e8449' stroke-width='1' stroke-opacity='0.10'><path d='M0,500 Q200,440 400,470 T800,460 T1200,500'/><path d='M0,540 Q220,480 440,505 T880,500 T1200,540'/><path d='M0,580 Q240,525 480,550 T960,540 T1200,580'/><path d='M0,620 Q260,565 520,590 T1040,585 T1200,625'/><path d='M0,660 Q280,610 560,630 T1120,625 T1200,665'/><path d='M0,700 Q300,650 600,675 T1200,705'/><path d='M0,460 Q200,400 400,430 T800,420 T1200,460'/><path d='M0,420 Q220,360 440,385 T880,380 T1200,420'/></g></svg>");
-    background-size: 100% auto;
-    background-position: center bottom;
-    background-repeat: no-repeat;
-    -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 30%, #000 100%);
-            mask-image: linear-gradient(180deg, transparent 0%, #000 30%, #000 100%);
+    background-image: url('{{ "/assets/images/Poway_Fire.webp" | relative_url }}');
+    background-size: cover;
+    background-position: center 8%;     /* aligns roughly where header crop ends */
+    filter: saturate(0.85) brightness(0.95);
+    /* Hard fade from full visibility at top → cream by 60% down. The auth
+       card sits in the cream-dominant lower portion. */
+    -webkit-mask-image: linear-gradient(180deg,
+      #000 0%,
+      #000 18%,
+      rgba(0,0,0,0.65) 35%,
+      rgba(0,0,0,0.30) 50%,
+      transparent 65%);
+            mask-image: linear-gradient(180deg,
+      #000 0%,
+      #000 18%,
+      rgba(0,0,0,0.65) 35%,
+      rgba(0,0,0,0.30) 50%,
+      transparent 65%);
     pointer-events: none;
-    z-index: 0;
+    z-index: -2;
   }
 
-  /* Layer 2 — drifting mesh orb behind the card, very slow alternation. */
+  /* Layer 2 — warm color overlay on the photo bleed: amber at top,
+     cream-warm at bottom. Pulls the wildfire's natural orange into the
+     PNEC palette so the fade feels like the fire's smoke dissolving
+     into warm dusk light, not just a faded photograph. */
   .auth-wrapper::after {
     content: '';
-    position: absolute;
-    width: 880px; height: 880px;
-    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    position: absolute; inset: 0;
     background:
-      radial-gradient(circle at 40% 40%, rgba(30, 132, 73, 0.18), transparent 55%),
-      radial-gradient(circle at 60% 60%, rgba(255, 168, 96, 0.10), transparent 55%);
-    filter: blur(20px);
-    animation: auth-mesh-drift 22s ease-in-out infinite alternate;
+      linear-gradient(180deg,
+        rgba(255, 168, 96, 0.20) 0%,
+        rgba(255, 200, 140, 0.15) 25%,
+        rgba(248, 245, 240, 0.50) 55%,
+        rgba(248, 245, 240, 0.95) 75%,
+        #f8f5f0 100%),
+      radial-gradient(900px 600px at 50% 0%, rgba(192, 57, 43, 0.10), transparent 60%);
     pointer-events: none;
-    z-index: 0;
+    z-index: -1;
   }
-  @keyframes auth-mesh-drift {
-    0%   { transform: translate(-50%, -50%) scale(1); }
-    100% { transform: translate(-48%, -52%) scale(1.06); }
+
+  /* Layer 3 — slowly drifting amber/green ambient orb deep in the bg.
+     Adds breathing motion to the otherwise still photo. */
+  .auth-orb {
+    position: absolute;
+    width: 1100px; height: 1100px;
+    top: 0; left: 50%; transform: translateX(-50%) translateY(-30%);
+    background:
+      radial-gradient(circle at 35% 40%, rgba(255, 168, 96, 0.18), transparent 55%),
+      radial-gradient(circle at 65% 60%, rgba(30, 132, 73, 0.12), transparent 55%);
+    filter: blur(28px);
+    animation: auth-orb-drift 24s ease-in-out infinite alternate;
+    pointer-events: none;
+    z-index: -1;
   }
-  @media (prefers-reduced-motion: reduce) { .auth-wrapper::after { animation: none; } }
+  @keyframes auth-orb-drift {
+    0%   { transform: translateX(-50%) translateY(-30%) scale(1); }
+    100% { transform: translateX(-48%) translateY(-26%) scale(1.06); }
+  }
+  @media (prefers-reduced-motion: reduce) { .auth-orb { animation: none; } }
+
+  /* Spacer at the top of the wrapper so the card lands AFTER the fade
+     has reached cream — the photo bleed needs vertical room to fade. */
+  .auth-spacer {
+    height: clamp(120px, 14vw, 220px);
+    width: 100%;
+    flex-shrink: 0;
+    pointer-events: none;
+  }
 
   /* ─── The card itself ───────────────────────────────────────────────── */
   /* Premium layered card: subtle warm gradient surface (not stark white),
@@ -536,6 +577,9 @@ body_class: inner-page auth-page-body
 </style>
 
 <div class="auth-wrapper">
+  <div class="auth-orb" aria-hidden="true"></div>
+  <div class="auth-spacer" aria-hidden="true"></div>
+
   <div class="auth-card">
     <div class="auth-card-head">
       <span class="auth-card-eyebrow">Member Access</span>
