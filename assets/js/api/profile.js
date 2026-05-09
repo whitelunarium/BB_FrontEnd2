@@ -18,7 +18,6 @@ export function putUpdate(options) {
             // Trap error response from Web API
             if (!response.ok) {
                 const errorMsg = 'Error: ' + response.status;
-                console.log(errorMsg);
                 return;
             }
             // Success!!!
@@ -27,7 +26,6 @@ export function putUpdate(options) {
         })
         .catch(error => {
             // Handle network errors
-            console.log('Possible CORS or Service Down error: ' + error);
            
         });
 }
@@ -51,7 +49,6 @@ export function postUpdate(options) {
             // Trap error response from Web API
             if (!response.ok) {
                 const errorMsg = 'Error: ' + response.status;
-                console.log(errorMsg);
                 return;
             }
             // Success!!!
@@ -60,7 +57,6 @@ export function postUpdate(options) {
         })
         .catch(error => {
             // Handle network errors
-            console.log('Possible CORS or Service Down error: ' + error);
            
         });
 }
@@ -74,7 +70,6 @@ export async function logoutUser() {
             };
          
          
-            console.log('Logout clicked');
          
          
         try {
@@ -115,7 +110,6 @@ export function deleteData(options)  {
                      // Trap error response from Web API
                      if (!response.ok) {
                          const errorMsg = 'Error: ' + response.status;
-                         console.log(errorMsg);
                          return;
                      }
                      // Success!!!
@@ -124,7 +118,6 @@ export function deleteData(options)  {
                  })
                  .catch(error => {
                      // Handle network errors
-                     console.log('Possible CORS or Service Down error: ' + error);
                      
                  });
          
@@ -139,7 +132,6 @@ export async function logoutUserJava() {
                  method: 'POST',
              };
          
-             console.log('Logout initiated.');
          
              try {
                  const response = await fetch(logoutURL, options);
@@ -148,8 +140,7 @@ export async function logoutUserJava() {
                      // Handle server-side redirection
                      window.location.href = response.url;
                  } else if (response.ok) {
-                     // Redirect to a specific logout page if the request is successful
-                     console.log("Yeah") // Replace with the correct relative URL
+                     // OK — caller can redirect / clear UI as needed
                  } else {
                      // Log failure with detailed information
                      console.error('Logout failed:', response.status, response.statusText);

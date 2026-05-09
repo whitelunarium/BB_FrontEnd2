@@ -1,13 +1,12 @@
 import { baseurl, pythonURI, fetchOptions } from './config.js';
 
-console.log("login.js loaded");
 
 document.addEventListener('DOMContentLoaded', function () {
-    console.log("Base URL:", baseurl); // Debugging line
+ // Debugging line
     waitForElement('#loginArea', 20, 100).then(loginArea => {
         getCredentials(baseurl)
             .then(data => {
-                console.log("Credentials data:", data); // Debugging line
+ // Debugging line
                 window.user = data;
                 if (data) { // Update the login area based on the data
                     loginArea.innerHTML = `
@@ -98,14 +97,12 @@ function getCredentials(baseurl) {
     return fetch(URL, fetchOptions)
         .then(response => {
             if (!response.ok) {
-                console.warn("HTTP status code: " + response.status);
                 return null;
             }
             return response.json();
         })
         .then(data => {
             if (data === null) return null;
-            console.log("User data:", data);
             return data;
         })
         .catch(err => {
@@ -125,7 +122,6 @@ async function updateNavigation(isLoggedIn) {
 
     // Find all page links in navigation
     const links = trigger.querySelectorAll('.page-link');
-    console.log("Found links:", links.length);
     
     if (!isLoggedIn) {
         // Not logged in: show "Blogs"
@@ -134,28 +130,23 @@ async function updateNavigation(isLoggedIn) {
             if (href && (href.includes('/navigation/blogs') || href.includes('/navigation/courses'))) {
                 link.setAttribute('href', `${baseurl}/navigation/blogs/`);
                 link.textContent = 'Blogs';
-                console.log("Updated link to Blogs");
             }
         });
         return;
     }
 
     // Logged in: fetch user's courses
-    console.log("User logged in, fetching courses...");
     try {
         const response = await fetch(`${pythonURI}/api/user/class`, fetchOptions ); 
 
         if (!response.ok) {
-            console.warn("Course fetch failed:", response.status);
             // Error fetching courses, default to Courses page
             updateNavLink(links, `${baseurl}/navigation/courses/`, 'Courses');
             return;
         }
 
         const data = await response.json();
-        console.log("Course data:", data);
         const classes = data.class || [];
-        console.log("User classes:", classes);
 
         const courseMap = {
             'CSSE': { name: 'CSSE', url: `${baseurl}/navigation/courses/csse` },
@@ -168,20 +159,16 @@ async function updateNavigation(isLoggedIn) {
             .filter(cls => courseMap[cls])
             .map(cls => courseMap[cls]);
         
-        console.log("Valid user courses:", userCourses);
 
         if (userCourses.length === 0) {
             // No courses: link to Courses page with message
-            console.log("No courses, linking to Courses page");
             updateNavLink(links, `${baseurl}/navigation/courses/`, 'Courses');
         } else if (userCourses.length === 1) {
             // One course: direct link to that course
             const course = userCourses[0];
-            console.log("One course, direct link to:", course.name);
             updateNavLink(links, course.url, course.name);
         } else {
             // Multiple courses: link to Courses page with table
-            console.log("Multiple courses, linking to Courses page");
             updateNavLink(links, `${baseurl}/navigation/courses/`, 'Courses');
         }
 
@@ -194,13 +181,11 @@ async function updateNavigation(isLoggedIn) {
 
 // Helper function to update a single nav link
 function updateNavLink(links, url, text) {
-    console.log("Updating nav link to:", text, url);
     links.forEach(link => {
         const href = link.getAttribute('href');
         if (href && (href.includes('/navigation/blog') || href.includes('/navigation/courses'))) {
             link.setAttribute('href', url);
             link.textContent = text;
-            console.log("Link updated successfully");
         }
     });
 }
