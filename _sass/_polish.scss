@@ -147,6 +147,33 @@ h3 { line-height: 1.25; }
   }
 }
 
+/* ── 12.5. Home-icon nav button (v3.7) ────────────────────────────────────
+   Adds a dedicated 🏠 Home button to the cloned-WP top nav (poway-header
+   include + the elementor-rendered nav menus on use_poway_source_clone
+   pages). Distinct from the logo link so users have an explicit way back
+   to the home page from any sub-page nav.
+
+   Visual: icon + label on tablet/desktop; label hides on narrow screens
+   to save horizontal real estate. The icon stays.
+
+   The class .pnec-nav-home is stamped on the <li> in poway-header.html,
+   poway-live-body.html, poway-auth-header.html, poway-home-auth-top.html.
+*/
+.pnec-nav-home > a {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+}
+.pnec-nav-home svg {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+}
+@media (max-width: 720px) {
+  .pnec-nav-home .pnec-nav-home-label { display: none; }
+  .pnec-nav-home > a { gap: 0; }
+}
+
 /* ── 13. Site-wide ambient film grain (v2.45) ──────────────────────────────
    A faint SVG noise overlay across every page gives the site a subtle
    cinematic film-grain quality. Attached to a fixed full-viewport

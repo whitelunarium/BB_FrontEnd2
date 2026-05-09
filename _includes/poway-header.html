@@ -100,6 +100,27 @@
   color: #7ed956;
   border-bottom-color: #7ed956;
 }
+/* Dedicated home-icon button — distinct from the logo link so users
+   have an explicit way back to the home page from any sub-page nav. */
+.pnec-header-nav li.pnec-nav-home a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 12px;
+}
+.pnec-header-nav li.pnec-nav-home svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.pnec-header-nav li.pnec-nav-home .pnec-nav-home-label {
+  /* Visible on tablet/desktop; hidden on small screens to save space.
+     Icon stays. aria-label keeps the link accessible either way. */
+}
+@media (max-width: 600px) {
+  .pnec-header-nav li.pnec-nav-home .pnec-nav-home-label { display: none; }
+  .pnec-header-nav li.pnec-nav-home a { gap: 0; padding: 14px 10px; }
+}
 </style>
 
 <a class="jupiterx-a11y jupiterx-a11y-skip-navigation-link" href="#jupiterx-main">Skip to content</a>
@@ -136,6 +157,15 @@
     <!-- Nav bar -->
     <nav class="pnec-header-nav" aria-label="Main navigation">
       <ul>
+        <li class="pnec-nav-home">
+          <a href="{{ '/' | relative_url }}" aria-label="Home" title="Home"{% if page.url == '/' or page.url == '/index.html' %} class="active"{% endif %}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 12L12 3l9 9"/>
+              <path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/>
+            </svg>
+            <span class="pnec-nav-home-label">Home</span>
+          </a>
+        </li>
         <li><a href="{{ '/pages/about.html' | relative_url }}"{% if page.url contains '/about' %} class="active"{% endif %}>About</a></li>
         <li><a href="{{ '/pages/programs-and-services.html' | relative_url }}"{% if page.url contains '/programs-and-services' %} class="active"{% endif %}>Programs and Services</a></li>
         <li><a href="{{ '/pages/preparedness-resources.html' | relative_url }}"{% if page.url contains '/preparedness-resources' or page.url contains '/poway-statistics-and-information' %} class="active"{% endif %}>Preparedness &amp; Help</a></li>
