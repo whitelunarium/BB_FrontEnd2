@@ -3,13 +3,11 @@ layout: pnec-base
 title: "Sign in or Create Account"
 description: "Sign in or create your PNEC member account."
 body_class: inner-page auth-page-body
-# IMPORTANT: _config.yml defaults set use_poway_live_styles: true for every
-# page in /pages/. That triggers _includes/poway-header.html to render a
-# lightning-carousel hero with the page title — which stacks above this
-# page's own cinematic wildfire hero, creating the "duplicate hero / odd"
-# look the user reported. Override to false so we get just the standard
-# green PNEC navbar instead.
-use_poway_live_styles: false
+# Use the standard PNEC site nav (poway-header.html), inherited from
+# _config.yml's `use_poway_live_styles: true` default. The page title
+# overlay + spare carousel slides are hidden via CSS scoped to
+# .auth-page-body (see <style> below), but the navbar/logo/donate
+# button stay exactly as they appear on every other page.
 ---
 
 <!--
@@ -37,147 +35,57 @@ use_poway_live_styles: false
 -->
 
 <style>
-  /* Defensive: hide any auto-rendered page-title bar / hero slider that
-     fires when the layout detects an inner page. The auth flow needs the
-     full-bleed wildfire ambience to land cleanly without any duplicate
-     hero stacked above it (UI/UX skill flagged this as the main "odd"
-     visual seam in the previous render). */
-  .auth-page-body .hero-slider,
-  .auth-page-body .auth-page-hero,
-  .auth-page-body .raven-heading-h2,
-  .auth-page-body section.elementor-section.elementor-element-8e2da25,
-  .auth-page-body main#jupiterx-main > div.elementor:first-of-type > section:first-of-type,
-  .auth-page-body main#jupiterx-main > .auth-shell-section:first-child,
-  .auth-page-body section[data-id="8e2da25"] {
-    display: none !important;
-  }
-  /* The page's main wrapper from layouts shouldn't add its own padding —
-     the wildfire hero owns the full bleed. */
+  /* ── Header tweaks (scoped to auth-page-body) ────────────────────────
+     The cloned-WP header (poway-header.html) is the SAME nav the rest of
+     the site uses — keep it. We just:
+       1. hide the auto-rendered page title ("Sign in or Create Account")
+          overlay so it doesn't compete with the auth card below
+       2. freeze the 5-image carousel on the Poway_Fire slide so the
+          rest of the page picks up that wildfire ambience cleanly */
+  .auth-page-body .pnec-header-title { display: none !important; }
+  .auth-page-body .pnec-header-track { animation: none !important; }
+  .auth-page-body .pnec-header-track > div { display: none !important; }
+  .auth-page-body .pnec-header-track > div:nth-child(2) { display: block !important; }
+
+  /* Layout's main wrapper — let it keep default behavior; we just clear
+     any extra padding so our auth band sits cleanly below the header. */
   .auth-page-body .pnec-page-shell,
   .auth-page-body main#jupiterx-main {
     padding: 0 !important;
-    margin: 0 !important;
     background: transparent !important;
   }
+  .auth-page-body { background: #f8f5f0; }
 
-  /* ─── Cinematic hero band — full-bleed wildfire photo + Ken Burns zoom +
-     gradient overlay + drifting embers. Uses the PNEC-published Poway_Fire
-     image so the page feels rooted in the org's actual mission. ───── */
+  /* ─── Auth band ──────────────────────────────────────────────────────
+     Sits below the cloned-WP header (which already shows the wildfire
+     image), so we don't repeat the photo here. Just a warm cream
+     background with a soft amber/red ambient glow that picks up where
+     the header's wildfire photo leaves off. */
   .auth-hero-band {
     position: relative;
-    padding: 80px 24px 120px;
-    min-height: calc(100vh - 200px);
+    padding: 56px 24px 96px;
+    min-height: 60vh;
     overflow: hidden;
     isolation: isolate;
-    background: #0a1628;            /* fallback if image still loading */
+    background:
+      radial-gradient(900px 500px at 18% -10%, rgba(192, 57, 43, 0.10), transparent 60%),
+      radial-gradient(800px 600px at 92% 110%, rgba(255, 168, 96, 0.08), transparent 60%),
+      linear-gradient(180deg, #f8f5f0 0%, #f1ece2 100%);
   }
-
-  /* Layer 1 — the wildfire photo, slow Ken Burns zoom + pan.
-     Slightly desaturated so it reads as atmospheric backdrop, not a
-     billboard. Brightness bumped down so the white-text intro reads
-     comfortably (4.5:1 contrast minimum per UI/UX skill rules). */
-  .auth-hero-bg {
-    position: absolute; inset: 0;
-    z-index: -3;
-    background-image: url('{{ "/assets/images/Poway_Fire.webp" | relative_url }}');
-    background-size: cover;
-    background-position: center 40%;
-    transform: scale(1.08);
-    animation: auth-kenburns 28s ease-in-out infinite alternate;
-    filter: saturate(0.78) brightness(0.72) contrast(1.06);
-    will-change: transform;
-  }
-  @keyframes auth-kenburns {
-    0%   { transform: scale(1.08) translate3d(0, 0, 0); }
-    100% { transform: scale(1.16) translate3d(-1.5%, -1%, 0); }
-  }
-
-  /* Layer 2 — dusk-sky gradient overlay for readability + brand color cast.
-     Goes warm at the top (smoky orange) and deep navy at the bottom. */
+  /* Single ambient drifting glow — subtle warmth, not a hero. */
   .auth-hero-band::before {
     content: '';
     position: absolute; inset: 0;
-    z-index: -2;
-    background:
-      linear-gradient(180deg,
-        rgba(10, 22, 40, 0.30) 0%,
-        rgba(192, 57, 43, 0.10) 35%,
-        rgba(10, 22, 40, 0.55) 65%,
-        rgba(10, 22, 40, 0.85) 100%),
-      radial-gradient(80% 60% at 75% 20%, rgba(255, 168, 96, 0.20), transparent 60%);
-    pointer-events: none;
-  }
-
-  /* Layer 3 — vignette + soft moving smoke drift (very subtle). */
-  .auth-hero-band::after {
-    content: '';
-    position: absolute; inset: 0;
     z-index: -1;
-    background:
-      radial-gradient(ellipse at center, transparent 40%, rgba(10, 22, 40, 0.45) 100%),
-      radial-gradient(60% 40% at 30% 70%, rgba(255, 200, 140, 0.10), transparent 60%);
-    animation: auth-smoke-drift 22s ease-in-out infinite alternate;
+    background: radial-gradient(420px 320px at 75% 30%, rgba(192, 57, 43, 0.07), transparent 60%);
+    animation: auth-glow 18s ease-in-out infinite alternate;
     pointer-events: none;
   }
-  @keyframes auth-smoke-drift {
-    0%   { transform: translate3d(0, 0, 0); opacity: 0.95; }
-    100% { transform: translate3d(2%, -1%, 0); opacity: 1; }
+  @keyframes auth-glow {
+    0%   { transform: translate3d(0, 0, 0); opacity: 0.85; }
+    100% { transform: translate3d(-2%, 2%, 0); opacity: 1; }
   }
-
-  /* Layer 4 — embers. Tiny SVG-less particles done with box-shadow on
-     ::before of an inner div. Performant — single repaint per frame. */
-  .auth-embers {
-    position: absolute; inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    overflow: hidden;
-  }
-  .auth-embers span {
-    position: absolute;
-    bottom: -20px;
-    width: 4px; height: 4px;
-    background: #ffb070;
-    border-radius: 50%;
-    box-shadow:
-      0 0 6px 2px rgba(255, 176, 112, 0.65),
-      0 0 14px 4px rgba(255, 100, 60, 0.35);
-    opacity: 0;
-    animation: auth-ember-rise linear infinite;
-    will-change: transform, opacity;
-  }
-  /* Spread 18 embers across the screen with random offsets / durations. */
-  .auth-embers span:nth-child(1)  { left:  4%; animation-duration: 11s; animation-delay:  0s; }
-  .auth-embers span:nth-child(2)  { left: 11%; animation-duration: 14s; animation-delay:  2s; width:3px;height:3px; }
-  .auth-embers span:nth-child(3)  { left: 18%; animation-duration: 13s; animation-delay:  6s; }
-  .auth-embers span:nth-child(4)  { left: 25%; animation-duration: 17s; animation-delay:  3s; width:5px;height:5px; }
-  .auth-embers span:nth-child(5)  { left: 32%; animation-duration: 12s; animation-delay:  8s; }
-  .auth-embers span:nth-child(6)  { left: 39%; animation-duration: 15s; animation-delay:  1s; width:3px;height:3px; }
-  .auth-embers span:nth-child(7)  { left: 46%; animation-duration: 19s; animation-delay:  4s; }
-  .auth-embers span:nth-child(8)  { left: 53%; animation-duration: 11s; animation-delay:  7s; width:5px;height:5px; }
-  .auth-embers span:nth-child(9)  { left: 60%; animation-duration: 14s; animation-delay:  0s; }
-  .auth-embers span:nth-child(10) { left: 67%; animation-duration: 16s; animation-delay:  9s; }
-  .auth-embers span:nth-child(11) { left: 74%; animation-duration: 13s; animation-delay:  2s; width:4px;height:4px; }
-  .auth-embers span:nth-child(12) { left: 81%; animation-duration: 18s; animation-delay:  5s; }
-  .auth-embers span:nth-child(13) { left: 88%; animation-duration: 12s; animation-delay:  3s; }
-  .auth-embers span:nth-child(14) { left: 95%; animation-duration: 15s; animation-delay:  8s; width:3px;height:3px; }
-  .auth-embers span:nth-child(15) { left:  8%; animation-duration: 20s; animation-delay: 11s; }
-  .auth-embers span:nth-child(16) { left: 42%; animation-duration: 17s; animation-delay: 13s; }
-  .auth-embers span:nth-child(17) { left: 71%; animation-duration: 14s; animation-delay:  6s; width:5px;height:5px; }
-  .auth-embers span:nth-child(18) { left: 28%; animation-duration: 16s; animation-delay: 10s; }
-  @keyframes auth-ember-rise {
-    0%   { transform: translate3d(0, 0, 0)   scale(1);   opacity: 0; }
-    8%   { opacity: 0.85; }
-    50%  { transform: translate3d(-12px, -45vh, 0) scale(1.15); opacity: 0.9; }
-    92%  { opacity: 0.4; }
-    100% { transform: translate3d( 18px, -110vh, 0) scale(0.6); opacity: 0; }
-  }
-
-  /* Reduced motion: kill Ken Burns + embers, keep gradient overlay only. */
-  @media (prefers-reduced-motion: reduce) {
-    .auth-hero-bg { animation: none; transform: scale(1.08); }
-    .auth-hero-band::after { animation: none; }
-    .auth-embers { display: none; }
-  }
+  @media (prefers-reduced-motion: reduce) { .auth-hero-band::before { animation: none; } }
 
   /* ─── Layout: hero copy on the left, card on the right ─────────────── */
   .auth-shell {
@@ -194,70 +102,61 @@ use_poway_live_styles: false
     .auth-hero-band { padding: 40px 20px 64px; }
   }
 
-  /* ─── Left side: brand intro (light text on dark wildfire bg) ───────── */
-  .auth-intro {
-    color: #fff;
-    text-shadow: 0 2px 30px rgba(0, 0, 0, 0.40);
-  }
+  /* ─── Left side: brand intro on warm cream bg ─────────────────────── */
+  .auth-intro { color: #0a1628; }
   .auth-intro-eyebrow {
     display: inline-flex; align-items: center; gap: 8px;
-    padding: 7px 14px;
-    background: rgba(255, 255, 255, 0.10);
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    color: #b9f6ca;
+    padding: 6px 13px;
+    background: #fff;
+    border: 1px solid rgba(39, 174, 96, 0.30);
+    color: #1e8449;
     border-radius: 999px;
     font-size: 0.74rem; font-weight: 700;
     letter-spacing: 0.10em;
     text-transform: uppercase;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.20);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 2px 8px rgba(10, 22, 40, 0.05);
   }
   .auth-intro-eyebrow-dot {
     width: 8px; height: 8px;
     background: #27ae60;
     border-radius: 50%;
-    box-shadow: 0 0 0 4px rgba(39, 174, 96, 0.30), 0 0 12px rgba(39, 174, 96, 0.65);
+    box-shadow: 0 0 0 4px rgba(39, 174, 96, 0.18);
     animation: auth-dot-pulse 2.4s ease-in-out infinite;
   }
   @keyframes auth-dot-pulse {
-    0%, 100% { box-shadow: 0 0 0 4px rgba(39, 174, 96, 0.30), 0 0 12px rgba(39, 174, 96, 0.65); }
-    50%      { box-shadow: 0 0 0 8px rgba(39, 174, 96, 0.10), 0 0 18px rgba(39, 174, 96, 0.85); }
+    0%, 100% { box-shadow: 0 0 0 4px rgba(39, 174, 96, 0.18); }
+    50%      { box-shadow: 0 0 0 7px rgba(39, 174, 96, 0.08); }
   }
-  @media (prefers-reduced-motion: reduce) {
-    .auth-intro-eyebrow-dot { animation: none; }
-  }
+  @media (prefers-reduced-motion: reduce) { .auth-intro-eyebrow-dot { animation: none; } }
 
   .auth-intro h1 {
-    font-size: clamp(2.4rem, 5.2vw, 3.6rem);
-    line-height: 1.04;
-    letter-spacing: -0.025em;
+    font-size: clamp(2rem, 4.4vw, 3rem);
+    line-height: 1.06;
+    letter-spacing: -0.024em;
     font-weight: 800;
-    margin: 22px 0 18px;
-    color: #fff;
-    /* Layered text shadow gives the headline weight against the photo. */
-    text-shadow:
-      0 1px 0 rgba(0, 0, 0, 0.30),
-      0 2px 18px rgba(0, 0, 0, 0.55),
-      0 8px 40px rgba(0, 0, 0, 0.30);
+    margin: 20px 0 16px;
+    color: #0a1628;
   }
   .auth-intro h1 em {
     font-style: normal;
-    background: linear-gradient(135deg, #ffd6a8 0%, #ffb070 50%, #ff7a4d 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #c0392b;
     position: relative;
     white-space: nowrap;
-    /* Gradient text loses the underlying text-shadow — add a faint glow instead. */
-    filter: drop-shadow(0 4px 24px rgba(255, 122, 77, 0.45));
+  }
+  .auth-intro h1 em::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: 2px;
+    height: 8px;
+    background: linear-gradient(90deg, rgba(192, 57, 43, 0.18), rgba(255, 168, 96, 0.16));
+    border-radius: 4px;
+    z-index: -1;
   }
   .auth-intro > p {
-    font-size: 1.06rem; line-height: 1.6;
-    color: rgba(255, 255, 255, 0.84);
-    margin: 0 0 32px;
+    font-size: 1.02rem; line-height: 1.6;
+    color: #5a5a5a;
+    margin: 0 0 28px;
     max-width: 460px;
-    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
   }
 
   .auth-intro-features {
@@ -269,42 +168,34 @@ use_poway_live_styles: false
   .auth-intro-feature {
     display: flex; align-items: flex-start; gap: 14px;
     padding: 14px 16px;
-    /* Glassmorphism: semi-transparent dark + heavy backdrop blur so the
-       wildfire photo bleeds through subtly underneath. */
-    background: rgba(10, 22, 40, 0.38);
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: #fff;
+    border: 1px solid #e8e6e1;
     border-radius: 14px;
-    box-shadow:
-      0 6px 24px rgba(0, 0, 0, 0.30),
-      0 0 0 1px rgba(255, 255, 255, 0.04) inset;
-    backdrop-filter: blur(14px) saturate(1.2);
-    -webkit-backdrop-filter: blur(14px) saturate(1.2);
-    transition: transform 220ms ease, border-color 220ms ease, background 220ms ease;
+    box-shadow: 0 2px 6px rgba(10, 22, 40, 0.03);
+    transition: transform 200ms ease, border-color 200ms ease, box-shadow 220ms ease;
   }
   .auth-intro-feature:hover {
     transform: translateY(-2px);
-    border-color: rgba(255, 168, 96, 0.45);
-    background: rgba(10, 22, 40, 0.50);
+    border-color: rgba(39, 174, 96, 0.35);
+    box-shadow: 0 12px 24px rgba(10, 22, 40, 0.07);
   }
   .auth-intro-feature-icon {
     width: 40px; height: 40px;
     flex-shrink: 0;
-    background: linear-gradient(135deg, rgba(39, 174, 96, 0.30), rgba(39, 174, 96, 0.10));
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    color: #b9f6ca;
+    background: rgba(39, 174, 96, 0.10);
+    color: #1e8449;
     border-radius: 11px;
     display: grid; place-items: center;
-    box-shadow: 0 0 14px rgba(39, 174, 96, 0.20);
   }
   .auth-intro-feature-text strong {
     display: block;
     font-size: 0.98rem;
     font-weight: 700;
-    color: #fff;
+    color: #0a1628;
     margin-bottom: 2px;
   }
   .auth-intro-feature-text span {
-    color: rgba(255, 255, 255, 0.72);
+    color: #5a5a5a;
     font-size: 0.86rem;
     line-height: 1.45;
   }
@@ -312,50 +203,18 @@ use_poway_live_styles: false
     .auth-intro-features { grid-template-columns: 1fr; }
   }
 
-  /* ─── Right side: floating-glass auth card ──────────────────────────── */
-  /* Warm off-white (#fcfaf6) instead of stark white — integrates with the
-     dusk-toned backdrop so the card doesn't read as a "stuck-on" UI panel.
-     A soft radial scrim sits underneath (drawn via the parent .auth-card-
-     wrap) anchoring the card visually against the photo. */
+  /* ─── Right side: clean auth card ───────────────────────────────── */
   .auth-card-wrap { position: relative; }
-  .auth-card-wrap::before {
-    /* Soft dark radial scrim under the card so it visually anchors to the
-       photo without feeling glued on. Sits BEHIND the card. */
-    content: '';
-    position: absolute;
-    inset: -40px -40px -60px -40px;
-    background: radial-gradient(60% 70% at 50% 55%, rgba(0, 0, 0, 0.45), transparent 70%);
-    filter: blur(20px);
-    z-index: -1;
-    pointer-events: none;
-  }
   .auth-card {
     position: relative;
-    background: #fcfaf6;
-    border-radius: 22px;
+    background: #fff;
+    border-radius: 18px;
+    border: 1px solid #e8e6e1;
     overflow: hidden;
     box-shadow:
-      0 40px 90px rgba(0, 0, 0, 0.40),
-      0 14px 28px rgba(10, 22, 40, 0.18),
-      0 0 0 1px rgba(255, 255, 255, 0.10);
-    animation: auth-card-in 720ms cubic-bezier(.2,.8,.2,1.05);
-  }
-  /* Subtle gradient border halo — restrained warm gradient, not a billboard. */
-  .auth-card::before {
-    content: '';
-    position: absolute; inset: 0;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(135deg,
-      rgba(255, 200, 140, 0.45) 0%,
-      rgba(192, 57, 43, 0.30) 50%,
-      rgba(255, 200, 140, 0.20) 100%);
-    -webkit-mask:
-      linear-gradient(#000, #000) content-box,
-      linear-gradient(#000, #000);
-    -webkit-mask-composite: xor;
-            mask-composite: exclude;
-    pointer-events: none;
+      0 24px 48px rgba(10, 22, 40, 0.10),
+      0 6px 14px rgba(10, 22, 40, 0.05);
+    animation: auth-card-in 600ms cubic-bezier(.2,.8,.2,1.05);
   }
   @keyframes auth-card-in {
     from { opacity: 0; transform: translateY(20px) scale(0.98); }
@@ -611,14 +470,6 @@ use_poway_live_styles: false
 </style>
 
 <section class="auth-hero-band">
-  <!-- Cinematic backdrop layers (z-index < 0 so the shell content sits on top) -->
-  <div class="auth-hero-bg" aria-hidden="true"></div>
-  <div class="auth-embers" aria-hidden="true">
-    <span></span><span></span><span></span><span></span><span></span><span></span>
-    <span></span><span></span><span></span><span></span><span></span><span></span>
-    <span></span><span></span><span></span><span></span><span></span><span></span>
-  </div>
-
   <div class="auth-shell">
 
     <!-- ── Left: brand intro ─────────────────────────────────────────── -->
