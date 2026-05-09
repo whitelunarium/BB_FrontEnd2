@@ -1,170 +1,78 @@
 // assets/js/ui/chatbot-inject.js
-// Responsibility: ensure the Helper Bot widget exists on EVERY page.
+// Helper Bot v3 bootstrap for full-HTML pages.
 //
-// Jekyll-layout pages get the widget HTML injected at build time via
-// `_includes/chatbot/chatbot-widget.html`. But the static (cloned-WordPress)
-// pages — About, Contact, Programs, etc. — don't go through that include,
-// so the widget HTML is missing and `chatbot-ui.js` has nothing to attach to.
+// Most pages render through `_layouts/pnec-base.html`, which includes
+// the chatbot widget markup AND loads the v3 ES module from
+// /assets/js/chatbot/index.js. But the static cloned-WordPress pages
+// (about.html, contact.html, programs-and-services.html, etc.) are
+// raw HTML — they don't go through the Jekyll layout, so neither the
+// widget markup NOR the v3 module is on the page.
 //
-// This script idempotently injects the widget DOM if it isn't already there,
-// so the chatbot trigger button appears reliably on every page that loads
-// this file.
+// This file fixes that. It:
+//   1. Sets window.PNEC_CHATBOT_CONFIG if the page hasn't already
+//   2. Fetches the v3 widget markup from /assets/chatbot/widget.html
+//   3. Injects it into <body>
+//   4. Dynamic-imports /assets/js/chatbot/index.js as a module
 //
-// Loaded via a small <script> tag on each static page (and harmlessly via
-// the base layout — the injection is idempotent).
+// Idempotent: if v3 is already booted (#pnec-bot-fab present), exits.
+// Defensive: if the fetch or import fails, fails quietly — no console
+// spam.
 
 (function () {
   'use strict';
   if (typeof document === 'undefined') return;
-  // Already there → nothing to do
-  if (document.getElementById('chatbot-trigger-btn')) return;
-  if (document.getElementById('chatbot-panel'))      return;
 
-  // Plain "/pages/foo.html" paths work both on localhost:4000 and at
-  // pnec.opencodingsociety.com because Jekyll's relative_url normally
-  // resolves to the same root.
-  const html = `
-<!-- Floating trigger button -->
-<button class="chatbot-trigger" id="chatbot-trigger-btn" aria-label="Open Helper Bot" aria-expanded="false">
-  <span class="chatbot-trigger-icon" aria-hidden="true">💬</span>
-  <span class="chatbot-trigger-label">Help</span>
-</button>
+  // Already booted (Jekyll layout already included the widget + module)
+  if (document.getElementById('pnec-bot-fab')) return;
 
-<div class="chatbot-backdrop" id="chatbot-backdrop" hidden></div>
-<div class="chatbot-panel" id="chatbot-panel" role="dialog" aria-modal="true" aria-label="Helper Bot">
-  <div class="chatbot-header">
-    <div class="chatbot-header-logo" aria-hidden="true">💬</div>
-    <div class="chatbot-header-title">
-      <div class="chatbot-name">Helper Bot</div>
-      <div class="chatbot-subtitle">Questions about the site or PNEC</div>
-    </div>
-    <button class="chatbot-expand"        id="chatbot-expand-btn" aria-label="Expand assistant" aria-pressed="false">⤢</button>
-    <button class="chatbot-modal-toggle"  id="chatbot-modal-btn"  aria-label="Open assistant in overlay" aria-pressed="false" hidden>▣</button>
-    <button class="chatbot-close"         id="chatbot-close-btn"  aria-label="Close assistant">✕</button>
-  </div>
-
-  <div class="chatbot-body" id="chatbot-body">
-    <div class="chatbot-screen active" id="screen-welcome">
-      <div class="chatbot-welcome">
-        <div class="chatbot-greeting">
-          <span class="greeting-emoji" aria-hidden="true">👋</span>
-          <h3>How can I help?</h3>
-          <p>Ask about the website, local preparedness topics, or who to contact at PNEC.</p>
-        </div>
-        <div class="chatbot-search-bar">
-          <input type="text" id="chatbot-search-input" placeholder="Ask a question..."
-                 aria-label="Ask Helper Bot a question" autocomplete="off">
-          <button type="button" class="chatbot-send-btn" id="chatbot-send-btn" aria-label="Send question">➤</button>
-        </div>
-        <div class="chatbot-search-results" id="chatbot-search-results" aria-live="polite" style="display:none"></div>
-        <div class="chatbot-categories" id="chatbot-categories" aria-label="Question categories">
-          <button class="chatbot-category-btn chatbot-shortcut-btn" data-shortcut-query="What does PNEC do?">
-            <span class="cat-icon" aria-hidden="true">🏠</span><span class="cat-name">About PNEC</span>
-          </button>
-          <button class="chatbot-category-btn chatbot-shortcut-btn" data-shortcut-query="How do I find my neighborhood coordinator?">
-            <span class="cat-icon" aria-hidden="true">📍</span><span class="cat-name">Neighborhood help</span>
-          </button>
-          <button class="chatbot-category-btn chatbot-shortcut-btn" data-shortcut-query="What should I prepare before a wildfire or evacuation?">
-            <span class="cat-icon" aria-hidden="true">📦</span><span class="cat-name">Preparedness checklist</span>
-          </button>
-          <button class="chatbot-category-btn chatbot-shortcut-btn" data-shortcut-query="How do I volunteer or contact PNEC?">
-            <span class="cat-icon" aria-hidden="true">🤝</span><span class="cat-name">Volunteer or contact</span>
-          </button>
-          <div class="loading-overlay"><span class="spinner"></span> Loading topics…</div>
-        </div>
-        <div class="chatbot-utility-links">
-          <a class="chatbot-utility-link" href="/pages/find-your-neighborhood.html">Find Your Neighborhood</a>
-          <a class="chatbot-utility-link" href="/pages/contact.html">Contact PNEC</a>
-        </div>
-      </div>
-    </div>
-
-    <div class="chatbot-screen" id="screen-category">
-      <div class="chatbot-category-header">
-        <button class="back-btn" id="back-to-welcome" aria-label="Back to categories">‹</button>
-        <h4 id="category-screen-title">Category</h4>
-      </div>
-      <ul class="chatbot-question-list" id="chatbot-question-list" aria-label="Questions in this category"></ul>
-    </div>
-
-    <div class="chatbot-screen" id="screen-answer">
-      <div class="chatbot-answer-header">
-        <button class="back-btn" id="back-to-category" aria-label="Back to questions">‹</button>
-        <h4 id="answer-question-text"></h4>
-      </div>
-      <div class="chatbot-answer-text" id="answer-body" aria-live="polite"></div>
-      <div class="chatbot-conversation-input">
-        <input type="text" id="chatbot-followup-input" placeholder="Ask a follow-up..."
-               aria-label="Ask Helper Bot a follow-up question" autocomplete="off">
-        <button type="button" class="chatbot-send-btn" id="chatbot-followup-send-btn" aria-label="Send follow-up">➤</button>
-      </div>
-      <div class="chatbot-feedback">
-        <span>Was this helpful?</span>
-        <button class="feedback-btn" id="feedback-yes-btn" aria-label="Yes, this was helpful">👍 Yes</button>
-        <button class="feedback-btn" id="feedback-no-btn"  aria-label="No, this was not helpful">👎 No</button>
-      </div>
-      <div class="chatbot-ask-staff">
-        <button class="btn btn-outline-red btn-sm btn-ask-staff" id="show-ask-form-btn">Ask a Staff Member</button>
-      </div>
-    </div>
-
-    <div class="chatbot-screen" id="screen-ask-staff">
-      <div class="chatbot-category-header">
-        <button class="back-btn" id="back-from-ask-form" aria-label="Back">‹</button>
-        <h4>Ask a Staff Member</h4>
-      </div>
-      <div class="chatbot-ask-form">
-        <p style="font-size:13px;color:#5a5a5a;margin-bottom:16px;">
-          Our volunteer staff typically respond within 1–2 business days.
-        </p>
-        <form id="ask-staff-form" novalidate>
-          <div class="form-group">
-            <label class="form-label" for="ask-name">Your Name</label>
-            <input type="text" class="form-input" id="ask-name" name="name" placeholder="Jane Smith" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="ask-email">Email Address</label>
-            <input type="email" class="form-input" id="ask-email" name="email" placeholder="you@example.com" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="ask-question">Your Question</label>
-            <textarea class="form-textarea" id="ask-question" name="question_text"
-                      placeholder="Describe your question in detail..." required></textarea>
-          </div>
-          <div id="ask-form-error" class="form-error" aria-live="polite" style="display:none"></div>
-          <button type="submit" class="btn btn-primary btn-block btn-sm" id="ask-form-submit">Send Question</button>
-        </form>
-      </div>
-    </div>
-
-    <div class="chatbot-screen" id="screen-success">
-      <div class="chatbot-success">
-        <div class="success-icon" aria-hidden="true">✅</div>
-        <h4>Question Received!</h4>
-        <p>A PNEC staff member will respond to your question at the email you provided, typically within 1–2 business days.</p>
-        <button class="btn btn-secondary btn-sm" id="success-back-btn" style="margin-top:16px">Back to Topics</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="chatbot-footer">
-    <p><a href="/pages/contact.html">Need a person? Contact PNEC directly.</a></p>
-  </div>
-</div>
-`;
-
-  function inject() {
-    if (document.getElementById('chatbot-trigger-btn')) return;
-    const wrap = document.createElement('div');
-    wrap.id = 'chatbot-injected-root';
-    wrap.innerHTML = html;
-    // Move children to body so styles target #chatbot-trigger-btn / #chatbot-panel directly
-    while (wrap.firstChild) document.body.appendChild(wrap.firstChild);
+  // 1. Default chatbot config when the page didn't set one.
+  if (!window.PNEC_CHATBOT_CONFIG) {
+    var host = window.location.hostname;
+    var apiBase = (host === 'localhost' || host === '127.0.0.1')
+      ? 'http://127.0.0.1:8425'
+      : 'https://beasts.opencodingsociety.com';
+    window.PNEC_CHATBOT_CONFIG = {
+      apiBase: apiBase,
+      provider: 'gemini',
+      model: 'gemini-2.5-flash',
+      endpoint: apiBase + '/api/gemini',
+      newsEndpoint: apiBase + '/api/news/search',
+      llmModuleUrl: '/assets/js/api/llm-chat.js'
+    };
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', inject);
-  } else {
-    inject();
+  function bootWhenReady() {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', boot);
+    } else {
+      boot();
+    }
   }
+
+  function boot() {
+    // 2. Fetch the widget markup
+    fetch('/assets/chatbot/widget.html', { credentials: 'omit' })
+      .then(function (r) { return r.ok ? r.text() : ''; })
+      .then(function (html) {
+        if (!html || document.getElementById('pnec-bot-fab')) return;
+        // 3. Inject into body
+        var holder = document.createElement('div');
+        holder.innerHTML = html;
+        // Append children one by one so any <script> doesn't try to run
+        // as part of innerHTML evaluation (we don't expect any, but
+        // belt and suspenders).
+        while (holder.firstChild) document.body.appendChild(holder.firstChild);
+
+        // 4. Dynamic-import the v3 module. We add a stable suffix to
+        // avoid an aggressive HTTP cache from a stale prior version.
+        return import(/* webpackIgnore: true */ '/assets/js/chatbot/index.js');
+      })
+      .catch(function (err) {
+        // Fail quiet — chatbot is enhancement, not critical-path
+        try { console.warn('[chatbot-inject] bootstrap failed:', err && err.message); }
+        catch (_e) { /* private mode etc. */ }
+      });
+  }
+
+  bootWhenReady();
 })();
