@@ -29,21 +29,25 @@ body_class: inner-page auth-page-body
   .auth-page-body .pnec-header-title { display: none !important; }
 
   /* By default, poway-header.html positions the nav at the BOTTOM of the
-     carousel as a dark-navy bar. The rest of the site (Programs, About,
-     etc) shows the nav at the TOP of the photo as a green-transparent
-     bar. Re-style the auth page's nav to match the rest of the site. */
+     carousel as a dark-navy bar. The rest of the site shows the nav at
+     the TOP of the photo as a green-transparent bar. Re-order + restyle
+     the auth page's nav to match. */
   .auth-page-body .pnec-header-ui {
-    /* Keep top row (logo + Donate) where it is, but pin nav to TOP via
-       reordering: top row → nav → flexible spacer → (no title). */
     justify-content: flex-start !important;
+    padding-top: 0 !important;     /* nav goes flush with the top edge */
   }
+  /* CSS order: pin the nav to the very top (order: -1), then logo+donate,
+     then (hidden) title. Padding moves to the children that need it so
+     the nav itself can be edge-to-edge. */
+  .auth-page-body .pnec-header-nav  { order: -1; margin: 0 -36px !important; }
+  .auth-page-body .pnec-header-top  { order:  0; padding-top: 24px; }
+  .auth-page-body .pnec-header-title{ order:  1; }
+
   .auth-page-body .pnec-header-nav {
     /* Green semi-transparent — matches .pnec-navbar across the rest
        of the site (rgba(39, 174, 96, 0.78)). Slightly more transparent
        here so the carousel still reads through. */
     background: rgba(39, 174, 96, 0.62) !important;
-    margin-top: 18px;
-    border-top: 1px solid rgba(255, 255, 255, 0.18);
     border-bottom: 1px solid rgba(255, 255, 255, 0.18);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
