@@ -200,61 +200,38 @@ body_class: inner-page auth-page-body
     .auth-card:hover { transform: none; }
   }
 
-  /* Header — generous padding, custom SVG mark (no PNG logo) */
+  /* Header — clean typographic treatment, NO logo. Brand name as the
+     centerpiece with a small green eyebrow above it for context. */
   .auth-card-head {
-    padding: 40px 36px 18px;
+    padding: 36px 36px 22px;
     text-align: center;
     position: relative;
   }
-  .auth-card-mark {
-    display: inline-flex; flex-direction: column; align-items: center;
-    gap: 14px;
+  .auth-card-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 0.68rem; font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--pnec-green);
   }
-  /* Custom SVG mark — a stylized shield with a peaked roof + heart, both
-     of which echo PNEC's mission (neighborhood, protection, care). All
-     geometry, no PNG. Looks intentional + bespoke at any size. */
-  .auth-card-mark-logo {
-    width: 64px; height: 64px;
-    flex-shrink: 0;
-    display: grid; place-items: center;
-    position: relative;
-  }
-  .auth-card-mark-logo svg { width: 100%; height: 100%; display: block; }
-  /* Soft gradient halo behind the mark for depth. */
-  .auth-card-mark-logo::before {
+  .auth-card-eyebrow::before,
+  .auth-card-eyebrow::after {
     content: '';
-    position: absolute;
-    inset: -10px;
-    background: radial-gradient(circle, var(--pnec-green-soft), transparent 70%);
-    border-radius: 50%;
-    z-index: -1;
+    width: 18px; height: 1.5px;
+    background: linear-gradient(90deg, transparent, var(--pnec-green));
+    border-radius: 1px;
   }
-
-  .auth-card-mark-text {
-    display: flex; flex-direction: column;
-    align-items: center;
-    line-height: 1.15;
+  .auth-card-eyebrow::after {
+    background: linear-gradient(90deg, var(--pnec-green), transparent);
   }
-  .auth-card-mark-text strong {
+  .auth-card-name {
+    margin: 14px 0 0;
     font-family: 'DM Sans', sans-serif;
     font-weight: 800;
-    font-size: 1.32rem;
+    font-size: 1.62rem;
+    line-height: 1.05;
     color: #0a1628;
-    letter-spacing: -0.024em;
-  }
-  .auth-card-mark-text small {
-    font-size: 0.7rem; font-weight: 700;
-    color: var(--pnec-green); letter-spacing: 0.14em;
-    text-transform: uppercase;
-    margin-top: 6px;
-  }
-  /* Subtle hairline divider under the head */
-  .auth-card-head::after {
-    content: '';
-    display: block;
-    margin: 22px auto 0;
-    width: 72px; height: 2px;
-    background: linear-gradient(90deg, transparent, var(--pnec-green-soft) 40%, var(--pnec-green-soft) 60%, transparent);
+    letter-spacing: -0.028em;
   }
 
   /* Tabs — forest-green active pill, sophisticated easing */
@@ -561,48 +538,8 @@ body_class: inner-page auth-page-body
 <div class="auth-wrapper">
   <div class="auth-card">
     <div class="auth-card-head">
-      <div class="auth-card-mark">
-        <span class="auth-card-mark-logo" aria-hidden="true">
-          <!-- Custom mark: shield silhouette with a stylized roof-line + heart
-               inside. Nods to neighborhood (roof), protection (shield), care
-               (heart). Pure geometry, no raster — sharp at every size. -->
-          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="pnec-mark-grad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%"  stop-color="#27ae60"/>
-                <stop offset="55%" stop-color="#1e8449"/>
-                <stop offset="100%" stop-color="#145a32"/>
-              </linearGradient>
-              <linearGradient id="pnec-mark-shine" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.30"/>
-                <stop offset="60%" stop-color="#ffffff" stop-opacity="0"/>
-              </linearGradient>
-            </defs>
-            <!-- Shield base -->
-            <path d="M32 4 L56 12 V30 C56 44 46 54 32 60 C18 54 8 44 8 30 V12 Z"
-                  fill="url(#pnec-mark-grad)"
-                  stroke="rgba(255,255,255,0.16)" stroke-width="1"/>
-            <!-- Light catching the top half -->
-            <path d="M32 4 L56 12 V30 C56 36 53 41 49 45 C45 39 41 35 32 32 C23 35 19 39 15 45 C11 41 8 36 8 30 V12 Z"
-                  fill="url(#pnec-mark-shine)"/>
-            <!-- Roofline — two diagonals meeting at the peak -->
-            <path d="M19 36 L32 23 L45 36"
-                  fill="none" stroke="#ffffff" stroke-width="2.5"
-                  stroke-linecap="round" stroke-linejoin="round"/>
-            <!-- House body / door (subtle vertical line) -->
-            <path d="M32 36 V44"
-                  stroke="#ffffff" stroke-width="2.5"
-                  stroke-linecap="round" stroke-opacity="0.85"/>
-            <!-- Heart at the base — care/community -->
-            <path d="M32 50 C30 47 26 47 26 44 C26 42 28 41 30 42 C30.6 42.3 31.4 42.8 32 43.5 C32.6 42.8 33.4 42.3 34 42 C36 41 38 42 38 44 C38 47 34 47 32 50 Z"
-                  fill="#ffffff" fill-opacity="0.92"/>
-          </svg>
-        </span>
-        <span class="auth-card-mark-text">
-          <strong>Poway NEC</strong>
-          <small>Member access</small>
-        </span>
-      </div>
+      <span class="auth-card-eyebrow">Member Access</span>
+      <h1 class="auth-card-name">Poway NEC</h1>
     </div>
 
     <!-- Tab switch -->
