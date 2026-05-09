@@ -29,11 +29,10 @@
     return _get('/api/overrides/' + encodeURIComponent(slug));
   }
 
-  function cmsFetchManifest(slug) {
-    return _get('/api/cms/manifest/' + encodeURIComponent(slug));
-  }
+  // v3 Phase 4: cmsFetchManifest removed — its only consumer was the v1
+  // editor (pages/admin-editor.html), which has been retired. The Flask
+  // /api/cms/manifest/<slug> route was unregistered in the same cleanup.
 
   window.cmsFetchSiteConfig = cmsFetchSiteConfig;
   window.cmsFetchOverrides  = cmsFetchOverrides;
-  window.cmsFetchManifest   = cmsFetchManifest;
 })();
