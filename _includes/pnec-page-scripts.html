@@ -1,0 +1,37 @@
+{%- comment -%}
+  Shared script block — loaded once for both pnec-base.html branches
+  (the use_poway_source_clone path and the standard pnec layout path).
+  Was previously duplicated, which led to drift bugs every time we
+  added or replaced a global script (most recently the chatbot v3
+  swap-in). Centralized here so any change ships once.
+{%- endcomment -%}
+<script>
+  const pnecApiBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+    ? 'http://127.0.0.1:8425'
+    : 'https://beasts.opencodingsociety.com';
+  window.PNEC_CHATBOT_CONFIG = {
+    provider: {{ page.chat_provider | default: "gemini" | jsonify }},
+    apiKey: {{ page.chat_api_key | default: "" | jsonify }},
+    model: {{ page.chat_model | default: "gemini-2.5-flash" | jsonify }},
+    apiBase: {{ page.chat_api_base | default: "" | jsonify }},
+    endpoint: {{ page.chat_endpoint | default: "" | jsonify }} || `${pnecApiBase}/api/gemini`,
+    newsEndpoint: `${pnecApiBase}/api/news/search`,
+    llmModuleUrl: {{ '/assets/js/api/llm-chat.js' | relative_url | jsonify }}
+  };
+</script>
+<script src="{{ '/assets/js/utils/errors.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/api/auth-api.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/api/faq-api.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/api/risk-api.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/ui/auth-ui.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/ui/risk-ui.js' | relative_url }}"></script>
+<!-- Helper Bot v3 — ES module, replaces ui/chatbot-ui.js + pages/chatbot.js -->
+<script type="module" src="{{ '/assets/js/chatbot/index.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/pages/risk-widget.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/pages/navbar.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/cms/cms-api.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/cms/hydrate.js' | relative_url }}"></script>
+<!-- v2.41: subtle scroll-reveal animations site-wide -->
+<script src="{{ '/assets/js/ui/scroll-reveal.js' | relative_url }}"></script>
+<!-- Floating "Edit this page" button — admin-only, no-op for everyone else -->
+<script src="{{ '/assets/js/admin/edit-this-page.js' | relative_url }}"></script>
