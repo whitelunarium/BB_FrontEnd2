@@ -23,10 +23,73 @@ body_class: inner-page auth-page-body
 
 <style>
   /* Hide the auto-rendered page-title overlay from the cloned-WP header
-     so we don't get a giant "Sign in or Create Account" sitting on top
-     of the photo. The carousel + nav itself stay (we want them — they
-     match every other page on the site). */
+     (giant "Sign in or Create Account" big-text overlaid on the carousel). */
   .auth-page-body .pnec-header-title { display: none !important; }
+
+  /* Hide the navbar's photo carousel + dark overlay. The auth-page now
+     uses ONE single wildfire photo as a fixed page-level backdrop (see
+     .auth-page-body::before below), so a duplicate photo here in the
+     header would just compete. The green nav bar still floats on top
+     of the body-level photo. */
+  .auth-page-body .pnec-header-track,
+  .auth-page-body .pnec-header-overlay {
+    display: none !important;
+  }
+  .auth-page-body .pnec-unified-header {
+    height: auto !important;
+    background: transparent !important;
+  }
+  .auth-page-body .pnec-header-ui { position: relative !important; padding-top: 0 !important; }
+  /* Keep logo + Donate visible — they sit on the body-level photo now */
+  .auth-page-body .pnec-header-top { padding: 14px 36px 18px; }
+
+  /* ─── Body-level fixed wildfire photo ────────────────────────────────
+     One continuous Poway_Fire image fixed to the viewport. The navbar
+     floats on its top half; the auth-wrapper sits in its faded lower
+     half. No two-photo seam, no alignment-across-elements problem. */
+  .auth-page-body { position: relative; }
+  .auth-page-body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url('{{ "/assets/images/Poway_Fire.webp" | relative_url }}');
+    background-size: cover;
+    background-position: center 25%;
+    filter: saturate(0.92) brightness(0.92);
+    /* Fade the photo from visible at top → cream by 60% down. The auth
+       card lives in the cream-dominant lower portion. */
+    -webkit-mask-image: linear-gradient(180deg,
+      #000 0%,
+      #000 25%,
+      rgba(0,0,0,0.65) 42%,
+      rgba(0,0,0,0.30) 55%,
+      transparent 68%);
+            mask-image: linear-gradient(180deg,
+      #000 0%,
+      #000 25%,
+      rgba(0,0,0,0.65) 42%,
+      rgba(0,0,0,0.30) 55%,
+      transparent 68%);
+    pointer-events: none;
+    z-index: -10;
+  }
+  /* Warm color wash on top of the photo so the orange tones lift the
+     PNEC palette (cream + green) rather than feeling like a generic
+     stock photo. */
+  .auth-page-body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      linear-gradient(180deg,
+        rgba(192, 90, 50, 0.18) 0%,
+        rgba(255, 168, 96, 0.08) 25%,
+        rgba(248, 245, 240, 0.30) 55%,
+        rgba(248, 245, 240, 0.95) 75%,
+        #f8f5f0 100%);
+    pointer-events: none;
+    z-index: -9;
+  }
 
   /* By default, poway-header.html positions the nav at the BOTTOM of the
      carousel as a dark-navy bar. The rest of the site shows the nav at
@@ -101,28 +164,14 @@ body_class: inner-page auth-page-body
       0 28px 56px rgba(20, 90, 50, 0.10);
   }
 
-  /* ─── Auth wrapper — soft warm fade from the navbar's wildfire into the
-     calm cream where the auth card lives. No photo extension (the photo
-     never aligns cleanly across the navbar boundary at all viewport
-     sizes). Just a vertical color gradient that picks up the fire's
-     warm amber tone at the top and dissolves into cream by the time the
-     card area starts. */
+  /* ─── Auth wrapper — transparent so the body-level photo backdrop
+     reads through. Just spacing + the drifting orb live here now. */
   .auth-wrapper {
     min-height: calc(100vh - 200px);
     padding: 0 20px 120px;
-    /* Vertical wash: amber top → soft cream by 30% → solid cream below.
-       Reads as "smoke from the fire above settling into the page." */
-    background:
-      linear-gradient(180deg,
-        rgba(192, 90, 50, 0.18) 0%,
-        rgba(255, 168, 96, 0.16) 12%,
-        rgba(248, 220, 180, 0.18) 24%,
-        rgba(248, 245, 240, 0.85) 40%,
-        #f8f5f0 60%);
+    background: transparent;
     display: flex; flex-direction: column; align-items: center;
     position: relative;
-    overflow: hidden;
-    isolation: isolate;
     font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 
