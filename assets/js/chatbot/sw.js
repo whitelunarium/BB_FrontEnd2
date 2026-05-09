@@ -12,7 +12,9 @@
  * the rest of the site is left to its existing CDN/browser cache.
  */
 
-const VERSION = 'pnec-bot-v3-1';
+// Bumping VERSION invalidates the cache on the next SW activation so
+// returning users pick up new module code instead of serving stale.
+const VERSION = 'pnec-bot-v3-2';
 const STATIC_CACHE = `${VERSION}-static`;
 const API_CACHE    = `${VERSION}-api`;
 
@@ -30,6 +32,9 @@ const STATIC_ASSETS = [
   '/assets/js/chatbot/image.js',
   '/assets/js/chatbot/export.js',
   '/assets/css/chatbot.css',
+  // v3.2: also cache the widget markup that chatbot-inject.js fetches
+  // on standalone pages, so the bot still appears during outages.
+  '/assets/chatbot/widget.html',
 ];
 
 const API_PATTERNS = [
