@@ -1,37 +1,57 @@
 /* ──────────────────────────────────────────────────────────────────────
-   footer-polish.css  (v2.59)
-   Site-wide overhaul for the cloned-WP `.jupiterx-footer` block.
+   footer-polish.css  (v3.10 — warm "neighborhood paper" refresh)
 
    Why this file (and not _sass/_polish.scss)?
    The home page sets `use_poway_source_clone: true`, which causes the
    layout to skip /assets/css/main.css entirely (so polish.scss never
    loads there). This file is linked unconditionally from pnec-base.html
-   so the footer overhaul applies on EVERY page — clone, live-styles,
-   and modern alike.
+   so the footer overhaul applies on EVERY page.
 
-   Selector strategy:
+   v3.10 changes (user feedback: "find something more comforting"):
+   ───────────────────────────────────────────────────────────────
+   - Replaced the dark navy gradient + rainbow "STAY PREPARED" header
+     with a warm cream + forest-green palette that reads like a
+     neighborhood newsletter / paper flyer rather than a corporate
+     tech footer.
+   - Background:  navy radial swirls → cream + sage subtle wash
+   - Headings:    white-on-dark → deep forest green on cream
+   - Highlight:   pink/peach/mint gradient → warm honey solid
+   - Body text:   white-78% → warm taupe (#5a4a2f)
+   - Links:       neon mint (#b9f6ca) → deep forest (#145a32)
+   - Bullets:     neon green dots → terracotta dots
+   - Form bg:     translucent white → cream-white with forest border
+   - Top hairline: red/green pulse → single sage hairline
+   - Killed the elementor-background-overlay so the new bg shows clean.
+
+   Why the colors:
+   Cream + forest is PNEC's existing brand language (used by the
+   chatbot rail, the auth card, the donate ribbons). The user said
+   "comforting" — paper-warmth + green-canopy is more grounded and
+   neighborly than neon-on-navy.
+
+   Selector strategy unchanged:
    - All rules scoped to `.jupiterx-footer ...` so we only style the
-     elementor footer; the modern `.pnec-footer` (used when
-     use_poway_live_styles: false) is untouched.
-   - !important is needed because the WP elementor stylesheets and the
-     inline style attributes inside the cloned markup carry weight that
-     would otherwise win the cascade.
+     elementor footer; modern `.pnec-footer` (so-simple theme) is
+     left alone.
+   - !important is still needed because the WP elementor stylesheets
+     and the inline style attributes inside the cloned markup carry
+     weight that would otherwise win the cascade.
    ────────────────────────────────────────────────────────────────────── */
 
 .jupiterx-footer {
   position: relative;
   isolation: isolate;
-  /* Solid gradient backdrop — kills any photo bleed from above and
-     gives the footer real visual weight as the page anchor. */
+  /* Warm cream wash — a hint of sage at top, a hint of paper-warm
+     at bottom. No more rainbow swirls. Subtle enough that the eye
+     reads "calm" before "color." */
   background:
-    radial-gradient(900px 600px at 15% 0%, rgba(30, 132, 73, 0.30), transparent 55%),
-    radial-gradient(1100px 700px at 100% 100%, rgba(192, 57, 43, 0.20), transparent 55%),
-    linear-gradient(180deg, #0a1628 0%, #0f2436 50%, #102e1d 100%) !important;
-  color: #f5f5f0 !important;
+    radial-gradient(800px 460px at 18% 0%, rgba(170, 200, 180, 0.42), transparent 60%),
+    radial-gradient(900px 520px at 100% 100%, rgba(212, 160, 76, 0.18), transparent 60%),
+    linear-gradient(180deg, #f7f1e2 0%, #f1e9d4 55%, #ecdfb9 100%) !important;
+  color: #5a4a2f !important;
 }
 
-/* Soft top border — a thin gradient hairline so the footer doesn't
-   slam into the page above it. */
+/* Soft top hairline — single sage line, no flashy gradient. */
 .jupiterx-footer::before {
   content: '';
   position: absolute;
@@ -39,31 +59,31 @@
   height: 1px;
   background: linear-gradient(90deg,
     transparent 0%,
-    rgba(39, 174, 96, 0.55) 25%,
-    rgba(192, 57, 43, 0.35) 50%,
-    rgba(39, 174, 96, 0.55) 75%,
+    rgba(20, 90, 50, 0.28) 30%,
+    rgba(20, 90, 50, 0.28) 70%,
     transparent 100%);
   z-index: 2;
 }
 
-/* Typography — readable on dark bg */
+/* Typography — readable on warm cream */
 .jupiterx-footer h3,
 .jupiterx-footer h4,
 .jupiterx-footer .raven-heading,
 .jupiterx-footer .raven-heading-title,
 .jupiterx-footer .raven-heading-text-wrapper,
 .jupiterx-footer .raven-heading-plain-text {
-  color: #ffffff !important;
+  color: #145a32 !important;       /* deep forest */
   font-weight: 800 !important;
   letter-spacing: -0.005em !important;
 }
 
-/* Animated "PREPARED" highlight in "STAY PREPARED" — gradient text */
+/* Animated "PREPARED" highlight — warm honey solid, no rainbow. */
 .jupiterx-footer .raven-heading-dynamic-text {
-  background: linear-gradient(135deg, #fbcfe8 0%, #ffd6a8 50%, #b9f6ca 100%) !important;
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  background-clip: text !important;
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  -webkit-text-fill-color: initial !important;
+  background-clip: initial !important;
+  color: #c87042 !important;       /* soft terracotta */
   font-weight: 900 !important;
 }
 
@@ -72,7 +92,7 @@
 .jupiterx-footer span,
 .jupiterx-footer .elementor-text-editor,
 .jupiterx-footer .elementor-text-editor p {
-  color: rgba(255, 255, 255, 0.78) !important;
+  color: #5a4a2f !important;       /* warm taupe — reads kindly on cream */
   line-height: 1.65 !important;
 }
 
@@ -80,7 +100,7 @@
 .jupiterx-footer .elementor-item,
 .jupiterx-footer .elementor-post__title a,
 .jupiterx-footer .elementor-post__read-more {
-  color: #b9f6ca !important;
+  color: #145a32 !important;       /* deep forest */
   transition: color 180ms ease, text-decoration-color 180ms ease;
   text-decoration: none;
 }
@@ -88,12 +108,12 @@
 .jupiterx-footer .elementor-item:hover,
 .jupiterx-footer .elementor-post__title a:hover,
 .jupiterx-footer .elementor-post__read-more:hover {
-  color: #ffffff !important;
+  color: #1e8449 !important;       /* a touch lighter forest on hover */
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
-/* Quick-links list — green-dot bullets, hover-shift */
+/* Quick-links list — terracotta-dot bullets, gentle hover-shift */
 .jupiterx-footer ul,
 .jupiterx-footer .elementor-nav-menu {
   list-style: none !important;
@@ -102,7 +122,7 @@
 .jupiterx-footer ul li,
 .jupiterx-footer .elementor-nav-menu li {
   padding: 6px 0 6px 18px !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px dashed rgba(90, 74, 47, 0.18);
   position: relative;
   transition: padding-left 200ms ease;
   list-style: none !important;
@@ -114,21 +134,21 @@
   left: 4px; top: 50%;
   width: 6px; height: 6px;
   margin-top: -3px;
-  background: #27ae60;
+  background: #c87042;             /* warm terracotta */
   border-radius: 50%;
-  box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.18);
+  box-shadow: 0 0 0 3px rgba(200, 112, 66, 0.18);
 }
 .jupiterx-footer ul li:hover,
 .jupiterx-footer .elementor-nav-menu li:hover { padding-left: 22px !important; }
 .jupiterx-footer ul li:last-child,
 .jupiterx-footer .elementor-nav-menu li:last-child { border-bottom: 0; }
 
-/* Newsletter form (Constant Contact) */
+/* Newsletter form (Constant Contact) — paper input */
 .jupiterx-footer .ctct-email,
 .jupiterx-footer input[type="email"] {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
-  color: #ffffff !important;
+  background: rgba(255, 253, 246, 0.94) !important;
+  border: 1.5px solid rgba(20, 90, 50, 0.22) !important;
+  color: #2a2a1a !important;
   border-radius: 10px !important;
   padding: 12px 14px !important;
   font: inherit !important;
@@ -137,19 +157,19 @@
 }
 .jupiterx-footer .ctct-email::placeholder,
 .jupiterx-footer input[type="email"]::placeholder {
-  color: rgba(255, 255, 255, 0.50) !important;
+  color: rgba(90, 74, 47, 0.55) !important;
 }
 .jupiterx-footer .ctct-email:focus,
 .jupiterx-footer input[type="email"]:focus {
   outline: none !important;
-  border-color: #27ae60 !important;
-  background: rgba(255, 255, 255, 0.14) !important;
-  box-shadow: 0 0 0 4px rgba(39, 174, 96, 0.20) !important;
+  border-color: #1e8449 !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 4px rgba(30, 132, 73, 0.18) !important;
 }
 .jupiterx-footer .ctct-submit,
 .jupiterx-footer input[type="submit"] {
-  background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%) !important;
-  color: #ffffff !important;
+  background: linear-gradient(135deg, #1e8449 0%, #145a32 100%) !important;
+  color: #fffdf6 !important;
   border: 0 !important;
   border-radius: 10px !important;
   padding: 12px 22px !important;
@@ -157,8 +177,8 @@
   font-size: 0.95rem !important;
   cursor: pointer;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.15) inset,
-    0 4px 12px rgba(39, 174, 96, 0.30) !important;
+    0 1px 0 rgba(255, 253, 246, 0.18) inset,
+    0 4px 12px rgba(20, 90, 50, 0.22) !important;
   transition: transform 160ms ease, box-shadow 220ms ease, filter 160ms ease;
 }
 .jupiterx-footer .ctct-submit:hover,
@@ -166,33 +186,35 @@
   transform: translateY(-1px);
   filter: brightness(1.06);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.20) inset,
-    0 8px 18px rgba(39, 174, 96, 0.42) !important;
+    0 1px 0 rgba(255, 253, 246, 0.22) inset,
+    0 8px 18px rgba(20, 90, 50, 0.30) !important;
 }
 .jupiterx-footer .ctct-disclosure,
-.jupiterx-footer .ctct-disclosure small { color: rgba(255, 255, 255, 0.55) !important; }
+.jupiterx-footer .ctct-disclosure small { color: rgba(90, 74, 47, 0.65) !important; }
 
-/* Social icons — modern pill treatment with hover lift */
+/* Social icons — cream pill with forest icon */
 .jupiterx-footer .elementor-social-icon,
 .jupiterx-footer a.elementor-icon.elementor-social-icon {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  color: #ffffff !important;
+  background: rgba(255, 253, 246, 0.85) !important;
+  border: 1px solid rgba(20, 90, 50, 0.22) !important;
+  color: #145a32 !important;
   transition: transform 200ms ease, background 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
 }
 .jupiterx-footer .elementor-social-icon:hover,
 .jupiterx-footer a.elementor-icon.elementor-social-icon:hover {
   transform: translateY(-2px);
-  background: rgba(39, 174, 96, 0.30) !important;
-  border-color: rgba(39, 174, 96, 0.55) !important;
-  box-shadow: 0 6px 14px rgba(39, 174, 96, 0.30) !important;
+  background: #1e8449 !important;
+  border-color: #145a32 !important;
+  box-shadow: 0 6px 14px rgba(20, 90, 50, 0.26) !important;
 }
-.jupiterx-footer .elementor-social-icon i { color: #ffffff !important; }
+.jupiterx-footer .elementor-social-icon:hover i,
+.jupiterx-footer a.elementor-icon.elementor-social-icon:hover i { color: #fffdf6 !important; }
+.jupiterx-footer .elementor-social-icon i { color: #145a32 !important; }
 
 /* Recent Updates posts */
 .jupiterx-footer .elementor-post {
   padding: 12px 0 !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px dashed rgba(90, 74, 47, 0.18);
 }
 .jupiterx-footer .elementor-post:last-child { border-bottom: 0; }
 .jupiterx-footer .elementor-post__title {
@@ -202,37 +224,60 @@
 }
 .jupiterx-footer .elementor-post__excerpt {
   font-size: 0.84rem !important;
-  color: rgba(255, 255, 255, 0.65) !important;
+  color: rgba(90, 74, 47, 0.85) !important;
   margin-top: 4px !important;
 }
 .jupiterx-footer .elementor-post__excerpt p {
   font-size: 0.84rem !important;
-  color: rgba(255, 255, 255, 0.65) !important;
+  color: rgba(90, 74, 47, 0.85) !important;
   margin: 0 0 4px 0 !important;
 }
 
 /* The redundant elementor-background-overlay — kill it so it doesn't
-   double-darken our gradient. */
+   double-tint our cream wash. */
 .jupiterx-footer .elementor-background-overlay { display: none !important; }
 
-/* Brand logo image — make sure it remains crisp on dark bg */
+/* Brand logo image — the cloned markup uses the WHITE logo PNG which
+   disappears against cream. Force it dark via filter so it reads.
+
+   filter: invert flips white→black, brightness pulls back so it sits
+   as a soft forest-green tone matching the rest of the footer. */
+.jupiterx-footer .elementor-element-8b689a2 img,
+.jupiterx-footer img[src*="Logo-White"] {
+  filter: invert(1) sepia(0.5) hue-rotate(70deg) saturate(2) brightness(0.5) !important;
+  max-width: 100%;
+  height: auto;
+}
 .jupiterx-footer img { max-width: 100%; height: auto; }
 
-/* Copyright bar — quiet white-55% */
+/* Copyright bar — quiet warm-taupe, not muted-white */
 .jupiterx-footer .copyright,
 .jupiterx-footer .footer-copyright,
 .jupiterx-footer .elementor-element-cd04838 p,
 .jupiterx-footer .elementor-element-cd04838 span,
 .jupiterx-footer .elementor-element-df35ad1 span {
-  color: rgba(255, 255, 255, 0.55) !important;
+  color: rgba(90, 74, 47, 0.72) !important;
   font-size: 0.85rem !important;
   letter-spacing: 0.02em !important;
+}
+/* Inline-style override: the cloned markup has
+   <span style="color: #ffffff"> baked in — beat it. */
+.jupiterx-footer .elementor-element-df35ad1 span[style*="color"] {
+  color: rgba(90, 74, 47, 0.72) !important;
 }
 
 /* Inline submit-button override — the cloned markup has
    style="background-color: #72af2f" baked in. Win against it. */
 .jupiterx-footer input[type="submit"][style] {
-  background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%) !important;
-  background-color: #1e8449 !important;
-  color: #ffffff !important;
+  background: linear-gradient(135deg, #1e8449 0%, #145a32 100%) !important;
+  background-color: #145a32 !important;
+  color: #fffdf6 !important;
+}
+
+/* Constant Contact label color — the form has inline
+   style="color: #ffffff" on its label which becomes invisible on cream.
+   Override to forest. */
+.jupiterx-footer .ctct-label-hidden[style],
+.jupiterx-footer .ctct-form label[style] {
+  color: #145a32 !important;
 }
