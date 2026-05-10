@@ -194,13 +194,32 @@ export function searchConversations(query) {
 
 const PREFS_KEY = 'pnec_bot_prefs_v1';
 const DEFAULT_PREFS = {
-  lang: 'en',
+  // ─── Language + UX ─────────────────────────────────────────
+  lang: 'en',                   // 'en' | 'es' | 'tl'
   voiceReplies: false,
-  reducedMotion: false,
   panelMode: 'docked',          // 'docked' | 'expanded' | 'modal'
   railOpen: false,
-  autoOpenedAt: 0,              // tracks last auto-open so we don't pester
-  dismissedAt: 0,               // tracks last manual close
+  autoOpenedAt: 0,              // last auto-open epoch (anti-pester)
+  dismissedAt: 0,               // last manual close epoch
+
+  // ─── v3.11: real-AI settings ───────────────────────────────
+  // Appearance
+  theme: 'auto',                // 'auto' | 'light' | 'dark'
+  textSize: 'comfortable',      // 'compact' | 'comfortable' | 'large'
+  accent: 'forest',             // 'forest' | 'sky' | 'sunset' | 'lavender'
+
+  // Conversation behaviour
+  style: 'default',             // 'default' | 'concise' | 'detailed'
+  suggestionsEnabled: true,     // show follow-up chip suggestions?
+  customInstructions: '',       // free-text injected into system prompt
+
+  // Memory + persistence
+  rememberConversation: true,   // persist across page reloads?
+
+  // Accessibility
+  reducedMotion: false,
+  highContrast: false,
+  alwaysOnLabels: false,        // keep chip labels visible (no hover-reveal)
 };
 
 export function getPrefs() {

@@ -206,36 +206,157 @@
 
   </div><!-- /.pnec-bot-main -->
 
-  <!-- ── Settings drawer ──────────────────────────────────────────── -->
-  <aside class="pnec-bot-settings-drawer" id="pnec-bot-settings-drawer">
+  <!-- ── Settings drawer (v3.11 — real-AI settings panel) ─────────── -->
+  <aside class="pnec-bot-settings-drawer" id="pnec-bot-settings-drawer" aria-label="Helper Bot settings">
     <header class="pnec-bot-settings-head">
       <h3>Settings</h3>
       <button id="pnec-bot-settings-close" class="pnec-bot-icon-btn" type="button" aria-label="Close settings">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </header>
+
     <div class="pnec-bot-settings-body">
-      <label class="pnec-bot-settings-row">
-        <span class="pnec-bot-settings-label">Language</span>
-        <select id="pnec-bot-pref-lang" class="pnec-bot-settings-input">
-          <option value="en">English</option>
-          <option value="es">Español</option>
-          <option value="tl">Tagalog</option>
-        </select>
-      </label>
-      <label class="pnec-bot-settings-row">
-        <span class="pnec-bot-settings-label">Voice replies</span>
-        <input id="pnec-bot-pref-voice" type="checkbox" class="pnec-bot-settings-toggle">
-      </label>
-      <label class="pnec-bot-settings-row">
-        <span class="pnec-bot-settings-label">Reduced motion</span>
-        <input id="pnec-bot-pref-motion" type="checkbox" class="pnec-bot-settings-toggle">
-      </label>
-      <button id="pnec-bot-export"   type="button" class="pnec-bot-settings-action">Export this conversation</button>
-      <button id="pnec-bot-clear"    type="button" class="pnec-bot-settings-action pnec-bot-settings-danger">Clear all chat history</button>
+
+      <!-- ─── Appearance ──────────────────────────────────────── -->
+      <section class="pnec-bot-settings-group" aria-labelledby="pb-grp-appearance">
+        <h4 id="pb-grp-appearance" class="pnec-bot-settings-group-title">Appearance</h4>
+
+        <div class="pnec-bot-settings-row pnec-bot-settings-row--block">
+          <span class="pnec-bot-settings-label">Theme</span>
+          <div class="pnec-bot-segmented" role="radiogroup" aria-label="Theme">
+            <button type="button" class="pb-seg" data-pref="theme" data-value="auto" role="radio">Auto</button>
+            <button type="button" class="pb-seg" data-pref="theme" data-value="light" role="radio">Light</button>
+            <button type="button" class="pb-seg" data-pref="theme" data-value="dark" role="radio">Dark</button>
+          </div>
+        </div>
+
+        <div class="pnec-bot-settings-row pnec-bot-settings-row--block">
+          <span class="pnec-bot-settings-label">Text size</span>
+          <div class="pnec-bot-segmented" role="radiogroup" aria-label="Text size">
+            <button type="button" class="pb-seg" data-pref="textSize" data-value="compact" role="radio">Compact</button>
+            <button type="button" class="pb-seg" data-pref="textSize" data-value="comfortable" role="radio">Comfortable</button>
+            <button type="button" class="pb-seg" data-pref="textSize" data-value="large" role="radio">Large</button>
+          </div>
+        </div>
+
+        <div class="pnec-bot-settings-row pnec-bot-settings-row--block">
+          <span class="pnec-bot-settings-label">Accent color</span>
+          <div class="pnec-bot-swatches" role="radiogroup" aria-label="Accent color">
+            <button type="button" class="pb-swatch" data-pref="accent" data-value="forest"   aria-label="Forest green"  role="radio" style="--pb-swatch:#1e8449"></button>
+            <button type="button" class="pb-swatch" data-pref="accent" data-value="sky"      aria-label="Sky blue"      role="radio" style="--pb-swatch:#3b82f6"></button>
+            <button type="button" class="pb-swatch" data-pref="accent" data-value="sunset"   aria-label="Sunset orange" role="radio" style="--pb-swatch:#e07a3f"></button>
+            <button type="button" class="pb-swatch" data-pref="accent" data-value="lavender" aria-label="Lavender"      role="radio" style="--pb-swatch:#8b5cf6"></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─── Conversation ────────────────────────────────────── -->
+      <section class="pnec-bot-settings-group" aria-labelledby="pb-grp-conv">
+        <h4 id="pb-grp-conv" class="pnec-bot-settings-group-title">Conversation</h4>
+
+        <div class="pnec-bot-settings-row pnec-bot-settings-row--block">
+          <span class="pnec-bot-settings-label">Reply style</span>
+          <div class="pnec-bot-segmented" role="radiogroup" aria-label="Reply style">
+            <button type="button" class="pb-seg" data-pref="style" data-value="concise"  role="radio">Concise</button>
+            <button type="button" class="pb-seg" data-pref="style" data-value="default"  role="radio">Default</button>
+            <button type="button" class="pb-seg" data-pref="style" data-value="detailed" role="radio">Detailed</button>
+          </div>
+          <p class="pnec-bot-settings-help">Concise: 1-2 sentences. Detailed: more context + step-by-step.</p>
+        </div>
+
+        <label class="pnec-bot-settings-row">
+          <span class="pnec-bot-settings-label">Language</span>
+          <select id="pnec-bot-pref-lang" class="pnec-bot-settings-input">
+            <option value="en">English</option>
+            <option value="es">Español</option>
+            <option value="tl">Tagalog</option>
+          </select>
+        </label>
+
+        <label class="pnec-bot-settings-row">
+          <span class="pnec-bot-settings-label">Voice replies <span class="pnec-bot-settings-help-inline">— read responses aloud</span></span>
+          <input id="pnec-bot-pref-voice" type="checkbox" class="pnec-bot-settings-toggle">
+        </label>
+
+        <label class="pnec-bot-settings-row">
+          <span class="pnec-bot-settings-label">Suggested follow-ups <span class="pnec-bot-settings-help-inline">— quick-reply chips after each answer</span></span>
+          <input id="pnec-bot-pref-suggestions" type="checkbox" class="pnec-bot-settings-toggle">
+        </label>
+      </section>
+
+      <!-- ─── Custom instructions ─────────────────────────────── -->
+      <section class="pnec-bot-settings-group" aria-labelledby="pb-grp-custom">
+        <h4 id="pb-grp-custom" class="pnec-bot-settings-group-title">Custom instructions</h4>
+        <p class="pnec-bot-settings-help">
+          Anything Helper Bot should know about you and your household —
+          medical needs, neighborhood, animals, mobility, language preference.
+          Stays on this device. Used to personalize answers.
+        </p>
+        <textarea id="pnec-bot-pref-custom"
+                  class="pnec-bot-settings-textarea"
+                  rows="4"
+                  maxlength="800"
+                  placeholder="e.g. I'm 72, live alone in High Valley (neighborhood 28), have a horse, and use a CPAP — I need to plan for power outages."></textarea>
+        <div class="pnec-bot-settings-textarea-foot">
+          <span id="pnec-bot-pref-custom-count" class="pnec-bot-settings-counter">0 / 800</span>
+        </div>
+      </section>
+
+      <!-- ─── Memory + data ──────────────────────────────────── -->
+      <section class="pnec-bot-settings-group" aria-labelledby="pb-grp-data">
+        <h4 id="pb-grp-data" class="pnec-bot-settings-group-title">Memory &amp; data</h4>
+
+        <label class="pnec-bot-settings-row">
+          <span class="pnec-bot-settings-label">Remember conversations <span class="pnec-bot-settings-help-inline">— keep chat history across visits</span></span>
+          <input id="pnec-bot-pref-remember" type="checkbox" class="pnec-bot-settings-toggle">
+        </label>
+
+        <div class="pnec-bot-settings-stat" id="pnec-bot-settings-storage-stat">
+          <span class="pnec-bot-settings-stat-label">Stored on this device</span>
+          <span class="pnec-bot-settings-stat-value" id="pnec-bot-settings-storage-value">—</span>
+        </div>
+
+        <div class="pnec-bot-settings-actions-row">
+          <button id="pnec-bot-export"      type="button" class="pnec-bot-settings-action">Export conversation</button>
+          <button id="pnec-bot-clear"       type="button" class="pnec-bot-settings-action pnec-bot-settings-warn">Clear conversation</button>
+          <button id="pnec-bot-clear-all"   type="button" class="pnec-bot-settings-action pnec-bot-settings-danger">Reset everything</button>
+        </div>
+        <p class="pnec-bot-settings-help">
+          <strong>Reset everything</strong> wipes history, custom instructions, and preferences. Cannot be undone.
+        </p>
+      </section>
+
+      <!-- ─── Accessibility ──────────────────────────────────── -->
+      <section class="pnec-bot-settings-group" aria-labelledby="pb-grp-a11y">
+        <h4 id="pb-grp-a11y" class="pnec-bot-settings-group-title">Accessibility</h4>
+        <label class="pnec-bot-settings-row">
+          <span class="pnec-bot-settings-label">Reduced motion <span class="pnec-bot-settings-help-inline">— disable animations</span></span>
+          <input id="pnec-bot-pref-motion" type="checkbox" class="pnec-bot-settings-toggle">
+        </label>
+        <label class="pnec-bot-settings-row">
+          <span class="pnec-bot-settings-label">High contrast <span class="pnec-bot-settings-help-inline">— stronger text + borders</span></span>
+          <input id="pnec-bot-pref-contrast" type="checkbox" class="pnec-bot-settings-toggle">
+        </label>
+        <label class="pnec-bot-settings-row">
+          <span class="pnec-bot-settings-label">Always-on labels <span class="pnec-bot-settings-help-inline">— never hide chip text</span></span>
+          <input id="pnec-bot-pref-labels" type="checkbox" class="pnec-bot-settings-toggle">
+        </label>
+      </section>
+
+      <!-- ─── About ─────────────────────────────────────────── -->
+      <section class="pnec-bot-settings-group pnec-bot-settings-group--about" aria-labelledby="pb-grp-about">
+        <h4 id="pb-grp-about" class="pnec-bot-settings-group-title">About</h4>
+        <dl class="pnec-bot-settings-about">
+          <dt>Version</dt><dd>Helper Bot v3.11</dd>
+          <dt>Knowledge base</dt><dd>PNEC programs + live conditions + 60 Poway neighborhoods</dd>
+          <dt>Privacy</dt><dd>Conversations are stored only on this device unless you explicitly submit to staff.</dd>
+        </dl>
+        <a href="mailto:powaynec@gmail.com?subject=Helper%20Bot%20feedback" class="pnec-bot-settings-action pnec-bot-settings-action--link">Send feedback</a>
+      </section>
+
     </div>
     <footer class="pnec-bot-settings-foot">
-      <span>Helper Bot v3 · Powered by PNEC</span>
+      <span>Helper Bot · Powered by PNEC</span>
     </footer>
   </aside>
 

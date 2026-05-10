@@ -8,6 +8,15 @@
 
 import { fetchAllFaq, searchFaq, searchNews, getLiveConditions } from './api.js';
 
+// v3.11 — read settings prefs lazily so a circular import doesn't break tests.
+let _storeModule = null;
+async function getPrefsSafe() {
+  try {
+    if (!_storeModule) _storeModule = await import('./store.js');
+    return _storeModule.getPrefs ? _storeModule.getPrefs() : {};
+  } catch (_e) { return {}; }
+}
+
 // Phase 2: optional TF-IDF retrieval upgrade. We try to import the
 // tools module and use its tfidfRerank; fall back to keyword scoring
 // if Phase 2 hasn't shipped yet.
@@ -268,11 +277,38 @@ function liveConditionsBlock(live) {
 
 // ─── Public: build a complete system prompt for a given user msg ──
 
+// v3.11 — style + customInstructions directives from settings
+function styleDirective(style) {
+  if (style === 'concise') {
+    return '——— REPLY STYLE: CONCISE ———\nKeep answers to 1-2 sentences. No preamble, no "great question" wind-up, no closing pleasantries. Lead with the actionable fact. Bullet lists only if 3+ items.';
+  }
+  if (style === 'detailed') {
+    return '——— REPLY STYLE: DETAILED ———\nGive thorough answers with context, step-by-step reasoning, and links to related local pages. Anticipate follow-up questions and address them inline. Use lists, bold key terms, and cite sources whenever you draw on the FAQ or live conditions.';
+  }
+  return '';
+}
+
+function customInstructionsBlock(text) {
+  const t = String(text || '').trim();
+  if (!t) return '';
+  // Cap at 800 chars (same as the UI maxlength) so we don't blow the
+  // prompt budget if someone pastes a novel.
+  const safe = t.slice(0, 800);
+  return `——— USER-PROVIDED CONTEXT (custom instructions) ———\n${safe}\n\nUse this to personalize your answers. Don't quote it back verbatim. Don't share it with PNEC staff (it's local to the user's device).`;
+}
+
 export async function buildSystemPrompt({ userMessage, user, history }) {
   const blocks = [PNEC_BASE, POWAY_FACTS, PNEC_KNOWLEDGE, timeBlock()];
 
   const userBlk = userBlock(user);
   if (userBlk) blocks.push(userBlk);
+
+  // v3.11 — settings: style + customInstructions
+  const prefs = await getPrefsSafe();
+  const styleBlk = styleDirective(prefs.style);
+  if (styleBlk) blocks.push(styleBlk);
+  const customBlk = customInstructionsBlock(prefs.customInstructions);
+  if (customBlk) blocks.push(customBlk);
 
   // Live conditions — best-effort, never blocks the prompt
   try {

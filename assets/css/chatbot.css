@@ -1257,6 +1257,337 @@ html.pb-reduced-motion [class*=" pnec-bot-"] {
   text-align: center;
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   v3.11 — Real-AI settings (sectioned groups, segmented controls,
+   swatches, textarea, theme/accent/textSize variants).
+   ═══════════════════════════════════════════════════════════════════ */
+
+.pnec-bot-settings-body {
+  padding: 0 !important;   /* group sections control their own padding */
+}
+
+.pnec-bot-settings-group {
+  padding: 18px 16px 14px;
+  border-bottom: 1px solid var(--pb-border);
+}
+.pnec-bot-settings-group:last-of-type { border-bottom: 0; }
+.pnec-bot-settings-group-title {
+  margin: 0 0 12px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pb-green-deep);
+}
+
+/* Row with the label stacked above the control (used by segmented + swatches + textarea) */
+.pnec-bot-settings-row--block {
+  display: block;
+  margin-bottom: 12px;
+}
+.pnec-bot-settings-row--block .pnec-bot-settings-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+.pnec-bot-settings-row + .pnec-bot-settings-row { margin-top: 2px; }
+
+.pnec-bot-settings-help {
+  margin: 6px 0 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--pb-fg-faint);
+}
+.pnec-bot-settings-help-inline {
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: var(--pb-fg-faint);
+  letter-spacing: 0.005em;
+}
+.pnec-bot-settings-row .pnec-bot-settings-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* ─── Segmented control (3-button radio group) ─────────────── */
+.pnec-bot-segmented {
+  display: inline-flex;
+  width: 100%;
+  background: var(--pb-bg-rail);
+  border: 1px solid var(--pb-border);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
+}
+.pnec-bot-segmented .pb-seg {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  padding: 7px 10px;
+  border-radius: 7px;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--pb-fg-faint);
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+.pnec-bot-segmented .pb-seg:hover {
+  background: rgba(30, 132, 73, 0.08);
+  color: var(--pb-green-deep);
+}
+.pnec-bot-segmented .pb-seg.is-selected,
+.pnec-bot-segmented .pb-seg[aria-checked="true"] {
+  background: #ffffff;
+  color: var(--pb-green-deep);
+  box-shadow: 0 1px 0 rgba(20, 90, 50, 0.06), 0 2px 8px rgba(20, 90, 50, 0.08);
+}
+
+/* ─── Accent swatch row ────────────────────────────────────── */
+.pnec-bot-swatches {
+  display: flex;
+  gap: 10px;
+}
+.pnec-bot-swatches .pb-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: var(--pb-swatch, #1e8449);
+  cursor: pointer;
+  padding: 0;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+  position: relative;
+}
+.pnec-bot-swatches .pb-swatch:hover {
+  transform: scale(1.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+.pnec-bot-swatches .pb-swatch.is-selected,
+.pnec-bot-swatches .pb-swatch[aria-checked="true"] {
+  border-color: var(--pb-fg);
+  box-shadow: 0 0 0 2px #ffffff inset, 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+.pnec-bot-swatches .pb-swatch:focus-visible {
+  outline: 3px solid rgba(30, 132, 73, 0.45);
+  outline-offset: 3px;
+}
+
+/* ─── Textarea for custom instructions ─────────────────────── */
+.pnec-bot-settings-textarea {
+  width: 100%;
+  min-height: 96px;
+  padding: 10px 12px;
+  background: var(--pb-bg-rail);
+  border: 1px solid var(--pb-border);
+  border-radius: 10px;
+  font: inherit;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--pb-fg);
+  resize: vertical;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+.pnec-bot-settings-textarea:focus {
+  outline: none;
+  border-color: var(--pb-green);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(30, 132, 73, 0.18);
+}
+.pnec-bot-settings-textarea-foot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+.pnec-bot-settings-counter {
+  font-size: 0.72rem;
+  color: var(--pb-fg-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Storage stat (Memory & data) ─────────────────────────── */
+.pnec-bot-settings-stat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--pb-bg-rail);
+  border-radius: 10px;
+  margin: 8px 0 12px;
+  font-size: 0.84rem;
+}
+.pnec-bot-settings-stat-label { color: var(--pb-fg-faint); font-weight: 500; }
+.pnec-bot-settings-stat-value { color: var(--pb-fg); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* ─── Action row (3 buttons side by side on wide drawers) ──── */
+.pnec-bot-settings-actions-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+@media (min-width: 480px) {
+  .pnec-bot-settings-actions-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .pnec-bot-settings-actions-row > .pnec-bot-settings-danger {
+    grid-column: 1 / -1;
+  }
+}
+.pnec-bot-settings-warn {
+  color: #b45309;
+  border-color: rgba(180, 83, 9, 0.30);
+}
+.pnec-bot-settings-warn:hover {
+  background: rgba(217, 119, 6, 0.10);
+  color: #92400e;
+}
+
+/* ─── About section ────────────────────────────────────────── */
+.pnec-bot-settings-about {
+  margin: 0 0 10px;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 12px;
+  font-size: 0.84rem;
+}
+.pnec-bot-settings-about dt {
+  font-weight: 700;
+  color: var(--pb-fg-faint);
+}
+.pnec-bot-settings-about dd {
+  margin: 0;
+  color: var(--pb-fg);
+}
+.pnec-bot-settings-action--link {
+  display: inline-block;
+  text-align: center;
+  text-decoration: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   THEME VARIANTS — light (default) / dark / auto
+   Applied as .pb-theme-dark / .pb-theme-light on documentElement
+   (auto resolves via prefers-color-scheme below).
+   ═══════════════════════════════════════════════════════════════════ */
+
+html.pb-theme-dark .pnec-bot-panel,
+html.pb-theme-dark .pnec-bot-panel * {
+  --pb-bg-panel:   #1a2030;
+  --pb-bg-rail:    #232a3d;
+  --pb-bg-glass:   #1d243a;
+  --pb-fg:         #f0efe9;
+  --pb-fg-soft:    #c5c1b3;
+  --pb-fg-faint:   #8a8676;
+  --pb-border:     rgba(255, 255, 255, 0.10);
+  --pb-green-soft: rgba(30, 132, 73, 0.22);
+}
+html.pb-theme-dark .pnec-bot-panel { background: #1a2030; color: #f0efe9; }
+html.pb-theme-dark .pnec-bot-settings-textarea,
+html.pb-theme-dark .pnec-bot-settings-stat,
+html.pb-theme-dark .pnec-bot-segmented {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.10);
+}
+html.pb-theme-dark .pnec-bot-segmented .pb-seg.is-selected {
+  background: rgba(255, 255, 255, 0.10);
+  color: #b9f6ca;
+}
+html.pb-theme-dark .pnec-bot-settings-textarea:focus {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #27ae60;
+}
+
+@media (prefers-color-scheme: dark) {
+  html.pb-theme-auto .pnec-bot-panel,
+  html.pb-theme-auto .pnec-bot-panel * {
+    --pb-bg-panel:   #1a2030;
+    --pb-bg-rail:    #232a3d;
+    --pb-bg-glass:   #1d243a;
+    --pb-fg:         #f0efe9;
+    --pb-fg-soft:    #c5c1b3;
+    --pb-fg-faint:   #8a8676;
+    --pb-border:     rgba(255, 255, 255, 0.10);
+    --pb-green-soft: rgba(30, 132, 73, 0.22);
+  }
+  html.pb-theme-auto .pnec-bot-panel { background: #1a2030; color: #f0efe9; }
+  html.pb-theme-auto .pnec-bot-settings-textarea,
+  html.pb-theme-auto .pnec-bot-settings-stat,
+  html.pb-theme-auto .pnec-bot-segmented {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.10);
+  }
+  html.pb-theme-auto .pnec-bot-segmented .pb-seg.is-selected {
+    background: rgba(255, 255, 255, 0.10);
+    color: #b9f6ca;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   TEXT-SIZE VARIANTS — compact / comfortable / large
+   ═══════════════════════════════════════════════════════════════════ */
+html.pb-text-compact .pnec-bot-panel {
+  --pb-msg-font: 0.84rem;
+  --pb-msg-line: 1.45;
+}
+html.pb-text-large .pnec-bot-panel {
+  --pb-msg-font: 1.04rem;
+  --pb-msg-line: 1.62;
+}
+html.pb-text-compact .pnec-bot-msg-body,
+html.pb-text-compact .pnec-bot-transcript {
+  font-size: var(--pb-msg-font);
+  line-height: var(--pb-msg-line);
+}
+html.pb-text-large .pnec-bot-msg-body,
+html.pb-text-large .pnec-bot-transcript {
+  font-size: var(--pb-msg-font);
+  line-height: var(--pb-msg-line);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   ACCENT VARIANTS — forest (default) / sky / sunset / lavender
+   Override the --pb-green chain.
+   ═══════════════════════════════════════════════════════════════════ */
+html.pb-accent-sky .pnec-bot-panel,
+html.pb-accent-sky .pnec-bot-fab {
+  --pb-green:       #3b82f6;
+  --pb-green-deep:  #1e40af;
+  --pb-green-soft:  #dbeafe;
+}
+html.pb-accent-sunset .pnec-bot-panel,
+html.pb-accent-sunset .pnec-bot-fab {
+  --pb-green:       #e07a3f;
+  --pb-green-deep:  #b8531d;
+  --pb-green-soft:  #fdebd3;
+}
+html.pb-accent-lavender .pnec-bot-panel,
+html.pb-accent-lavender .pnec-bot-fab {
+  --pb-green:       #8b5cf6;
+  --pb-green-deep:  #6d28d9;
+  --pb-green-soft:  #ede9fe;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   HIGH CONTRAST + ALWAYS-ON LABELS
+   ═══════════════════════════════════════════════════════════════════ */
+html.pb-high-contrast .pnec-bot-panel {
+  --pb-fg:        #000000;
+  --pb-fg-soft:   #0a0a0a;
+  --pb-fg-faint:  #2a2a2a;
+  --pb-border:    rgba(0, 0, 0, 0.40);
+}
+html.pb-high-contrast .pnec-bot-panel * { font-weight: 600 !important; }
+html.pb-high-contrast .pnec-bot-segmented,
+html.pb-high-contrast .pnec-bot-settings-textarea,
+html.pb-high-contrast .pnec-bot-settings-stat { border-width: 2px !important; }
+
+html.pb-always-labels .pnec-bot-suggestion-label,
+html.pb-always-labels .pnec-bot-chip-label { opacity: 1 !important; visibility: visible !important; }
+
 /* ─── Misc ─────────────────────────────────────────────────────── */
 [hidden] { display: none !important; }
 

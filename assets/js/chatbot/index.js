@@ -82,9 +82,21 @@ class HelperBot {
     if (prefs.panelMode === 'modal') this.dom.panel.classList.add('is-modal');
     if (prefs.railOpen) this.dom.panel.classList.add('is-rail-open');
     this._applyLang(prefs.lang);
+    this._applyAppearance(prefs);
     if (this.dom.prefLang)   this.dom.prefLang.value   = prefs.lang;
     if (this.dom.prefVoice)  this.dom.prefVoice.checked = !!prefs.voiceReplies;
     if (this.dom.prefMotion) this.dom.prefMotion.checked = !!prefs.reducedMotion;
+    if (this.dom.prefContrast)    this.dom.prefContrast.checked    = !!prefs.highContrast;
+    if (this.dom.prefLabels)      this.dom.prefLabels.checked      = !!prefs.alwaysOnLabels;
+    if (this.dom.prefSuggestions) this.dom.prefSuggestions.checked = prefs.suggestionsEnabled !== false;
+    if (this.dom.prefRemember)    this.dom.prefRemember.checked    = prefs.rememberConversation !== false;
+    if (this.dom.prefCustom)      this.dom.prefCustom.value        = prefs.customInstructions || '';
+    this._syncSegmented('theme',    prefs.theme || 'auto');
+    this._syncSegmented('textSize', prefs.textSize || 'comfortable');
+    this._syncSegmented('style',    prefs.style || 'default');
+    this._syncSwatches(prefs.accent || 'forest');
+    this._updateCustomCount();
+    this._updateStorageStat();
 
     // Decide active conversation
     const active = getActiveConversation();
@@ -167,8 +179,16 @@ class HelperBot {
       prefLang:            $('pnec-bot-pref-lang'),
       prefVoice:           $('pnec-bot-pref-voice'),
       prefMotion:          $('pnec-bot-pref-motion'),
+      prefContrast:        $('pnec-bot-pref-contrast'),
+      prefLabels:          $('pnec-bot-pref-labels'),
+      prefSuggestions:     $('pnec-bot-pref-suggestions'),
+      prefRemember:        $('pnec-bot-pref-remember'),
+      prefCustom:          $('pnec-bot-pref-custom'),
+      prefCustomCount:     $('pnec-bot-pref-custom-count'),
+      storageValue:        $('pnec-bot-settings-storage-value'),
       exportBtn:           $('pnec-bot-export'),
       clearBtn:            $('pnec-bot-clear'),
+      clearAllBtn:         $('pnec-bot-clear-all'),
     };
   }
 
@@ -216,8 +236,60 @@ class HelperBot {
       document.documentElement.classList.toggle('pb-reduced-motion', e.target.checked);
     });
 
+    // v3.11 — new toggles
+    if (d.prefContrast) d.prefContrast.addEventListener('change', (e) => {
+      setPref('highContrast', e.target.checked);
+      document.documentElement.classList.toggle('pb-high-contrast', e.target.checked);
+    });
+    if (d.prefLabels) d.prefLabels.addEventListener('change', (e) => {
+      setPref('alwaysOnLabels', e.target.checked);
+      document.documentElement.classList.toggle('pb-always-labels', e.target.checked);
+    });
+    if (d.prefSuggestions) d.prefSuggestions.addEventListener('change', (e) => {
+      setPref('suggestionsEnabled', e.target.checked);
+      // Re-render visible follow-ups area: hide it if turned off.
+      if (this.dom.followups) {
+        this.dom.followups.style.display = e.target.checked ? '' : 'none';
+      }
+    });
+    if (d.prefRemember) d.prefRemember.addEventListener('change', (e) => {
+      setPref('rememberConversation', e.target.checked);
+      this._updateStorageStat();
+    });
+    if (d.prefCustom) {
+      d.prefCustom.addEventListener('input', (e) => {
+        const v = (e.target.value || '').slice(0, 800);
+        setPref('customInstructions', v);
+        this._updateCustomCount();
+      });
+    }
+
+    // Segmented controls (theme / textSize / style)
+    d.settingsDrawer && d.settingsDrawer.querySelectorAll('.pb-seg').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const pref = btn.getAttribute('data-pref');
+        const value = btn.getAttribute('data-value');
+        if (!pref || !value) return;
+        setPref(pref, value);
+        this._syncSegmented(pref, value);
+        this._applyAppearance(getPrefs());
+      });
+    });
+
+    // Swatch buttons (accent)
+    d.settingsDrawer && d.settingsDrawer.querySelectorAll('.pb-swatch').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const value = btn.getAttribute('data-value');
+        if (!value) return;
+        setPref('accent', value);
+        this._syncSwatches(value);
+        this._applyAppearance(getPrefs());
+      });
+    });
+
     d.exportBtn.addEventListener('click', () => this._exportConversation());
-    d.clearBtn.addEventListener('click', () => this._confirmClearAll());
+    d.clearBtn.addEventListener('click', () => this._confirmClearCurrent());
+    if (d.clearAllBtn) d.clearAllBtn.addEventListener('click', () => this._confirmResetEverything());
 
     // v3.6: Browse all topics expand / collapse
     if (d.browseTopicsBtn) d.browseTopicsBtn.addEventListener('click', () => this._showAllTopics());
@@ -827,6 +899,119 @@ class HelperBot {
     this._renderRail();
     this._showEmptyState();
     this._renderEmptySuggestions();
+  }
+
+  // v3.11 — "Clear conversation" affects only the current chat
+  _confirmClearCurrent() {
+    if (!confirm('Clear this conversation? Your custom instructions and preferences will be kept.')) return;
+    // No public store helper for "clear current" — easiest: clear all
+    // and let the user re-pin a new chat next time.
+    clearAllConversations();
+    this.activeConversationId = null;
+    this._renderRail();
+    this._showEmptyState();
+    this._renderEmptySuggestions();
+    this._updateStorageStat();
+  }
+
+  // v3.11 — Reset everything: history + prefs + custom instructions
+  _confirmResetEverything() {
+    if (!confirm('Reset EVERYTHING? This wipes your chat history, custom instructions, accent color, theme, and all other preferences. Cannot be undone.')) return;
+    try {
+      // Clear all conversations
+      clearAllConversations();
+      // Wipe pref bag entirely
+      localStorage.removeItem('pnec_bot_prefs_v1');
+    } catch (_e) {}
+    // Drop class hooks on <html>
+    const html = document.documentElement;
+    ['pb-theme-auto','pb-theme-light','pb-theme-dark',
+     'pb-accent-forest','pb-accent-sky','pb-accent-sunset','pb-accent-lavender',
+     'pb-text-compact','pb-text-comfortable','pb-text-large',
+     'pb-reduced-motion','pb-high-contrast','pb-always-labels'
+    ].forEach(c => html.classList.remove(c));
+    // Re-apply defaults so the UI doesn't sit in a half-broken state
+    this._applyAppearance(getPrefs());
+    this.activeConversationId = null;
+    this._renderRail();
+    this._showEmptyState();
+    this._renderEmptySuggestions();
+    // Reload toggles to defaults
+    if (this.dom.prefCustom) this.dom.prefCustom.value = '';
+    if (this.dom.prefVoice) this.dom.prefVoice.checked = false;
+    if (this.dom.prefMotion) this.dom.prefMotion.checked = false;
+    if (this.dom.prefContrast) this.dom.prefContrast.checked = false;
+    if (this.dom.prefLabels) this.dom.prefLabels.checked = false;
+    if (this.dom.prefSuggestions) this.dom.prefSuggestions.checked = true;
+    if (this.dom.prefRemember) this.dom.prefRemember.checked = true;
+    this._syncSegmented('theme', 'auto');
+    this._syncSegmented('textSize', 'comfortable');
+    this._syncSegmented('style', 'default');
+    this._syncSwatches('forest');
+    this._updateCustomCount();
+    this._updateStorageStat();
+  }
+
+  // v3.11 — Apply appearance prefs (theme/accent/textSize) to <html>
+  _applyAppearance(prefs) {
+    const html = document.documentElement;
+    // Theme — set exactly one
+    ['pb-theme-auto','pb-theme-light','pb-theme-dark'].forEach(c => html.classList.remove(c));
+    html.classList.add(`pb-theme-${prefs.theme || 'auto'}`);
+    // Accent
+    ['pb-accent-forest','pb-accent-sky','pb-accent-sunset','pb-accent-lavender'].forEach(c => html.classList.remove(c));
+    html.classList.add(`pb-accent-${prefs.accent || 'forest'}`);
+    // Text size
+    ['pb-text-compact','pb-text-comfortable','pb-text-large'].forEach(c => html.classList.remove(c));
+    html.classList.add(`pb-text-${prefs.textSize || 'comfortable'}`);
+    // Reduced motion + high contrast + labels
+    html.classList.toggle('pb-reduced-motion', !!prefs.reducedMotion);
+    html.classList.toggle('pb-high-contrast', !!prefs.highContrast);
+    html.classList.toggle('pb-always-labels', !!prefs.alwaysOnLabels);
+  }
+
+  // v3.11 — Highlight the selected segment in a segmented control
+  _syncSegmented(pref, value) {
+    if (!this.dom.settingsDrawer) return;
+    this.dom.settingsDrawer.querySelectorAll(`.pb-seg[data-pref="${pref}"]`).forEach((btn) => {
+      const on = btn.getAttribute('data-value') === value;
+      btn.classList.toggle('is-selected', on);
+      btn.setAttribute('aria-checked', String(on));
+    });
+  }
+
+  // v3.11 — Highlight the selected accent swatch
+  _syncSwatches(value) {
+    if (!this.dom.settingsDrawer) return;
+    this.dom.settingsDrawer.querySelectorAll('.pb-swatch').forEach((btn) => {
+      const on = btn.getAttribute('data-value') === value;
+      btn.classList.toggle('is-selected', on);
+      btn.setAttribute('aria-checked', String(on));
+    });
+  }
+
+  // v3.11 — Live counter for the custom-instructions textarea
+  _updateCustomCount() {
+    if (!this.dom.prefCustom || !this.dom.prefCustomCount) return;
+    const n = (this.dom.prefCustom.value || '').length;
+    this.dom.prefCustomCount.textContent = `${n} / 800`;
+  }
+
+  // v3.11 — Show how much chatbot data is stored locally
+  _updateStorageStat() {
+    if (!this.dom.storageValue) return;
+    try {
+      let total = 0;
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k || !k.startsWith('pnec_bot_')) continue;
+        total += (localStorage.getItem(k) || '').length;
+      }
+      const kb = (total / 1024).toFixed(1);
+      this.dom.storageValue.textContent = `${kb} KB`;
+    } catch (_e) {
+      this.dom.storageValue.textContent = '—';
+    }
   }
 
   _applyLang(lang) {
