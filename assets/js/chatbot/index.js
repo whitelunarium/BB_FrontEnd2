@@ -201,7 +201,15 @@ class HelperBot {
 
     d.mic.addEventListener('click', () => this._toggleVoice());
 
-    d.prefLang.addEventListener('change', (e) => { setPref('lang', e.target.value); this._applyLang(e.target.value); });
+    d.prefLang.addEventListener('change', (e) => {
+      setPref('lang', e.target.value);
+      this._applyLang(e.target.value);
+      // v3.7 FIX: re-render visible UI so the language switch is
+      // immediately visible (greeting + suggestions chips). Was silent
+      // before — user had to refresh the page to see new language.
+      this._updateGreeting();
+      this._renderEmptySuggestions();
+    });
     d.prefVoice.addEventListener('change', (e) => setPref('voiceReplies', e.target.checked));
     d.prefMotion.addEventListener('change', (e) => {
       setPref('reducedMotion', e.target.checked);

@@ -186,6 +186,21 @@
   .pnec-bot-fab-pulse { animation: none !important; }
 }
 
+/* v3.7: user-controlled reduced motion via Settings → "Reduced motion".
+   When the toggle is on, JS adds .pb-reduced-motion to <html>. These
+   rules then strip transitions + animations from every chatbot element.
+   Independent from the system's prefers-reduced-motion media query —
+   that one fires when the OS-level setting is on; this one fires when
+   the user explicitly clicks the toggle in chatbot settings. */
+html.pb-reduced-motion .pnec-bot-fab,
+html.pb-reduced-motion .pnec-bot-fab-pulse,
+html.pb-reduced-motion .pnec-bot-panel,
+html.pb-reduced-motion [class^="pnec-bot-"],
+html.pb-reduced-motion [class*=" pnec-bot-"] {
+  animation: none !important;
+  transition: none !important;
+}
+
 /* Expanded mode — wider docked panel with rail visible */
 .pnec-bot-panel.is-expanded {
   width: 720px;
