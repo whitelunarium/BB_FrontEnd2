@@ -55,7 +55,7 @@ const POWAY_FACTS = `——— POWAY GEOGRAPHY & DEMOGRAPHICS ———
 
 const PNEC_KNOWLEDGE = `——— PNEC PROGRAMS (use these names exactly) ———
 
-NEIGHBORHOOD EMERGENCY COORDINATORS (NEC). Every Poway block has a volunteer NEC who maintains a roster of households, knows who is medically/mobility vulnerable, and serves as the first contact during an outage, evacuation order, or quake. Residents look up theirs at /pages/find-your-neighborhood.html. To volunteer as one: /pages/volunteer.html.
+NEIGHBORHOOD EMERGENCY COORDINATORS (NEC). Every Poway block has a volunteer NEC who maintains a roster of households, knows who is medically/mobility vulnerable, and serves as the first contact during an outage, evacuation order, or quake. Residents look up theirs at /pages/find-your-neighborhood.html — that page now has an INTERACTIVE map with 60 neighborhoods (hover any region to see name + zone + key streets + evac guidance + WUI flag). For privacy, NEC + ham-operator personal contact info is sent by email request only — direct users to email powaynec@gmail.com with their neighborhood NUMBER (visible on the map and in the panel) to get connected. Use the find_neighborhood tool to look up by street/name/number from chat. To volunteer as a coordinator: /pages/volunteer.html.
 
 CERT (COMMUNITY EMERGENCY RESPONSE TEAM). ~100 trained Poway volunteers. 20-hour FEMA-curriculum course teaches light search/rescue, fire suppression with extinguishers, triage, cribbing, and disaster psychology. Annual refresher drills. PNEC operates Poway's CERT in coordination with Poway Fire Dept.
 
@@ -129,7 +129,7 @@ function citationsInstructions() {
 
 When you draw from a news article in CONTEXT, cite as [News: <publisher>] after the fact.
 
-For tools: when the user wants to do something (navigate, search, look up risk, contact staff, see live conditions), respond with a JSON tool block on its OWN line, in the form:
+For tools: when the user wants to do something (navigate, search, look up risk, contact staff, see live conditions, find their neighborhood), respond with a JSON tool block on its OWN line, in the form:
 {"tool":"<name>","args":{...},"reason":"why"}
 Then a short user-facing note. Available tools:
   - navigate_to(slug)            — open a page on this site
@@ -138,8 +138,11 @@ Then a short user-facing note. Available tools:
   - get_live_conditions          — show the live conditions card (weather + AQI + NWS alerts + fire-weather index)
   - submit_to_staff(question)    — forward a question to a PNEC volunteer
   - find_event(when, type)       — pull upcoming community events
+  - find_neighborhood(query)     — look up a Poway neighborhood by name/street/number, returns evac guidance + how to reach the NEC
 
-PREFER answering inline using the LIVE CONDITIONS block in CONTEXT. Only emit a get_live_conditions tool block if the user explicitly asks to "show", "see", or "pull up" the data — otherwise it duplicates info you already have.`;
+PREFER answering inline using the LIVE CONDITIONS block in CONTEXT. Only emit a get_live_conditions tool block if the user explicitly asks to "show", "see", or "pull up" the data — otherwise it duplicates info you already have.
+
+For neighborhood lookup: when a user asks "what neighborhood am I in", "who's my coordinator", "which evac route do I take", "I live on <street>", or names a Poway neighborhood/area — emit a find_neighborhood tool block with the user's query (street name, neighborhood name, or number). The interactive map at /pages/find-your-neighborhood.html shows all 60 with hover details and a side panel; you can also direct users there via navigate_to("find-your-neighborhood").`;
 }
 
 // ─── Cheap keyword retrieval (Phase 1; replaced by embeddings in P2)

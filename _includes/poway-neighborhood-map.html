@@ -1,0 +1,99 @@
+{% comment %}
+  Interactive PNEC Neighborhood Map (v1, May 2026)
+
+  Replaces the static lightbox image on /pages/find-your-neighborhood.html
+  with a hover/click-to-explore overlay over the same official PNEC PNG.
+
+  How it works:
+  - The PNG renders at full width inside a 1376:1844 aspect-ratio box.
+  - A transparent SVG with viewBox="0 0 1376 1844" overlays the image.
+  - JS fetches /assets/data/poway-neighborhoods.json and draws one
+    invisible <circle> per neighborhood at its normalized x,y position.
+  - hover/focus/click → side panel slides out with all the details.
+
+  Why SVG over <map>: scales cleanly, supports CSS hover, focusable for
+  keyboard users, and the polygons can be upgraded to real shapes later
+  without a markup change.
+
+  Why this doesn't replace the existing Leaflet/OSM `pnec-map` element:
+  this preserves the official PNEC branded map. The Leaflet view stays
+  available on a future "/map?view=osm" toggle for users who want a
+  street-level base.
+{% endcomment %}
+
+<link rel="stylesheet" href="{{ '/assets/css/poway-neighborhood-map.css' | relative_url }}">
+
+<section class="pnec-nmap" id="pnec-nmap" aria-label="Interactive Poway emergency neighborhood map">
+
+  <header class="pnec-nmap-head">
+    <div class="pnec-nmap-head-text">
+      <h2 class="pnec-nmap-title">Find your neighborhood</h2>
+      <p class="pnec-nmap-sub">Hover any region for details. Click to lock the panel and read more.</p>
+    </div>
+    <form class="pnec-nmap-search" role="search" aria-label="Find your neighborhood by address or name">
+      <label for="pnec-nmap-q" class="pnec-nmap-search-label">Address, street, or neighborhood name</label>
+      <input id="pnec-nmap-q" type="search"
+             placeholder="e.g. Garden Road, Old Coach, Highlands Ranch, 12345 Espola"
+             autocomplete="off" inputmode="search" />
+      <button type="submit" class="pnec-nmap-search-btn">Find</button>
+    </form>
+  </header>
+
+  <div class="pnec-nmap-shell">
+
+    <!-- ── Map area: PNG + SVG overlay ─────────────────────────── -->
+    <div class="pnec-nmap-stage" id="pnec-nmap-stage">
+      <div class="pnec-nmap-loader" aria-hidden="true">
+        <div class="pnec-nmap-loader-spinner"></div>
+        <div>Loading neighborhood data…</div>
+      </div>
+      <img class="pnec-nmap-img"
+           id="pnec-nmap-img"
+           src="{{ '/images/pnec/emergency-neighborhood-map.png' | relative_url }}"
+           alt="Poway Emergency Neighborhood Map showing 60 numbered districts."
+           width="1376" height="1844"
+           loading="eager" decoding="async" />
+      <svg class="pnec-nmap-svg" id="pnec-nmap-svg" viewBox="0 0 1376 1844" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <!-- Hotspots injected by poway-neighborhood-image-map.js -->
+      </svg>
+    </div>
+
+    <!-- ── Side panel (sticky on desktop, drawer on mobile) ────── -->
+    <aside class="pnec-nmap-panel" id="pnec-nmap-panel" aria-live="polite" aria-atomic="false">
+      <div class="pnec-nmap-panel-empty" id="pnec-nmap-panel-empty">
+        <div class="pnec-nmap-panel-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <h3>Pick a region</h3>
+        <p>Hover or tap any colored area on the map to see your Neighborhood Emergency Coordinator (NEC) details, evacuation guidance, and key streets.</p>
+        <ul class="pnec-nmap-panel-tips">
+          <li><strong>60 neighborhoods</strong> across Poway, each with a coordinator + ham-radio operator.</li>
+          <li>Numbers on the map match the legend at the bottom.</li>
+          <li>Use the search box to jump to your block by address or name.</li>
+        </ul>
+      </div>
+
+      <div class="pnec-nmap-panel-detail" id="pnec-nmap-panel-detail" hidden>
+        <!-- Filled in by JS when a neighborhood is selected. -->
+      </div>
+    </aside>
+  </div>
+
+  <footer class="pnec-nmap-foot">
+    <div class="pnec-nmap-foot-row">
+      <strong>Need a coordinator's direct contact?</strong>
+      Email <a href="mailto:powaynec@gmail.com?subject=NEC contact request">powaynec@gmail.com</a> with your neighborhood number.
+    </div>
+    <div class="pnec-nmap-foot-row">
+      <strong>Homebound helpline:</strong> <a href="tel:8586681250">858-668-1250</a> &nbsp;·&nbsp;
+      <strong>Register for Alert San Diego:</strong> <a href="https://readysandiego.org/alertsandiego" target="_blank" rel="noopener">readysandiego.org</a>
+    </div>
+  </footer>
+</section>
+
+<script>
+  window.PNEC_NMAP_CONFIG = {
+    dataUrl: '{{ "/assets/data/poway-neighborhoods.json" | relative_url }}'
+  };
+</script>
+<script src="{{ '/assets/js/pages/poway-neighborhood-image-map.js' | relative_url }}" defer></script>

@@ -22,7 +22,8 @@
 // card just shows a friendly "I couldn't reach the server" line.
 
 import {
-  searchNews, getRiskNow, submitToStaff, fetchAllFaq, getLiveConditions
+  searchNews, getRiskNow, submitToStaff, fetchAllFaq, getLiveConditions,
+  findNeighborhoodByQuery, getPowayNeighborhoods
 } from './api.js';
 import { renderMarkdown, _escape } from './render.js';
 import { updateMessage, getCachedUser, getActiveConversation } from './store.js';
@@ -57,6 +58,11 @@ const TOOL_DEFS = {
     title: 'Live Poway conditions',
     confirmLabel: 'Get live data',
     body: () => `Pull right-now Poway weather, AQI, fire-weather index, and active NWS alerts.`,
+  },
+  find_neighborhood: {
+    title: 'Find a Poway neighborhood',
+    confirmLabel: 'Look up',
+    body: (args) => `Look up the Poway neighborhood for **${args.query || 'your address'}** with evac route + how to reach the NEC.`,
   },
 };
 
@@ -251,9 +257,44 @@ async function dispatchTool(tc, bot) {
     case 'submit_to_staff':     return await tool_submitToStaff(tc.args, bot);
     case 'find_event':          return await tool_findEvent(tc.args);
     case 'get_live_conditions': return await tool_getLiveConditions();
+    case 'find_neighborhood':   return await tool_findNeighborhood(tc.args);
     default:
       return { text: `_Unknown tool: ${tc.tool}_` };
   }
+}
+
+async function tool_findNeighborhood(args) {
+  const q = (args && args.query || '').trim();
+  if (!q) return { text: `_I need a neighborhood name, street, or number to look up._` };
+  const matches = await findNeighborhoodByQuery(q);
+  if (!matches.length) {
+    return {
+      html: `
+        <div class="pnec-bot-data-card">
+          <span class="pnec-bot-data-card-eyebrow">No match</span>
+          <h5 class="pnec-bot-data-card-title">"${_escape(q)}" didn't match a Poway neighborhood</h5>
+          <p class="pnec-bot-data-card-body">Try a street name (Espola, Garden, Twin Peaks), the neighborhood name (Old Coach, Highlands Ranch), or a number 1–60.</p>
+          <a href="/pages/find-your-neighborhood.html" target="_blank">Browse all 60 neighborhoods →</a>
+        </div>`
+    };
+  }
+  const top = matches[0];
+  const wuiBadge = top.wui ? ` <span style="background:#c0392b;color:#fff;padding:1px 7px;border-radius:4px;font-size:0.7rem;font-weight:700;letter-spacing:0.04em;">WUI</span>` : '';
+  const altsHtml = matches.length > 1
+    ? `<p class="pnec-bot-data-card-body" style="margin-top:8px;font-size:0.84em;color:#5a6470;">Other matches: ${matches.slice(1, 5).map(m => `<a href="/pages/find-your-neighborhood.html#n${m.number}">#${m.number} ${_escape(m.name)}</a>`).join(', ')}</p>`
+    : '';
+  return {
+    html: `
+      <div class="pnec-bot-data-card">
+        <span class="pnec-bot-data-card-eyebrow">Neighborhood #${_escape(String(top.number))} · Zone ${_escape(top.zone || '?')}${wuiBadge}</span>
+        <h5 class="pnec-bot-data-card-title">${_escape(top.name)}</h5>
+        ${top.evac_guidance ? `<p class="pnec-bot-data-card-body"><strong>Evac:</strong> ${_escape(top.evac_guidance)}</p>` : ''}
+        ${top.notes ? `<p class="pnec-bot-data-card-body" style="margin-top:6px;font-style:italic;color:#5a6470;">${_escape(top.notes)}</p>` : ''}
+        <p class="pnec-bot-data-card-body" style="margin-top:8px;">For your NEC + ham operator contact, email <a href="mailto:powaynec@gmail.com?subject=NEC%20contact%20request%20%E2%80%94%20neighborhood%20${top.number}">powaynec@gmail.com</a> with neighborhood #${top.number}.</p>
+        ${altsHtml}
+        <a href="/pages/find-your-neighborhood.html#n${top.number}" target="_blank" style="margin-top:8px;display:inline-block;">Open on the interactive map →</a>
+      </div>`
+  };
 }
 
 async function tool_getLiveConditions() {

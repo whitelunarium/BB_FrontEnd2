@@ -219,6 +219,56 @@ export async function searchNews(query) {
   } catch (_e) { return []; }
 }
 
+// ─── Poway neighborhoods (v3.9 — interactive map data) ───────────
+//
+// Same JSON the find-your-neighborhood page renders. Loaded lazily
+// (only when chatbot is asked a neighborhood question), cached for
+// the lifetime of the tab.
+
+let _nmapCache = null;
+
+export async function getPowayNeighborhoods() {
+  if (_nmapCache) return _nmapCache;
+  try {
+    // The JSON ships from the static frontend so we hit the site origin,
+    // NOT the Flask API.
+    const url = '/assets/data/poway-neighborhoods.json';
+    const res = await fetch(url, { credentials: 'same-origin' });
+    if (!res.ok) return null;
+    _nmapCache = await res.json();
+    return _nmapCache;
+  } catch (_e) { return null; }
+}
+
+export async function findNeighborhoodByQuery(q) {
+  const data = await getPowayNeighborhoods();
+  if (!data || !data.neighborhoods) return [];
+  const norm = String(q || '').trim().toLowerCase();
+  if (!norm) return [];
+
+  const num = parseInt(norm, 10);
+  return data.neighborhoods
+    .map(n => {
+      let score = 0;
+      const name = (n.name || '').toLowerCase();
+      if (name === norm) score += 100;
+      if (name.startsWith(norm)) score += 40;
+      if (name.includes(norm)) score += 20;
+      if (!Number.isNaN(num) && n.number === num) score += 80;
+      (n.key_streets || []).forEach(s => {
+        const lower = s.toLowerCase();
+        if (lower === norm) score += 60;
+        if (lower.startsWith(norm)) score += 25;
+        if (lower.includes(norm)) score += 12;
+      });
+      return { neighborhood: n, score };
+    })
+    .filter(x => x.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5)
+    .map(x => x.neighborhood);
+}
+
 // ─── Live conditions (v3.8 — chatbot-aware aggregator) ───────────
 //
 // Hits /api/live/conditions which aggregates weather + AQI + NWS
