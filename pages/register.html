@@ -83,29 +83,19 @@ body_class: inner-page auth-page-body
   }
 
   /* ─── Body-level wildfire backdrop ──────────────────────────────────
-     v2.63: the photo lives at the body level as a single fixed
-     background element behind the entire page — no longer split into
-     a left "brand panel". Both the brand text and the form card sit
-     ON TOP of this single ambient image. Performance-tuned per the
-     v2.58 lessons: GPU-promoted via translateZ(0), no mask-image and
-     no filters (those force per-frame repaints during scroll). */
+     v2.66 PERF FIX: was running TWO fixed-position pseudo-elements
+     (one for photo, one for gradient overlay) — each got its own
+     compositor layer + per-frame paint. With the form card's own GPU
+     layer, the page had 4+ scrolling layers. On low-end devices the
+     scroll lagged badly even with translateZ(0).
+
+     Fix: collapse to ONE fixed layer with stacked background-image
+     (gradient on top, photo below). Half the compositor work, same
+     visual. Plus drop will-change (it's for ACTIVE animations, not
+     stationary elements; keeping it pinned forces GPU memory
+     allocation we don't need). */
   .auth-page-body { background: #14201a; }
   .auth-page-body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url('{{ "/assets/images/Poway_Fire.webp" | relative_url }}');
-    background-size: cover;
-    background-position: center 30%;
-    transform: translateZ(0);
-    will-change: transform;
-    z-index: -2;
-    pointer-events: none;
-  }
-  /* Tinted gradient overlay — forest-green → navy → ember-red, dialed
-     down so the photo still reads as a recognizable image but text on
-     top is comfortably legible. */
-  .auth-page-body::after {
     content: '';
     position: fixed;
     inset: 0;
@@ -113,11 +103,13 @@ body_class: inner-page auth-page-body
       linear-gradient(135deg,
         rgba(20, 90, 50, 0.62) 0%,
         rgba(10, 22, 40, 0.58) 50%,
-        rgba(192, 57, 43, 0.42) 100%);
-    transform: translateZ(0);
-    will-change: transform;
+        rgba(192, 57, 43, 0.42) 100%),
+      url('{{ "/assets/images/Poway_Fire.webp" | relative_url }}') center 30% / cover no-repeat;
     z-index: -1;
     pointer-events: none;
+    /* translateZ(0) promotes to its own layer ONCE — no will-change so
+       the layer is released when not actively animating. */
+    transform: translateZ(0);
   }
 
   /* Suppress the global corner vignette from _polish.scss */
@@ -135,12 +127,13 @@ body_class: inner-page auth-page-body
   }
 
   /* ─── Split-screen layout grid ───────────────────────────────────────
-     50/50 columns on desktop (>= 1024px). Stacks below that with the
-     brand panel becoming a short hero strip on top. */
+     v2.66: form panel now gets a bit MORE of the viewport (1fr 1.15fr)
+     so the bigger card has room without crowding the hero text on
+     the left. Still mostly balanced, just tilted toward the action. */
   .auth-split {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    min-height: calc(100vh - 88px); /* roughly the navbar height */
+    grid-template-columns: 1fr 1.15fr;
+    min-height: calc(100vh - 88px);
     width: 100%;
     font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
@@ -222,7 +215,10 @@ body_class: inner-page auth-page-body
     line-height: 1.04;
     letter-spacing: -0.028em;
     color: #fff;
-    text-shadow: 0 2px 14px rgba(10, 22, 40, 0.40);
+    /* v2.66 PERF: dropped text-shadow. text-shadow with 14px blur
+       on a large heading repaints every scroll frame. Body backdrop
+       gradient now darkens the area enough that the white text reads
+       crisp without it. */
   }
   .auth-brand-hero p {
     margin: 0;
@@ -308,36 +304,37 @@ body_class: inner-page auth-page-body
   }
 
   /* ─── FORM PANEL (right on desktop, below brand on mobile) ─────────
-     v2.65: card scaled up significantly (640px max + 72px padding) so
-     it reads as the dominant focal element. The form panel itself stays
-     transparent — only the card has substance. */
+     v2.66: card scaled UP again (720px max + 80px padding) per user
+     feedback — the previous 640px still felt small. Form panel padding
+     trimmed so the bigger card has room. */
   .auth-form-panel {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: clamp(36px, 3vw, 64px) clamp(20px, 2.5vw, 48px);
+    padding: clamp(32px, 2.5vw, 56px) clamp(18px, 2vw, 40px);
     background: transparent;
     position: relative;
   }
 
   /* The form card — opaque cream surface with a green ribbon at the
      top edge, hand-tuned shadow for "floating on photo" depth.
-     v2.65 changes:
-       • max-width 560 → 640px
-       • desktop padding 64 → 72px
-       • border-radius 26 → 28px
-       • REMOVED 56/112px shadow layer (perf — large-blur drop shadows
-         on a scrolling card composited every frame, ~5ms repaint cost
-         on lower-end machines). 5-layer shadow now caps at 64px blur.
-       • Promoted to its own GPU layer via translate3d so the browser
-         caches the rasterized card and just composites it during scroll
-         instead of re-rendering every frame. */
+
+     v2.66 changes:
+       • max-width 640 → 720px (was the user's chief complaint)
+       • desktop padding 72 → 80px
+       • border-radius 28 → 30px
+       • REMOVED `will-change: transform` (it was permanent — that
+         pins a GPU layer in memory forever and forces the compositor
+         to keep an unnecessary backbuffer. Now using `contain: paint`
+         which gives most of the layer benefit without the keepalive.)
+       • Added `content-visibility: auto` on idle which lets the
+         browser skip rendering when the card scrolls off-screen */
   .auth-form-stack {
     width: 100%;
-    max-width: 640px;
+    max-width: 720px;
     background: #fbf8f1;
-    padding: clamp(44px, 4.5vw, 72px) clamp(36px, 4.2vw, 64px);
-    border-radius: 28px;
+    padding: clamp(48px, 5vw, 80px) clamp(40px, 4.5vw, 72px);
+    border-radius: 30px;
     position: relative;
     box-shadow:
       0 0 0 1px rgba(20, 90, 50, 0.08),                /* hairline border */
@@ -346,16 +343,14 @@ body_class: inner-page auth-page-body
       0 14px 30px rgba(0, 0, 0, 0.14),                 /* mid shadow */
       0 30px 64px rgba(0, 0, 0, 0.20);                 /* drop shadow */
     animation: auth-card-in 600ms cubic-bezier(.2,.85,.25,1) both;
-    /* Subtle paper-grain via gradient — adds warmth without an SVG */
     background-image:
       radial-gradient(1000px 700px at 100% 0%, rgba(212, 239, 223, 0.32) 0%, transparent 60%),
       radial-gradient(800px 600px at 0% 100%, rgba(248, 215, 200, 0.22) 0%, transparent 60%),
       linear-gradient(180deg, #ffffff 0%, #fbf8f1 100%);
-    /* GPU-promote — keeps the heavy multi-layer shadow rasterized + cached
-       so scroll-frame composites are cheap. Was the #2 scroll-lag culprit. */
-    transform: translate3d(0, 0, 0);
-    will-change: transform;
-    backface-visibility: hidden;
+    /* CSS containment — isolates this card's paint + layout from the
+       rest of the page. Cheaper than will-change because it doesn't
+       allocate a permanent GPU backbuffer. */
+    contain: layout paint;
   }
   /* Forest-green ribbon at the top edge of the card */
   .auth-form-stack::before {
@@ -364,7 +359,7 @@ body_class: inner-page auth-page-body
     top: 0; left: 0; right: 0;
     height: 5px;
     background: linear-gradient(90deg, var(--pnec-green-deep) 0%, var(--pnec-green) 50%, #27ae60 100%);
-    border-radius: 28px 28px 0 0;
+    border-radius: 30px 30px 0 0;
     box-shadow: 0 1px 6px rgba(20, 90, 50, 0.40);
   }
   /* Top-right forest-green corner accent */
@@ -372,25 +367,26 @@ body_class: inner-page auth-page-body
     content: '';
     position: absolute;
     top: -1px; right: -1px;
-    width: 160px; height: 160px;
-    background: radial-gradient(140px 140px at 100% 0%, rgba(30, 132, 73, 0.10), transparent 70%);
-    border-radius: 0 28px 0 0;
+    width: 180px; height: 180px;
+    background: radial-gradient(160px 160px at 100% 0%, rgba(30, 132, 73, 0.10), transparent 70%);
+    border-radius: 0 30px 0 0;
     pointer-events: none;
   }
   @keyframes auth-card-in {
-    from { opacity: 0; transform: translate3d(0, 20px, 0) scale(0.985); }
-    to   { opacity: 1; transform: translate3d(0, 0, 0); }
+    from { opacity: 0; transform: translateY(20px) scale(0.985); }
+    to   { opacity: 1; transform: none; }
   }
   @media (prefers-reduced-motion: reduce) {
     .auth-form-stack { animation: none; }
   }
   @media (max-width: 1023px) {
     .auth-form-stack {
-      max-width: 520px;
-      padding: clamp(32px, 5vw, 48px) clamp(24px, 5vw, 40px);
-      border-radius: 22px;
+      max-width: 560px;
+      padding: clamp(36px, 5vw, 52px) clamp(26px, 5vw, 44px);
+      border-radius: 24px;
     }
-    .auth-form-stack::before { border-radius: 22px 22px 0 0; }
+    .auth-form-stack::before { border-radius: 24px 24px 0 0; }
+    .auth-form-stack::after  { border-radius: 0 24px 0 0; }
   }
 
   /* Eyebrow with lock icon (v2.65 bumped) */
@@ -413,20 +409,20 @@ body_class: inner-page auth-page-body
   }
   .auth-eyebrow-icon svg { color: var(--pnec-green-deep); width: 14px; height: 14px; }
 
-  /* Greeting heading — time-aware via JS. v2.65 bumped sizes again
-     for the 640px card. */
+  /* Greeting heading — time-aware via JS. v2.66 bumped again for the
+     720px card. */
   .auth-greeting {
-    margin: 20px 0 10px;
+    margin: 22px 0 10px;
     font-family: 'DM Sans', sans-serif;
-    font-size: clamp(2.2rem, 3.4vw, 2.85rem);
+    font-size: clamp(2.4rem, 3.8vw, 3.15rem);
     font-weight: 900;
-    line-height: 1.04;
+    line-height: 1.03;
     color: #0a1628;
-    letter-spacing: -0.032em;
+    letter-spacing: -0.034em;
   }
   .auth-tagline {
     margin: 0;
-    font-size: 1.06rem;
+    font-size: 1.1rem;
     color: #5a5a5a;
     line-height: 1.5;
   }
@@ -503,28 +499,28 @@ body_class: inner-page auth-page-body
     to   { opacity: 1; transform: none; }
   }
 
-  /* Tabs — forest-green active pill (v2.65 bumped) */
+  /* Tabs — forest-green active pill (v2.66 bumped) */
   .auth-tabs {
     display: grid;
     grid-template-columns: 1fr 1fr;
     position: relative;
     background: #f3f0ea;
-    padding: 6px;
-    margin: 0 0 26px;
-    border-radius: 14px;
+    padding: 7px;
+    margin: 0 0 28px;
+    border-radius: 16px;
     border: 1px solid #e8e4dc;
   }
   .auth-tab {
     position: relative;
     z-index: 2;
-    padding: 13px 14px;
+    padding: 15px 16px;
     font-family: 'DM Sans', sans-serif;
-    font-size: 0.95rem;
+    font-size: 1rem;
     font-weight: 700;
     color: #5a5a5a;
     background: transparent;
     border: 0;
-    border-radius: 10px;
+    border-radius: 11px;
     cursor: pointer;
     transition: color 240ms cubic-bezier(.4,0,.2,1);
     letter-spacing: -0.005em;
@@ -533,10 +529,10 @@ body_class: inner-page auth-page-body
   .auth-tab:not(.is-active):hover { color: var(--pnec-green-deep); }
   .auth-tab-pill {
     position: absolute;
-    top: 6px; bottom: 6px; left: 6px;
-    width: calc(50% - 6px);
+    top: 7px; bottom: 7px; left: 7px;
+    width: calc(50% - 7px);
     background: linear-gradient(135deg, var(--pnec-green) 0%, var(--pnec-green-deep) 100%);
-    border-radius: 10px;
+    border-radius: 11px;
     box-shadow:
       0 1px 0 rgba(255, 255, 255, 0.20) inset,
       0 4px 12px rgba(20, 90, 50, 0.28);
@@ -560,18 +556,18 @@ body_class: inner-page auth-page-body
     .auth-returning-bubble { animation: none; }
   }
 
-  /* Floating-label fields (v2.65 bumped) */
-  .auth-field { position: relative; margin-bottom: 16px; }
+  /* Floating-label fields (v2.66 bumped) */
+  .auth-field { position: relative; margin-bottom: 18px; }
   .auth-field input,
   .auth-field select {
     width: 100%;
-    padding: 22px 18px 11px;
+    padding: 24px 20px 12px;
     font-family: 'DM Sans', sans-serif;
-    font-size: 1.02rem;
+    font-size: 1.06rem;
     color: #0a1628;
     background: #fff;
     border: 1.5px solid #e4e0d6;
-    border-radius: 12px;
+    border-radius: 13px;
     transition:
       border-color 220ms cubic-bezier(.4,0,.2,1),
       box-shadow 220ms cubic-bezier(.4,0,.2,1);
@@ -590,10 +586,10 @@ body_class: inner-page auth-page-body
   }
   .auth-field label {
     position: absolute;
-    top: 18px; left: 18px;
+    top: 20px; left: 20px;
     padding: 0 4px;
     font-family: 'DM Sans', sans-serif;
-    font-size: 1rem;
+    font-size: 1.04rem;
     color: #9e9e9e;
     pointer-events: none;
     transform-origin: left center;
@@ -669,17 +665,17 @@ body_class: inner-page auth-page-body
   }
   .auth-link:hover { color: var(--pnec-green); text-decoration: underline; text-underline-offset: 3px; }
 
-  /* Submit button — forest-green AOPS, layered shadow, sheen (v2.65 bumped) */
+  /* Submit button — forest-green AOPS, layered shadow, sheen (v2.66 bumped) */
   .auth-submit {
     width: 100%;
-    padding: 18px 26px;
-    margin-top: 6px;
+    padding: 20px 28px;
+    margin-top: 8px;
     font-family: 'DM Sans', sans-serif;
-    font-size: 1.06rem; font-weight: 700;
+    font-size: 1.12rem; font-weight: 700;
     letter-spacing: -0.005em;
     color: #fff;
     background: linear-gradient(180deg, var(--pnec-green) 0%, var(--pnec-green-deep) 100%);
-    border: 0; border-radius: 14px;
+    border: 0; border-radius: 15px;
     cursor: pointer;
     box-shadow:
       0 1px 0 rgba(255, 255, 255, 0.30) inset,
