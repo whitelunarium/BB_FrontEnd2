@@ -22,7 +22,7 @@
 // card just shows a friendly "I couldn't reach the server" line.
 
 import {
-  searchNews, getRiskNow, submitToStaff, fetchAllFaq
+  searchNews, getRiskNow, submitToStaff, fetchAllFaq, getLiveConditions
 } from './api.js';
 import { renderMarkdown, _escape } from './render.js';
 import { updateMessage, getCachedUser, getActiveConversation } from './store.js';
@@ -52,6 +52,11 @@ const TOOL_DEFS = {
     title: 'Find a community event',
     confirmLabel: 'Find events',
     body: (args) => `Look for ${args.type || 'community'} events ${args.when ? 'in ' + args.when : 'coming up'}.`,
+  },
+  get_live_conditions: {
+    title: 'Live Poway conditions',
+    confirmLabel: 'Get live data',
+    body: () => `Pull right-now Poway weather, AQI, fire-weather index, and active NWS alerts.`,
   },
 };
 
@@ -240,14 +245,48 @@ function persistAndRerender(bot, msg) {
 
 async function dispatchTool(tc, bot) {
   switch (tc.tool) {
-    case 'navigate_to':     return await tool_navigateTo(tc.args, bot);
-    case 'search_news':     return await tool_searchNews(tc.args);
-    case 'get_risk_now':    return await tool_getRisk();
-    case 'submit_to_staff': return await tool_submitToStaff(tc.args, bot);
-    case 'find_event':      return await tool_findEvent(tc.args);
+    case 'navigate_to':         return await tool_navigateTo(tc.args, bot);
+    case 'search_news':         return await tool_searchNews(tc.args);
+    case 'get_risk_now':        return await tool_getRisk();
+    case 'submit_to_staff':     return await tool_submitToStaff(tc.args, bot);
+    case 'find_event':          return await tool_findEvent(tc.args);
+    case 'get_live_conditions': return await tool_getLiveConditions();
     default:
       return { text: `_Unknown tool: ${tc.tool}_` };
   }
+}
+
+async function tool_getLiveConditions() {
+  const live = await getLiveConditions();
+  if (!live || !live.ok) return { text: `_Live conditions service is offline right now. Try again in a minute._` };
+  const w = live.weather || {};
+  const a = live.air_quality || {};
+  const f = live.fire_weather || {};
+  const aqiCat = a.us_aqi == null ? 'unknown' :
+    a.us_aqi <= 50 ? 'Good' : a.us_aqi <= 100 ? 'Moderate' :
+    a.us_aqi <= 150 ? 'Unhealthy for Sensitive Groups' :
+    a.us_aqi <= 200 ? 'Unhealthy' : a.us_aqi <= 300 ? 'Very Unhealthy' : 'Hazardous';
+  const alerts = Array.isArray(live.alerts) ? live.alerts : [];
+  const alertHtml = alerts.length
+    ? `<ul style="margin:8px 0 0; padding-left:18px;">${alerts.slice(0, 3).map(al =>
+        `<li><strong>${_escape(al.event || 'Alert')}</strong>${al.severity ? ` — ${_escape(al.severity)}` : ''}${al.headline ? `<br><span style="font-size:0.86em;">${_escape(al.headline.slice(0, 140))}</span>` : ''}</li>`
+       ).join('')}</ul>`
+    : `<p class="pnec-bot-data-card-body" style="margin-top:6px;">No active NWS alerts for San Diego County.</p>`;
+  return {
+    html: `
+      <div class="pnec-bot-data-card">
+        <span class="pnec-bot-data-card-eyebrow">Live Poway conditions</span>
+        <h5 class="pnec-bot-data-card-title">${_escape(f.label || 'Conditions')} • Fire-weather ${f.score ?? '?'}/10</h5>
+        <p class="pnec-bot-data-card-body">
+          <strong>${_escape(String(w.temp_f ?? '?'))}°F</strong> &middot;
+          ${_escape(String(w.humidity ?? '?'))}% RH &middot;
+          ${_escape(String(w.wind_mph ?? '?'))} mph wind<br>
+          <strong>AQI ${_escape(String(a.us_aqi ?? '?'))}</strong> (${_escape(aqiCat)})
+        </p>
+        ${alertHtml}
+        ${live.recommendation ? `<p class="pnec-bot-data-card-body" style="margin-top:8px; font-style:italic;">${_escape(live.recommendation)}</p>` : ''}
+      </div>`
+  };
 }
 
 async function tool_navigateTo(args, _bot) {

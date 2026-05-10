@@ -219,6 +219,38 @@ export async function searchNews(query) {
   } catch (_e) { return []; }
 }
 
+// ─── Live conditions (v3.8 — chatbot-aware aggregator) ───────────
+//
+// Hits /api/live/conditions which aggregates weather + AQI + NWS
+// alerts + fire-weather index + sunrise/sunset into one JSON payload
+// the chatbot can inject into its system prompt. Backend caches the
+// upstream calls for 30 min; client also caches per-tab for 5 min so
+// rapid-fire chat doesn't redundantly hit the backend.
+
+let _liveCache = { data: null, expiresAt: 0 };
+
+export async function getLiveConditions() {
+  const now = Date.now();
+  if (_liveCache.data && _liveCache.expiresAt > now) return _liveCache.data;
+  try {
+    const res = await fetch(`${defaultApiBase()}/api/live/conditions`, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' }
+    });
+    if (!res.ok) {
+      _liveCache = { data: { ok: false }, expiresAt: now + 60_000 };
+      return _liveCache.data;
+    }
+    const data = await res.json();
+    const payload = { ok: true, ...data };
+    _liveCache = { data: payload, expiresAt: now + 5 * 60_000 };
+    return payload;
+  } catch (_e) {
+    _liveCache = { data: { ok: false }, expiresAt: now + 60_000 };
+    return _liveCache.data;
+  }
+}
+
 // ─── Risk now (today's Poway risk widget data) ────────────────────
 
 export async function getRiskNow() {

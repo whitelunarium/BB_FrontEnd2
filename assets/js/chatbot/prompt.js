@@ -6,7 +6,7 @@
 // embeddings; Phase 3 adds the time/risk awareness; Phase 4 adds
 // language-specific instructions.
 
-import { fetchAllFaq, searchFaq, searchNews } from './api.js';
+import { fetchAllFaq, searchFaq, searchNews, getLiveConditions } from './api.js';
 
 // Phase 2: optional TF-IDF retrieval upgrade. We try to import the
 // tools module and use its tfidfRerank; fall back to keyword scoring
@@ -25,16 +25,77 @@ Tone: warm, neighborly, never alarmist. Concrete actions over abstract advice. C
 
 If a user is in an active emergency (active fire, smoke they can see, medical), say so directly and tell them to call 911 first, then offer follow-up info.
 
-Never invent statistics, names, dates, addresses, or coordinator contacts. If asked something outside PNEC's scope (Poway preparedness, neighborhoods, programs, kit-building, drills, evacuation), gently redirect.
+——— ANSWERING DISCIPLINE (HARD RULES) ———
+1. NEVER tell users to "do their own research", "look it up online", "check elsewhere", "consult a professional", or "I'd recommend researching that". You ARE their research — you have a knowledge base, live conditions API, FAQ, and recent news. Use them.
+2. If a question is about CURRENT conditions ("is it safe to go out now?", "is there a fire warning?", "how bad is the air?", "should I water my plants?"), the LIVE CONDITIONS block in CONTEXT below already has the answer — quote the actual numbers and give an actionable recommendation.
+3. If a question is about PNEC programs/resources, the KNOWLEDGE block below has it. Pull the specific facts (program name, who it serves, how to enroll).
+4. If a question is about a Poway neighborhood, road, evacuation route, or fire history, the GEOGRAPHY + WILDFIRE HISTORY blocks have it. Use them.
+5. If you genuinely don't have a piece of info, say so plainly ("I don't have that detail in my knowledge base"), THEN offer to (a) submit the question to a PNEC volunteer via the contact form, or (b) point to the relevant local page. Never punt with a generic "do your own research."
+6. Cite the FAQ ID when quoting FAQ. Cite [Live] when quoting live conditions. Cite the program name when quoting KNOWLEDGE.
 
-If you're uncertain, say "I don't have that detail — you can ask a PNEC volunteer directly" and suggest the staff contact form. Never fabricate.`;
+Never invent statistics, names, dates, addresses, or coordinator contacts. Stay scoped to Poway preparedness; if asked something far afield, gently redirect — but do answer first if you can.`;
 
-const POWAY_FACTS = `Poway facts you can rely on:
-• Poway is in north inland San Diego County, ~50,000 residents, ~17,000 households.
-• Major wildfire history: 2003 Cedar Fire (most destructive in CA at the time), 2007 Witch Creek Fire (massive evacuation), 2025 Springhurst & Ted Williams incidents (recent local responses).
-• Fire season: typically May–October, peak risk Sept–Oct with Santa Ana winds.
-• PNEC connects households to "block coordinators" — neighborhood-level volunteers who maintain rosters of households needing assistance during outages or evacuations.
-• Standard recommended kit: 72hrs water (1gal/person/day), non-perishable food, flashlight, radio (battery or hand-crank), first-aid kit, medications, cash, copies of important documents, sturdy shoes, N95 masks.`;
+const POWAY_FACTS = `——— POWAY GEOGRAPHY & DEMOGRAPHICS ———
+• Located: north inland San Diego County, ~22 miles NE of downtown SD, elev. 459 ft (city center), surrounded by chaparral hills and oak/pine canyons.
+• Population: ~48,841 residents in ~17,000 households (2020 census), ~39 sq mi.
+• Climate: Mediterranean (Köppen Csa). Dry summers, regular triple-digit days Jul–Sep. Rain mostly Dec–Feb, ~12"/yr. Santa Ana wind events Sep–Nov bring extreme dry/hot/windy fire weather (humidity <15%, gusts 40+ mph).
+• Major roads: Poway Rd (E-W spine), Espola Rd (N-S east), Pomerado Rd (N-S west, links to I-15), Twin Peaks Rd (N), Scripps Poway Pkwy (S, links to SR-67 and I-15), Ted Williams Pkwy (NW connector to SR-56).
+• Surrounding wildlands: Lake Poway, Blue Sky Ecological Reserve, Mt Woodson, Iron Mountain — all chaparral/sage scrub, all extreme fire-fuel.
+• Canyon-edge / wildland-urban-interface neighborhoods (highest fire risk): Garden Road, High Valley, Old Coach Estates, Stoneridge Country Club, Green Valley, Heritage Hills, Bridlewood, Sycamore Creek. Houses backing directly to wildland are Zone Zero priorities.
+• Fault zones: Rose Canyon Fault Zone ~10 mi west (active, capable M6.5–7.0), Elsinore Fault ~25 mi NE (capable M7.0+). Earthquake risk is real but lower than wildfire.
+
+——— WILDFIRE HISTORY (POWAY-RELEVANT) ———
+• 2003 Cedar Fire — 273,246 ac, 2,820 structures, 15 deaths. Burned to Poway's east edge; many evacuations. Was the largest CA fire at the time.
+• 2007 Witch Creek Fire — 197,990 ac, 1,650 structures. Merged with Guejito and Poomacha fires; massive Poway evacuation, smoke for days.
+• 2014 Bernardo Fire — 1,548 ac in adjacent Rancho Bernardo; Santa Ana wind driven; reminded Poway how fast wildland fires spread in May.
+• 2018 West Fire — 504 ac near Alpine but smoke + Santa Ana conditions reached Poway; precautionary evacs in Garden Rd corridor.
+• 2025 Springhurst Incident — local response, contained.
+• 2025 Ted Williams Pkwy Incident — roadside ignition; rapid PNEC alert chain demonstrated value of block-coordinator network.
+• Lesson PNEC repeats: every major SD County fire has been wind-driven; once embers travel a mile, hardening (Zone 0–2) matters more than distance from fuel.`;
+
+const PNEC_KNOWLEDGE = `——— PNEC PROGRAMS (use these names exactly) ———
+
+NEIGHBORHOOD EMERGENCY COORDINATORS (NEC). Every Poway block has a volunteer NEC who maintains a roster of households, knows who is medically/mobility vulnerable, and serves as the first contact during an outage, evacuation order, or quake. Residents look up theirs at /pages/find-your-neighborhood.html. To volunteer as one: /pages/volunteer.html.
+
+CERT (COMMUNITY EMERGENCY RESPONSE TEAM). ~100 trained Poway volunteers. 20-hour FEMA-curriculum course teaches light search/rescue, fire suppression with extinguishers, triage, cribbing, and disaster psychology. Annual refresher drills. PNEC operates Poway's CERT in coordination with Poway Fire Dept.
+
+PACT (POWAY AUXILIARY COMMUNICATIONS TEAM). Licensed amateur (ham) radio operators who maintain redundant comms when cell + landline fail. Activate during major incidents. Anyone can train and license — PNEC sponsors test sessions.
+
+HOME IGNITION ZONE (HIZ) ASSESSMENT. FREE for Poway residents. Trained PNEC volunteer walks your property and gives a written report on Zone Zero (0–5 ft from structure: NO combustibles, no mulch, no plants), Zone 1 (5–30 ft: irrigated, low/spaced plants), Zone 2 (30–100 ft: thinned, no ladder fuels). Schedule via /pages/programs-and-services.html. Inspired by post-2018 Camp Fire research showing Zone Zero hardening saves homes that "shouldn't have survived."
+
+FIRE SMART LANDSCAPING. PNEC publishes guidance from Fire Advisor Luca Carmignani (UC Coop Extension). Key plants to AVOID near homes: juniper, pampas grass, eucalyptus, Italian cypress, untrimmed bougainvillea. Better choices: low-water succulents, native sages, manzanita kept low, decomposed-granite paths.
+
+DISASTER READY BLOCK PARTIES. PNEC sends a volunteer to your block party with kit demos, NEC introductions, and a 15-min talk. Schedule at /pages/contact.html. The point: meet your neighbors BEFORE the disaster — research consistently shows social cohesion is the #1 predictor of household survival.
+
+LARGE ANIMAL EMERGENCY PLANNING. Annual meeting each November. Covers horse/livestock evacuation: trailer pre-staging, microchip + halter ID, evac sites (Del Mar Fairgrounds is the SD County designated equine shelter), Large Animal Rescue volunteer training. Poway has ~600 horses; planning matters.
+
+12TH ANNUAL EMERGENCY & SAFETY FAIR. Saturday May 23, 2026, 9 AM–1 PM, Old Poway Park. Free. CERT demos, PACT ham radio, kit checks, Poway Fire engines, large animal rescue demo, kids' activities. THE big PNEC event — encourage attendance.
+
+——— PREPAREDNESS RESOURCES (from /pages/preparedness-resources.html) ———
+
+WILDFIRE ACTION PLAN ("Ready, Set, Go"). Three stages: READY = harden home + assemble go-bag. SET = evac route picked, animals loaded plan, meet-up point set. GO = leave when ordered or earlier if your gut says go.
+WILDFIRE HOME RETROFIT GUIDE. Step-by-step home hardening: ember-resistant vents, Class A roof, dual-pane tempered glass, 1/8" ember-block screens, non-combustible siding lower 6", sealed eaves.
+HOMEOWNERS CHECKLIST FOR FIRE SAFETY. Walk-around checklist for the 3 zones plus structure attachments (decks, fences) — fences attached to homes are ember highways.
+PERSONAL DISASTER PLAN. SD County Office of Emergency Services version, available in 12 languages. Family contact card, out-of-state contact, meeting points (close to home + outside neighborhood).
+EMERGENCY SUPPLY KIT ("stay box"). For sheltering at home: 1 gal water/person/day × 7 days, non-perishable food, manual can opener, NOAA weather radio, flashlights + spare batteries, first-aid + meds, cash in small bills, work gloves, dust masks, sanitation supplies, sturdy shoes, copies of IDs.
+VEHICLE SUPPLY KIT. For staying with your car: jumper cables, tow strap, road flares, 2 days water + snacks, blanket, paper map (cell may be down), hard-soled shoes, flashlight.
+THREE-MINUTE BAG. PNEC's signature program: a bag small enough you can grab it in 3 minutes flat. Contents: medications (1-week min), phone + charger, important documents OR a survival flash drive, glasses, comfort/identity items (photos, religious items), pet leash + 3 days food, cash. Get the actual bag at PNEC events.
+SURVIVAL FLASH DRIVE. Encrypted USB stick with: scans of IDs/passports/SSN cards/birth certs, insurance policies, deed/lease, medical records, prescription list, photos of valuables (insurance), a contact list. Costs $10 to make; saves weeks of bureaucracy after a loss.
+HOUSEHOLD PET CHECKLIST. Photo of pet with you (proof of ownership), 7-day food + meds, carrier sized for the pet, leash + collar tag with cell #, vaccination records, comfort item.
+LARGE ANIMAL CHECKLIST. Halter + lead with ID tag, hoof boots, microchip records, trailer keys staged where you can grab them, evac sites pre-mapped, photo of animal with you, water (livestock drinks 10–25 gal/day).
+
+——— ALERT TOOLS (these are real — the bot should always recommend them) ———
+ALERT SAN DIEGO. County's reverse 9-1-1 system. Register at https://readysandiego.org/alertsandiego — tied to your physical address. NOT automatic for cell phones from out of area; you MUST register.
+SD EMERGENCY APP. Free iOS/Android. SD County OES official. Push alerts, evac maps, shelter status, cooling centers.
+POWAY CITY APP. City of Poway's app. Service requests, council updates, water alerts. Less critical for emergencies but worth having.
+211 SAN DIEGO. Dial 2-1-1 (or 858-300-1211). Free 24/7 referral service. Covers post-disaster financial aid, FEMA registration, food/shelter/mental-health referrals.
+PNEC HOMEBOUND HELPLINE: 858-668-1250. For Poway residents who are home-bound and need check-ins or supply runs during emergencies.
+SDG&E PSPS LOOKUP. Public Safety Power Shutoff status: https://www.sdge.com/psps. Poway is in the affected service area.
+
+——— EVACUATION GEOGRAPHY (for "where do I go" questions) ———
+Designated SD County mass shelters near Poway: Lakeside Community Center, Del Mar Fairgrounds (animals), Mira Mesa Senior Center. Activated by SD County OES per incident. Always check SD Emergency app for live shelter status — don't assume the same shelter opens for every incident.
+Evac route discipline: AWAY from the smoke column, toward I-15 if possible. The biggest mistake in 2007 was congesting Pomerado Rd south when Twin Peaks/Ted Williams routes were open. PNEC's neighborhood pages publish block-specific recommended routes via /pages/find-your-neighborhood.html.
+Lake Poway, Old Poway Park, City Hall: NOT shelters by default — they may be staging areas only.`;
 
 function userBlock(user) {
   if (!user) return '';
@@ -68,9 +129,17 @@ function citationsInstructions() {
 
 When you draw from a news article in CONTEXT, cite as [News: <publisher>] after the fact.
 
-For tools (Phase 2+): when the user wants to do something (navigate, search, look up risk, contact staff), respond with a JSON tool block on its OWN line, in the form:
+For tools: when the user wants to do something (navigate, search, look up risk, contact staff, see live conditions), respond with a JSON tool block on its OWN line, in the form:
 {"tool":"<name>","args":{...},"reason":"why"}
-Then a short user-facing note. Available tools: navigate_to(slug), search_news(query), get_risk_now, submit_to_staff(question), find_event(when, type).`;
+Then a short user-facing note. Available tools:
+  - navigate_to(slug)            — open a page on this site
+  - search_news(query)           — pull recent news on a topic
+  - get_risk_now                 — show today's PNEC fire/heat/flood risk widget
+  - get_live_conditions          — show the live conditions card (weather + AQI + NWS alerts + fire-weather index)
+  - submit_to_staff(question)    — forward a question to a PNEC volunteer
+  - find_event(when, type)       — pull upcoming community events
+
+PREFER answering inline using the LIVE CONDITIONS block in CONTEXT. Only emit a get_live_conditions tool block if the user explicitly asks to "show", "see", or "pull up" the data — otherwise it duplicates info you already have.`;
 }
 
 // ─── Cheap keyword retrieval (Phase 1; replaced by embeddings in P2)
@@ -155,13 +224,59 @@ function buildNewsQuery(message) {
   return 'Poway fire emergency';
 }
 
+// ─── Live conditions block — pulled fresh on every send ──────────
+//
+// We always inject what we know about *right now* in Poway (weather,
+// fire-weather, AQI, NWS alerts) so the bot never says "I don't have
+// current data." Backend caches for 30 min so 100 chats/min cost us 1
+// upstream hit.
+
+function liveConditionsBlock(live) {
+  if (!live || !live.ok) return '';
+  const lines = ['——— LIVE POWAY CONDITIONS (right now — cite as [Live]) ———'];
+  if (live.fetched_at) lines.push(`Pulled: ${live.fetched_at}`);
+  if (live.weather) {
+    const w = live.weather;
+    lines.push(`Weather: ${w.temp_f ?? '?'}°F, humidity ${w.humidity ?? '?'}%, wind ${w.wind_mph ?? '?'} mph, precip ${w.precip_in ?? 0}" past hour, ${w.rain_7d_in ?? 0}" past 7 days.`);
+  }
+  if (live.air_quality) {
+    const a = live.air_quality;
+    const aqiCat = a.us_aqi == null ? 'unknown' :
+      a.us_aqi <= 50 ? 'Good' : a.us_aqi <= 100 ? 'Moderate' :
+      a.us_aqi <= 150 ? 'Unhealthy for Sensitive Groups' :
+      a.us_aqi <= 200 ? 'Unhealthy' : a.us_aqi <= 300 ? 'Very Unhealthy' : 'Hazardous';
+    lines.push(`Air quality: US AQI ${a.us_aqi ?? '?'} (${aqiCat}). PM2.5 ${a.pm2_5 ?? '?'} µg/m³.`);
+  }
+  if (live.fire_weather) {
+    const f = live.fire_weather;
+    lines.push(`Fire-weather composite: ${f.score}/10 — ${f.label}. Drivers: ${(f.drivers || []).join(', ') || 'none flagged'}.`);
+  }
+  if (Array.isArray(live.alerts) && live.alerts.length) {
+    lines.push(`Active NWS alerts for San Diego County: ${live.alerts.length} — ${live.alerts.slice(0, 3).map(a => `${a.severity || ''} ${a.event || ''}`.trim()).join(' | ')}.`);
+  } else if (live.alerts) {
+    lines.push(`No active NWS alerts for San Diego County right now.`);
+  }
+  if (live.sun) {
+    lines.push(`Daylight: sunrise ${live.sun.sunrise || '?'}, sunset ${live.sun.sunset || '?'}.`);
+  }
+  if (live.recommendation) lines.push(`Bot recommendation: ${live.recommendation}`);
+  return lines.join('\n');
+}
+
 // ─── Public: build a complete system prompt for a given user msg ──
 
 export async function buildSystemPrompt({ userMessage, user, history }) {
-  const blocks = [PNEC_BASE, POWAY_FACTS, timeBlock()];
+  const blocks = [PNEC_BASE, POWAY_FACTS, PNEC_KNOWLEDGE, timeBlock()];
 
   const userBlk = userBlock(user);
   if (userBlk) blocks.push(userBlk);
+
+  // Live conditions — best-effort, never blocks the prompt
+  try {
+    const live = await getLiveConditions();
+    const liveBlk = liveConditionsBlock(live);
+    if (liveBlk) blocks.push(liveBlk);
+  } catch (_e) { /* fine — backend may be down */ }
 
   // Retrieval block — cap at ~3500 chars to keep prompts cheap
   const faq = await retrieveFaqContext(userMessage, 6);
