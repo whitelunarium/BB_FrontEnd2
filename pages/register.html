@@ -83,37 +83,46 @@ body_class: inner-page auth-page-body
   }
 
   /* ─── Body-level wildfire backdrop ──────────────────────────────────
-     v2.66 PERF FIX: was running TWO fixed-position pseudo-elements
-     (one for photo, one for gradient overlay) — each got its own
-     compositor layer + per-frame paint. With the form card's own GPU
-     layer, the page had 4+ scrolling layers. On low-end devices the
-     scroll lagged badly even with translateZ(0).
+     v2.67 NUCLEAR PERF FIX: prior versions all kept the photo in a
+     `position: fixed` pseudo. On every scroll frame the compositor
+     had to recomposite that fixed layer. Even with translateZ(0)
+     promoting it to GPU, the cost was visible (especially when
+     stacked with the global film-grain overlay's mix-blend-mode).
 
-     Fix: collapse to ONE fixed layer with stacked background-image
-     (gradient on top, photo below). Half the compositor work, same
-     visual. Plus drop will-change (it's for ACTIVE animations, not
-     stationary elements; keeping it pinned forces GPU memory
-     allocation we don't need). */
-  .auth-page-body { background: #14201a; }
-  .auth-page-body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
+     Fix: photo + gradient now live ON the body itself, no fixed
+     pseudo. Browsers paint body bg ONCE and document content scrolls
+     within it — no per-frame recomposite of a viewport-anchored
+     layer. The photo scrolls with the page, but the page is short
+     (essentially one viewport tall), so it stays mostly visible. */
+  .auth-page-body {
+    background-color: #14201a;
+    background-image:
       linear-gradient(135deg,
         rgba(20, 90, 50, 0.62) 0%,
         rgba(10, 22, 40, 0.58) 50%,
         rgba(192, 57, 43, 0.42) 100%),
-      url('{{ "/assets/images/Poway_Fire.webp" | relative_url }}') center 30% / cover no-repeat;
-    z-index: -1;
-    pointer-events: none;
-    /* translateZ(0) promotes to its own layer ONCE — no will-change so
-       the layer is released when not actively animating. */
-    transform: translateZ(0);
+      url('{{ "/assets/images/Poway_Fire.webp" | relative_url }}');
+    background-size: cover;
+    background-position: center 30%;
+    background-repeat: no-repeat;
+    background-attachment: scroll;
+    min-height: 100vh;
   }
 
-  /* Suppress the global corner vignette from _polish.scss */
+  /* v2.67: KILL the global film-grain overlay (_sass/_polish.scss
+     §13: body::after with mix-blend-mode:overlay) on the auth page.
+     mix-blend-mode on a fixed full-viewport element forces the GPU
+     to recomposite the ENTIRE viewport every scroll frame — that
+     was THE largest contributor to the perceived scroll lag. */
+  body.auth-page-body::after { display: none !important; }
+
+  /* Same for the corner vignette (_polish.scss §14). */
   html:has(body.auth-page-body)::before { display: none !important; }
+
+  /* Pause the chatbot FAB's infinite pulse animation here — it's
+     subtle but a perpetual animation in the bottom-right keeps a
+     compositor layer alive and burns paint cycles continuously. */
+  body.auth-page-body .pnec-bot-fab-pulse { animation: none !important; }
 
   /* DM Sans premium typography */
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');
@@ -317,18 +326,20 @@ body_class: inner-page auth-page-body
   }
 
   /* The form card — opaque cream surface with a green ribbon at the
-     top edge, hand-tuned shadow for "floating on photo" depth.
+     top edge.
 
-     v2.66 changes:
-       • max-width 640 → 720px (was the user's chief complaint)
-       • desktop padding 72 → 80px
-       • border-radius 28 → 30px
-       • REMOVED `will-change: transform` (it was permanent — that
-         pins a GPU layer in memory forever and forces the compositor
-         to keep an unnecessary backbuffer. Now using `contain: paint`
-         which gives most of the layer benefit without the keepalive.)
-       • Added `content-visibility: auto` on idle which lets the
-         browser skip rendering when the card scrolls off-screen */
+     v2.67 PERF: stripped to bare essentials.
+       • Box shadow: 5 layers → 2 (hairline border + drop shadow only).
+         Multi-layer shadows with large blur radii are expensive on
+         every paint, including hover state changes.
+       • Removed `contain: layout paint` — was forcing the browser to
+         eagerly paint the card's whole subtree even when fully
+         off-screen.
+       • Removed entrance animation. 600ms of opacity+transform on
+         the largest element on the page was a startup hitch that
+         compounded with the page-level work.
+       • Removed paper-grain background-image stack — three nested
+         gradients on the card painted every visible-area refresh. */
   .auth-form-stack {
     width: 100%;
     max-width: 720px;
@@ -337,20 +348,8 @@ body_class: inner-page auth-page-body
     border-radius: 30px;
     position: relative;
     box-shadow:
-      0 0 0 1px rgba(20, 90, 50, 0.08),                /* hairline border */
-      0 1px 0 rgba(255, 255, 255, 0.72) inset,         /* top sheen */
-      0 2px 4px rgba(0, 0, 0, 0.05),                   /* close shadow */
-      0 14px 30px rgba(0, 0, 0, 0.14),                 /* mid shadow */
-      0 30px 64px rgba(0, 0, 0, 0.20);                 /* drop shadow */
-    animation: auth-card-in 600ms cubic-bezier(.2,.85,.25,1) both;
-    background-image:
-      radial-gradient(1000px 700px at 100% 0%, rgba(212, 239, 223, 0.32) 0%, transparent 60%),
-      radial-gradient(800px 600px at 0% 100%, rgba(248, 215, 200, 0.22) 0%, transparent 60%),
-      linear-gradient(180deg, #ffffff 0%, #fbf8f1 100%);
-    /* CSS containment — isolates this card's paint + layout from the
-       rest of the page. Cheaper than will-change because it doesn't
-       allocate a permanent GPU backbuffer. */
-    contain: layout paint;
+      0 0 0 1px rgba(20, 90, 50, 0.10),
+      0 24px 56px rgba(0, 0, 0, 0.22);
   }
   /* Forest-green ribbon at the top edge of the card */
   .auth-form-stack::before {
@@ -372,13 +371,7 @@ body_class: inner-page auth-page-body
     border-radius: 0 30px 0 0;
     pointer-events: none;
   }
-  @keyframes auth-card-in {
-    from { opacity: 0; transform: translateY(20px) scale(0.985); }
-    to   { opacity: 1; transform: none; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .auth-form-stack { animation: none; }
-  }
+  /* (auth-card-in keyframe removed — entrance animation killed for perf) */
   @media (max-width: 1023px) {
     .auth-form-stack {
       max-width: 560px;
