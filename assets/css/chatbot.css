@@ -9,9 +9,14 @@
 /* ─── Tokens ───────────────────────────────────────────────────── */
 :root {
   --pb-bg-fab:        linear-gradient(135deg, #1e8449 0%, #145a32 100%);
-  --pb-bg-panel:      rgba(255, 255, 255, 0.92);
-  --pb-bg-rail:       rgba(248, 245, 240, 0.85);
-  --pb-bg-glass:      rgba(255, 255, 255, 0.72);
+  /* v3.7: panel + rail + glass surfaces are now FULLY opaque since
+     backdrop-filter blurs were removed for perf. The translucent
+     versions are kept around as comments for future reference but
+     the live values are solid colors. */
+  --pb-bg-panel:       rgba(255, 255, 255, 0.96);  /* docked panel */
+  --pb-bg-panel-solid: #ffffff;                    /* full-opacity for modal/expanded */
+  --pb-bg-rail:        #f8f5f0;                    /* was rgba(248,245,240,0.85) */
+  --pb-bg-glass:       #fafaf6;                    /* was rgba(255,255,255,0.72) */
   --pb-bg-input:      #ffffff;
   --pb-bg-bot-msg:    #f4f7f5;
   --pb-bg-user-msg:   linear-gradient(135deg, #1e8449 0%, #145a32 100%);
@@ -42,9 +47,10 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --pb-bg-panel:      rgba(20, 28, 26, 0.94);
-    --pb-bg-rail:       rgba(14, 22, 20, 0.72);
-    --pb-bg-glass:      rgba(255, 255, 255, 0.06);
+    --pb-bg-panel:       #141c1a;
+    --pb-bg-panel-solid: #141c1a;
+    --pb-bg-rail:        #0e1614;
+    --pb-bg-glass:       #1a2421;
     --pb-bg-input:      rgba(255, 255, 255, 0.06);
     --pb-bg-bot-msg:    rgba(255, 255, 255, 0.06);
     --pb-fg:            #f5f7f6;
@@ -127,9 +133,11 @@
   position: fixed;
   inset: 0;
   z-index: var(--pb-z-backdrop);
-  background: rgba(10, 22, 40, 0.50);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  /* v3.7 PERF: dropped backdrop-filter blur — was a heavy GPU op
+     stacked on top of the panel's own blur and the chatbot widgets'
+     animations. Solid darken reads cleanly enough as "modal context."
+     Bumped opacity 0.50 → 0.62 to compensate for the lost blur. */
+  background: rgba(10, 22, 40, 0.62);
   animation: pb-fade-in 220ms ease;
 }
 @keyframes pb-fade-in { from { opacity: 0; } to { opacity: 1; } }
@@ -145,20 +153,32 @@
   max-height: calc(100vh - 60px);
   display: grid;
   grid-template-columns: 0fr 1fr 0fr;
-  background: var(--pb-bg-panel);
+  /* v3.7 PERF: was running `background: rgba(255,255,255,0.92)` +
+     `backdrop-filter: blur(20px) saturate(150%)`. The 20px blur + 1.5x
+     saturation on a panel that fills 92% of the viewport in modal mode
+     was the #1 cause of the "intense lag when opening" the chatbot.
+     The blurred backdrop forced the GPU to capture, blur, saturate,
+     and recomposite the entire viewport every frame the panel was
+     visible — open, scroll, ANY underlying paint.
+     Fix: drop the backdrop-filter entirely and bump panel bg to
+     fully opaque. The visual goes from "frosted glass" to "solid
+     surface" — costs nothing per frame, opens instantly. */
+  background: var(--pb-bg-panel-solid);
   border: 1px solid var(--pb-border);
   border-radius: var(--pb-radius-panel);
   box-shadow: var(--pb-shadow-panel);
   overflow: hidden;
   font-family: var(--pb-font);
   color: var(--pb-fg);
-  backdrop-filter: blur(20px) saturate(150%);
-  -webkit-backdrop-filter: blur(20px) saturate(150%);
-  animation: pb-panel-in 280ms cubic-bezier(.2,.85,.25,1);
+  /* v3.7: opacity-only fade-in, no transform. transform animation
+     promotes the panel to its own GPU layer for the duration of the
+     animation (then released). With backdrop-filter gone we don't
+     need that — opacity is composite-only and cheap. */
+  animation: pb-panel-in 180ms ease-out;
 }
 @keyframes pb-panel-in {
-  from { opacity: 0; transform: translateY(10px) scale(0.98); }
-  to   { opacity: 1; transform: none; }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) {
   .pnec-bot-panel,
@@ -330,9 +350,10 @@
   gap: 10px;
   padding: 12px 14px;
   border-bottom: 1px solid var(--pb-border);
+  /* v3.7 PERF: dropped backdrop-filter blur — the parent panel is now
+     fully opaque so the blur was blurring nothing visible (sat on top
+     of a solid bg) and just burning paint cycles. */
   background: var(--pb-bg-glass);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
 }
 .pnec-bot-head-id {
   display: flex;
@@ -1032,9 +1053,9 @@
 .pnec-bot-composer {
   padding: 10px 14px 14px;
   border-top: 1px solid var(--pb-border);
+  /* v3.7 PERF: dropped backdrop-filter — same reason as the head bar
+     (panel is opaque now, blur on a solid bg is wasted GPU work). */
   background: var(--pb-bg-glass);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
 }
 .pnec-bot-composer-attachments {
   display: flex;
