@@ -136,12 +136,15 @@ body_class: inner-page auth-page-body
   }
 
   /* ─── Split-screen layout grid ───────────────────────────────────────
-     v2.66: form panel now gets a bit MORE of the viewport (1fr 1.15fr)
-     so the bigger card has room without crowding the hero text on
-     the left. Still mostly balanced, just tilted toward the action. */
+     v2.68: brand column shrinks (0.85fr) and form column grows (1.5fr)
+     so the form card has real room to breathe. Card itself bumps from
+     720→880px max — at 1440px viewport the form column is ~880px wide,
+     which finally lets the card render at its full max width instead
+     of being column-constrained. Visible step up on every laptop and
+     desktop. */
   .auth-split {
     display: grid;
-    grid-template-columns: 1fr 1.15fr;
+    grid-template-columns: 0.85fr 1.5fr;
     min-height: calc(100vh - 88px);
     width: 100%;
     font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -313,14 +316,13 @@ body_class: inner-page auth-page-body
   }
 
   /* ─── FORM PANEL (right on desktop, below brand on mobile) ─────────
-     v2.66: card scaled UP again (720px max + 80px padding) per user
-     feedback — the previous 640px still felt small. Form panel padding
-     trimmed so the bigger card has room. */
+     v2.68: panel padding trimmed further so the wider 880px card has
+     headroom on common 1440px laptops. */
   .auth-form-panel {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: clamp(32px, 2.5vw, 56px) clamp(18px, 2vw, 40px);
+    padding: clamp(28px, 2vw, 48px) clamp(14px, 1.5vw, 32px);
     background: transparent;
     position: relative;
   }
@@ -342,9 +344,9 @@ body_class: inner-page auth-page-body
          gradients on the card painted every visible-area refresh. */
   .auth-form-stack {
     width: 100%;
-    max-width: 720px;
+    max-width: 880px;
     background: #fbf8f1;
-    padding: clamp(48px, 5vw, 80px) clamp(40px, 4.5vw, 72px);
+    padding: clamp(52px, 5vw, 88px) clamp(48px, 5.5vw, 96px);
     border-radius: 30px;
     position: relative;
     box-shadow:
@@ -402,20 +404,20 @@ body_class: inner-page auth-page-body
   }
   .auth-eyebrow-icon svg { color: var(--pnec-green-deep); width: 14px; height: 14px; }
 
-  /* Greeting heading — time-aware via JS. v2.66 bumped again for the
-     720px card. */
+  /* Greeting heading — time-aware via JS. v2.68 scaled up for the
+     880px card. */
   .auth-greeting {
-    margin: 22px 0 10px;
+    margin: 24px 0 12px;
     font-family: 'DM Sans', sans-serif;
-    font-size: clamp(2.4rem, 3.8vw, 3.15rem);
+    font-size: clamp(2.6rem, 4.2vw, 3.6rem);
     font-weight: 900;
-    line-height: 1.03;
+    line-height: 1.02;
     color: #0a1628;
     letter-spacing: -0.034em;
   }
   .auth-tagline {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: 1.18rem;
     color: #5a5a5a;
     line-height: 1.5;
   }
