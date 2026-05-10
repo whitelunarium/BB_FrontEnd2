@@ -1,0 +1,557 @@
+---
+layout: pnec-base
+title: "Security Dashboard"
+description: "Real-time view of failed logins, account lockouts, audit events, and security posture for PNEC admins."
+body_class: inner-page admin-security-body
+permalink: /pages/admin-security.html
+---
+
+<!--
+  Admin Security Dashboard (v3.7)
+
+  Real-time picture of who is trying to do what to the site:
+    • Headline tiles: 24h failed logins, 24h alerts, currently-locked
+      accounts, recent admin actions
+    • Currently-locked accounts list with per-row "Unlock" action
+    • Live event timeline (filterable by kind + severity)
+    • Top event kinds in last 7 days
+
+  Backend: /api/security/summary, /events, /lockouts, /unlock,
+  /events/prune. All routes are admin-gated by @requires_role('admin').
+-->
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');
+
+  .admin-security-body {
+    --as-bg:       #fbf8f1;
+    --as-card:     #fff;
+    --as-fg:       #0a1628;
+    --as-mute:     #5a6975;
+    --as-faint:    #8b96a1;
+    --as-green:    #1e8449;
+    --as-deep:     #145a32;
+    --as-soft:     #d4efdf;
+    --as-amber:    #d97706;
+    --as-red:      #c0392b;
+    --as-blue:     #3b82f6;
+    --as-border:   rgba(15, 30, 25, 0.10);
+    --as-border-2: rgba(15, 30, 25, 0.18);
+    background: var(--as-bg);
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  .admin-security-body main#jupiterx-main { padding: 0 !important; background: transparent !important; }
+
+  .as-wrap {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 36px 24px 56px;
+  }
+
+  .as-head {
+    display: flex; flex-wrap: wrap; gap: 16px;
+    align-items: flex-end; justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .as-head h1 {
+    margin: 0 0 4px;
+    font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+    font-weight: 900;
+    letter-spacing: -0.025em;
+    color: var(--as-fg);
+  }
+  .as-head .as-sub { margin: 0; color: var(--as-mute); font-size: 0.94rem; }
+  .as-head .as-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .as-btn {
+    padding: 8px 14px;
+    font: inherit; font-size: 0.86rem; font-weight: 700;
+    color: var(--as-fg);
+    background: var(--as-card);
+    border: 1px solid var(--as-border);
+    border-radius: 9px;
+    cursor: pointer;
+    transition: all 140ms ease;
+  }
+  .as-btn:hover { background: var(--as-soft); border-color: var(--as-green); color: var(--as-deep); }
+  .as-btn.as-btn-primary {
+    background: linear-gradient(135deg, var(--as-green), var(--as-deep));
+    color: #fff; border-color: transparent;
+  }
+  .as-btn.as-btn-primary:hover { filter: brightness(1.06); }
+
+  .as-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+  .as-tile {
+    background: var(--as-card);
+    border: 1px solid var(--as-border);
+    border-radius: 14px;
+    padding: 18px;
+  }
+  .as-tile-label {
+    font-size: 0.74rem; font-weight: 800;
+    letter-spacing: 0.10em; text-transform: uppercase;
+    color: var(--as-mute);
+  }
+  .as-tile-value {
+    margin: 8px 0 4px;
+    font-size: 2.1rem; font-weight: 900;
+    line-height: 1; letter-spacing: -0.02em;
+    color: var(--as-fg);
+  }
+  .as-tile-foot { font-size: 0.78rem; color: var(--as-mute); }
+  .as-tile.as-tile-alert .as-tile-value  { color: var(--as-red); }
+  .as-tile.as-tile-warn  .as-tile-value  { color: var(--as-amber); }
+  .as-tile.as-tile-ok    .as-tile-value  { color: var(--as-green); }
+
+  .as-row {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+  @media (max-width: 900px) { .as-row { grid-template-columns: 1fr; } }
+
+  .as-card-block {
+    background: var(--as-card);
+    border: 1px solid var(--as-border);
+    border-radius: 16px;
+    padding: 20px;
+  }
+  .as-card-block h2 {
+    margin: 0 0 12px;
+    font-size: 1rem; font-weight: 800;
+    letter-spacing: -0.012em;
+    color: var(--as-fg);
+  }
+  .as-card-block .as-card-sub {
+    margin-left: 8px;
+    font-size: 0.78rem; font-weight: 600; color: var(--as-mute);
+    letter-spacing: 0;
+  }
+
+  /* Filter row */
+  .as-filters {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .as-filters select, .as-filters input {
+    padding: 8px 11px;
+    font: inherit; font-size: 0.84rem;
+    background: var(--as-bg);
+    border: 1px solid var(--as-border-2);
+    border-radius: 8px;
+    color: var(--as-fg);
+  }
+  .as-filters select:focus, .as-filters input:focus {
+    outline: none;
+    border-color: var(--as-green);
+    box-shadow: 0 0 0 3px rgba(30,132,73,0.18);
+  }
+
+  /* Event timeline */
+  .as-events { list-style: none; margin: 0; padding: 0; }
+  .as-event {
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--as-border);
+  }
+  .as-event:last-child { border-bottom: 0; }
+  .as-event-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    margin-top: 7px;
+    background: var(--as-blue);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.16);
+  }
+  .as-event.as-sev-info     .as-event-dot { background: var(--as-blue);  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.16); }
+  .as-event.as-sev-warning  .as-event-dot { background: var(--as-amber); box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.18); }
+  .as-event.as-sev-alert    .as-event-dot { background: var(--as-red);   box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.18); }
+  .as-event.as-sev-critical .as-event-dot { background: #b91c1c; box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.30); }
+  .as-event-body { min-width: 0; }
+  .as-event-title {
+    font-weight: 700; color: var(--as-fg);
+    font-size: 0.88rem; line-height: 1.4;
+  }
+  .as-event-detail {
+    margin-top: 2px;
+    font-size: 0.84rem; color: var(--as-mute);
+    line-height: 1.5;
+    word-break: break-word;
+  }
+  .as-event-meta {
+    margin-top: 4px;
+    display: flex; gap: 8px; flex-wrap: wrap;
+    font-size: 0.74rem; color: var(--as-faint);
+  }
+  .as-event-meta code {
+    background: rgba(15,30,25,0.05);
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: var(--as-mute);
+  }
+  .as-event-time {
+    font-size: 0.74rem; color: var(--as-faint);
+    white-space: nowrap;
+  }
+  .as-kind-pill {
+    display: inline-block;
+    padding: 1px 7px;
+    background: rgba(15,30,25,0.06);
+    border-radius: 4px;
+    font-size: 0.72rem; font-weight: 700;
+    color: var(--as-mute);
+    letter-spacing: 0.01em;
+    text-transform: lowercase;
+    margin-right: 6px;
+  }
+
+  /* Lockouts panel */
+  .as-lockouts { display: grid; gap: 8px; }
+  .as-lockout {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    background: rgba(192, 57, 43, 0.06);
+    border: 1px solid rgba(192, 57, 43, 0.20);
+    border-radius: 10px;
+    font-size: 0.86rem;
+  }
+  .as-lockout-email {
+    flex: 1; min-width: 0;
+    font-weight: 700; color: var(--as-fg);
+    word-break: break-all;
+  }
+  .as-lockout-time {
+    font-size: 0.78rem; color: var(--as-red); font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* Top kinds bar chart */
+  .as-bar-row {
+    display: grid;
+    grid-template-columns: 150px 1fr 50px;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 7px;
+    font-size: 0.84rem;
+  }
+  .as-bar-label {
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-weight: 600; color: var(--as-fg);
+  }
+  .as-bar-track {
+    height: 7px;
+    background: rgba(15,30,25,0.06);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .as-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--as-green), var(--as-deep));
+    border-radius: 999px;
+  }
+  .as-bar-count {
+    text-align: right;
+    font-weight: 700; color: var(--as-deep);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .as-empty {
+    padding: 28px 16px;
+    text-align: center; color: var(--as-mute);
+    font-size: 0.86rem;
+  }
+  .as-empty-icon { font-size: 1.8rem; margin-bottom: 6px; }
+  .as-empty.as-empty-ok { color: var(--as-green); }
+
+  .as-not-admin {
+    margin: 80px auto;
+    max-width: 480px;
+    padding: 32px;
+    background: var(--as-card);
+    border: 1px solid var(--as-border);
+    border-radius: 16px;
+    text-align: center;
+  }
+  .as-not-admin h2 { margin: 0 0 8px; font-size: 1.2rem; }
+  .as-not-admin p  { margin: 0; color: var(--as-mute); }
+
+  .as-status {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 0.78rem; color: var(--as-mute);
+  }
+  .as-status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--as-green);
+    box-shadow: 0 0 0 3px rgba(30, 132, 73, 0.16);
+    animation: as-pulse 2.6s ease-out infinite;
+  }
+  @keyframes as-pulse {
+    0%,100% { transform: scale(1); }
+    50%     { transform: scale(1.18); }
+  }
+</style>
+
+<div id="as-root" class="as-wrap">
+  <div class="as-empty"><p>Loading security dashboard…</p></div>
+</div>
+
+<script type="module">
+const root = document.getElementById('as-root');
+
+function isAdmin() {
+  try {
+    const raw = localStorage.getItem('pnec_user') || sessionStorage.getItem('pnec_user');
+    if (!raw) return false;
+    const u = JSON.parse(raw);
+    return u && u.role === 'admin';
+  } catch (_e) { return false; }
+}
+
+if (!isAdmin()) {
+  root.innerHTML = `
+    <div class="as-not-admin">
+      <h2>Admins only</h2>
+      <p>Sign in with an admin account to see the security dashboard.</p>
+    </div>`;
+} else {
+  init();
+}
+
+function apiBase() {
+  const h = location.hostname;
+  return (h === 'localhost' || h === '127.0.0.1')
+    ? 'http://127.0.0.1:8425'
+    : 'https://beasts.opencodingsociety.com';
+}
+function authHeaders() {
+  const t = localStorage.getItem('pnec_token') || '';
+  return t ? { 'Authorization': 'Bearer ' + t } : {};
+}
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, ch =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function relTime(iso) {
+  if (!iso) return '';
+  const t = new Date(iso).getTime();
+  const diff = Date.now() - t;
+  if (diff < 60_000) return 'just now';
+  if (diff < 3_600_000) return Math.floor(diff / 60_000) + 'm ago';
+  if (diff < 86_400_000) return Math.floor(diff / 3_600_000) + 'h ago';
+  return new Date(t).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
+const KIND_LABEL = {
+  login_success:  'Sign-in success',
+  login_failure:  'Failed sign-in',
+  login_locked:   'Account locked',
+  login_rate_limit: 'IP rate-limited',
+  register:       'Account created',
+  register_duplicate: 'Duplicate registration',
+  password_reset: 'Password reset',
+  profile_update: 'Profile updated',
+  role_change:    'Role changed',
+  admin_action:   'Admin action',
+  admin_unlock:   'Admin manual unlock',
+  publish_page:   'Page published',
+  revert_revision:'Page reverted',
+  theme_publish:  'Theme published',
+  push_subscribe: 'Push subscription',
+  suspicious:     'Suspicious activity',
+  api_error:      'API error',
+  events_pruned:  'Events pruned',
+};
+
+function init() {
+  render();
+}
+
+async function render() {
+  let summary = null, events = [], lockouts = null;
+  try {
+    const [s, e, l] = await Promise.all([
+      fetch(apiBase() + '/api/security/summary', { credentials: 'include', headers: authHeaders() }),
+      fetch(apiBase() + '/api/security/events?limit=200', { credentials: 'include', headers: authHeaders() }),
+      fetch(apiBase() + '/api/security/lockouts', { credentials: 'include', headers: authHeaders() }),
+    ]);
+    if (s.ok) summary = await s.json();
+    if (e.ok) events = (await e.json()).events || [];
+    if (l.ok) lockouts = (await l.json()).lockouts || [];
+  } catch (_err) {
+    root.innerHTML = `<div class="as-not-admin"><h2>Couldn't load dashboard</h2><p>The security API is unreachable. Check that the Flask backend is running.</p></div>`;
+    return;
+  }
+  if (!summary) {
+    root.innerHTML = `<div class="as-not-admin"><h2>Backend unavailable</h2><p>The /api/security endpoints didn't respond. The backend may not have the security blueprint registered yet.</p></div>`;
+    return;
+  }
+
+  const s24 = summary.last_24h || {};
+  const s7  = summary.last_7d || {};
+  const topKinds = s7.top_kinds || [];
+  const maxKind = topKinds.length ? topKinds[0][1] : 1;
+
+  root.innerHTML = `
+    <header class="as-head">
+      <div>
+        <h1>Security dashboard</h1>
+        <p class="as-sub">Real-time view of failed logins, lockouts, audit events, and admin activity.</p>
+      </div>
+      <div class="as-actions">
+        <span class="as-status"><span class="as-status-dot"></span><span id="as-last-updated">Updated just now</span></span>
+        <button class="as-btn" id="as-refresh-btn">↻ Refresh</button>
+        <a class="as-btn" href="${'{{ "/pages/admin.html" | relative_url }}'}">← Admin home</a>
+      </div>
+    </header>
+
+    <div class="as-grid">
+      <div class="as-tile ${(s24.alerts || 0) > 0 ? 'as-tile-alert' : 'as-tile-ok'}">
+        <div class="as-tile-label">⚠ Alerts (24h)</div>
+        <div class="as-tile-value">${s24.alerts || 0}</div>
+        <div class="as-tile-foot">${(s24.alerts || 0) === 0 ? 'No high-severity events' : 'Investigate alert + critical events'}</div>
+      </div>
+      <div class="as-tile ${(s24.login_failures || 0) > 20 ? 'as-tile-warn' : ''}">
+        <div class="as-tile-label">Failed sign-ins (24h)</div>
+        <div class="as-tile-value">${s24.login_failures || 0}</div>
+        <div class="as-tile-foot">${s24.login_successes || 0} successful · ${s24.registrations || 0} new accounts</div>
+      </div>
+      <div class="as-tile ${(summary.currently_locked || []).length > 0 ? 'as-tile-warn' : 'as-tile-ok'}">
+        <div class="as-tile-label">Locked accounts</div>
+        <div class="as-tile-value">${(summary.currently_locked || []).length}</div>
+        <div class="as-tile-foot">${(summary.currently_locked || []).length === 0 ? 'None right now' : 'Auto-unlock after 15 min'}</div>
+      </div>
+      <div class="as-tile">
+        <div class="as-tile-label">Events (7d)</div>
+        <div class="as-tile-value">${s7.total_events || 0}</div>
+        <div class="as-tile-foot">All severities combined</div>
+      </div>
+    </div>
+
+    <div class="as-row">
+      <div class="as-card-block">
+        <h2>Recent events <span class="as-card-sub">last 7 days · newest first</span></h2>
+        <div class="as-filters">
+          <select id="as-filter-severity">
+            <option value="">All severities</option>
+            <option value="critical">Critical</option>
+            <option value="alert">Alert</option>
+            <option value="warning">Warning</option>
+            <option value="info">Info</option>
+          </select>
+          <select id="as-filter-kind">
+            <option value="">All kinds</option>
+            ${Object.entries(KIND_LABEL).map(([k, lbl]) =>
+              `<option value="${k}">${escapeHtml(lbl)}</option>`).join('')}
+          </select>
+          <input type="search" id="as-filter-q" placeholder="Search detail / email / IP" autocomplete="off">
+        </div>
+        <ul class="as-events" id="as-events-list">
+          ${renderEventList(events)}
+        </ul>
+      </div>
+
+      <div>
+        <div class="as-card-block" style="margin-bottom:14px;">
+          <h2>Currently locked <span class="as-card-sub">${(lockouts || []).length}</span></h2>
+          ${(lockouts && lockouts.length) ? `
+            <div class="as-lockouts">
+              ${lockouts.map(l => `
+                <div class="as-lockout">
+                  <span class="as-lockout-email">${escapeHtml(l.email)}</span>
+                  <span class="as-lockout-time">${Math.ceil(l.unlock_in_sec / 60)} min</span>
+                  <button class="as-btn as-btn-primary" data-unlock="${escapeHtml(l.email)}" style="font-size:0.78rem; padding:6px 11px;">Unlock</button>
+                </div>
+              `).join('')}
+            </div>` : `
+            <div class="as-empty as-empty-ok">
+              <div class="as-empty-icon">✓</div>
+              <div>No accounts locked.</div>
+            </div>`}
+        </div>
+
+        <div class="as-card-block">
+          <h2>Top events <span class="as-card-sub">last 7 days</span></h2>
+          ${topKinds.length ? topKinds.map(([k, n]) => `
+            <div class="as-bar-row">
+              <span class="as-bar-label">${escapeHtml(KIND_LABEL[k] || k)}</span>
+              <span class="as-bar-track"><span class="as-bar-fill" style="width:${Math.round(100 * n / maxKind)}%"></span></span>
+              <span class="as-bar-count">${n}</span>
+            </div>`).join('') : `<div class="as-empty">No events yet.</div>`}
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Wire interactivity
+  document.getElementById('as-refresh-btn').addEventListener('click', render);
+  document.querySelectorAll('[data-unlock]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const email = btn.dataset.unlock;
+      if (!confirm(`Unlock ${email}?\n\nThis clears the lockout immediately and resets the failed-attempt counter.`)) return;
+      btn.disabled = true; btn.textContent = '…';
+      try {
+        const r = await fetch(apiBase() + '/api/security/unlock', {
+          method: 'POST', credentials: 'include',
+          headers: { 'Content-Type': 'application/json', ...authHeaders() },
+          body: JSON.stringify({ email })
+        });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        render();
+      } catch (e) {
+        alert('Unlock failed: ' + (e.message || ''));
+        btn.disabled = false; btn.textContent = 'Unlock';
+      }
+    });
+  });
+  // Filters
+  const filterSev = document.getElementById('as-filter-severity');
+  const filterKind = document.getElementById('as-filter-kind');
+  const filterQ = document.getElementById('as-filter-q');
+  function applyFilters() {
+    const sev = filterSev.value;
+    const kind = filterKind.value;
+    const q = (filterQ.value || '').trim().toLowerCase();
+    const filtered = events.filter(ev => {
+      if (sev && ev.severity !== sev) return false;
+      if (kind && ev.kind !== kind) return false;
+      if (q) {
+        const blob = (ev.detail || '') + ' ' + (ev.actor_email || '') + ' ' + (ev.ip || '');
+        if (!blob.toLowerCase().includes(q)) return false;
+      }
+      return true;
+    });
+    document.getElementById('as-events-list').innerHTML = renderEventList(filtered);
+  }
+  filterSev.addEventListener('change', applyFilters);
+  filterKind.addEventListener('change', applyFilters);
+  filterQ.addEventListener('input', applyFilters);
+}
+
+function renderEventList(events) {
+  if (!events.length) {
+    return `<li class="as-empty"><div class="as-empty-icon">✓</div><div>No events match the current filters.</div></li>`;
+  }
+  return events.map(ev => `
+    <li class="as-event as-sev-${escapeHtml(ev.severity || 'info')}">
+      <span class="as-event-dot" aria-hidden="true"></span>
+      <div class="as-event-body">
+        <div class="as-event-title">
+          <span class="as-kind-pill">${escapeHtml(ev.kind)}</span>
+          ${escapeHtml(KIND_LABEL[ev.kind] || ev.kind)}
+        </div>
+        ${ev.detail ? `<div class="as-event-detail">${escapeHtml(ev.detail)}</div>` : ''}
+        <div class="as-event-meta">
+          ${ev.actor_email ? `<span>👤 <code>${escapeHtml(ev.actor_email)}</code></span>` : ''}
+          ${ev.ip ? `<span>📍 <code>${escapeHtml(ev.ip)}</code></span>` : ''}
+        </div>
+      </div>
+      <span class="as-event-time">${escapeHtml(relTime(ev.created_at))}</span>
+    </li>`).join('');
+}
+</script>

@@ -1,0 +1,288 @@
+---
+layout: pnec-base
+title: "Security & Privacy"
+description: "How Poway Neighborhood Emergency Corps protects your account, your data, and the site itself. Encryption, account lockout, audit logging, and what to do if something goes wrong."
+permalink: /pages/security.html
+body_class: inner-page security-page-body
+---
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');
+
+  .security-page-body {
+    --sec-bg:     #fbf8f1;
+    --sec-card:   #fff;
+    --sec-fg:     #0a1628;
+    --sec-mute:   #5a6975;
+    --sec-faint:  #8b96a1;
+    --sec-green:  #1e8449;
+    --sec-deep:   #145a32;
+    --sec-soft:   #d4efdf;
+    --sec-amber:  #d97706;
+    --sec-red:    #c0392b;
+    --sec-border: rgba(15, 30, 25, 0.10);
+    background: var(--sec-bg);
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: var(--sec-fg);
+  }
+  .security-page-body main#jupiterx-main { padding: 0 !important; background: transparent !important; }
+
+  .sec-wrap { max-width: 1100px; margin: 0 auto; padding: 60px 24px 48px; }
+
+  /* ── Hero ──────────────────────────────────────────────────────── */
+  .sec-hero {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+  .sec-hero-eyebrow {
+    display: inline-block;
+    font-size: 0.78rem; font-weight: 800;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--sec-deep);
+    margin-bottom: 14px;
+  }
+  .sec-hero h1 {
+    margin: 0 0 14px;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    color: var(--sec-fg);
+  }
+  .sec-hero p {
+    margin: 0 auto;
+    max-width: 640px;
+    color: var(--sec-mute);
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+
+  /* ── Cards (the 6 pillars) ────────────────────────────────────── */
+  .sec-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+    margin-bottom: 56px;
+  }
+  .sec-card {
+    background: var(--sec-card);
+    border: 1px solid var(--sec-border);
+    border-radius: 16px;
+    padding: 26px 22px 22px;
+    position: relative;
+  }
+  .sec-card-icon {
+    width: 44px; height: 44px;
+    margin-bottom: 14px;
+    display: grid; place-items: center;
+    background: var(--sec-soft);
+    border-radius: 11px;
+    color: var(--sec-deep);
+  }
+  .sec-card-icon svg { width: 22px; height: 22px; }
+  .sec-card h3 {
+    margin: 0 0 8px;
+    font-size: 1.04rem;
+    font-weight: 800;
+    color: var(--sec-fg);
+    letter-spacing: -0.012em;
+  }
+  .sec-card p {
+    margin: 0;
+    color: var(--sec-mute);
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+  .sec-card strong { color: var(--sec-fg); font-weight: 700; }
+  .sec-card-foot {
+    margin-top: 12px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--sec-deep);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* ── Disclosure section ───────────────────────────────────────── */
+  .sec-disclose {
+    background: var(--sec-card);
+    border: 1px solid var(--sec-border);
+    border-radius: 18px;
+    padding: 36px 32px;
+    margin-bottom: 32px;
+  }
+  .sec-disclose h2 {
+    margin: 0 0 12px;
+    font-size: 1.4rem;
+    font-weight: 900;
+    letter-spacing: -0.022em;
+    color: var(--sec-fg);
+  }
+  .sec-disclose p {
+    margin: 0 0 14px;
+    color: var(--sec-mute);
+    line-height: 1.65;
+    font-size: 0.96rem;
+  }
+  .sec-disclose ul {
+    margin: 14px 0 0;
+    padding-left: 22px;
+    color: var(--sec-fg);
+    font-size: 0.94rem;
+    line-height: 1.7;
+  }
+  .sec-disclose ul li { margin-bottom: 6px; }
+  .sec-disclose strong { color: var(--sec-deep); }
+
+  /* ── Contact CTA ───────────────────────────────────────────────── */
+  .sec-contact {
+    text-align: center;
+    margin-top: 32px;
+    padding: 28px 24px;
+    background: linear-gradient(135deg, #fff 0%, #fbf8f1 100%);
+    border: 1px solid var(--sec-border);
+    border-radius: 18px;
+  }
+  .sec-contact h3 {
+    margin: 0 0 8px;
+    font-size: 1.06rem; font-weight: 800;
+    color: var(--sec-fg);
+  }
+  .sec-contact p {
+    margin: 0 0 18px;
+    color: var(--sec-mute);
+    font-size: 0.94rem;
+  }
+  .sec-contact-btn {
+    display: inline-flex;
+    align-items: center; gap: 8px;
+    padding: 13px 24px;
+    background: linear-gradient(135deg, var(--sec-green), var(--sec-deep));
+    color: #fff;
+    border-radius: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.30) inset,
+      0 4px 10px rgba(20, 90, 50, 0.30);
+    transition: transform 200ms ease, filter 160ms ease;
+  }
+  .sec-contact-btn:hover { transform: translateY(-2px); filter: brightness(1.06); }
+
+  .sec-trust-row {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    justify-content: center;
+    margin-top: 24px;
+  }
+  .sec-trust-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 12px;
+    font-size: 0.74rem; font-weight: 700;
+    color: var(--sec-deep);
+    background: rgba(212, 239, 223, 0.6);
+    border: 1px solid rgba(30, 132, 73, 0.22);
+    border-radius: 999px;
+  }
+</style>
+
+<div class="sec-wrap">
+  <!-- Hero -->
+  <section class="sec-hero">
+    <span class="sec-hero-eyebrow">Security &amp; Privacy</span>
+    <h1>How we keep PNEC's site safe — and what to do if something looks wrong.</h1>
+    <p>
+      Poway NEC is a 100% volunteer organization, but we treat security like a critical-path concern.
+      The site holds household contact info, neighborhood coordinator rosters, and an emergency-time
+      communications channel. Here's what we do to protect it, and how to reach us if you spot a problem.
+    </p>
+  </section>
+
+  <!-- 6 pillars -->
+  <div class="sec-grid">
+
+    <div class="sec-card">
+      <div class="sec-card-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <h3>Encrypted everywhere</h3>
+      <p>Every connection to PNEC uses <strong>TLS 1.2 or 1.3</strong> with HSTS enforcement. Sign-in passwords are hashed with <strong>PBKDF2-SHA256</strong> server-side — they're never stored or transmitted in plain text.</p>
+      <span class="sec-card-foot">256-bit · HSTS enabled</span>
+    </div>
+
+    <div class="sec-card">
+      <div class="sec-card-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12" y2="16"/></svg>
+      </div>
+      <h3>Account lockout</h3>
+      <p>If someone tries to guess your password, after <strong>5 failed attempts in 15 minutes</strong> the account is automatically locked for 15 minutes — even if the attacker rotates IPs. The site rate-limits sign-in attempts at <strong>8 per minute per IP</strong> on top of that.</p>
+      <span class="sec-card-foot">15-min lockout · IP rate-limited</span>
+    </div>
+
+    <div class="sec-card">
+      <div class="sec-card-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-12V5l-8-3-8 3v5c0 8 8 12 8 12z"/></svg>
+      </div>
+      <h3>Browser hardening headers</h3>
+      <p>Every API response carries <strong>Content-Security-Policy</strong>, <strong>X-Frame-Options</strong>, <strong>Referrer-Policy</strong>, <strong>Permissions-Policy</strong>, and <strong>Strict-Transport-Security</strong> headers — defense-in-depth against XSS, clickjacking, and downgrade attacks.</p>
+      <span class="sec-card-foot">CSP · HSTS · X-Frame-Options</span>
+    </div>
+
+    <div class="sec-card">
+      <div class="sec-card-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      </div>
+      <h3>Real-time audit log</h3>
+      <p>Every sign-in, registration, account lockout, page edit, and admin action lands in a server-side audit log. Admins see real-time security events on a private dashboard — including suspicious user-agent strings (sqlmap, nmap, etc.) and rate-limit hits.</p>
+      <span class="sec-card-foot">90-day retention · admin-only</span>
+    </div>
+
+    <div class="sec-card">
+      <div class="sec-card-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      </div>
+      <h3>Privacy-first data handling</h3>
+      <p>Your account exists to connect you with your block coordinator. We <strong>don't sell or share</strong> your data, don't run third-party advertising, and don't load tracking pixels. Push notifications (when you opt in) only post to verified push providers — Apple, Google, Mozilla, Microsoft.</p>
+      <span class="sec-card-foot">No tracking · No ads · No third parties</span>
+    </div>
+
+    <div class="sec-card">
+      <div class="sec-card-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </div>
+      <h3>Built &amp; maintained by neighbors</h3>
+      <p>The PNEC site is open-source and maintained by Poway volunteers — not an outsourced agency. All code changes are reviewed, tested, and deployed with version history. Reverting a bad change takes seconds, not days.</p>
+      <span class="sec-card-foot">Open source · Versioned · Locally run</span>
+    </div>
+
+  </div>
+
+  <!-- Disclosure -->
+  <div class="sec-disclose">
+    <h2>Found a security issue? Tell us.</h2>
+    <p>If you believe you've found a vulnerability — anything from a broken login flow to a way to access another user's data — we want to hear about it before it becomes a problem.</p>
+    <p><strong>Please:</strong></p>
+    <ul>
+      <li><strong>Email <a href="mailto:powaynec@gmail.com" style="color:var(--sec-deep); font-weight:700;">powaynec@gmail.com</a></strong> with "Security" in the subject line.</li>
+      <li>Include enough detail for us to reproduce the issue (URL, steps, expected vs. actual).</li>
+      <li>Don't post the issue publicly (Nextdoor, social media, GitHub issues) until we've confirmed the fix is live.</li>
+      <li>Don't run automated scanners against the production site without coordinating with us first — they trigger our rate-limit + lockout systems and can lock real volunteers out of their accounts.</li>
+    </ul>
+    <p style="margin-top:18px;">PNEC is a small volunteer organization, so we don't run a paid bug-bounty program. But we will: respond to legitimate reports within 5 business days, credit you publicly (with permission) once the fix lands, and make sure the issue actually gets fixed.</p>
+  </div>
+
+  <!-- Active emergency CTA -->
+  <div class="sec-contact">
+    <h3>If this is an active emergency — call 911.</h3>
+    <p>This page is for security questions about the website. For real-world emergencies in Poway, dial 911. For PNEC-specific community support, the email below is monitored by a real volunteer.</p>
+    <a class="sec-contact-btn" href="mailto:powaynec@gmail.com">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      Email PNEC
+    </a>
+    <div class="sec-trust-row">
+      <span class="sec-trust-pill">Last updated: May 2026</span>
+      <span class="sec-trust-pill">Audited by maintainers</span>
+      <span class="sec-trust-pill">501(c)(3) volunteer-run</span>
+    </div>
+  </div>
+</div>
