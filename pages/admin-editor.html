@@ -1435,6 +1435,10 @@ permalink: /pages/admin-editor.html
         if (!res.ok || !res.j.ok) throw new Error(humanizeError(res.j, res.status, 'publish'));
         savedDigest = digest(content);
         current.originalContent = content;
+        // v3.18 bug-fix: update expectedSha so the NEXT publish doesn't
+        // conflict-detect against the now-stale pre-publish sha.
+        // The backend returns content_sha = the new file's blob SHA.
+        if (res.j.content_sha) current.expectedSha = res.j.content_sha;
         localStorage.removeItem(draftKey(current.path));
         setDirty(false);
         $('ae-publish-dlg').classList.remove('is-open');
