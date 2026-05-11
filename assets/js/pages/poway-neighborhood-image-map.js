@@ -83,6 +83,11 @@
   }
 
   // ─── Hotspot rendering ────────────────────────────────────────
+  // v3.12: each neighborhood now has a `polygon` array of normalized
+  // (x, y) points tracing its actual shape on the PNG. We render a
+  // <polygon> per neighborhood and the whole region lights up on hover.
+  // Falls back to a circle for any entry missing the polygon (e.g.
+  // before the data is migrated).
   function renderHotspots() {
     const svg = document.getElementById('pnec-nmap-svg');
     if (!svg || !_data || !_data.neighborhoods) return;
@@ -94,52 +99,59 @@
     const sorted = _data.neighborhoods.slice().sort((a, b) => (a.number || 0) - (b.number || 0));
 
     sorted.forEach((n) => {
-      const cx = Math.round(n.x * W);
-      const cy = Math.round(n.y * H);
-      // Hotspot radius — large enough for forgiving hit-testing, small
-      // enough to not overlap with neighbors. ~36px at the viewBox scale
-      // is roughly a 2.5% of the map width.
-      const r = 36;
-
-      const circ = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-      circ.setAttribute('cx', cx);
-      circ.setAttribute('cy', cy);
-      circ.setAttribute('r', r);
-      circ.setAttribute('class', 'pnec-nmap-hotspot');
-      circ.setAttribute('role', 'button');
-      circ.setAttribute('tabindex', '0');
-      circ.setAttribute('data-id', n.id);
-      circ.setAttribute('aria-label',
+      // Build the SVG element — polygon if we have shape data, circle as fallback
+      let el;
+      if (Array.isArray(n.polygon) && n.polygon.length >= 3) {
+        const points = n.polygon
+          .map(([px, py]) => `${Math.round(px * W)},${Math.round(py * H)}`)
+          .join(' ');
+        el = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        el.setAttribute('points', points);
+      } else {
+        el = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        el.setAttribute('cx', Math.round(n.x * W));
+        el.setAttribute('cy', Math.round(n.y * H));
+        el.setAttribute('r', 36);
+      }
+      el.setAttribute('class', 'pnec-nmap-hotspot');
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      el.setAttribute('data-id', n.id);
+      el.setAttribute('aria-label',
         `Neighborhood ${n.number}, ${n.name}, zone ${n.zone || 'unknown'}` +
         (n.wui ? ' — wildland-urban-interface area' : ''));
 
       // Mouse: hover preview, click lock.
-      circ.addEventListener('mouseenter', (ev) => {
+      el.addEventListener('mouseenter', (ev) => {
         _hoverId = n.id;
+        // Bring the hovered polygon to the top so its outline isn't
+        // cut off by adjacent polygons. SVG uses painter's algorithm
+        // — last sibling wins.
+        if (el.parentNode) el.parentNode.appendChild(el);
         showTooltip(ev, n);
         if (_activeId == null) renderDetail(n);
       });
-      circ.addEventListener('mousemove', (ev) => positionTooltip(ev));
-      circ.addEventListener('mouseleave', () => {
+      el.addEventListener('mousemove', (ev) => positionTooltip(ev));
+      el.addEventListener('mouseleave', () => {
         _hoverId = null;
         hideTooltip();
         if (_activeId == null) renderEmpty();
       });
-      circ.addEventListener('click', () => selectNeighborhood(n.id, { lockPanel: true, scroll: false }));
+      el.addEventListener('click', () => selectNeighborhood(n.id, { lockPanel: true, scroll: false }));
 
       // Keyboard: Enter or Space activates.
-      circ.addEventListener('keydown', (ev) => {
+      el.addEventListener('keydown', (ev) => {
         if (ev.key === 'Enter' || ev.key === ' ') {
           ev.preventDefault();
           selectNeighborhood(n.id, { lockPanel: true, scroll: false });
         }
       });
-      circ.addEventListener('focus', () => {
+      el.addEventListener('focus', () => {
         if (_activeId == null) renderDetail(n);
       });
 
-      svg.appendChild(circ);
-      _hotspotEls.set(n.id, circ);
+      svg.appendChild(el);
+      _hotspotEls.set(n.id, el);
     });
   }
 
