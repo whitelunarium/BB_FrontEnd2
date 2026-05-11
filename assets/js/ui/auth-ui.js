@@ -289,3 +289,9 @@ function initPowayAuthHeader() {
 }
 
 document.addEventListener('DOMContentLoaded', initPowayAuthHeader);
+
+// v3.20: pnec-nav-patch.js runs after DOMContentLoaded on the WP-clone
+// marketing pages and may stamp the `poway-auth-login-item` / -mobile
+// IDs onto the (previously ID-less) Login <li>. Re-run when it fires so
+// auth-ui can finally find and manage those entries.
+window.addEventListener('pnec:nav-patched', initPowayAuthHeader);

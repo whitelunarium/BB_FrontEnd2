@@ -107,7 +107,13 @@
     var sample = ul.querySelector('a.elementor-item');
     var useTabindexMinus1 = !!(sample && sample.getAttribute('tabindex') === '-1');
 
-    // Find anchor points
+    // Items we MUST preserve. Two cases:
+    //   (1) pnec-base layout — explicit IDs poway-auth-* already exist;
+    //       auth-ui.js toggles visibility based on session state.
+    //   (2) WP-clone layout — uses class="menu-item-login" with no ID
+    //       and a static Login link. auth-ui.js can't find it. v3.20:
+    //       we now stamp the missing IDs onto those WP-clone items so
+    //       auth-ui can manage them on marketing pages too.
     var keepIds = {
       'poway-auth-display-item': true,
       'poway-auth-display-item-mobile': true,
@@ -116,12 +122,51 @@
       'poway-auth-login-item': true,
       'poway-auth-login-item-mobile': true,
     };
+
+    function isAuthLi(li) {
+      if (!li) return false;
+      if (li.id && keepIds[li.id]) return true;
+      // WP-clone Login entry — has class "menu-item-login" but no ID
+      if (li.classList && li.classList.contains('menu-item-login')) return true;
+      // Catch any anchor pointing to register/login as a last-resort
+      // backstop. (Doesn't fire for ordinary nav links because they
+      // never href to register.html.)
+      var a = li.querySelector && li.querySelector('a[href]');
+      if (a) {
+        var href = (a.getAttribute('href') || '').toLowerCase();
+        if (href.indexOf('register.html') !== -1 || href.indexOf('#login') !== -1) return true;
+        if (a.id === 'poway-auth-display-link' || a.id === 'poway-auth-display-link-mobile') return true;
+      }
+      return false;
+    }
+
+    // v3.20: stamp the auth-ui-expected IDs onto WP-clone Login/Profile
+    // items so the session-aware swap works on marketing pages too. We
+    // only do this if the ID isn't already set — leaves pnec-base pages
+    // alone. The "-mobile" variant goes onto the mobile dropdown <ul>
+    // (detected by tabindex="-1" sample) so auth-ui can target it.
+    function bridgeAuthIds(li) {
+      if (!li || li.id) return;                // pnec-base already has an ID
+      if (!li.classList || !li.classList.contains('menu-item-login')) return;
+      li.id = useTabindexMinus1 ? 'poway-auth-login-item-mobile' : 'poway-auth-login-item';
+    }
+
     var home = ul.querySelector('li.pnec-nav-home') || ul.querySelector('li.menu-item-home');
 
-    // Remove every regular content <li>; keep home, keep auth items.
+    // First pass: identify items to keep (home + auth) and stamp IDs
+    // onto WP-clone auth items so auth-ui can find them later.
+    var preservedAuth = [];
+    Array.prototype.forEach.call(ul.children, function (li) {
+      if (isAuthLi(li)) {
+        bridgeAuthIds(li);
+        preservedAuth.push(li);
+      }
+    });
+
+    // Second pass: remove everything that ISN'T home/auth/already-managed.
     Array.prototype.slice.call(ul.children).forEach(function (li) {
       if (li === home) return;
-      if (li.id && keepIds[li.id]) return;
+      if (isAuthLi(li)) return;
       ul.removeChild(li);
     });
 
@@ -131,21 +176,26 @@
       frag.appendChild(buildItem(it, { tabindex: useTabindexMinus1 }));
     });
 
-    // Insert after home if it exists; otherwise at the start.
+    // Insert before the first auth item so order is:
+    //   Home → managed items → auth (profile / login / logout)
+    var firstAuth = preservedAuth[0] || null;
     var refNode = home ? home.nextSibling : ul.firstChild;
-    // But we want the new items to land BEFORE the auth items — find
-    // the first auth-related child and insert before it.
-    var firstAuth = null;
-    Array.prototype.forEach.call(ul.children, function (li) {
-      if (firstAuth) return;
-      if (li.id && keepIds[li.id]) firstAuth = li;
-    });
     if (firstAuth) {
       ul.insertBefore(frag, firstAuth);
     } else if (refNode) {
       ul.insertBefore(frag, refNode);
     } else {
       ul.appendChild(frag);
+    }
+
+    // v3.20: ask auth-ui to refresh its hooks now that we've stamped
+    // new IDs onto the WP-clone Login button. The event is no-op when
+    // auth-ui hasn't loaded yet — it picks up the IDs on its normal
+    // init pass.
+    if (preservedAuth.length) {
+      try {
+        window.dispatchEvent(new CustomEvent('pnec:nav-patched'));
+      } catch (_e) { /* IE fallback not needed in 2026 */ }
     }
 
     ul.setAttribute('data-pnec-nav-applied', '1');
