@@ -374,24 +374,66 @@
   }
 
   // ─── Search ───────────────────────────────────────────────────
+  // v3.14: typeahead autocomplete dropdown beneath the input.
+  // Renders up to 8 matches as the user types, with mouse + keyboard
+  // navigation. Pulses on the map too (existing behavior).
+  let _highlightedIdx = -1;
+  let _currentSuggestions = [];
+
   function wireSearch() {
     const form = document.querySelector('.pnec-nmap-search');
     const input = document.getElementById('pnec-nmap-q');
-    if (!form || !input) return;
+    const ul = document.getElementById('pnec-nmap-suggestions');
+    if (!form || !input || !ul) return;
+
     form.addEventListener('submit', (ev) => {
       ev.preventDefault();
-      runSearch(input.value || '');
+      // If a suggestion is currently highlighted, pick that one.
+      if (_highlightedIdx >= 0 && _currentSuggestions[_highlightedIdx]) {
+        chooseSuggestion(_currentSuggestions[_highlightedIdx]);
+      } else {
+        runSearch(input.value || '');
+      }
     });
-    // Live highlight as user types (debounced).
+
+    // Live filter + dropdown
     let t;
     input.addEventListener('input', () => {
       clearTimeout(t);
-      t = setTimeout(() => previewSearch(input.value || ''), 250);
+      t = setTimeout(() => {
+        const q = input.value || '';
+        previewSearch(q);
+        renderSuggestions(q);
+      }, 80);   // tighter than before so the dropdown feels responsive
+    });
+
+    // Keyboard navigation on the input
+    input.addEventListener('keydown', (ev) => {
+      if (!_currentSuggestions.length) return;
+      if (ev.key === 'ArrowDown') {
+        ev.preventDefault();
+        _highlightedIdx = Math.min(_currentSuggestions.length - 1, _highlightedIdx + 1);
+        repaintHighlighted();
+      } else if (ev.key === 'ArrowUp') {
+        ev.preventDefault();
+        _highlightedIdx = Math.max(-1, _highlightedIdx - 1);
+        repaintHighlighted();
+      } else if (ev.key === 'Escape') {
+        hideSuggestions();
+      }
+    });
+
+    // Click outside → close
+    document.addEventListener('click', (ev) => {
+      if (!form.contains(ev.target)) hideSuggestions();
+    });
+    // Focus the input when re-typing
+    input.addEventListener('focus', () => {
+      if (input.value.length >= 1) renderSuggestions(input.value);
     });
   }
 
   function previewSearch(q) {
-    // Remove old preview pulses.
     _hotspotEls.forEach((el) => el.classList.remove('is-search-match'));
     if (!q || q.length < 2) return;
     const matches = findMatches(q);
@@ -399,6 +441,104 @@
       const el = _hotspotEls.get(m.id);
       if (el) el.classList.add('is-search-match');
     });
+  }
+
+  function renderSuggestions(q) {
+    const ul = document.getElementById('pnec-nmap-suggestions');
+    const input = document.getElementById('pnec-nmap-q');
+    if (!ul || !input) return;
+    const norm = String(q).trim();
+    if (norm.length < 1) {
+      hideSuggestions();
+      return;
+    }
+    const matches = findMatches(norm).slice(0, 8);
+    if (!matches.length) {
+      ul.innerHTML = `
+        <li class="pnec-nmap-suggestion pnec-nmap-suggestion--empty" role="option" aria-disabled="true">
+          No match for "${escapeHtml(norm)}"
+        </li>`;
+      ul.hidden = false;
+      input.setAttribute('aria-expanded', 'true');
+      _currentSuggestions = [];
+      _highlightedIdx = -1;
+      return;
+    }
+    _currentSuggestions = matches;
+    _highlightedIdx = -1;
+    const ql = norm.toLowerCase();
+    ul.innerHTML = matches.map((n, i) => {
+      // Highlight the matched span in the name
+      const lower = (n.name || '').toLowerCase();
+      const idx = lower.indexOf(ql);
+      let nameHtml;
+      if (idx >= 0 && ql.length >= 1) {
+        nameHtml = escapeHtml(n.name.slice(0, idx))
+                 + `<mark>${escapeHtml(n.name.slice(idx, idx + ql.length))}</mark>`
+                 + escapeHtml(n.name.slice(idx + ql.length));
+      } else {
+        nameHtml = escapeHtml(n.name);
+      }
+      const streets = (n.key_streets || []).slice(0, 2).join(' · ');
+      return `
+        <li class="pnec-nmap-suggestion" role="option" data-idx="${i}" data-nid="${n.id}" tabindex="-1">
+          <span class="pnec-nmap-suggestion-num" style="--num-color:${n.color || '#1e8449'}">${n.number}</span>
+          <span class="pnec-nmap-suggestion-text">
+            <span class="pnec-nmap-suggestion-name">${nameHtml}</span>
+            <span class="pnec-nmap-suggestion-meta">Zone ${escapeHtml(n.zone || '?')}${n.wui ? ' · WUI' : ''}${streets ? ' · ' + escapeHtml(streets) : ''}</span>
+          </span>
+        </li>`;
+    }).join('');
+    ul.hidden = false;
+    input.setAttribute('aria-expanded', 'true');
+
+    // Wire click + hover on each item
+    ul.querySelectorAll('.pnec-nmap-suggestion').forEach((li) => {
+      const i = parseInt(li.getAttribute('data-idx'), 10);
+      if (Number.isNaN(i)) return;
+      li.addEventListener('mousedown', (ev) => {
+        // mousedown rather than click so the blur-then-hide doesn't kill the click
+        ev.preventDefault();
+        chooseSuggestion(matches[i]);
+      });
+      li.addEventListener('mouseenter', () => {
+        _highlightedIdx = i;
+        repaintHighlighted();
+      });
+    });
+  }
+
+  function repaintHighlighted() {
+    const ul = document.getElementById('pnec-nmap-suggestions');
+    if (!ul) return;
+    ul.querySelectorAll('.pnec-nmap-suggestion').forEach((li) => {
+      const i = parseInt(li.getAttribute('data-idx'), 10);
+      li.classList.toggle('is-highlighted', i === _highlightedIdx);
+      if (i === _highlightedIdx) li.setAttribute('aria-selected', 'true');
+      else li.removeAttribute('aria-selected');
+    });
+  }
+
+  function hideSuggestions() {
+    const ul = document.getElementById('pnec-nmap-suggestions');
+    const input = document.getElementById('pnec-nmap-q');
+    if (ul) ul.hidden = true;
+    if (input) input.setAttribute('aria-expanded', 'false');
+    _highlightedIdx = -1;
+    _currentSuggestions = [];
+  }
+
+  function chooseSuggestion(n) {
+    const input = document.getElementById('pnec-nmap-q');
+    if (input) input.value = n.name;
+    hideSuggestions();
+    selectNeighborhood(n.id, { lockPanel: true, scroll: true });
+    // Pulse the chosen polygon briefly
+    const el = _hotspotEls.get(n.id);
+    if (el) {
+      el.classList.add('is-search-match');
+      setTimeout(() => { if (el) el.classList.remove('is-search-match'); }, 3000);
+    }
   }
 
   function runSearch(q) {

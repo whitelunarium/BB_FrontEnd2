@@ -32,9 +32,16 @@
     </div>
     <form class="pnec-nmap-search" role="search" aria-label="Find your neighborhood by address or name">
       <label for="pnec-nmap-q" class="pnec-nmap-search-label">Address, street, or neighborhood name</label>
-      <input id="pnec-nmap-q" type="search"
-             placeholder="e.g. Garden Road, Old Coach, Highlands Ranch, 12345 Espola"
-             autocomplete="off" inputmode="search" />
+      <div class="pnec-nmap-search-input-wrap">
+        <input id="pnec-nmap-q" type="search"
+               placeholder="e.g. Garden Road, Old Coach, Highlands Ranch, 12345 Espola"
+               autocomplete="off" inputmode="search"
+               role="combobox" aria-autocomplete="list"
+               aria-controls="pnec-nmap-suggestions"
+               aria-expanded="false" />
+        <ul id="pnec-nmap-suggestions" class="pnec-nmap-suggestions"
+            role="listbox" aria-label="Neighborhood suggestions" hidden></ul>
+      </div>
       <button type="submit" class="pnec-nmap-search-btn">Find</button>
     </form>
   </header>
