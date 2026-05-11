@@ -498,8 +498,10 @@ permalink: /pages/admin-editor.html
     <div class="ae-topbar-actions">
       <span class="ae-status-pill is-saved" id="ae-status">Ready</span>
       <button type="button" class="ae-btn is-ghost" id="ae-test-all" title="Re-run health check + load every page once">↻ Self-test</button>
+      <button type="button" class="ae-btn" id="ae-upload-open">📷 Upload image</button>
       <button type="button" class="ae-btn" id="ae-ai-open">✨ Generate with AI</button>
       <button type="button" class="ae-btn is-primary" id="ae-publish">Publish to GitHub →</button>
+      <input type="file" id="ae-upload-input" hidden accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif">
     </div>
   </header>
 
@@ -1108,6 +1110,57 @@ permalink: /pages/admin-editor.html
     clearTimeout(draftSaveT);
     draftSaveT = setTimeout(saveDraft, 400);
   });
+
+  // v3.18: textarea Tab key inserts 2 spaces instead of jumping focus.
+  // Shift-Tab dedents the current line if it starts with whitespace.
+  // Both work for multi-line selections.
+  $('ae-source').addEventListener('keydown', function(ev) {
+    if (ev.key !== 'Tab') return;
+    ev.preventDefault();
+    var ta = ev.target;
+    var s = ta.selectionStart, e = ta.selectionEnd;
+    var val = ta.value;
+    var multi = (val.slice(s, e).indexOf('\n') !== -1);
+
+    if (!multi) {
+      // Single-line: indent or dedent at cursor
+      if (ev.shiftKey) {
+        // Dedent: remove up to 2 leading spaces on this line
+        var lineStart = val.lastIndexOf('\n', s - 1) + 1;
+        var trimmed = 0;
+        while (trimmed < 2 && val[lineStart + trimmed] === ' ') trimmed++;
+        if (trimmed > 0) {
+          ta.value = val.slice(0, lineStart) + val.slice(lineStart + trimmed);
+          ta.selectionStart = ta.selectionEnd = s - trimmed;
+        }
+      } else {
+        // Insert 2 spaces at cursor
+        ta.value = val.slice(0, s) + '  ' + val.slice(e);
+        ta.selectionStart = ta.selectionEnd = s + 2;
+      }
+    } else {
+      // Multi-line selection: indent/dedent every line in the range
+      var blockStart = val.lastIndexOf('\n', s - 1) + 1;
+      var blockEnd = e;
+      var block = val.slice(blockStart, blockEnd);
+      var newBlock;
+      if (ev.shiftKey) {
+        newBlock = block.split('\n').map(function(l) {
+          if (l.startsWith('  ')) return l.slice(2);
+          if (l.startsWith(' '))  return l.slice(1);
+          return l;
+        }).join('\n');
+      } else {
+        newBlock = block.split('\n').map(function(l) {
+          return '  ' + l;
+        }).join('\n');
+      }
+      ta.value = val.slice(0, blockStart) + newBlock + val.slice(blockEnd);
+      ta.selectionStart = blockStart;
+      ta.selectionEnd = blockStart + newBlock.length;
+    }
+    ta.dispatchEvent(new Event('input'));
+  });
   $('ae-reload').addEventListener('click', function() {
     if (!current) return;
     if (dirty && !confirm('Reload from GitHub will discard your unsaved changes. Continue?')) return;
@@ -1396,6 +1449,68 @@ permalink: /pages/admin-editor.html
     var html = $('ae-ai-output').textContent;
     if (!html) return;
     navigator.clipboard.writeText(html).then(function() { toast('Copied.'); });
+  });
+
+  // ──────────────────────────────────────────────────────────────────
+  // Image upload — commits to assets/images/uploads/<filename> on the
+  // repo, then drops an <img> tag at the cursor (or copies the URL).
+  // ──────────────────────────────────────────────────────────────────
+  $('ae-upload-open').addEventListener('click', function() {
+    $('ae-upload-input').click();
+  });
+  $('ae-upload-input').addEventListener('change', function(ev) {
+    var file = ev.target.files && ev.target.files[0];
+    if (!file) return;
+    ev.target.value = '';   // allow re-uploading the same file
+    if (file.size > 5_000_000) { toast('Image too large (max 5 MB).', { error: true }); return; }
+
+    var reader = new FileReader();
+    reader.onload = function() {
+      var dataUrl = reader.result || '';
+      var b64 = String(dataUrl).split(',')[1] || '';
+      if (!b64) { toast('Could not read file.', { error: true }); return; }
+
+      // sanitize filename + dedupe with a timestamp
+      var safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 60);
+      var stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      var repoPath = 'assets/images/uploads/' + stamp + '_' + safeName;
+
+      setStatus('publishing', 'Uploading ' + safeName + '…');
+      toast('Uploading <code>' + esc(safeName) + '</code>… (' + Math.round(file.size / 1024) + ' KB)', { ms: 3000 });
+
+      fetch(API_BASE + '/api/admin/publish/upload', {
+        method: 'POST',
+        headers: apiHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ path: repoPath, content_b64: b64,
+                              message: 'Upload ' + safeName + ' via Live Theme Editor' })
+      }).then(function(r) { return r.json().then(function(j) { return {ok:r.ok,status:r.status,j:j}; }); })
+        .then(function(res) {
+          if (!res.ok || !res.j.ok) throw new Error(humanizeError(res.j, res.status, 'upload'));
+          var siteUrl = '/' + repoPath;
+          // Insert <img> tag at cursor if a page is open
+          if (current) {
+            var ta = $('ae-source');
+            var cur = ta.selectionStart || ta.value.length;
+            var snippet = '<img src="' + siteUrl + '" alt="" loading="lazy">';
+            ta.value = ta.value.slice(0, cur) + snippet + ta.value.slice(cur);
+            ta.selectionStart = ta.selectionEnd = cur + snippet.length;
+            ta.dispatchEvent(new Event('input'));
+            toast('Uploaded! Tag inserted at cursor. <a href="' + esc(res.j.html_url || '#') + '" target="_blank" rel="noopener">commit ' + esc((res.j.commit_sha || '').slice(0, 7)) + '</a>. Pages rebuilds in ~5 min.', { ms: 9000 });
+          } else {
+            // No page selected — copy URL to clipboard
+            navigator.clipboard.writeText(siteUrl).then(function() {
+              toast('Uploaded! Site path copied: <code>' + esc(siteUrl) + '</code>. Pages rebuilds in ~5 min.', { ms: 8000 });
+            });
+          }
+          setStatus(dirty ? 'dirty' : 'saved', dirty ? 'Unsaved changes' : 'Synced');
+        })
+        .catch(function(err) {
+          setStatus('error', 'Upload failed');
+          toast(esc(String(err.message || err)), { error: true, ms: 9000 });
+        });
+    };
+    reader.onerror = function() { toast('Could not read the file.', { error: true }); };
+    reader.readAsDataURL(file);
   });
 
   // ──────────────────────────────────────────────────────────────────
