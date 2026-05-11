@@ -1104,6 +1104,59 @@ permalink: /pages/admin-editor.html
     });
   }
 
+  // v3.18: lightweight HTML balance check. Returns a list of
+  // human-readable warnings (e.g. "Unclosed <div> tag opened on
+  // line 42"). Empty list = looks OK. False-positive friendly:
+  // ignores void elements (br, img, input, etc.) and common
+  // self-closing patterns.
+  function lintHtml(html) {
+    var warnings = [];
+    var VOID = {
+      area:1, base:1, br:1, col:1, embed:1, hr:1, img:1, input:1,
+      link:1, meta:1, param:1, source:1, track:1, wbr:1,
+    };
+    var stack = [];   // [{tag, line}]
+    var lineNo = 1;
+    // Walk byte-by-byte to track line numbers. Match tags with regex.
+    var re = /<\/?([a-zA-Z][a-zA-Z0-9-]*)([^>]*)?>|<!--[\s\S]*?-->|<![\s\S]*?>|\n/g;
+    var m;
+    while ((m = re.exec(html))) {
+      if (m[0] === '\n') { lineNo++; continue; }
+      if (m[0].startsWith('<!--') || m[0].startsWith('<!')) continue;
+      var tag = (m[1] || '').toLowerCase();
+      if (!tag) continue;
+      var attrs = m[2] || '';
+      var isClose = m[0].charAt(1) === '/';
+      var isSelfClose = attrs.trimEnd().endsWith('/');
+      if (isClose) {
+        // Pop matching open tag
+        var found = -1;
+        for (var i = stack.length - 1; i >= 0; i--) {
+          if (stack[i].tag === tag) { found = i; break; }
+        }
+        if (found < 0) {
+          warnings.push('Stray </' + tag + '> on line ' + lineNo + ' (no matching open tag)');
+        } else {
+          // Warn about any tags between found+1 and top that got skipped
+          for (var j = found + 1; j < stack.length; j++) {
+            warnings.push('Implicitly closed <' + stack[j].tag + '> from line ' + stack[j].line + ' (closed by </' + tag + '> on line ' + lineNo + ')');
+          }
+          stack.length = found;
+        }
+      } else if (!VOID[tag] && !isSelfClose) {
+        stack.push({ tag: tag, line: lineNo });
+      }
+    }
+    // Anything left on stack at EOF = unclosed
+    stack.forEach(function(s) {
+      warnings.push('Unclosed <' + s.tag + '> tag opened on line ' + s.line);
+    });
+    // De-dup
+    var seen = {}, out = [];
+    warnings.forEach(function(w) { if (!seen[w]) { seen[w] = 1; out.push(w); } });
+    return out;
+  }
+
   function humanizeError(j, status, action) {
     if (status === 401) return 'Admin key rejected. Sign in again with the right key.';
     if (status === 404) return 'File not found in the repo. The page list may be out of date.';
@@ -1381,6 +1434,21 @@ permalink: /pages/admin-editor.html
     var content = $('ae-source').value;
     if (!content) { toast('Editor is empty.', { error: true }); return; }
     if (digest(content) === savedDigest) { toast('No changes to publish.'); return; }
+
+    // v3.18: pre-publish lint — warn (but don't block) on common
+    // HTML mistakes. Most useful for HTML files; safely no-ops on
+    // other file types (CSS, JSON, MD).
+    if (current.path.endsWith('.html')) {
+      var lintWarnings = lintHtml(content);
+      if (lintWarnings.length) {
+        var msg = 'Heads-up — possible issues in your HTML:\n\n  • '
+                + lintWarnings.slice(0, 5).join('\n  • ')
+                + (lintWarnings.length > 5 ? ('\n  • …and ' + (lintWarnings.length - 5) + ' more') : '')
+                + '\n\nPublish anyway?';
+        if (!confirm(msg)) return;
+      }
+    }
+
     $('ae-pub-msg').value = 'Edit ' + current.label + ' via Live Theme Editor';
     $('ae-pub-confirm').disabled = true;
     $('ae-pub-summary').textContent = 'Computing diff…';
