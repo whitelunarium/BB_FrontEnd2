@@ -6,7 +6,10 @@
   <title>{% if page.title %}{{ page.title }} &#8211; {% endif %}Poway NEC &amp; FSC</title>
   <meta name="description" content="{% if page.description %}{{ page.description }}{% else %}Poway NEC &amp; FSC{% endif %}" />
   {% include poway-live-head.html %}
-  <link rel="stylesheet" href="{{ '/assets/css/chatbot.css' | relative_url }}" />
+  <!-- v3.20: chatbot CSS below-the-fold; load non-blocking. -->
+  <link rel="preload" href="{{ '/assets/css/chatbot.css' | relative_url }}" as="style"
+        onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="{{ '/assets/css/chatbot.css' | relative_url }}" /></noscript>
   {% if page.head_extra %}{{ page.head_extra }}{% endif %}
 </head>
 <body class="home wp-singular page-template page-template-elementor_header_footer page page-id-22 wp-theme-jupiterx no-js ctct-jupiterx elementor-default elementor-template-full-width elementor-kit-771 elementor-page elementor-page-22 jupiterx-header-overlapped jupiterx-header-overlapped-tablet jupiterx-header-overlapped-mobile {{ page.body_class }}" itemscope="itemscope" itemtype="http://schema.org/WebPage">

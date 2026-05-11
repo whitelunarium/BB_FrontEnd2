@@ -36,7 +36,10 @@
   <link rel="stylesheet" href="https://powaynec.com/wp-content/plugins/elementor-pro/assets/css/widget-posts.min.css?ver=3.35.1" />
   <link rel="stylesheet" href="https://powaynec.com/wp-content/plugins/elementor/assets/css/widget-social-icons.min.css?ver=3.35.9" />
   <link rel="stylesheet" href="{{ '/assets/css/poway-unified-ui.css' | relative_url }}" />
-  <link rel="stylesheet" href="{{ '/assets/css/chatbot.css' | relative_url }}" />
+  <!-- v3.20: chatbot CSS below-the-fold; load non-blocking. -->
+  <link rel="preload" href="{{ '/assets/css/chatbot.css' | relative_url }}" as="style"
+        onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="{{ '/assets/css/chatbot.css' | relative_url }}" /></noscript>
   <link rel="icon" href="https://powaynec.com/wp-content/uploads/2020/05/cropped-PNEC-init-32x32.jpg" sizes="32x32" />
   {% if page.head_extra %}{{ page.head_extra }}{% endif %}
 </head>

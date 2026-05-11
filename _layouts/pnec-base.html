@@ -20,7 +20,11 @@
   {% unless page.use_poway_source_clone %}
   <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}">
   {% endunless %}
-  <link rel="stylesheet" href="{{ '/assets/css/chatbot.css' | relative_url }}">
+  <!-- v3.20: chatbot CSS is below-the-fold (floating button + collapsed panel)
+       and rendered after DOMContentLoaded. Load it without blocking first paint. -->
+  <link rel="preload" href="{{ '/assets/css/chatbot.css' | relative_url }}" as="style"
+        onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="{{ '/assets/css/chatbot.css' | relative_url }}"></noscript>
   <link rel="stylesheet" href="{{ '/assets/css/cms-sections.css' | relative_url }}">
   <!-- v2.59: site-wide footer polish — loaded on EVERY page (including
        use_poway_source_clone pages that skip main.css) so the cloned-WP
