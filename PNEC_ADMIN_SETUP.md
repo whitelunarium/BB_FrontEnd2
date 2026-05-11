@@ -84,6 +84,77 @@ export ADMIN_PASSWORD='<long random string>'
 
 (NEVER commit this to source. NEVER share via email or Slack.)
 
+**Important security note:** as of the v3 security pass, the Flask
+boot logic REFUSES to seed an `admin@powaynec.com` user when:
+- `ADMIN_PASSWORD` is unset or empty
+- It's shorter than 12 chars
+- It matches a known-bad sentinel (`changeme123`, `password`, `admin`, etc.)
+
+If you see a `_seed_admin_if_missing: refusing to seed` warning in
+the Flask logs, the env var isn't being read correctly. Check it's
+spelled right, restart, and verify with:
+```bash
+docker compose exec web sh -c 'echo "len=${#ADMIN_PASSWORD}"'
+```
+Expected: `len=24` (or whatever your length is). If it says `len=0`,
+the env var isn't reaching the container.
+
+### 4. PayPal Donate button (one-time, on the Frontend repo)
+
+The Donate page (`pages/donate.html`) ships with placeholder
+`hosted_button_id=PNEC` — PayPal will reject this. Swap it for the
+real button:
+
+1. Sign in to the PNEC PayPal Business account (powaynec@gmail.com
+   or whoever owns it).
+2. PayPal → Tools → All Tools → Donate Button → Create or copy
+   your existing button ID (alphanumeric like `JL5KFZD2NRWAW`).
+3. In the Live Theme Editor, open **Footer links → Donate**
+4. Find every `hosted_button_id=PNEC` (there are ~6 — one per
+   amount-quick-pick + one main button)
+5. Replace each with your real ID
+6. Click Publish
+7. Test: click each `$25 / $50 / $100 / $250` quick-pick + the
+   main "Donate any amount" button on the live site → PayPal page
+   should load with PNEC's org name + the right preset amount.
+
+### 5. VAPID push notification keys (optional)
+
+If PNEC wants to send push notifications for emergencies
+(red-flag fire days, evacuation orders), generate VAPID keys:
+
+```bash
+cd Beasts_Flask
+python scripts/generate_vapid_keys.py
+# prints VAPID_PUBLIC_KEY=... and VAPID_PRIVATE_KEY=...
+```
+
+Set on the Flask host:
+```bash
+export VAPID_PUBLIC_KEY=…
+export VAPID_PRIVATE_KEY=…
+export VAPID_EMAIL=info@powaynec.com
+```
+
+Restart. Without these, the `/api/push/subscribe` endpoint still
+runs (and authenticates), but actual `POST` to web-push won't fire.
+
+### 6. Hero image filenames (Frontend, optional)
+
+The home hero rotates 4-5 images from `/assets/images/Poway_*.{jpg,jpeg,webp}`.
+If you want to swap them with newer photos:
+
+1. Pick 1920×500 source images (same aspect ratio so layout stays).
+2. Convert to WebP at quality 80 (drops file size ~70%):
+   - https://squoosh.app (drag in, set WebP, q=80, download), OR
+   - `cwebp -q 80 in.jpg -o out.webp` (command-line tool)
+3. Upload to GitHub via the editor (or commit directly).
+4. Update the filenames in `_includes/poway-live-body.html`.
+
+**Special case**: `assets/images/Poway_Lake.jpg` is ~838KB JPEG —
+the biggest single image on the site. Converting it to WebP drops
+it to ~100KB, saves ~750KB per page load.
+
 ---
 
 ## Day-to-day: editing the site
