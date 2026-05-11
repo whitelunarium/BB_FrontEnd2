@@ -816,6 +816,32 @@ permalink: /pages/admin-editor.html
     $('ae-app').hidden = false;
     renderSidebar();
     runSelfTest();
+    // ?page=<slug> URL param — auto-select that page so "Edit this page"
+    // buttons (and shareable editor links) open directly into the right
+    // file.
+    try {
+      var sp = new URLSearchParams(location.search);
+      var slug = (sp.get('page') || '').trim();
+      if (slug) {
+        var match = null;
+        GROUPS.some(function(g) {
+          return g.items.some(function(it) {
+            // Match by slug derived from path OR exact path
+            var pathSlug = (it.path.split('/').pop() || '').replace(/\.html$/, '');
+            if (pathSlug === slug || it.path === slug ||
+                (slug === 'home' && it.path === 'index.html')) {
+              match = it;
+              return true;
+            }
+          });
+        });
+        if (match) {
+          setTimeout(function() { selectPage(match); }, 60);
+        } else {
+          toast('No page matched "' + esc(slug) + '" — pick one from the list.', { ms: 5000 });
+        }
+      }
+    } catch (_e) {}
   }
 
   // ──────────────────────────────────────────────────────────────────

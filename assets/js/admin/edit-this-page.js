@@ -77,27 +77,28 @@
       'align-items:center',
       'gap:8px',
       'padding:11px 18px',
-      'background:linear-gradient(135deg, #5b8cff 0%, #a855f7 50%, #ec4899 100%)',
-      'color:#fff',
-      'font:600 0.88rem ui-sans-serif, system-ui, -apple-system, sans-serif',
+      // v3.17: switched from rainbow gradient to PNEC brand forest
+      // green so the button matches the rest of the site (cream + forest).
+      'background:linear-gradient(135deg, #145a32 0%, #1e8449 100%)',
+      'color:#fffdf6',
+      'font:700 0.88rem "DM Sans", ui-sans-serif, system-ui, -apple-system, sans-serif',
       'letter-spacing:.01em',
       'text-decoration:none',
       'border-radius:999px',
-      'box-shadow:0 8px 24px rgba(91,140,255,0.35), 0 0 0 1px rgba(255,255,255,0.10) inset',
+      'box-shadow:0 8px 24px rgba(20,90,50,0.35), 0 0 0 1px rgba(255,253,246,0.16) inset',
       'cursor:pointer',
       'transition:transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease',
-      'opacity:0.92',
-      'backdrop-filter:blur(4px)',
+      'opacity:0.94',
     ].join(';');
     btn.addEventListener('mouseenter', () => {
       btn.style.transform   = 'translateY(-2px) scale(1.02)';
       btn.style.opacity     = '1';
-      btn.style.boxShadow   = '0 12px 32px rgba(91,140,255,0.50), 0 0 0 1px rgba(255,255,255,0.16) inset';
+      btn.style.boxShadow   = '0 12px 32px rgba(20,90,50,0.50), 0 0 0 1px rgba(255,253,246,0.20) inset';
     });
     btn.addEventListener('mouseleave', () => {
       btn.style.transform   = 'translateY(0) scale(1)';
-      btn.style.opacity     = '0.92';
-      btn.style.boxShadow   = '0 8px 24px rgba(91,140,255,0.35), 0 0 0 1px rgba(255,255,255,0.10) inset';
+      btn.style.opacity     = '0.94';
+      btn.style.boxShadow   = '0 8px 24px rgba(20,90,50,0.35), 0 0 0 1px rgba(255,253,246,0.16) inset';
     });
 
     // Position above the chatbot if it exists. The actual class is
