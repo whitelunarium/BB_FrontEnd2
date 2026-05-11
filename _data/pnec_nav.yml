@@ -1,0 +1,38 @@
+# Main PNEC site navigation
+#
+# Rendered by _includes/poway-header.html. Each entry produces one <li><a>
+# in the main nav bar. The "Home" icon and the auth-gated "Login / My
+# Profile" entry are rendered separately from this file because they have
+# special markup; everything else lives here so the Admin > Site nav
+# manager (pages/admin-nav.html) can add / reorder / delete items
+# without touching code.
+#
+# Field reference
+#   - title      Required. Label shown in the nav.
+#   - url        Required. URL the link points to. Use a site-relative
+#                path like "/pages/foo.html" — it goes through
+#                {{ ... | relative_url }} so it works under a base path.
+#   - match      Optional. Comma-separated list of URL substrings used to
+#                add the .active class. Defaults to the link's own url.
+#                Example: "/preparedness-resources,/poway-statistics"
+#                marks the nav item active on both pages.
+#   - external   Optional. If true, renders target="_blank" rel="noopener"
+#                and skips the relative_url filter.
+#
+# Order matters — the file order is the render order.
+
+- title: About
+  url: /pages/about.html
+  match: /about
+
+- title: Programs and Services
+  url: /pages/programs-and-services.html
+  match: /programs-and-services
+
+- title: Preparedness & Help
+  url: /pages/preparedness-resources.html
+  match: /preparedness-resources,/poway-statistics-and-information
+
+- title: Community Events
+  url: /pages/community-events-and-activities.html
+  match: /community-events-and-activities

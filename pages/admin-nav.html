@@ -1,0 +1,811 @@
+---
+layout: pnec-base
+title: "Site Nav Manager — PNEC Admin"
+description: "PNEC admins: add, reorder, and delete items in the main site navigation. Changes commit to _data/pnec_nav.yml and appear on every page after the next Jekyll build."
+body_class: inner-page admin-nav-page
+permalink: /pages/admin-nav.html
+---
+
+<style>
+/* ════════════════════════════════════════════════════════════════
+   PNEC Admin Site Nav Manager (v3.20, May 2026)
+   Edits _data/pnec_nav.yml via the existing /api/admin/publish/file
+   endpoint. Every entry in that YAML file renders as one <li> in
+   _includes/poway-header.html. Order in the file == order in the nav.
+   ════════════════════════════════════════════════════════════════ */
+.admin-nav-page { background: #fbf8f1; min-height: 100vh; }
+.admin-nav-page *, .admin-nav-page *::before, .admin-nav-page *::after { box-sizing: border-box; }
+
+.an-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 14px 22px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbf8f1 100%);
+  border-bottom: 1px solid #e3e0d8;
+  position: sticky; top: 0; z-index: 30;
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+.an-topbar h1 {
+  margin: 0; font-size: 1.05rem; font-weight: 800; color: #0e3b21;
+  letter-spacing: -0.012em; line-height: 1.15;
+}
+.an-topbar .sub { margin: 1px 0 0; font-size: 0.78rem; color: #475569; }
+.an-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+.an-btn {
+  padding: 8px 14px;
+  border: 1.5px solid #d8d4c4; background: #ffffff; color: #0e3b21;
+  border-radius: 8px; font-size: 0.86rem; font-weight: 700;
+  cursor: pointer; white-space: nowrap;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s, transform 0.06s, box-shadow 0.15s;
+  font-family: 'DM Sans', sans-serif;
+}
+.an-btn:hover { background: #d4efdf; border-color: #145a32; }
+.an-btn:active { transform: translateY(1px); }
+.an-btn.is-primary {
+  background: linear-gradient(135deg, #145a32 0%, #1e8449 100%);
+  color: #fffdf6; border-color: #145a32;
+  box-shadow: 0 4px 12px rgba(20,90,50,0.20);
+}
+.an-btn.is-primary:hover { filter: brightness(1.08); color: #fffdf6; }
+.an-btn.is-primary:disabled { background: #b9c4b9; cursor: wait; filter: none; box-shadow: none; }
+.an-btn.is-ghost { background: transparent; border-color: transparent; padding: 6px 10px; }
+.an-btn.is-danger { color: #80261b; border-color: rgba(192,57,43,0.32); }
+.an-btn.is-danger:hover { background: rgba(192,57,43,0.10); }
+.an-btn.is-small { padding: 5px 9px; font-size: 0.78rem; }
+.an-btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+.an-status-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 999px;
+  font-size: 0.74rem; font-weight: 700; letter-spacing: 0.04em;
+}
+.an-status-pill::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.an-status-pill.is-clean  { background: #d4efdf; color: #145a32; }
+.an-status-pill.is-dirty  { background: #fdf0d5; color: #92400e; }
+.an-status-pill.is-saving { background: #dbeafe; color: #1e40af; }
+.an-status-pill.is-saving::before { animation: an-pulse 1s ease-in-out infinite; }
+@keyframes an-pulse { 0%,100%{opacity:1}50%{opacity:.4} }
+
+/* Auth gate */
+.an-auth-card {
+  max-width: 460px; margin: 80px auto; background: #fff;
+  border: 1.5px solid #e3e0d8; border-radius: 14px; padding: 28px;
+  font-family: 'DM Sans', sans-serif; color: #0a1628;
+  box-shadow: 0 10px 30px rgba(10,22,40,0.06);
+}
+.an-auth-card h2 { margin: 0 0 6px; font-size: 1.25rem; color: #0e3b21; }
+.an-auth-card p  { margin: 0 0 16px; color: #475569; font-size: 0.92rem; line-height: 1.55; }
+.an-auth-card label { display:block; font-weight:700; font-size:0.85rem; margin: 12px 0 6px; color:#0e3b21; }
+.an-auth-card input {
+  width: 100%; padding: 10px 12px; border: 1.5px solid #d8d4c4;
+  border-radius: 8px; font: inherit; font-size: 0.95rem;
+}
+.an-auth-card input:focus { outline: 2px solid #1e8449; outline-offset: 1px; border-color: #145a32; }
+.an-auth-err { color:#80261b; font-size:0.84rem; margin-top:10px; min-height: 1em; }
+
+/* Main shell */
+.an-shell {
+  max-width: 920px; margin: 0 auto; padding: 22px;
+  font-family: 'DM Sans', sans-serif; color: #0a1628;
+}
+.an-card {
+  background: #fff; border: 1.5px solid #e3e0d8; border-radius: 12px;
+  padding: 20px; margin-bottom: 18px;
+}
+.an-card h2 {
+  margin: 0 0 4px; font-size: 1.02rem; color: #0e3b21; font-weight: 800;
+}
+.an-card .hint { margin: 0 0 14px; color: #475569; font-size: 0.86rem; line-height: 1.5; }
+
+/* Nav item row */
+.an-list { display: flex; flex-direction: column; gap: 10px; margin: 0 0 14px; padding: 0; list-style: none; }
+.an-item {
+  display: grid; grid-template-columns: auto 1fr auto;
+  gap: 12px; align-items: center;
+  background: #f7f1e2; border: 1.5px solid #e3e0d8; border-radius: 10px;
+  padding: 10px 12px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.an-item.is-dragging { opacity: 0.5; }
+.an-item.is-drag-over { border-color: #145a32; box-shadow: 0 0 0 3px rgba(20,90,50,0.18); }
+.an-handle {
+  cursor: grab; padding: 4px 6px; color: #475569;
+  font-size: 1.2rem; line-height: 1; user-select: none;
+}
+.an-handle:active { cursor: grabbing; }
+
+.an-item-fields {
+  display: grid; grid-template-columns: 1fr 1.6fr 1.4fr; gap: 10px;
+  min-width: 0;
+}
+@media (max-width: 720px) {
+  .an-item { grid-template-columns: auto 1fr; }
+  .an-item-fields { grid-template-columns: 1fr; }
+  .an-item-actions { grid-column: 1 / -1; justify-content: flex-end; display: flex; }
+}
+.an-item-fields label {
+  display: block; font-size: 0.7rem; color: #475569; font-weight: 700;
+  letter-spacing: 0.04em; text-transform: uppercase; margin: 0 0 3px;
+}
+.an-item-fields input {
+  width: 100%; padding: 7px 10px;
+  border: 1.5px solid #d8d4c4; background: #fff;
+  border-radius: 7px; font: inherit; font-size: 0.88rem; color: #0a1628;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.an-item-fields input:focus { outline: 2px solid #1e8449; outline-offset: 1px; border-color: #145a32; }
+.an-item-fields input.is-error { border-color: #c0392b; box-shadow: 0 0 0 2px rgba(192,57,43,0.12); }
+
+.an-item-actions { display: flex; gap: 6px; }
+
+/* Add-new + suggestions */
+.an-suggest {
+  margin-top: 8px; padding: 12px; background: #f0fdf4;
+  border: 1px dashed #86efac; border-radius: 8px;
+}
+.an-suggest h3 { margin: 0 0 6px; font-size: 0.86rem; color: #145a32; font-weight: 800; }
+.an-suggest p  { margin: 0 0 8px; font-size: 0.78rem; color: #475569; }
+.an-suggest-row {
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+.an-suggest-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 9px; background: #fff; border: 1px solid #86efac;
+  border-radius: 999px; font-size: 0.78rem; color: #145a32;
+  cursor: pointer; transition: background-color 0.15s, transform 0.06s;
+}
+.an-suggest-chip:hover { background: #d4efdf; }
+.an-suggest-chip::before { content: '+'; font-weight: 700; }
+
+/* Preview */
+.an-preview {
+  background: #0a1628; border-radius: 10px; padding: 14px 18px;
+  margin-top: 8px;
+}
+.an-preview h3 { margin: 0 0 10px; font-size: 0.74rem; color: #cbd5e1; letter-spacing: 0.12em; text-transform: uppercase; }
+.an-preview-nav {
+  display: flex; flex-wrap: wrap; list-style: none; padding: 0; margin: 0; gap: 0;
+  background: rgba(10, 22, 40, 0.45); padding: 4px; border-radius: 6px;
+}
+.an-preview-nav li a {
+  display: inline-block; padding: 10px 12px; color: #fff;
+  font-size: 0.82rem; font-weight: 500; text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+.an-preview-nav li a:hover { color: #7ed956; border-bottom-color: #7ed956; }
+
+/* Loading / empty */
+.an-empty {
+  text-align: center; padding: 30px 14px; color: #475569; font-size: 0.9rem;
+}
+.an-toast {
+  position: fixed; right: 22px; bottom: 22px; z-index: 100;
+  background: #0e3b21; color: #fffdf6; padding: 12px 18px;
+  border-radius: 10px; font: inherit; font-weight: 600; font-size: 0.9rem;
+  font-family: 'DM Sans', sans-serif;
+  box-shadow: 0 12px 28px rgba(10,22,40,0.30);
+  opacity: 0; transform: translateY(6px);
+  transition: opacity 0.18s, transform 0.18s;
+  pointer-events: none;
+}
+.an-toast.is-shown { opacity: 1; transform: translateY(0); }
+.an-toast.is-err { background: #80261b; }
+</style>
+
+<!-- Auth gate (shown first; replaced by main shell once authenticated) -->
+<div id="an-gate" class="an-shell" style="display:none;">
+  <div class="an-auth-card">
+    <h2>Site nav manager</h2>
+    <p>Edit the main navigation bar that appears on every page. Enter your PNEC admin key to continue.</p>
+    <label for="an-key-input">Admin key</label>
+    <input id="an-key-input" type="password" autocomplete="current-password" placeholder="Paste admin key">
+    <div style="display:flex; gap:10px; margin-top:14px;">
+      <button id="an-key-submit" class="an-btn is-primary" type="button" style="flex:1;">Unlock</button>
+      <a href="{{ '/pages/admin.html' | relative_url }}" class="an-btn" style="text-decoration:none;">Cancel</a>
+    </div>
+    <div id="an-key-err" class="an-auth-err" role="status" aria-live="polite"></div>
+  </div>
+</div>
+
+<!-- Main UI (hidden until authenticated) -->
+<div id="an-app" style="display:none;">
+  <div class="an-topbar">
+    <div>
+      <h1>Site nav manager</h1>
+      <p class="sub">Edits <code>_data/pnec_nav.yml</code>. Changes appear on every page after the next Jekyll build (typically &lt;2 min).</p>
+    </div>
+    <div class="an-actions">
+      <span id="an-status" class="an-status-pill is-clean" aria-live="polite">No changes</span>
+      <a href="{{ '/' | relative_url }}" target="_blank" rel="noopener" class="an-btn">Open homepage ↗</a>
+      <button id="an-revert" class="an-btn" type="button">Discard changes</button>
+      <button id="an-save"   class="an-btn is-primary" type="button">Save changes</button>
+    </div>
+  </div>
+
+  <div class="an-shell">
+    <div class="an-card">
+      <h2>Main navigation</h2>
+      <p class="hint">
+        Drag the <strong>⋮⋮</strong> handle to reorder. Click <em>Add item</em> to insert a new link.
+        The Home icon and the Login / Profile entry are managed by the system and not shown here.
+      </p>
+      <ul id="an-list" class="an-list" role="list"></ul>
+      <button id="an-add" class="an-btn" type="button">+ Add item</button>
+
+      <div id="an-suggest" class="an-suggest" style="display:none;">
+        <h3>Suggestions from your admin-created pages</h3>
+        <p>These pages exist in the repo but aren't in the nav yet. Click a chip to add it.</p>
+        <div id="an-suggest-row" class="an-suggest-row"></div>
+      </div>
+    </div>
+
+    <div class="an-card">
+      <h2>Preview</h2>
+      <p class="hint">Approximate look of the live nav bar. The home icon and your login/profile entry are rendered by the layout and aren't shown here.</p>
+      <div class="an-preview">
+        <h3>Live preview</h3>
+        <ul id="an-preview-nav" class="an-preview-nav"></ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="an-toast" class="an-toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ─── Config ────────────────────────────────────────────────────
+  var API_BASE = (window.PNEC_API_BASE || (
+    location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+      ? 'http://localhost:5000'
+      : 'https://api.powaynec.com'
+  )).replace(/\/+$/, '');
+  var FILE_PATH = '_data/pnec_nav.yml';
+  var SITE_PREFIX = (function () {
+    // Jekyll baseurl, surfaced via the relative_url filter — handy for the
+    // preview links so they line up with what the live page would render.
+    var sample = '{{ "/" | relative_url }}';
+    return sample === '/' ? '' : sample.replace(/\/+$/, '');
+  }());
+
+  // ─── DOM refs ──────────────────────────────────────────────────
+  var $ = function (id) { return document.getElementById(id); };
+  var gate    = $('an-gate');
+  var app     = $('an-app');
+  var keyIn   = $('an-key-input');
+  var keyBtn  = $('an-key-submit');
+  var keyErr  = $('an-key-err');
+  var listEl  = $('an-list');
+  var addBtn  = $('an-add');
+  var saveBtn = $('an-save');
+  var revBtn  = $('an-revert');
+  var statusEl = $('an-status');
+  var previewEl = $('an-preview-nav');
+  var suggestBox = $('an-suggest');
+  var suggestRow = $('an-suggest-row');
+  var toastEl = $('an-toast');
+
+  // ─── State ─────────────────────────────────────────────────────
+  var adminKey = '';
+  var items = [];          // current working state (array of {title,url,match,external})
+  var initialItems = [];   // snapshot loaded from server — for revert & dirty detection
+  var fileSha = null;      // expected_sha to pass on save
+  var headerComment = '';  // preserved YAML header so admins still see docs
+
+  // ─── Storage (key cache) ───────────────────────────────────────
+  // Same convention as admin-blog / admin-volunteer: cache the admin key
+  // in sessionStorage so navigating between admin pages doesn't re-prompt
+  // every time, but it doesn't persist across browser restarts.
+  function getCachedKey() {
+    try { return sessionStorage.getItem('pnec_admin_key') || ''; } catch (_) { return ''; }
+  }
+  function setCachedKey(k) {
+    try { if (k) sessionStorage.setItem('pnec_admin_key', k); else sessionStorage.removeItem('pnec_admin_key'); } catch (_) {}
+  }
+
+  function apiHeaders() {
+    return { 'Accept': 'application/json', 'X-PNEC-Admin-Key': adminKey };
+  }
+
+  // ─── Toast ─────────────────────────────────────────────────────
+  var toastTimer;
+  function toast(msg, isErr) {
+    toastEl.textContent = msg;
+    toastEl.classList.toggle('is-err', !!isErr);
+    toastEl.classList.add('is-shown');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('is-shown'); }, 2800);
+  }
+
+  // ─── YAML round-trip (intentionally narrow) ────────────────────
+  // We deliberately don't ship a full YAML library — the file we manage
+  // has a fixed, well-known shape (list of objects with title / url /
+  // match? / external?). This parser handles exactly that shape and is
+  // robust against the writer below, which round-trips it cleanly.
+  function parseYaml(text) {
+    var lines = String(text || '').replace(/\r\n/g, '\n').split('\n');
+    var headerLines = [];
+    var inHeader = true;
+    var arr = [];
+    var current = null;
+
+    function flush() {
+      if (current) {
+        arr.push({
+          title:    current.title || '',
+          url:      current.url || '',
+          match:    current.match || '',
+          external: !!current.external,
+        });
+      }
+      current = null;
+    }
+
+    for (var i = 0; i < lines.length; i++) {
+      var raw = lines[i];
+      var trimmed = raw.trim();
+
+      // Capture leading comments / blanks as preservable header so the
+      // admin docs (field reference, etc.) survive a save round-trip.
+      if (inHeader) {
+        if (trimmed === '' || trimmed[0] === '#') {
+          headerLines.push(raw);
+          continue;
+        }
+        inHeader = false;
+      }
+
+      if (trimmed === '' || trimmed[0] === '#') continue;
+
+      if (trimmed.indexOf('- ') === 0) {
+        flush();
+        current = {};
+        // The first key of the item lives on the same line as the '-'.
+        var firstKey = trimmed.slice(2);
+        var kv = parseKv(firstKey);
+        if (kv) current[kv.key] = kv.val;
+        continue;
+      }
+
+      var kv2 = parseKv(trimmed);
+      if (kv2 && current) {
+        if (kv2.key === 'external') current.external = (kv2.val === true || kv2.val === 'true');
+        else current[kv2.key] = kv2.val;
+      }
+    }
+    flush();
+
+    headerComment = headerLines.join('\n').replace(/\s+$/, '');
+    return arr;
+  }
+
+  function parseKv(s) {
+    var idx = s.indexOf(':');
+    if (idx === -1) return null;
+    var key = s.slice(0, idx).trim();
+    var val = s.slice(idx + 1).trim();
+    if (val.length >= 2 && ((val[0] === '"' && val[val.length-1] === '"') ||
+                            (val[0] === "'" && val[val.length-1] === "'"))) {
+      val = val.slice(1, -1);
+    }
+    if (val === 'true')  val = true;
+    if (val === 'false') val = false;
+    return { key: key, val: val };
+  }
+
+  // Emit YAML the data file shape expects. We always quote string values
+  // so an ampersand, colon, or # in a title doesn't break the parser.
+  function emitYaml(arr) {
+    var head = headerComment ? (headerComment + '\n\n') : (
+      '# Main PNEC site navigation — managed by /pages/admin-nav.html\n' +
+      '# Each entry renders one <li> in the main nav bar.\n\n'
+    );
+    var body = arr.map(function (it) {
+      var lines = [];
+      lines.push('- title: ' + yamlStr(it.title || ''));
+      lines.push('  url: '   + yamlStr(it.url || ''));
+      if (it.match && it.match.length > 0)   lines.push('  match: ' + yamlStr(it.match));
+      if (it.external)                       lines.push('  external: true');
+      return lines.join('\n');
+    }).join('\n\n');
+    return head + body + (body ? '\n' : '');
+  }
+
+  function yamlStr(s) {
+    // Double-quote everything and escape backslashes and double quotes.
+    // This is the safe-by-default form; nav titles can contain '&', ':',
+    // commas, etc. without confusing the parser on round-trip.
+    return '"' + String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+  }
+
+  // ─── Auth gate ─────────────────────────────────────────────────
+  function showGate(err) {
+    gate.style.display = '';
+    app.style.display = 'none';
+    keyErr.textContent = err || '';
+    setTimeout(function () { keyIn.focus(); }, 30);
+  }
+  function showApp() {
+    gate.style.display = 'none';
+    app.style.display = '';
+  }
+
+  function tryUnlock(key) {
+    if (!key) { showGate('Please enter the admin key.'); return; }
+    adminKey = key;
+    keyErr.textContent = 'Checking…';
+    keyBtn.disabled = true;
+    fetch(API_BASE + '/api/admin/publish/health', { headers: apiHeaders() })
+      .then(function (r) {
+        if (r.status === 401 || r.status === 403) {
+          throw new Error('Wrong admin key. Double-check the value of ADMIN_PASSWORD on the Flask server.');
+        }
+        if (r.status === 404) {
+          throw new Error('Backend reachable but /api/admin/publish/health was not found. The Flask container may need to be redeployed.');
+        }
+        if (!r.ok) throw new Error('Server returned ' + r.status + '.');
+        return r.json();
+      })
+      .then(function () {
+        setCachedKey(adminKey);
+        keyErr.textContent = '';
+        keyBtn.disabled = false;
+        showApp();
+        loadNav();
+      })
+      .catch(function (e) {
+        keyBtn.disabled = false;
+        adminKey = '';
+        var msg = (e && e.message) || 'Could not reach the API.';
+        if (msg.indexOf('Failed to fetch') !== -1 || msg.indexOf('NetworkError') !== -1) {
+          msg = 'Could not reach the API at ' + API_BASE + '. Is the Flask server up?';
+        }
+        keyErr.textContent = msg;
+      });
+  }
+
+  keyBtn.addEventListener('click', function () { tryUnlock(keyIn.value.trim()); });
+  keyIn.addEventListener('keydown', function (e) { if (e.key === 'Enter') tryUnlock(keyIn.value.trim()); });
+
+  // ─── Load + save ───────────────────────────────────────────────
+  function loadNav() {
+    statusEl.classList.remove('is-dirty', 'is-saving');
+    statusEl.classList.add('is-clean');
+    statusEl.textContent = 'Loading…';
+
+    fetch(API_BASE + '/api/admin/publish/file?path=' + encodeURIComponent(FILE_PATH), { headers: apiHeaders() })
+      .then(function (r) {
+        if (r.status === 404) {
+          // File doesn't exist yet — that's fine, start empty.
+          return { content: '', sha: null };
+        }
+        if (!r.ok) throw new Error('Could not load nav file (HTTP ' + r.status + ').');
+        return r.json();
+      })
+      .then(function (j) {
+        fileSha = j.sha || null;
+        items = parseYaml(j.content || '');
+        initialItems = deepClone(items);
+        render();
+        markClean();
+        loadSuggestions();
+      })
+      .catch(function (e) {
+        toast(e.message || 'Failed to load nav.', true);
+        statusEl.textContent = 'Load failed';
+      });
+  }
+
+  function save() {
+    if (!isDirty()) { toast('Nothing to save.'); return; }
+    var errs = validate();
+    if (errs.length) { toast(errs[0], true); return; }
+
+    saveBtn.disabled = true;
+    revBtn.disabled = true;
+    statusEl.classList.remove('is-clean', 'is-dirty');
+    statusEl.classList.add('is-saving');
+    statusEl.textContent = 'Saving…';
+
+    var body = {
+      path: FILE_PATH,
+      content: emitYaml(items),
+      message: 'chore(nav): update main site nav via admin-nav UI',
+      expected_sha: fileSha || ''
+    };
+
+    fetch(API_BASE + '/api/admin/publish/file', {
+      method: 'POST',
+      headers: Object.assign({}, apiHeaders(), { 'Content-Type': 'application/json' }),
+      body: JSON.stringify(body)
+    })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j, status: r.status }; }); })
+      .then(function (res) {
+        saveBtn.disabled = false;
+        revBtn.disabled = false;
+        if (!res.ok) {
+          if (res.status === 409) {
+            toast('Someone else updated the nav file. Reloading.', true);
+            statusEl.classList.remove('is-saving');
+            statusEl.classList.add('is-dirty');
+            statusEl.textContent = 'Reloading…';
+            setTimeout(loadNav, 600);
+            return;
+          }
+          throw new Error((res.j && (res.j.detail || res.j.error)) || 'Save failed (HTTP ' + res.status + ').');
+        }
+        // Update sha so the next save doesn't 409 against ourselves.
+        fileSha = (res.j && (res.j.file_sha || res.j.sha || res.j.content_sha)) || fileSha;
+        initialItems = deepClone(items);
+        markClean();
+        toast('Saved. Live on the site after the next Jekyll build.');
+      })
+      .catch(function (e) {
+        saveBtn.disabled = false;
+        revBtn.disabled = false;
+        statusEl.classList.remove('is-saving', 'is-clean');
+        statusEl.classList.add('is-dirty');
+        statusEl.textContent = 'Save failed';
+        toast(e.message || 'Save failed.', true);
+      });
+  }
+
+  saveBtn.addEventListener('click', save);
+  revBtn.addEventListener('click', function () {
+    if (!isDirty()) return;
+    if (!confirm('Discard your unsaved changes?')) return;
+    items = deepClone(initialItems);
+    render();
+    markClean();
+    loadSuggestions();
+  });
+
+  // Cmd/Ctrl-S — save
+  document.addEventListener('keydown', function (e) {
+    if ((e.metaKey || e.ctrlKey) && (e.key === 's' || e.key === 'S')) {
+      if (app.style.display === '') { e.preventDefault(); save(); }
+    }
+  });
+
+  // ─── Suggestions: pages that exist but aren't in the nav ───────
+  // We hit the editor's page list (same endpoint admin-editor.html uses)
+  // and filter out anything already linked. Click-to-add for one-step
+  // promotion of admin-created pages, matching the user's ask:
+  //   "if you add or duplicate a page or anything like that it should
+  //    also show up on the official navigation menu"
+  function loadSuggestions() {
+    fetch(API_BASE + '/api/admin/publish/pages', { headers: apiHeaders() })
+      .then(function (r) { return r.ok ? r.json() : { pages: [] }; })
+      .catch(function () { return { pages: [] }; })
+      .then(function (j) {
+        var pages = (j && j.pages) || [];
+        // The pages endpoint returns repo paths like "pages/foo.html";
+        // the nav wants site-rooted URLs like "/pages/foo.html". Skip
+        // anything internal (admin/_data/etc.) since the nav is public.
+        var existingUrls = {};
+        items.forEach(function (it) { if (it.url) existingUrls[normalize(it.url)] = true; });
+
+        var candidates = [];
+        pages.forEach(function (p) {
+          var path = (p.path || p) + '';
+          if (!path) return;
+          var lower = path.toLowerCase();
+          // Public pages only: skip admin pages and non-html/index dupes.
+          if (lower.indexOf('admin') !== -1) return;
+          if (!/\.html?$/.test(lower)) return;
+          var publicUrl = '/' + path.replace(/^\/+/, '');
+          if (existingUrls[normalize(publicUrl)]) return;
+          // Title from path: "pages/foo-bar.html" → "Foo Bar"
+          var base = path.split('/').pop().replace(/\.html?$/i, '').replace(/[-_]+/g, ' ');
+          var title = base.replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+          candidates.push({ title: title, url: publicUrl });
+        });
+
+        renderSuggestions(candidates);
+      });
+  }
+
+  function renderSuggestions(cands) {
+    suggestRow.innerHTML = '';
+    if (!cands.length) { suggestBox.style.display = 'none'; return; }
+    suggestBox.style.display = '';
+    cands.slice(0, 20).forEach(function (c) {
+      var chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'an-suggest-chip';
+      chip.textContent = c.title + ' — ' + c.url;
+      chip.addEventListener('click', function () {
+        items.push({ title: c.title, url: c.url, match: '', external: false });
+        render();
+        markDirty();
+        loadSuggestions();
+      });
+      suggestRow.appendChild(chip);
+    });
+  }
+
+  // ─── Render the editable list + preview ────────────────────────
+  function render() {
+    listEl.innerHTML = '';
+    if (!items.length) {
+      var empty = document.createElement('li');
+      empty.className = 'an-empty';
+      empty.textContent = 'No nav items yet. Click + Add item to create the first one.';
+      listEl.appendChild(empty);
+    } else {
+      items.forEach(function (it, idx) { listEl.appendChild(rowEl(it, idx)); });
+    }
+    renderPreview();
+  }
+
+  function rowEl(it, idx) {
+    var li = document.createElement('li');
+    li.className = 'an-item';
+    li.draggable = true;
+    li.dataset.idx = idx;
+
+    var handle = document.createElement('div');
+    handle.className = 'an-handle';
+    handle.title = 'Drag to reorder';
+    handle.setAttribute('aria-label', 'Drag to reorder');
+    handle.textContent = '⋮⋮';
+    li.appendChild(handle);
+
+    var fields = document.createElement('div');
+    fields.className = 'an-item-fields';
+
+    fields.appendChild(field('Title',  'title-' + idx, it.title, function (v) { it.title = v; markDirty(); renderPreview(); }, true));
+    fields.appendChild(field('URL',    'url-'   + idx, it.url,   function (v) { it.url   = v; markDirty(); renderPreview(); }, true));
+    fields.appendChild(field('Match (optional)', 'match-' + idx, it.match || '', function (v) { it.match = v; markDirty(); }, false, 'comma,separated,paths'));
+
+    li.appendChild(fields);
+
+    var actions = document.createElement('div');
+    actions.className = 'an-item-actions';
+
+    var up = document.createElement('button');
+    up.type = 'button'; up.className = 'an-btn is-small'; up.textContent = '↑';
+    up.setAttribute('aria-label', 'Move up');
+    up.disabled = (idx === 0);
+    up.addEventListener('click', function () { move(idx, idx - 1); });
+    actions.appendChild(up);
+
+    var dn = document.createElement('button');
+    dn.type = 'button'; dn.className = 'an-btn is-small'; dn.textContent = '↓';
+    dn.setAttribute('aria-label', 'Move down');
+    dn.disabled = (idx === items.length - 1);
+    dn.addEventListener('click', function () { move(idx, idx + 1); });
+    actions.appendChild(dn);
+
+    var del = document.createElement('button');
+    del.type = 'button'; del.className = 'an-btn is-small is-danger'; del.textContent = 'Delete';
+    del.setAttribute('aria-label', 'Delete this nav item');
+    del.addEventListener('click', function () {
+      if (!confirm('Remove "' + (it.title || it.url) + '" from the nav?')) return;
+      items.splice(idx, 1);
+      render(); markDirty(); loadSuggestions();
+    });
+    actions.appendChild(del);
+
+    li.appendChild(actions);
+
+    // ─── Drag and drop ─────────────────────────────────────────
+    li.addEventListener('dragstart', function (e) {
+      li.classList.add('is-dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', String(idx));
+    });
+    li.addEventListener('dragend', function () {
+      li.classList.remove('is-dragging');
+      Array.prototype.forEach.call(listEl.children, function (c) { c.classList.remove('is-drag-over'); });
+    });
+    li.addEventListener('dragover', function (e) { e.preventDefault(); li.classList.add('is-drag-over'); });
+    li.addEventListener('dragleave', function () { li.classList.remove('is-drag-over'); });
+    li.addEventListener('drop', function (e) {
+      e.preventDefault();
+      var from = parseInt(e.dataTransfer.getData('text/plain'), 10);
+      var to = parseInt(li.dataset.idx, 10);
+      if (isNaN(from) || isNaN(to) || from === to) return;
+      move(from, to);
+    });
+
+    return li;
+  }
+
+  function field(label, id, value, onChange, required, placeholder) {
+    var w = document.createElement('div');
+    var l = document.createElement('label'); l.setAttribute('for', id); l.textContent = label;
+    var i = document.createElement('input');
+    i.id = id; i.type = 'text'; i.value = value || '';
+    if (placeholder) i.placeholder = placeholder;
+    if (required && !value) i.classList.add('is-error');
+    i.addEventListener('input', function () {
+      if (i.value) i.classList.remove('is-error');
+      onChange(i.value);
+    });
+    w.appendChild(l); w.appendChild(i);
+    return w;
+  }
+
+  function move(from, to) {
+    if (from < 0 || from >= items.length || to < 0 || to >= items.length) return;
+    var x = items.splice(from, 1)[0];
+    items.splice(to, 0, x);
+    render(); markDirty();
+  }
+
+  addBtn.addEventListener('click', function () {
+    items.push({ title: 'New page', url: '/pages/new.html', match: '', external: false });
+    render(); markDirty();
+  });
+
+  function renderPreview() {
+    previewEl.innerHTML = '';
+    items.forEach(function (it) {
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.textContent = it.title || '(untitled)';
+      a.href = it.external ? (it.url || '#')
+                           : ((SITE_PREFIX || '') + (it.url || '/').replace(/^\/+/, '/'));
+      if (it.external) { a.target = '_blank'; a.rel = 'noopener'; }
+      li.appendChild(a);
+      previewEl.appendChild(li);
+    });
+  }
+
+  // ─── Validation + dirty tracking ───────────────────────────────
+  function validate() {
+    var errs = [];
+    items.forEach(function (it, i) {
+      var label = it.title ? '"' + it.title + '"' : 'item #' + (i + 1);
+      if (!it.title || !it.title.trim())
+        errs.push('Title is required for ' + label + '.');
+      if (!it.url || !it.url.trim())
+        errs.push('URL is required for ' + label + '.');
+    });
+    return errs;
+  }
+
+  function isDirty() { return JSON.stringify(items) !== JSON.stringify(initialItems); }
+  function markDirty() {
+    statusEl.classList.remove('is-clean', 'is-saving');
+    statusEl.classList.add('is-dirty');
+    statusEl.textContent = 'Unsaved changes';
+  }
+  function markClean() {
+    statusEl.classList.remove('is-dirty', 'is-saving');
+    statusEl.classList.add('is-clean');
+    statusEl.textContent = items.length ? 'No changes' : 'No nav items';
+  }
+
+  // ─── Helpers ──────────────────────────────────────────────────
+  function deepClone(o) { return JSON.parse(JSON.stringify(o)); }
+  function normalize(u) { return String(u || '').replace(/\/+$/, '').toLowerCase(); }
+
+  // ─── Warn-on-unsaved navigation ────────────────────────────────
+  window.addEventListener('beforeunload', function (e) {
+    if (isDirty() && app.style.display === '') {
+      e.preventDefault(); e.returnValue = '';
+    }
+  });
+
+  // ─── Boot ──────────────────────────────────────────────────────
+  var cached = getCachedKey();
+  if (cached) {
+    adminKey = cached;
+    // Try the cached key in the background. If it works we go straight to
+    // the app; if not we drop to the gate with a clear message.
+    fetch(API_BASE + '/api/admin/publish/health', { headers: apiHeaders() })
+      .then(function (r) {
+        if (r.ok) { showApp(); loadNav(); return; }
+        adminKey = ''; setCachedKey('');
+        showGate(r.status === 401 || r.status === 403 ? 'Cached admin key is no longer valid.' : '');
+      })
+      .catch(function () { showGate(); });
+  } else {
+    showGate();
+  }
+})();
+</script>

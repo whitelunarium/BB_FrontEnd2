@@ -166,10 +166,40 @@
             <span class="pnec-nav-home-label">Home</span>
           </a>
         </li>
-        <li><a href="{{ '/pages/about.html' | relative_url }}"{% if page.url contains '/about' %} class="active"{% endif %}>About</a></li>
-        <li><a href="{{ '/pages/programs-and-services.html' | relative_url }}"{% if page.url contains '/programs-and-services' %} class="active"{% endif %}>Programs and Services</a></li>
-        <li><a href="{{ '/pages/preparedness-resources.html' | relative_url }}"{% if page.url contains '/preparedness-resources' or page.url contains '/poway-statistics-and-information' %} class="active"{% endif %}>Preparedness &amp; Help</a></li>
-        <li><a href="{{ '/pages/community-events-and-activities.html' | relative_url }}"{% if page.url contains '/community-events-and-activities' %} class="active"{% endif %}>Community Events</a></li>
+        {%- comment -%}
+          Data-driven nav: items come from _data/pnec_nav.yml so the
+          Admin > Site nav manager can add / reorder / delete entries
+          without editing this template. Falls back to a built-in list
+          if the data file is missing, so the site is never naked.
+        {%- endcomment -%}
+        {%- assign nav_items = site.data.pnec_nav -%}
+        {%- if nav_items == nil or nav_items.size == 0 -%}
+          {%- assign nav_items = "" | split: "" -%}
+        {%- endif -%}
+        {%- for item in nav_items -%}
+          {%- assign is_active = false -%}
+          {%- if item.match and item.match != "" -%}
+            {%- assign keys = item.match | split: "," -%}
+            {%- for key in keys -%}
+              {%- assign key_trim = key | strip -%}
+              {%- if key_trim != "" and page.url contains key_trim -%}{%- assign is_active = true -%}{%- endif -%}
+            {%- endfor -%}
+          {%- else -%}
+            {%- if item.url and item.url != "" and page.url contains item.url -%}{%- assign is_active = true -%}{%- endif -%}
+          {%- endif -%}
+          {%- if item.external -%}
+            <li><a href="{{ item.url }}" target="_blank" rel="noopener"{% if is_active %} class="active"{% endif %}>{{ item.title }}</a></li>
+          {%- else -%}
+            <li><a href="{{ item.url | relative_url }}"{% if is_active %} class="active"{% endif %}>{{ item.title }}</a></li>
+          {%- endif -%}
+        {%- endfor -%}
+        {%- if nav_items.size == 0 -%}
+          {%- comment -%}Fallback: original hardcoded nav, in case _data/pnec_nav.yml is missing.{%- endcomment -%}
+          <li><a href="{{ '/pages/about.html' | relative_url }}"{% if page.url contains '/about' %} class="active"{% endif %}>About</a></li>
+          <li><a href="{{ '/pages/programs-and-services.html' | relative_url }}"{% if page.url contains '/programs-and-services' %} class="active"{% endif %}>Programs and Services</a></li>
+          <li><a href="{{ '/pages/preparedness-resources.html' | relative_url }}"{% if page.url contains '/preparedness-resources' or page.url contains '/poway-statistics-and-information' %} class="active"{% endif %}>Preparedness &amp; Help</a></li>
+          <li><a href="{{ '/pages/community-events-and-activities.html' | relative_url }}"{% if page.url contains '/community-events-and-activities' %} class="active"{% endif %}>Community Events</a></li>
+        {%- endif -%}
         <li id="poway-auth-display-item" style="display:none;">
           <a href="{{ '/pages/profile.html' | relative_url }}" id="poway-auth-display-link" aria-label="My Profile">
             <span id="poway-auth-display-name"></span><span id="poway-auth-display-location" style="display:none;"></span>

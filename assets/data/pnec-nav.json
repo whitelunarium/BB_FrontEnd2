@@ -1,0 +1,27 @@
+---
+layout: null
+permalink: /assets/data/pnec-nav.json
+sitemap: false
+---
+{%- comment -%}
+  Jekyll-emitted JSON of the data-driven nav. This is what assets/js/
+  pnec-nav-patch.js fetches at runtime to rewrite the WP-cloned nav on
+  the marketing pages (about.html, programs-and-services.html, etc.)
+  which can't pick up the include-level refactor because they don't
+  use a Jekyll layout. After a save in /pages/admin-nav.html, GitHub
+  Pages rebuilds and this file refreshes — and the marketing-page nav
+  updates within ~2 min of save.
+{%- endcomment -%}
+{
+  "items": [
+    {%- assign nav_items = site.data.pnec_nav -%}
+    {%- for item in nav_items -%}
+    {
+      "title": {{ item.title | jsonify }},
+      "url": {{ item.url | jsonify }},
+      "match": {{ item.match | default: "" | jsonify }},
+      "external": {{ item.external | default: false | jsonify }}
+    }{%- unless forloop.last -%},{%- endunless -%}
+    {%- endfor -%}
+  ]
+}
