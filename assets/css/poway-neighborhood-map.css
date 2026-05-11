@@ -244,49 +244,83 @@
 @keyframes pnec-nmap-spin { to { transform: rotate(360deg); } }
 
 /* ─── Hotspots (polygons drawn into the SVG) ───────────────────── */
-/* v3.12: each region is its own <polygon> tracing the actual shape
-   on the PNG. Idle state is fully transparent so the underlying map
-   art shows through unchanged. Hover/focus/active lights the WHOLE
-   region — that's the user's primary ask. */
+/* v3.16: dramatic hover effect — drop-shadow glow + stroke pulse +
+   slight scale. Each region "pops out" of the map when hovered.
+
+   Idle state stays fully transparent so the underlying PNG shows
+   through unchanged.
+
+   Hover applies:
+     - fill-opacity to a strong forest-green tint (40%)
+     - stroke 5px crisp forest-green
+     - drop-shadow filter giving a soft green glow around the shape
+     - slight transform scale (1.015) — SVG polygons scale around
+       (0,0) by default, but we set transform-origin via JS to the
+       polygon centroid so the shape pops out of the map, not toward
+       the corner.
+     - smooth 200ms transition on all of the above
+
+   Active (clicked/locked) makes the effect a touch stronger.
+   Search-match uses red with a 1.4s pulse animation.
+*/
 .pnec-nmap-hotspot {
   fill: rgba(20, 90, 50, 0.001);   /* near-invisible but hit-testable */
   stroke: rgba(20, 90, 50, 0);
   stroke-width: 4;
   stroke-linejoin: round;
   cursor: pointer;
-  transition: fill-opacity 0.16s, stroke-opacity 0.16s, stroke-width 0.16s;
+  transition: fill-opacity 200ms ease, stroke-opacity 200ms ease,
+              stroke-width 200ms ease, filter 240ms ease,
+              transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
   vector-effect: non-scaling-stroke; /* keep stroke crisp at any zoom */
+  transform-box: fill-box;            /* scale around the polygon centroid */
+  transform-origin: center;
 }
 .pnec-nmap-hotspot:hover,
 .pnec-nmap-hotspot:focus {
-  fill: rgba(20, 90, 50, 0.30);     /* deep-forest tint, ~30% */
-  stroke: var(--pnec-green-deep);
-  stroke-opacity: 0.95;
-  stroke-width: 4;
-  outline: none;
-}
-.pnec-nmap-hotspot.is-active {
-  fill: rgba(20, 90, 50, 0.42);     /* stronger when locked */
+  fill: rgba(20, 90, 50, 0.40);
   stroke: var(--pnec-green-deep);
   stroke-opacity: 1;
   stroke-width: 5;
+  outline: none;
+  /* The drop-shadow drift fakes a "lift off the map" effect */
+  filter: drop-shadow(0 0 6px rgba(20, 90, 50, 0.55))
+          drop-shadow(0 2px 8px rgba(20, 90, 50, 0.40));
+  transform: scale(1.015);
+}
+.pnec-nmap-hotspot.is-active {
+  fill: rgba(20, 90, 50, 0.50);
+  stroke: var(--pnec-green-deep);
+  stroke-opacity: 1;
+  stroke-width: 6;
+  filter: drop-shadow(0 0 8px rgba(20, 90, 50, 0.70))
+          drop-shadow(0 3px 12px rgba(20, 90, 50, 0.50));
+  transform: scale(1.02);
+  animation: pnec-nmap-active-breathe 2.4s ease-in-out infinite;
+}
+@keyframes pnec-nmap-active-breathe {
+  0%, 100% { stroke-width: 6;  filter: drop-shadow(0 0 8px  rgba(20,90,50,0.70)) drop-shadow(0 3px 12px rgba(20,90,50,0.50)); }
+  50%      { stroke-width: 7;  filter: drop-shadow(0 0 14px rgba(20,90,50,0.85)) drop-shadow(0 3px 18px rgba(20,90,50,0.60)); }
 }
 .pnec-nmap-hotspot.is-search-match {
-  fill: rgba(231, 76, 60, 0.32);
+  fill: rgba(231, 76, 60, 0.40);
   stroke: #c0392b;
   stroke-opacity: 1;
   stroke-width: 5;
+  filter: drop-shadow(0 0 8px rgba(231, 76, 60, 0.55))
+          drop-shadow(0 2px 12px rgba(231, 76, 60, 0.45));
   animation: pnec-nmap-pulse 1.4s ease-in-out infinite;
 }
 @keyframes pnec-nmap-pulse {
-  0%, 100% { fill-opacity: 0.32; }
-  50%      { fill-opacity: 0.62; }
+  0%, 100% { fill-opacity: 0.40; stroke-width: 5; }
+  50%      { fill-opacity: 0.72; stroke-width: 7; }
 }
-/* Ensure focused polygon stays on top of un-focused ones for crisp
-   outline rendering (SVG painter's algorithm respects DOM order). */
-.pnec-nmap-svg .pnec-nmap-hotspot.is-active,
-.pnec-nmap-svg .pnec-nmap-hotspot:hover {
-  /* SVG doesn't honor z-index — must reorder. We do that via JS. */
+
+/* Reduced-motion: keep the lift effect but disable the breath/pulse */
+@media (prefers-reduced-motion: reduce) {
+  .pnec-nmap-hotspot { transition: none; }
+  .pnec-nmap-hotspot.is-active,
+  .pnec-nmap-hotspot.is-search-match { animation: none; }
 }
 
 /* Floating tooltip on hover (desktop only) */
