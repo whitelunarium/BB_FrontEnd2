@@ -1,154 +1,641 @@
 ---
 layout: pnec-base
 title: "Volunteer with PNEC"
-description: "Join PNEC as a neighborhood emergency coordinator, CERT volunteer, ham radio operator, or community organizer in Poway, CA."
+description: "Join PNEC as a Neighborhood Emergency Coordinator, CERT volunteer, ham radio operator, or community organizer in Poway, CA. Apply online — a coordinator will follow up within a few days."
+body_class: inner-page volunteer-page
 ---
 
-<div class="page-hero" role="banner">
-  <div class="container">
-    <div class="page-hero-eyebrow">Get Involved</div>
-    <h1>Get Involved with PNEC</h1>
-    <p>Whether you can give two hours a year or become a frontline responder, there's a meaningful role for you in Poway's emergency preparedness network.</p>
-  </div>
-</div>
+<style>
+/* ── Volunteer page v2 (May 2026) ────────────────────────────────
+   Brand-consistent cream + forest theme. Replaces the old plain-grid
+   layout. Form posts to /api/volunteer/submit (real Flask endpoint). */
 
-<section class="section" aria-labelledby="roles-heading">
-  <div class="container">
-    <div class="section-heading">
-      <h2 id="roles-heading">Volunteer Roles</h2>
-      <p>All roles are open to Poway residents. No prior experience required — PNEC provides all training.</p>
-    </div>
+.volunteer-page { background: #fbf8f1; }
 
-    <div class="grid grid-2">
+.vol-hero {
+  position: relative;
+  background:
+    radial-gradient(800px 460px at 14% 0%, rgba(212, 239, 223, 0.55), transparent 60%),
+    radial-gradient(820px 420px at 100% 100%, rgba(212, 160, 76, 0.18), transparent 60%),
+    linear-gradient(180deg, #0e3b21 0%, #145a32 50%, #1e8449 100%);
+  color: #fffdf6;
+  padding: clamp(80px, 11vw, 140px) clamp(16px, 4vw, 32px) clamp(64px, 8vw, 100px);
+  text-align: center;
+}
+.vol-hero-shell {
+  max-width: 880px;
+  margin: 0 auto;
+}
+.vol-eyebrow {
+  display: inline-block;
+  padding: 6px 14px;
+  background: rgba(255, 253, 246, 0.16);
+  border: 1px solid rgba(255, 253, 246, 0.32);
+  border-radius: 999px;
+  color: #d4efdf;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+.vol-hero h1 {
+  margin: 0 0 16px;
+  font-size: clamp(2.2rem, 4.6vw, 3.4rem);
+  font-weight: 900;
+  letter-spacing: -0.028em;
+  line-height: 1.04;
+  color: #fffdf6;
+}
+.vol-hero p {
+  margin: 0 auto;
+  max-width: 640px;
+  color: rgba(255, 253, 246, 0.92);
+  font-size: clamp(1rem, 1.4vw, 1.18rem);
+  line-height: 1.55;
+}
+.vol-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(20px, 3vw, 40px);
+  max-width: 640px;
+  margin: 36px auto 0;
+  padding-top: 28px;
+  border-top: 1px solid rgba(255, 253, 246, 0.22);
+}
+.vol-stat-num {
+  font-family: 'DM Sans', sans-serif;
+  font-size: clamp(1.4rem, 2.4vw, 2rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.vol-stat-label {
+  margin-top: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(255, 253, 246, 0.78);
+}
 
-      <article class="card card-body" aria-labelledby="role-coordinator">
-        <span style="font-size:2rem" aria-hidden="true">🏘️</span>
-        <h3 id="role-coordinator" style="margin-top:12px">Neighborhood Coordinator</h3>
-        <p>Be the emergency point of contact for your street or block. Coordinators conduct annual household surveys, maintain a neighborhood resource inventory, and serve as the link between residents and PNEC leadership during a disaster.</p>
-        <ul>
-          <li>Commitment: ~4 hours/month</li>
-          <li>Annual all-coordinator training included</li>
-          <li>Best for: community-minded residents who know their neighbors</li>
-        </ul>
-      </article>
+.vol-section {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: clamp(48px, 6vw, 80px) clamp(16px, 4vw, 32px);
+}
+.vol-section-head {
+  text-align: center;
+  margin-bottom: 36px;
+}
+.vol-section-head h2 {
+  margin: 0 0 8px;
+  font-size: clamp(1.6rem, 2.8vw, 2.2rem);
+  font-weight: 900;
+  letter-spacing: -0.022em;
+  color: #0e3b21;
+}
+.vol-section-head p {
+  margin: 0 auto;
+  max-width: 600px;
+  color: #475569;
+  font-size: 1rem;
+  line-height: 1.55;
+}
 
-      <article class="card card-body" aria-labelledby="role-cert">
-        <span style="font-size:2rem" aria-hidden="true">🎓</span>
-        <h3 id="role-cert" style="margin-top:12px">CERT Volunteer</h3>
-        <p>Complete PNEC's 24-hour CERT training and join a team that activates during local emergencies to support fire, medical, and search-and-rescue operations until professional responders arrive.</p>
-        <ul>
-          <li>Commitment: 24-hr training + quarterly drills</li>
-          <li>Training provided free by the City of Poway Fire Dept</li>
-          <li>Best for: hands-on helpers ready to respond when called</li>
-        </ul>
-      </article>
+.vol-roles {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+@media (max-width: 760px) {
+  .vol-roles { grid-template-columns: 1fr; }
+}
 
-      <article class="card card-body" aria-labelledby="role-pact">
-        <span style="font-size:2rem" aria-hidden="true">📻</span>
-        <h3 id="role-pact" style="margin-top:12px">Ham Radio Operator</h3>
-        <p>Get your FCC Technician license and join PACT — the Poway Amateur Communications Team. PACT operators provide emergency voice and data communications when cell and internet infrastructure fails.</p>
-        <ul>
-          <li>Commitment: monthly nets + emergency activations</li>
-          <li>PNEC sponsors licensing exam study sessions</li>
-          <li>Best for: tech-savvy residents comfortable with radio equipment</li>
-        </ul>
-      </article>
+.vol-role {
+  background: #ffffff;
+  border: 1px solid #e3e0d8;
+  border-radius: 16px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  box-shadow: 0 1px 0 rgba(20,90,50,0.04), 0 6px 20px rgba(20,90,50,0.06);
+}
+.vol-role:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 1px 0 rgba(20,90,50,0.04), 0 18px 40px rgba(20,90,50,0.12);
+  border-color: var(--pnec-green, #1e8449);
+}
+.vol-role-icon {
+  width: 48px; height: 48px;
+  display: grid; place-items: center;
+  background: #d4efdf;
+  color: #145a32;
+  border-radius: 12px;
+  margin-bottom: 18px;
+}
+.vol-role-icon svg { width: 24px; height: 24px; }
+.vol-role h3 {
+  margin: 0 0 10px;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0e3b21;
+  letter-spacing: -0.012em;
+}
+.vol-role p.role-blurb {
+  margin: 0 0 18px;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: #2a3447;
+  flex: 1;
+}
+.vol-role ul.role-meta {
+  list-style: none;
+  margin: 0;
+  padding: 16px 0 0;
+  border-top: 1px dashed #e3e0d8;
+  display: grid;
+  gap: 8px;
+}
+.vol-role ul.role-meta li {
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: #475569;
+  padding-left: 22px;
+  position: relative;
+}
+.vol-role ul.role-meta li::before {
+  content: '';
+  position: absolute;
+  left: 4px; top: 8px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #1e8449;
+}
+.vol-role ul.role-meta li strong { color: #0e3b21; font-weight: 700; }
 
-      <article class="card card-body" aria-labelledby="role-admin">
-        <span style="font-size:2rem" aria-hidden="true">📋</span>
-        <h3 id="role-admin" style="margin-top:12px">Administrative &amp; Board Support</h3>
-        <p>Help PNEC run its outreach campaigns, events, social media, grant writing, and organizational operations. Board members serve one-year terms and guide PNEC's strategic direction.</p>
-        <ul>
-          <li>Commitment: varies by role (2–8 hrs/month)</li>
-          <li>Skills needed: writing, design, event planning, finance, IT</li>
-          <li>Best for: organized, community-focused residents</li>
-        </ul>
-      </article>
+.vol-role-pick {
+  margin-top: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  background: transparent;
+  border: 1.5px solid #145a32;
+  color: #145a32;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.vol-role-pick:hover { background: #145a32; color: #fffdf6; }
+.vol-role-pick svg { width: 14px; height: 14px; }
 
-    </div>
-  </div>
-</section>
+.vol-form-shell {
+  background: linear-gradient(180deg, #f7f1e2 0%, #efe6cc 100%);
+  padding: clamp(48px, 6vw, 80px) clamp(16px, 4vw, 32px);
+}
+.vol-form-card {
+  max-width: 720px;
+  margin: 0 auto;
+  background: #ffffff;
+  border: 1px solid #e3e0d8;
+  border-radius: 18px;
+  padding: clamp(32px, 4vw, 48px);
+  box-shadow: 0 1px 0 rgba(20,90,50,0.04), 0 18px 40px rgba(20,90,50,0.10);
+  position: relative;
+}
+.vol-form-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, #145a32 0%, #1e8449 50%, #27ae60 100%);
+  border-radius: 18px 18px 0 0;
+}
 
-<section class="section-sm" style="background:#f5f5f0" aria-labelledby="apply-heading">
-  <div class="container-narrow">
-    <div class="section-heading">
-      <h2 id="apply-heading">Express Your Interest</h2>
-      <p>Fill out the form below and a PNEC coordinator will follow up within a few business days.</p>
-    </div>
+.vol-form-head {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.vol-form-head h2 {
+  margin: 0 0 8px;
+  font-size: clamp(1.5rem, 2.4vw, 1.85rem);
+  color: #0e3b21;
+  font-weight: 900;
+}
+.vol-form-head p { margin: 0; color: #475569; font-size: 0.96rem; }
 
-    <div class="card">
-      <div class="card-body">
-        <form id="volunteer-form" novalidate>
-          <div class="grid grid-2" style="gap:16px">
-            <div class="form-group">
-              <label class="form-label" for="vol-name">Full Name</label>
-              <input id="vol-name" name="name" type="text" class="form-input"
-                     placeholder="Your name" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="vol-email">Email Address</label>
-              <input id="vol-email" name="email" type="email" class="form-input"
-                     placeholder="you@example.com" required>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="vol-role">Role of Interest</label>
-            <select id="vol-role" name="role" class="form-select" required>
-              <option value="">Select a role…</option>
-              <option value="coordinator">Neighborhood Coordinator</option>
-              <option value="cert">CERT Volunteer</option>
-              <option value="pact">Ham Radio / PACT</option>
-              <option value="admin">Administrative / Board Support</option>
-              <option value="unsure">Not Sure Yet</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="vol-message">Tell Us About Yourself <span style="font-weight:400;color:#9e9e9e">(optional)</span></label>
-            <textarea id="vol-message" name="message" class="form-textarea" rows="4"
-                      placeholder="Your neighborhood, any relevant experience, questions you have…"></textarea>
-          </div>
-          <div id="volunteer-form-status" class="alert" style="display:none" role="alert"></div>
-          <button type="submit" class="btn btn-primary btn-block">Send My Interest</button>
-        </form>
+.vol-form .vol-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+@media (max-width: 560px) {
+  .vol-form .vol-row { grid-template-columns: 1fr; }
+}
+.vol-form .vol-field {
+  display: flex; flex-direction: column; gap: 6px;
+}
+.vol-form .vol-field--full { grid-column: 1 / -1; }
+.vol-form label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #0e3b21;
+  letter-spacing: 0.01em;
+}
+.vol-form label .opt {
+  color: #94a3b8;
+  font-weight: 500;
+  font-size: 0.78rem;
+  margin-left: 4px;
+}
+.vol-form input,
+.vol-form select,
+.vol-form textarea {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid #d8d4c4;
+  border-radius: 10px;
+  font: inherit;
+  background: #fbf8f1;
+  color: #0a1628;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.vol-form input:focus,
+.vol-form select:focus,
+.vol-form textarea:focus {
+  outline: none;
+  background: #ffffff;
+  border-color: #1e8449;
+  box-shadow: 0 0 0 3px rgba(30, 132, 73, 0.16);
+}
+.vol-form textarea { resize: vertical; min-height: 96px; }
+
+.vol-submit {
+  width: 100%;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #145a32 0%, #1e8449 100%);
+  color: #fffdf6;
+  border: 0;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: transform 0.08s, filter 0.15s, box-shadow 0.15s;
+  box-shadow: 0 1px 0 rgba(255,253,246,0.18) inset, 0 4px 12px rgba(20,90,50,0.20);
+}
+.vol-submit:hover { filter: brightness(1.06); box-shadow: 0 1px 0 rgba(255,253,246,0.22) inset, 0 8px 18px rgba(20,90,50,0.28); }
+.vol-submit:active { transform: translateY(1px); }
+.vol-submit:disabled {
+  background: #b9c4b9;
+  cursor: wait;
+  filter: none;
+  box-shadow: none;
+}
+
+.vol-alert {
+  display: none;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+.vol-alert.is-visible { display: flex; }
+.vol-alert--success {
+  background: rgba(30, 132, 73, 0.10);
+  color: #0e3b21;
+  border: 1px solid rgba(30, 132, 73, 0.36);
+}
+.vol-alert--error {
+  background: rgba(192, 57, 43, 0.08);
+  color: #80261b;
+  border: 1px solid rgba(192, 57, 43, 0.32);
+}
+.vol-alert svg { flex: 0 0 18px; width: 18px; height: 18px; margin-top: 1px; }
+
+.vol-form-foot {
+  margin-top: 18px;
+  font-size: 0.84rem;
+  color: #5a6470;
+  text-align: center;
+  line-height: 1.55;
+}
+.vol-form-foot a { color: #145a32; font-weight: 700; }
+
+.vol-final-cta {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: clamp(40px, 5vw, 60px) clamp(16px, 4vw, 32px);
+  text-align: center;
+  color: #0e3b21;
+}
+.vol-final-cta h3 { margin: 0 0 8px; font-size: 1.3rem; font-weight: 800; }
+.vol-final-cta p {
+  margin: 0 auto;
+  max-width: 540px;
+  color: #475569;
+  font-size: 0.96rem;
+  line-height: 1.6;
+}
+.vol-final-cta a {
+  color: #145a32;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(20, 90, 50, 0.3);
+}
+.vol-final-cta a:hover { text-decoration-color: #145a32; }
+</style>
+
+<!-- ─── Hero ────────────────────────────────────────────────────── -->
+<section class="vol-hero">
+  <div class="vol-hero-shell">
+    <span class="vol-eyebrow">Get Involved</span>
+    <h1>Volunteer with PNEC</h1>
+    <p>Whether you can give two hours a year or become a frontline responder, there's a meaningful role for you in Poway's emergency preparedness network. Every neighborhood needs a coordinator. Every emergency needs ham radio. Every drill needs a hand.</p>
+    <div class="vol-stats">
+      <div>
+        <div class="vol-stat-num">60</div>
+        <div class="vol-stat-label">Neighborhoods to staff</div>
+      </div>
+      <div>
+        <div class="vol-stat-num">~100</div>
+        <div class="vol-stat-label">Active CERT volunteers</div>
+      </div>
+      <div>
+        <div class="vol-stat-num">100%</div>
+        <div class="vol-stat-label">Volunteer-run since 2003</div>
       </div>
     </div>
   </div>
 </section>
 
+<!-- ─── Volunteer roles ────────────────────────────────────────── -->
+<section class="vol-section" aria-labelledby="roles-heading">
+  <div class="vol-section-head">
+    <h2 id="roles-heading">Pick your role</h2>
+    <p>All roles are open to Poway residents. No prior experience required — PNEC provides all training. Pick one and we'll match you with the right volunteer lead.</p>
+  </div>
+
+  <div class="vol-roles">
+
+    <article class="vol-role">
+      <div class="vol-role-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12L12 3l9 9"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>
+      </div>
+      <h3>Neighborhood Coordinator</h3>
+      <p class="role-blurb">Be the emergency point of contact for your street or block. Coordinators maintain a household roster, know who's medically vulnerable, and serve as the bridge between residents and PNEC during outages, fires, and quakes.</p>
+      <ul class="role-meta">
+        <li><strong>Commitment:</strong> ~4 hrs/month</li>
+        <li><strong>Training:</strong> Annual all-coordinator session (free)</li>
+        <li><strong>Best for:</strong> community-minded residents who know their neighbors</li>
+      </ul>
+      <button type="button" class="vol-role-pick" data-role="neighborhood_coordinator">
+        Pick this role
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+    </article>
+
+    <article class="vol-role">
+      <div class="vol-role-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+      <h3>CERT Volunteer</h3>
+      <p class="role-blurb">Complete PNEC's 24-hour Community Emergency Response Team training and join the team that activates during local emergencies — light search-and-rescue, fire extinguishers, triage, cribbing — until professional responders arrive.</p>
+      <ul class="role-meta">
+        <li><strong>Commitment:</strong> 24-hr training + quarterly drills</li>
+        <li><strong>Training:</strong> FEMA curriculum, taught free by Poway Fire Dept</li>
+        <li><strong>Best for:</strong> hands-on helpers ready to respond when called</li>
+      </ul>
+      <button type="button" class="vol-role-pick" data-role="cert_volunteer">
+        Pick this role
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+    </article>
+
+    <article class="vol-role">
+      <div class="vol-role-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 16h20"/><path d="M5 12h14"/><path d="M9 8h6"/><circle cx="12" cy="20" r="1"/></svg>
+      </div>
+      <h3>Ham Radio Operator (PACT)</h3>
+      <p class="role-blurb">Get your FCC Technician license and join PACT — the Poway Auxiliary Communications Team. PACT operators relay emergency voice + data when cell and landline infrastructure fails, which it often does in Santa Ana wind events.</p>
+      <ul class="role-meta">
+        <li><strong>Commitment:</strong> monthly nets + emergency activations</li>
+        <li><strong>Training:</strong> PNEC sponsors free FCC licensing exam sessions</li>
+        <li><strong>Best for:</strong> tech-savvy residents comfortable with radio gear</li>
+      </ul>
+      <button type="button" class="vol-role-pick" data-role="ham_radio_operator">
+        Pick this role
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+    </article>
+
+    <article class="vol-role">
+      <div class="vol-role-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11h-6"/></svg>
+      </div>
+      <h3>Administrative &amp; Board Support</h3>
+      <p class="role-blurb">Help PNEC run its outreach campaigns, events, social media, grant writing, fundraising, and organizational operations. Board members serve one-year terms and guide PNEC's strategic direction.</p>
+      <ul class="role-meta">
+        <li><strong>Commitment:</strong> varies by role (2–8 hrs/month)</li>
+        <li><strong>Skills welcomed:</strong> writing, design, event planning, finance, IT</li>
+        <li><strong>Best for:</strong> organized, community-focused residents</li>
+      </ul>
+      <button type="button" class="vol-role-pick" data-role="admin_board">
+        Pick this role
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+    </article>
+
+  </div>
+</section>
+
+<!-- ─── Express interest form ──────────────────────────────────── -->
+<section class="vol-form-shell" id="vol-form-section">
+  <div class="vol-form-card">
+    <div class="vol-form-head">
+      <h2>Express Your Interest</h2>
+      <p>Fill this out and a PNEC coordinator will follow up within a few business days. We use email-only contact so volunteer names stay off public pages.</p>
+    </div>
+
+    <div id="vol-alert-success" class="vol-alert vol-alert--success" role="status" aria-live="polite">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+      <div>
+        <strong>Thanks — we got it!</strong> A PNEC coordinator will email you within a few business days. Watch for a message from <strong>powaynec@gmail.com</strong>.
+      </div>
+    </div>
+    <div id="vol-alert-error" class="vol-alert vol-alert--error" role="alert" aria-live="assertive">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div id="vol-alert-error-msg">Something went wrong. Please email us directly at <a href="mailto:powaynec@gmail.com">powaynec@gmail.com</a>.</div>
+    </div>
+
+    <form class="vol-form" id="vol-form" novalidate>
+      <div class="vol-row">
+        <div class="vol-field">
+          <label for="vol-name">Full Name</label>
+          <input id="vol-name" name="name" type="text" autocomplete="name" required maxlength="120" placeholder="Your name">
+        </div>
+        <div class="vol-field">
+          <label for="vol-email">Email Address</label>
+          <input id="vol-email" name="email" type="email" autocomplete="email" required maxlength="255" placeholder="you@example.com">
+        </div>
+      </div>
+      <div class="vol-row">
+        <div class="vol-field">
+          <label for="vol-phone">Phone <span class="opt">(optional)</span></label>
+          <input id="vol-phone" name="phone" type="tel" autocomplete="tel" maxlength="32" placeholder="858-555-0100">
+        </div>
+        <div class="vol-field">
+          <label for="vol-neighborhood">Neighborhood <span class="opt">(if you know your number)</span></label>
+          <input id="vol-neighborhood" name="neighborhood" type="text" maxlength="120" placeholder="e.g. #28 High Valley, or just a street">
+        </div>
+      </div>
+      <div class="vol-row">
+        <div class="vol-field vol-field--full">
+          <label for="vol-role">Role of Interest</label>
+          <select id="vol-role" name="role" required>
+            <option value="">Select a role…</option>
+            <option value="neighborhood_coordinator">Neighborhood Coordinator</option>
+            <option value="cert_volunteer">CERT Volunteer</option>
+            <option value="ham_radio_operator">Ham Radio Operator (PACT)</option>
+            <option value="admin_board">Administrative / Board Support</option>
+            <option value="flex">I'm open — match me to what's needed</option>
+          </select>
+        </div>
+      </div>
+      <div class="vol-row">
+        <div class="vol-field vol-field--full">
+          <label for="vol-message">Tell Us About Yourself <span class="opt">(optional)</span></label>
+          <textarea id="vol-message" name="message" rows="4" maxlength="5000" placeholder="Your neighborhood, any relevant experience, questions you have…"></textarea>
+        </div>
+      </div>
+
+      <button type="submit" class="vol-submit" id="vol-submit-btn">Send My Interest</button>
+
+      <p class="vol-form-foot">
+        Your info goes only to PNEC's coordinator team. We don't sell, share, or publish it.
+        Questions? Email <a href="mailto:powaynec@gmail.com">powaynec@gmail.com</a>.
+      </p>
+    </form>
+  </div>
+</section>
+
+<section class="vol-final-cta">
+  <h3>Already trained somewhere else?</h3>
+  <p>If you have prior CERT, ham, EMS, or disaster-volunteer experience and want to plug straight in, mention it in the message field above — we'll fast-track the conversation.</p>
+</section>
+
 <script>
-document.getElementById('volunteer-form').addEventListener('submit', function(e) {
-  e.preventDefault();
-  var form = e.target;
-  var statusEl = document.getElementById('volunteer-form-status');
-  var submitBtn = form.querySelector('button[type="submit"]');
-  var payload = {
-    name: form.querySelector('#vol-name').value.trim(),
-    email: form.querySelector('#vol-email').value.trim(),
-    question: 'Volunteer interest: ' + form.querySelector('#vol-role').value,
-    message: form.querySelector('#vol-message').value.trim()
-  };
-  submitBtn.disabled = true;
-  submitBtn.textContent = 'Sending…';
-  fetch('/api/questions/submit', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  })
-  .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
-  .then(function() {
-    statusEl.className = 'alert alert-success';
-    statusEl.style.display = 'flex';
-    statusEl.textContent = 'Thank you! A PNEC coordinator will be in touch within a few business days.';
-    form.reset();
-  })
-  .catch(function() {
-    statusEl.className = 'alert alert-error';
-    statusEl.style.display = 'flex';
-    statusEl.textContent = 'Something went wrong. Please email us directly at info@pnec.org.';
-  })
-  .finally(function() {
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Send My Interest';
+(function() {
+  var API_BASE = (window.PNEC_API_BASE || (
+    (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+      ? 'http://127.0.0.1:8425'
+      : 'https://beasts.opencodingsociety.com'
+  ));
+
+  var form = document.getElementById('vol-form');
+  var submitBtn = document.getElementById('vol-submit-btn');
+  var alertOk = document.getElementById('vol-alert-success');
+  var alertErr = document.getElementById('vol-alert-error');
+  var alertErrMsg = document.getElementById('vol-alert-error-msg');
+  if (!form) return;
+
+  // Role-card "Pick this role" buttons → fill the select + scroll to form
+  document.querySelectorAll('.vol-role-pick').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var role = btn.getAttribute('data-role');
+      var sel = document.getElementById('vol-role');
+      if (sel && role) sel.value = role;
+      var anchor = document.getElementById('vol-form-section');
+      if (anchor) anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(function() {
+        var name = document.getElementById('vol-name');
+        if (name) name.focus({ preventScroll: true });
+      }, 500);
+    });
   });
-});
+
+  function showOnly(el) {
+    [alertOk, alertErr].forEach(function(a) { if (a) a.classList.remove('is-visible'); });
+    if (el) el.classList.add('is-visible');
+  }
+  function clearAlerts() {
+    [alertOk, alertErr].forEach(function(a) { if (a) a.classList.remove('is-visible'); });
+  }
+
+  function isValidEmail(e) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+  }
+
+  form.addEventListener('submit', function(ev) {
+    ev.preventDefault();
+    clearAlerts();
+
+    var payload = {
+      name:         document.getElementById('vol-name').value.trim(),
+      email:        document.getElementById('vol-email').value.trim().toLowerCase(),
+      phone:        document.getElementById('vol-phone').value.trim(),
+      neighborhood: document.getElementById('vol-neighborhood').value.trim(),
+      role:         document.getElementById('vol-role').value,
+      message:      document.getElementById('vol-message').value.trim()
+    };
+
+    // Client-side validation
+    if (payload.name.length < 2) {
+      alertErrMsg.textContent = 'Please enter your name.';
+      showOnly(alertErr); return;
+    }
+    if (!isValidEmail(payload.email)) {
+      alertErrMsg.textContent = 'Please enter a valid email address.';
+      showOnly(alertErr); return;
+    }
+    if (!payload.role) {
+      alertErrMsg.textContent = 'Please pick a role of interest.';
+      showOnly(alertErr); return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending…';
+
+    fetch(API_BASE + '/api/volunteer/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(payload),
+      credentials: 'omit'
+    }).then(function(res) {
+      return res.json().catch(function() { return {}; }).then(function(data) {
+        return { ok: res.ok, status: res.status, data: data };
+      });
+    }).then(function(result) {
+      if (result.ok && result.data && result.data.ok) {
+        showOnly(alertOk);
+        form.reset();
+        // Make sure success message is visible
+        alertOk.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        var detail = (result.data && (result.data.detail || result.data.message || result.data.error))
+                  || ('Server returned ' + result.status + '.');
+        alertErrMsg.innerHTML = detail + ' If this keeps happening, email <a href="mailto:powaynec@gmail.com">powaynec@gmail.com</a>.';
+        showOnly(alertErr);
+      }
+    }).catch(function() {
+      alertErrMsg.innerHTML = 'Could not reach the PNEC server. Please check your connection or email <a href="mailto:powaynec@gmail.com">powaynec@gmail.com</a> directly.';
+      showOnly(alertErr);
+    }).finally(function() {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Send My Interest';
+    });
+  });
+})();
 </script>

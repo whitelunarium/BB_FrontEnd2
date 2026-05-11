@@ -1,0 +1,647 @@
+---
+layout: pnec-base
+title: "Volunteer Dashboard — PNEC Admin"
+description: "Real-time volunteer interest dashboard for PNEC admins. View, filter, and update applicant status."
+body_class: inner-page admin-volunteer-page
+permalink: /pages/admin-volunteer.html
+---
+
+<style>
+.admin-volunteer-page { background: #fbf8f1; min-height: 100vh; }
+
+.av-shell {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 32px clamp(16px, 3vw, 32px);
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #0a1628;
+}
+.av-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+.av-head h1 {
+  margin: 0;
+  font-size: clamp(1.6rem, 2.6vw, 2rem);
+  font-weight: 900;
+  color: #0e3b21;
+  letter-spacing: -0.018em;
+}
+.av-head .sub {
+  margin: 4px 0 0;
+  font-size: 0.92rem;
+  color: #5a6470;
+}
+.av-live {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px;
+  background: #d4efdf;
+  color: #145a32;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.av-live::before {
+  content: '';
+  width: 8px; height: 8px;
+  background: #1e8449;
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px rgba(30, 132, 73, 0.20);
+  animation: av-pulse 1.4s ease-in-out infinite;
+}
+@keyframes av-pulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(30, 132, 73, 0.20); }
+  50% { box-shadow: 0 0 0 8px rgba(30, 132, 73, 0.10); }
+}
+
+.av-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.av-tile {
+  background: #ffffff;
+  border: 1px solid #e3e0d8;
+  border-radius: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.08s, box-shadow 0.15s;
+}
+.av-tile:hover { border-color: #1e8449; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(20,90,50,0.08); }
+.av-tile.is-active {
+  border-color: #145a32;
+  background: linear-gradient(180deg, #ffffff 0%, #f7f1e2 100%);
+  box-shadow: 0 4px 12px rgba(20,90,50,0.08);
+}
+.av-tile .num {
+  font-size: 1.8rem; font-weight: 900; color: #0e3b21; letter-spacing: -0.02em;
+  line-height: 1;
+}
+.av-tile .lbl {
+  margin-top: 6px; font-size: 0.74rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em; color: #5a6470;
+}
+
+.av-controls {
+  display: flex; gap: 10px; flex-wrap: wrap;
+  background: #ffffff; border: 1px solid #e3e0d8; border-radius: 12px;
+  padding: 14px; margin-bottom: 18px;
+}
+.av-controls input,
+.av-controls select {
+  padding: 9px 12px;
+  border: 1.5px solid #d8d4c4;
+  border-radius: 8px;
+  font: inherit; font-size: 0.92rem;
+  background: #fbf8f1;
+}
+.av-controls input:focus, .av-controls select:focus {
+  outline: none; border-color: #1e8449;
+  box-shadow: 0 0 0 3px rgba(30,132,73,0.16);
+}
+.av-controls input { flex: 1; min-width: 220px; }
+.av-refresh-btn {
+  padding: 9px 14px;
+  background: #145a32;
+  color: #fffdf6; border: 0;
+  border-radius: 8px; font: inherit;
+  font-weight: 700; font-size: 0.92rem;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+.av-refresh-btn:hover { background: #1e8449; }
+
+.av-list { display: grid; gap: 10px; }
+.av-row {
+  background: #ffffff;
+  border: 1px solid #e3e0d8;
+  border-radius: 12px;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) minmax(140px, auto) minmax(110px, auto) auto;
+  gap: 14px;
+  align-items: center;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  cursor: pointer;
+}
+@media (max-width: 900px) {
+  .av-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+.av-row:hover { border-color: #1e8449; box-shadow: 0 4px 12px rgba(20,90,50,0.08); }
+.av-row.is-expanded {
+  border-color: #145a32; box-shadow: 0 8px 20px rgba(20,90,50,0.12);
+  grid-template-columns: 1fr;
+}
+.av-cell-who strong {
+  display: block; font-weight: 800; color: #0e3b21; font-size: 0.98rem;
+  margin-bottom: 2px;
+}
+.av-cell-who span { color: #5a6470; font-size: 0.84rem; }
+.av-cell-meta {
+  color: #5a6470; font-size: 0.84rem; line-height: 1.5;
+}
+.av-cell-meta strong { color: #0e3b21; font-weight: 700; }
+.av-role-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  background: #d4efdf;
+  color: #145a32;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.av-status-pill {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.av-status-new        { background: #fdf0d5; color: #92400e; }
+.av-status-contacted  { background: #dbeafe; color: #1e40af; }
+.av-status-onboarding { background: #e9d5ff; color: #5b21b6; }
+.av-status-active     { background: #d1fae5; color: #065f46; }
+.av-status-declined   { background: #fee2e2; color: #991b1b; }
+.av-status-archived   { background: #e5e7eb; color: #374151; }
+.av-cell-date { color: #5a6470; font-size: 0.84rem; }
+.av-row-toggle {
+  border: 0; background: transparent;
+  padding: 6px 10px; color: #145a32; cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 0.12s;
+}
+.av-row-toggle:hover { background: #d4efdf; }
+
+.av-detail {
+  margin-top: 14px;
+  padding: 16px;
+  background: #fbf8f1;
+  border: 1px solid #e3e0d8;
+  border-radius: 10px;
+}
+.av-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  font-size: 0.9rem;
+  margin-bottom: 14px;
+}
+@media (max-width: 600px) { .av-detail-grid { grid-template-columns: 1fr; } }
+.av-detail-grid dt {
+  font-size: 0.74rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: #5a6470;
+}
+.av-detail-grid dd {
+  margin: 2px 0 0;
+  color: #0e3b21;
+}
+.av-message-box {
+  background: #ffffff;
+  border-left: 3px solid #1e8449;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: #2a3447;
+  margin-bottom: 14px;
+  white-space: pre-wrap;
+}
+.av-notes-box {
+  background: #ffffff;
+  border: 1px solid #e3e0d8;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-family: 'SF Mono', 'Menlo', Consolas, monospace;
+  font-size: 0.82rem;
+  color: #2a3447;
+  margin-bottom: 12px;
+  white-space: pre-wrap;
+  max-height: 200px; overflow-y: auto;
+}
+
+.av-actions {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin-top: 8px;
+}
+.av-action {
+  padding: 7px 12px;
+  border: 1.5px solid #d8d4c4;
+  background: #ffffff;
+  color: #0e3b21;
+  border-radius: 8px;
+  font: inherit; font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.12s, border-color 0.12s;
+}
+.av-action:hover {
+  border-color: #145a32;
+  background: #d4efdf;
+}
+.av-action.is-primary {
+  background: #145a32; color: #fffdf6; border-color: #145a32;
+}
+.av-action.is-primary:hover { background: #1e8449; border-color: #1e8449; }
+.av-action.is-danger { color: #80261b; border-color: rgba(192, 57, 43, 0.32); }
+.av-action.is-danger:hover { background: rgba(192, 57, 43, 0.10); }
+
+.av-note-input {
+  display: flex; gap: 8px; align-items: flex-start;
+  margin-top: 12px;
+}
+.av-note-input textarea {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1.5px solid #d8d4c4;
+  border-radius: 8px;
+  font: inherit; font-size: 0.86rem;
+  background: #ffffff;
+  resize: vertical; min-height: 56px;
+}
+.av-note-input textarea:focus {
+  outline: none; border-color: #1e8449;
+  box-shadow: 0 0 0 3px rgba(30, 132, 73, 0.16);
+}
+
+.av-empty {
+  text-align: center;
+  padding: 48px 16px;
+  background: #ffffff;
+  border: 1px dashed #d8d4c4;
+  border-radius: 12px;
+  color: #5a6470;
+}
+.av-empty h3 { color: #0e3b21; margin: 0 0 6px; font-size: 1.1rem; }
+
+.av-auth-gate {
+  max-width: 520px;
+  margin: 80px auto;
+  padding: 32px;
+  background: #ffffff;
+  border: 1px solid #e3e0d8;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(20,90,50,0.08);
+}
+.av-auth-gate h2 { margin: 0 0 8px; color: #0e3b21; font-weight: 800; }
+.av-auth-gate p { color: #5a6470; margin: 0 0 16px; line-height: 1.55; }
+.av-auth-gate input[type="password"] {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid #d8d4c4;
+  border-radius: 10px;
+  font: inherit;
+  margin-bottom: 12px;
+}
+.av-auth-gate input[type="password"]:focus {
+  outline: none; border-color: #1e8449; box-shadow: 0 0 0 3px rgba(30,132,73,0.16);
+}
+.av-auth-gate button {
+  width: 100%;
+  padding: 12px 18px;
+  background: #145a32;
+  color: #fffdf6;
+  border: 0;
+  border-radius: 10px;
+  font: inherit; font-weight: 800;
+  cursor: pointer;
+}
+.av-auth-gate button:hover { background: #1e8449; }
+.av-auth-error {
+  color: #80261b;
+  background: rgba(192, 57, 43, 0.08);
+  border: 1px solid rgba(192, 57, 43, 0.32);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.86rem;
+  margin-bottom: 12px;
+  display: none;
+}
+.av-auth-error.is-visible { display: block; }
+</style>
+
+<div class="av-shell" id="av-shell">
+
+  <!-- Auth gate (shown if not admin) -->
+  <div class="av-auth-gate" id="av-auth-gate" hidden>
+    <h2>Admin sign-in</h2>
+    <p>Enter the PNEC admin key to view the volunteer dashboard. Your key is sent only to the PNEC API and never stored in the page URL.</p>
+    <div class="av-auth-error" id="av-auth-error">Wrong key. Try again or check with the board.</div>
+    <input type="password" id="av-auth-input" placeholder="Admin key" autocomplete="off">
+    <button type="button" id="av-auth-submit">Sign in</button>
+  </div>
+
+  <!-- Main app (shown once authed) -->
+  <div id="av-app" hidden>
+
+    <header class="av-head">
+      <div>
+        <h1>Volunteer Dashboard</h1>
+        <p class="sub" id="av-subtitle">Loading…</p>
+      </div>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <span class="av-live" id="av-live">Live · auto-refresh 20s</span>
+        <button type="button" class="av-refresh-btn" id="av-refresh">Refresh now</button>
+      </div>
+    </header>
+
+    <!-- Summary tiles (click to filter) -->
+    <div class="av-summary" id="av-summary"></div>
+
+    <!-- Controls -->
+    <div class="av-controls">
+      <input type="search" id="av-search" placeholder="Search name, email, neighborhood, message…">
+      <select id="av-role-filter">
+        <option value="">All roles</option>
+        <option value="neighborhood_coordinator">Neighborhood Coordinator</option>
+        <option value="cert_volunteer">CERT Volunteer</option>
+        <option value="ham_radio_operator">Ham Radio Operator</option>
+        <option value="admin_board">Admin / Board</option>
+        <option value="flex">Flex</option>
+      </select>
+    </div>
+
+    <!-- List -->
+    <div class="av-list" id="av-list"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var API_BASE = (window.PNEC_API_BASE || (
+    (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+      ? 'http://127.0.0.1:8425'
+      : 'https://beasts.opencodingsociety.com'
+  ));
+
+  var POLL_MS = 20000;
+
+  // State
+  var adminKey = sessionStorage.getItem('pnec_admin_key') || '';
+  var statusFilter = '';
+  var roleFilter   = '';
+  var searchTerm   = '';
+  var lastData     = null;
+  var pollHandle   = null;
+
+  // Elements
+  var gate       = document.getElementById('av-auth-gate');
+  var app        = document.getElementById('av-app');
+  var authInput  = document.getElementById('av-auth-input');
+  var authSubmit = document.getElementById('av-auth-submit');
+  var authError  = document.getElementById('av-auth-error');
+  var subtitle   = document.getElementById('av-subtitle');
+  var summaryEl  = document.getElementById('av-summary');
+  var listEl     = document.getElementById('av-list');
+  var searchEl   = document.getElementById('av-search');
+  var roleEl     = document.getElementById('av-role-filter');
+  var refreshBtn = document.getElementById('av-refresh');
+
+  // ─── Auth ──────────────────────────────────────────────────
+  function showGate() {
+    gate.hidden = false; app.hidden = true;
+    if (pollHandle) { clearInterval(pollHandle); pollHandle = null; }
+    setTimeout(function() { if (authInput) authInput.focus(); }, 50);
+  }
+  function showApp() {
+    gate.hidden = true; app.hidden = false;
+    load();
+    if (!pollHandle) pollHandle = setInterval(load, POLL_MS);
+  }
+  authSubmit.addEventListener('click', tryAuth);
+  authInput.addEventListener('keydown', function(ev) {
+    if (ev.key === 'Enter') tryAuth();
+  });
+  function tryAuth() {
+    var key = (authInput.value || '').trim();
+    if (!key) return;
+    adminKey = key;
+    sessionStorage.setItem('pnec_admin_key', key);
+    authError.classList.remove('is-visible');
+    load();
+  }
+
+  // ─── Data load ─────────────────────────────────────────────
+  function load() {
+    var params = new URLSearchParams();
+    if (statusFilter) params.set('status', statusFilter);
+    if (roleFilter)   params.set('role', roleFilter);
+    if (searchTerm)   params.set('q', searchTerm);
+    fetch(API_BASE + '/api/volunteer/interests?' + params.toString(), {
+      method: 'GET',
+      headers: { 'Accept': 'application/json', 'X-PNEC-Admin-Key': adminKey },
+      credentials: 'include'
+    }).then(function(res) {
+      if (res.status === 401) { showGate(); throw new Error('unauth'); }
+      return res.json();
+    }).then(function(data) {
+      lastData = data;
+      render(data);
+      if (gate && !gate.hidden) showApp();
+    }).catch(function(err) {
+      if (String(err.message) === 'unauth') {
+        authError.classList.add('is-visible');
+      }
+    });
+  }
+  refreshBtn.addEventListener('click', load);
+
+  // ─── Filters ──────────────────────────────────────────────
+  searchEl.addEventListener('input', function() {
+    searchTerm = searchEl.value.trim();
+    debouncedLoad();
+  });
+  roleEl.addEventListener('change', function() {
+    roleFilter = roleEl.value;
+    load();
+  });
+  var dt;
+  function debouncedLoad() {
+    clearTimeout(dt);
+    dt = setTimeout(load, 250);
+  }
+
+  // ─── Render ────────────────────────────────────────────────
+  function render(data) {
+    var items = (data && data.items) || [];
+    var summary = (data && data.summary) || {};
+
+    subtitle.textContent = items.length + ' shown · ' + (summary.total || 0) + ' total submissions · auto-refreshing every 20s';
+
+    // Tiles — clickable filters
+    var tilesHtml = ''
+      + tile('total',      'all',         summary.total       || 0, 'All time')
+      + tile('new',        'new',         summary.new         || 0, 'New')
+      + tile('contacted',  'contacted',   summary.contacted   || 0, 'Contacted')
+      + tile('onboarding', 'onboarding',  summary.onboarding  || 0, 'Onboarding')
+      + tile('active',     'active',      summary.active      || 0, 'Active')
+      + tile('declined',   'declined',    summary.declined    || 0, 'Declined')
+      + tile('archived',   'archived',    summary.archived    || 0, 'Archived');
+    summaryEl.innerHTML = tilesHtml;
+    summaryEl.querySelectorAll('.av-tile').forEach(function(t) {
+      t.addEventListener('click', function() {
+        var s = t.getAttribute('data-status');
+        statusFilter = (s === 'all') ? '' : s;
+        load();
+      });
+      if (t.getAttribute('data-status') === (statusFilter || 'all')) t.classList.add('is-active');
+    });
+
+    if (!items.length) {
+      listEl.innerHTML = '<div class="av-empty"><h3>No matching submissions</h3><p>Adjust filters or check back later — auto-refresh every 20 s.</p></div>';
+      return;
+    }
+
+    listEl.innerHTML = items.map(rowHtml).join('');
+    // wire toggles + actions
+    listEl.querySelectorAll('[data-action]').forEach(function(btn) {
+      btn.addEventListener('click', function(ev) {
+        ev.stopPropagation();
+        var id = btn.closest('.av-row').getAttribute('data-id');
+        var action = btn.getAttribute('data-action');
+        if (action === 'toggle') return toggleRow(id);
+        if (action === 'set-status') return updateStatus(id, btn.getAttribute('data-value'));
+        if (action === 'add-note')   return addNoteFor(id);
+      });
+    });
+    listEl.querySelectorAll('.av-row').forEach(function(row) {
+      row.addEventListener('click', function() {
+        toggleRow(row.getAttribute('data-id'));
+      });
+    });
+  }
+
+  function tile(key, statusVal, num, label) {
+    return '<div class="av-tile" data-status="' + statusVal + '">'
+         + '<div class="num">' + num + '</div>'
+         + '<div class="lbl">' + label + '</div>'
+         + '</div>';
+  }
+
+  function rowHtml(it) {
+    var statusClass = 'av-status-' + (it.status || 'new');
+    var when = it.created_at ? new Date(it.created_at).toLocaleString() : '';
+    var roleLabel = it.role_label || it.role || '';
+    return '<div class="av-row" data-id="' + it.id + '">'
+      +   '<div class="av-cell-who">'
+      +     '<strong>' + esc(it.name) + '</strong>'
+      +     '<span><a href="mailto:' + esc(it.email) + '">' + esc(it.email) + '</a>'
+      +     (it.phone ? ' · ' + esc(it.phone) : '')
+      +     '</span>'
+      +   '</div>'
+      +   '<div class="av-cell-meta">'
+      +     '<span class="av-role-pill">' + esc(roleLabel) + '</span>'
+      +     (it.neighborhood ? '<div style="margin-top:4px;">' + esc(it.neighborhood) + '</div>' : '')
+      +   '</div>'
+      +   '<div class="av-cell-meta"><span class="av-status-pill ' + statusClass + '">' + esc(it.status) + '</span></div>'
+      +   '<div class="av-cell-date">' + esc(when) + '</div>'
+      +   '<button type="button" class="av-row-toggle" data-action="toggle">Open ▾</button>'
+      + '</div>';
+  }
+
+  function toggleRow(id) {
+    var row = listEl.querySelector('.av-row[data-id="' + id + '"]');
+    if (!row) return;
+    var existing = row.querySelector('.av-detail');
+    if (existing) { existing.remove(); row.classList.remove('is-expanded'); return; }
+    var it = (lastData && lastData.items || []).find(function(x) { return String(x.id) === String(id); });
+    if (!it) return;
+    row.classList.add('is-expanded');
+    var d = document.createElement('div');
+    d.className = 'av-detail';
+    d.innerHTML = ''
+      + '<dl class="av-detail-grid">'
+      +   '<div><dt>Name</dt><dd>' + esc(it.name) + '</dd></div>'
+      +   '<div><dt>Email</dt><dd><a href="mailto:' + esc(it.email) + '">' + esc(it.email) + '</a></dd></div>'
+      +   '<div><dt>Phone</dt><dd>' + esc(it.phone || '—') + '</dd></div>'
+      +   '<div><dt>Neighborhood</dt><dd>' + esc(it.neighborhood || '—') + '</dd></div>'
+      +   '<div><dt>Role</dt><dd>' + esc(it.role_label || it.role) + '</dd></div>'
+      +   '<div><dt>Status</dt><dd>' + esc(it.status) + '</dd></div>'
+      +   '<div><dt>Submitted</dt><dd>' + (it.created_at ? new Date(it.created_at).toLocaleString() : '—') + '</dd></div>'
+      +   '<div><dt>Contacted</dt><dd>' + (it.contacted_at ? new Date(it.contacted_at).toLocaleString() : '—') + '</dd></div>'
+      + '</dl>'
+      + (it.message ? '<div class="av-message-box">' + esc(it.message) + '</div>' : '')
+      + (it.admin_notes ? '<div><dt style="font-size:0.74rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#5a6470;margin-bottom:4px;">Admin notes</dt><div class="av-notes-box">' + esc(it.admin_notes) + '</div></div>' : '')
+      + '<div class="av-actions">'
+      +   '<button type="button" class="av-action is-primary" data-action="set-status" data-value="contacted">Mark contacted</button>'
+      +   '<button type="button" class="av-action" data-action="set-status" data-value="onboarding">Onboarding</button>'
+      +   '<button type="button" class="av-action" data-action="set-status" data-value="active">Active</button>'
+      +   '<button type="button" class="av-action is-danger" data-action="set-status" data-value="declined">Declined</button>'
+      +   '<button type="button" class="av-action" data-action="set-status" data-value="archived">Archive</button>'
+      + '</div>'
+      + '<div class="av-note-input">'
+      +   '<textarea placeholder="Add an admin note (e.g. emailed 2026-05-12, follow up after Memorial Day…)"></textarea>'
+      +   '<button type="button" class="av-action is-primary" data-action="add-note" style="align-self:flex-end;">Add note</button>'
+      + '</div>';
+    row.appendChild(d);
+    // re-wire after innerHTML
+    d.querySelectorAll('[data-action]').forEach(function(btn) {
+      btn.addEventListener('click', function(ev) {
+        ev.stopPropagation();
+        var action = btn.getAttribute('data-action');
+        if (action === 'set-status') updateStatus(id, btn.getAttribute('data-value'));
+        if (action === 'add-note')   addNoteFor(id, d.querySelector('textarea').value);
+      });
+    });
+  }
+
+  function updateStatus(id, status) {
+    fetch(API_BASE + '/api/volunteer/interests/' + id, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-PNEC-Admin-Key': adminKey,
+      },
+      body: JSON.stringify({ status: status }),
+      credentials: 'include'
+    }).then(function(res) { return res.json(); })
+      .then(function() { load(); })
+      .catch(function() { alert('Failed to update — try again.'); });
+  }
+
+  function addNoteFor(id, noteFromArg) {
+    var row = listEl.querySelector('.av-row[data-id="' + id + '"]');
+    var ta = row && row.querySelector('.av-note-input textarea');
+    var note = (noteFromArg !== undefined) ? noteFromArg : (ta && ta.value || '');
+    note = String(note || '').trim();
+    if (!note) { alert('Type a note first.'); return; }
+    fetch(API_BASE + '/api/volunteer/interests/' + id, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-PNEC-Admin-Key': adminKey,
+      },
+      body: JSON.stringify({ note: note }),
+      credentials: 'include'
+    }).then(function(res) { return res.json(); })
+      .then(function() { if (ta) ta.value = ''; load(); })
+      .catch(function() { alert('Failed to add note — try again.'); });
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  // Boot
+  if (adminKey) load();
+  else showGate();
+})();
+</script>
