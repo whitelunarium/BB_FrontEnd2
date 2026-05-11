@@ -1,0 +1,31 @@
+{%- comment -%}
+  v3.20: minimal stub for game-runner.html.
+
+  The original 405-line interactive game runner was removed in commit
+  03d97347 ("orphan cleanup + brand fix...") and again confirmed-as-
+  removed in commit dfa5ed69 ("chore: remove game + escape-room —
+  unprofessional, no real value").
+
+  But notebook posts generated at CI build time by
+  scripts/convert_notebooks.py still emit `{% include game-runner.html %}`
+  for any JS cell that starts with `// GAME_RUNNER: ...`. Without an
+  _includes/game-runner.html file, those notebook-derived posts fail
+  the entire Jekyll build — which is why GitHub Pages deploys had been
+  failing silently since commit 03d97347 (run #173 onwards).
+
+  This stub satisfies the include without resurrecting the deleted
+  game. We render only the challenge prompt as a static <div>; the
+  interactive editor + game engine are gone. If those notebook posts
+  matter, the long-term fix is to either (a) strip GAME_RUNNER cells
+  from convert_notebooks.py or (b) delete the source notebooks. Until
+  then, this keeps the build green.
+
+  Accepts: runner_id, challenge, code, hide_edit (any subset, any
+  combination — never raises).
+{%- endcomment -%}
+{%- if include.challenge and include.challenge != "" -%}
+<div class="game-runner-stub" data-runner-id="{{ include.runner_id }}">
+  <p><strong>Challenge:</strong> {{ include.challenge }}</p>
+  <p><em>The interactive game runner has been retired. The challenge prompt is preserved for reference.</em></p>
+</div>
+{%- endif -%}
