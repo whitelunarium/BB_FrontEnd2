@@ -65,57 +65,60 @@
     btn.rel    = 'noopener';
     btn.title = 'Open this page in the live theme editor (opens in a new tab — admin-only)';
     btn.setAttribute('aria-label', 'Edit this page in a new tab');
-    btn.innerHTML = '<span class="pnec-edit-icon">✏️</span><span class="pnec-edit-label">Edit this page</span><span class="pnec-edit-newtab" aria-hidden="true">↗</span>';
+    btn.innerHTML =
+      '<span class="pnec-edit-icon" aria-hidden="true" style="font-size:1.25em;line-height:1">✏️</span>' +
+      '<span class="pnec-edit-label">Edit this page</span>' +
+      '<span class="pnec-edit-shortcut" aria-hidden="true" style="font-size:0.72em;opacity:0.78;padding:2px 6px;border:1px solid rgba(255,253,246,0.45);border-radius:5px;margin-left:2px;letter-spacing:0.05em">E</span>' +
+      '<span class="pnec-edit-newtab" aria-hidden="true" style="font-size:1.05em">↗</span>';
+    // v3.20: moved to bottom-LEFT so it never overlaps the chatbot FAB,
+    // and sized up so an admin can spot it instantly. Adds a small "E"
+    // pill to surface the keyboard shortcut.
     btn.style.cssText = [
       'position:fixed',
-      'right:20px',
-      'bottom:20px',
-      // Sit above the chatbot widget which lives at bottom:24px (typical 56px button)
-      // Using right offset keeps both visible side-by-side on most viewports.
+      'left:20px',
+      'bottom:24px',
       'z-index:9998',
       'display:inline-flex',
       'align-items:center',
-      'gap:8px',
-      'padding:11px 18px',
-      // v3.17: switched from rainbow gradient to PNEC brand forest
-      // green so the button matches the rest of the site (cream + forest).
+      'gap:10px',
+      'padding:14px 22px',
+      'min-height:52px',
       'background:linear-gradient(135deg, #145a32 0%, #1e8449 100%)',
       'color:#fffdf6',
-      'font:700 0.88rem "DM Sans", ui-sans-serif, system-ui, -apple-system, sans-serif',
+      'font:800 1.02rem "DM Sans", ui-sans-serif, system-ui, -apple-system, sans-serif',
       'letter-spacing:.01em',
       'text-decoration:none',
-      'border-radius:999px',
-      'box-shadow:0 8px 24px rgba(20,90,50,0.35), 0 0 0 1px rgba(255,253,246,0.16) inset',
+      'border-radius:14px',
+      'box-shadow:0 10px 28px rgba(20,90,50,0.42), 0 0 0 1px rgba(255,253,246,0.18) inset, 0 0 0 4px rgba(20,90,50,0.10)',
       'cursor:pointer',
       'transition:transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease',
-      'opacity:0.94',
+      'opacity:1',
+      'animation:pnec-edit-attention 2.4s ease-out 1.6s 1',
     ].join(';');
+
+    // One-time attention pulse keyframes — injected once.
+    if (!document.getElementById('pnec-edit-anim-style')) {
+      const style = document.createElement('style');
+      style.id = 'pnec-edit-anim-style';
+      style.textContent = '@keyframes pnec-edit-attention {' +
+        '  0%   { transform: scale(1);    box-shadow: 0 10px 28px rgba(20,90,50,0.42), 0 0 0 1px rgba(255,253,246,0.18) inset, 0 0 0 4px rgba(20,90,50,0.10); }' +
+        '  35%  { transform: scale(1.06); box-shadow: 0 14px 38px rgba(20,90,50,0.55), 0 0 0 1px rgba(255,253,246,0.30) inset, 0 0 0 10px rgba(20,90,50,0.20); }' +
+        '  100% { transform: scale(1);    box-shadow: 0 10px 28px rgba(20,90,50,0.42), 0 0 0 1px rgba(255,253,246,0.18) inset, 0 0 0 4px rgba(20,90,50,0.10); }' +
+        '}' +
+        '@media (prefers-reduced-motion: reduce) {' +
+        '  #pnec-edit-this-page { animation: none !important; }' +
+        '}';
+      document.head.appendChild(style);
+    }
+
     btn.addEventListener('mouseenter', () => {
-      btn.style.transform   = 'translateY(-2px) scale(1.02)';
-      btn.style.opacity     = '1';
-      btn.style.boxShadow   = '0 12px 32px rgba(20,90,50,0.50), 0 0 0 1px rgba(255,253,246,0.20) inset';
+      btn.style.transform = 'translateY(-2px) scale(1.03)';
+      btn.style.boxShadow = '0 14px 36px rgba(20,90,50,0.55), 0 0 0 1px rgba(255,253,246,0.24) inset, 0 0 0 6px rgba(20,90,50,0.14)';
     });
     btn.addEventListener('mouseleave', () => {
-      btn.style.transform   = 'translateY(0) scale(1)';
-      btn.style.opacity     = '0.94';
-      btn.style.boxShadow   = '0 8px 24px rgba(20,90,50,0.35), 0 0 0 1px rgba(255,253,246,0.16) inset';
+      btn.style.transform = 'translateY(0) scale(1)';
+      btn.style.boxShadow = '0 10px 28px rgba(20,90,50,0.42), 0 0 0 1px rgba(255,253,246,0.18) inset, 0 0 0 4px rgba(20,90,50,0.10)';
     });
-
-    // Position above the chatbot if it exists. The actual class is
-    // `.chatbot-trigger` (kept the older names as fallback for safety in
-    // case the include changes). Computed from the actual chatbot's bottom
-    // offset + height so the gap is correct on all screen sizes.
-    setTimeout(() => {
-      const chatbot = document.querySelector(
-        '.chatbot-trigger, .pnec-chatbot-fab, .chatbot-toggle, [data-pnec-chatbot], #chatbot-trigger-btn'
-      );
-      if (chatbot) {
-        const r = chatbot.getBoundingClientRect();
-        // Use the chatbot's height + 16px gap, fallback to 88px if rect is empty
-        const chatbotHeight = r.height || 56;
-        btn.style.bottom = (chatbotHeight + 28) + 'px';
-      }
-    }, 600);
     return btn;
   }
 

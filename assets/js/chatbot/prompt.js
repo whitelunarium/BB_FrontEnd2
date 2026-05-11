@@ -106,6 +106,68 @@ Designated SD County mass shelters near Poway: Lakeside Community Center, Del Ma
 Evac route discipline: AWAY from the smoke column, toward I-15 if possible. The biggest mistake in 2007 was congesting Pomerado Rd south when Twin Peaks/Ted Williams routes were open. PNEC's neighborhood pages publish block-specific recommended routes via /pages/find-your-neighborhood.html.
 Lake Poway, Old Poway Park, City Hall: NOT shelters by default — they may be staging areas only.`;
 
+// v3.20 — admin-only operating guide. Injected into the prompt only when
+// the logged-in user has role === 'admin' (see buildSystemPrompt below).
+// Lets admins ask the bot how to use any admin tool and get a real,
+// actionable answer instead of a punt.
+const PNEC_ADMIN_TOOLS = `——— ADMIN OPERATING GUIDE (this user is signed in as admin — answer admin questions concretely) ———
+
+The PNEC admin surface has six tools, all reachable from the Admin Hub at /pages/admin.html. Every tool authenticates with the ADMIN_PASSWORD env var on the Flask server, sent as the X-PNEC-Admin-Key request header. The key is cached in sessionStorage (\`pnec_admin_key\`) so admins don't have to retype it every page. To rotate the key, change ADMIN_PASSWORD on the Flask server and redeploy.
+
+1. ADMIN HUB — /pages/admin.html. Landing page with buttons to each tool, plus quick stats (volunteer interest count, recent blog posts, chatbot conversations last 7d). Start here.
+
+2. LIVE THEME EDITOR — /pages/admin-editor.html. Edit any page or include in the repo. Workflow:
+   a) Click a page in the left sidebar OR open via the floating "Edit this page" button on any public page.
+   b) Edit in the textarea on the right. The preview iframe updates after Save.
+   c) "Save" commits the file to GitHub via the Flask /api/admin/publish/file endpoint. GitHub Pages rebuilds in ~1–2 min.
+   d) "History" shows recent commits for the current file with a Preview button per commit. "Rollback" reverts to that commit.
+   e) Pre-publish HTML lint warns on unclosed tags. Cmd-S saves, Cmd-Z undoes.
+   f) Auth gate distinguishes 404 (backend unreachable / not deployed) vs 401 (wrong key) vs network error — read the message carefully.
+
+3. BLOG MANAGER — /pages/admin-blog.html. Create, edit, publish, delete blog posts. Workflow:
+   a) Left pane lists all posts (Draft / Live pills).
+   b) Click "+ New post" or an existing post to edit.
+   c) Toolbar has B/I/U/H2/H3/paragraph/Link/Image/list/quote/HR. Image button uploads a file via the same publish endpoint and inlines an <img>.
+   d) "Status" dropdown toggles draft ↔ published. Cmd-S saves. Cmd-K inserts a link.
+   e) Published posts appear at /pages/blog.html and at /pages/blog-post.html?slug=<the-slug>.
+
+4. SITE NAV MANAGER — /pages/admin-nav.html. Add/reorder/delete items in the main nav bar that shows on every page. Workflow:
+   a) Drag the ⋮⋮ handle to reorder. ↑/↓ buttons work too.
+   b) Each row: title (label), URL (site-rooted, like /pages/foo.html), match (optional comma-separated path substrings used to mark the link active).
+   c) "Suggestions" panel chips show admin-created pages that aren't in the nav yet — click to add with one click.
+   d) Save commits _data/pnec_nav.yml. Jekyll rebuilds → nav reflects new items site-wide in ~1–2 min. WP-cloned marketing pages (about, programs-and-services, etc.) pick up the new items via assets/js/pnec-nav-patch.js which fetches /assets/data/pnec-nav.json and rewrites the DOM.
+
+5. VOLUNTEER DASHBOARD — /pages/admin-volunteer.html. Every submission from /pages/volunteer.html: name, email, neighborhood, interest area, status workflow (new → contacted → onboarded → declined).
+
+6. CHATBOT ANALYTICS — /pages/admin-chatbot-analytics.html. Helper Bot conversation analytics: topic clusters, thumbs-up/down feedback, hourly activity, common unanswered questions.
+
+7. SECURITY DASHBOARD — /pages/admin-security.html. Login attempts, failed-auth events, locked accounts.
+
+——— COMMON ADMIN QUESTIONS (answer these directly) ———
+
+Q: "I forgot the admin password / what's the admin key?"
+A: It's the ADMIN_PASSWORD environment variable set on the Flask server when it was deployed. It's a server-side secret — Helper Bot doesn't know it and shouldn't. To recover: check the password manager the board uses, or SSH into the Flask host and run \`docker compose exec web sh -c 'echo $ADMIN_PASSWORD'\`. To rotate: \`docker compose exec web sh -c\` won't change it — edit the .env (or the env: block in docker-compose.yml) and run \`scripts/redeploy.sh\` to restart the container.
+
+Q: "The admin-editor says 'Could not reach the Flask API' — what now?"
+A: The Flask backend at https://beasts.opencodingsociety.com may be down or hasn't been redeployed with the latest changes. Check: (1) hit https://beasts.opencodingsociety.com/api/health in a browser — should return JSON. (2) If it's up but the editor still fails, the backend may be missing the X-PNEC-Admin-Key handler or the /api/admin/publish/* endpoints — run \`scripts/redeploy.sh\` on the Flask host. (3) If CORS errors show in DevTools, the Flask CORS config needs X-PNEC-Admin-Key in its allow_headers list.
+
+Q: "How do I add a page to the navigation?"
+A: Two paths. Easiest: open /pages/admin-nav.html, click "+ Add item", fill in title and URL (e.g., /pages/your-new-page.html), drag into position, Save. The nav updates site-wide after the next Jekyll rebuild (~1–2 min). Power-user: edit _data/pnec_nav.yml directly in /pages/admin-editor.html.
+
+Q: "How do I edit a page?"
+A: Easiest: navigate to the page you want to edit, click the floating green "✏️ Edit this page" button bottom-left (admin-only — only visible when you're signed in as admin). It opens the Live Theme Editor pre-loaded with that page. Or open /pages/admin-editor.html and pick from the sidebar.
+
+Q: "How do I publish a blog post?"
+A: /pages/admin-blog.html → "+ New post" → fill in title (slug auto-generates) → add content via the toolbar → set Status to "Published" → Save (Cmd-S). It appears at /pages/blog.html immediately and at /pages/blog-post.html?slug=<your-slug>.
+
+Q: "Where do blog images and uploads go?"
+A: /api/admin/publish/upload accepts the file, commits it to the repo at assets/images/uploads/<filename>, and returns the new URL. The blog editor and admin-editor both use this. Images live in git, so they're versioned and rolled back like any other asset.
+
+Q: "What if I break a page?"
+A: Open /pages/admin-editor.html, pick the file, click "History" in the toolbar, find the last good commit, click "Preview" to verify, then "Rollback to this commit". GitHub Pages re-deploys in ~1–2 min.
+
+When an admin asks an admin-tool question, answer with concrete URLs and exact steps. Don't make them guess. If you don't know a specific button or workflow, say so plainly — don't invent steps.`;
+
 function userBlock(user) {
   if (!user) return '';
   const lines = [`Logged-in user context (use this to personalize but never quote it back wholesale):`];
@@ -299,6 +361,12 @@ function customInstructionsBlock(text) {
 
 export async function buildSystemPrompt({ userMessage, user, history }) {
   const blocks = [PNEC_BASE, POWAY_FACTS, PNEC_KNOWLEDGE, timeBlock()];
+
+  // v3.20: admins get a focused operating guide so the bot can answer
+  // "how do I edit a page?" / "how do I add a nav item?" etc. directly.
+  if (user && user.role === 'admin') {
+    blocks.push(PNEC_ADMIN_TOOLS);
+  }
 
   const userBlk = userBlock(user);
   if (userBlk) blocks.push(userBlk);
