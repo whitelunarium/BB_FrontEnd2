@@ -1281,15 +1281,44 @@ permalink: /pages/admin-editor.html
               +   '<a class="ae-history-sha" href="' + esc(c.html_url || '#') + '" target="_blank" rel="noopener">' + esc(c.short_sha) + '</a>'
               +   '<div class="ae-history-msg" title="' + esc(c.message) + '">' + esc(c.message) + '</div>'
               +   '<span class="ae-history-when">' + esc(when) + '</span>'
-              +   '<button type="button" class="ae-btn is-danger" data-sha="' + esc(c.sha) + '">Restore</button>'
+              +   '<button type="button" class="ae-btn" data-action="preview" data-sha="' + esc(c.sha) + '" title="Load this commit\'s content into the source editor (read-only preview — won\'t publish anything)">Preview</button>'
+              +   '<button type="button" class="ae-btn is-danger" data-action="restore" data-sha="' + esc(c.sha) + '">Restore</button>'
               + '</div>';
         }).join('');
         el.querySelectorAll('[data-sha]').forEach(function(btn) {
-          btn.addEventListener('click', function() { rollbackTo(btn.getAttribute('data-sha')); });
+          btn.addEventListener('click', function() {
+            var action = btn.getAttribute('data-action');
+            var sha = btn.getAttribute('data-sha');
+            if (action === 'preview') previewAt(sha);
+            else if (action === 'restore') rollbackTo(sha);
+          });
         });
       })
       .catch(function(err) {
         el.innerHTML = '<p style="color:#80261b;">' + esc(String(err.message || err)) + '</p>';
+      });
+  }
+
+  function previewAt(sha) {
+    if (!current) return;
+    if (dirty && !confirm('Loading this commit into the editor will overwrite your unsaved changes. Continue?')) return;
+    setStatus('publishing', 'Loading commit ' + sha.slice(0, 7) + '…');
+    fetch(API_BASE + '/api/admin/publish/file-at?path=' + encodeURIComponent(current.path) + '&ref=' + encodeURIComponent(sha), {
+      method: 'GET', headers: apiHeaders(),
+    }).then(function(r) { return r.json().then(function(j) { return {ok:r.ok,status:r.status,j:j}; }); })
+      .then(function(res) {
+        if (!res.ok || !res.j.ok) throw new Error(humanizeError(res.j, res.status, 'load commit'));
+        $('ae-source').value = res.j.content || '';
+        $('ae-counter').textContent = $('ae-source').value.length.toLocaleString() + ' chars';
+        // Mark dirty since the source no longer matches savedDigest
+        // (savedDigest is the latest-on-main version, not this older sha).
+        setDirty(digest($('ae-source').value) !== savedDigest);
+        switchTab('source');
+        toast('Loaded commit <code>' + esc(sha.slice(0, 7)) + '</code> into the editor. Review, then publish to commit as a NEW change (or click ↻ Reload to abandon).', { ms: 8000 });
+      })
+      .catch(function(err) {
+        setStatus('error', 'Preview failed');
+        toast(esc(String(err.message || err)), { error: true, ms: 8000 });
       });
   }
 
