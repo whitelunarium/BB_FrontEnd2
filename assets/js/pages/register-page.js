@@ -128,6 +128,56 @@ function bindFindNeighborhoodButton() {
   button.addEventListener('click', handleFindNeighborhoodClick);
 }
 
+// v3.20: Poway city bounding box. Used to decide if the user's GPS coord
+// is plausibly inside Poway. City limits run ~32.91N–33.03N, -117.10W–
+// -116.95W. We pad it slightly so a user a block outside the city limit
+// (still functionally PNEC territory) doesn't trigger the "you're not in
+// Poway" message. Anything OUTSIDE these bounds gets the fun out-of-area
+// note instead of pretending we couldn't determine the neighborhood.
+const POWAY_BOUNDS = { minLat: 32.90, maxLat: 33.04, minLng: -117.12, maxLng: -116.94 };
+
+function isInsidePoway(lat, lng) {
+  return (
+    typeof lat === 'number' && typeof lng === 'number' &&
+    isFinite(lat) && isFinite(lng) &&
+    lat >= POWAY_BOUNDS.minLat && lat <= POWAY_BOUNDS.maxLat &&
+    lng >= POWAY_BOUNDS.minLng && lng <= POWAY_BOUNDS.maxLng
+  );
+}
+
+// v3.20: rough distance-to-Poway in miles (great-circle, plenty good for
+// "are they nearby or way off?" messaging). Center of Poway = 32.9628,
+// -117.0359.
+function roughMilesFromPoway(lat, lng) {
+  const POWAY_CENTER = { lat: 32.9628, lng: -117.0359 };
+  const toRad = d => d * Math.PI / 180;
+  const R = 3958.8; // Earth radius in miles
+  const dLat = toRad(lat - POWAY_CENTER.lat);
+  const dLng = toRad(lng - POWAY_CENTER.lng);
+  const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos(toRad(POWAY_CENTER.lat)) * Math.cos(toRad(lat)) *
+            Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// v3.20: friendly out-of-area message tuned to how far away the user is.
+// Only ever shown when we're CONFIDENT the GPS coord is outside Poway's
+// bounding box — never shown on a low-accuracy or failed lookup, to avoid
+// telling a Poway resident they're not in Poway by mistake.
+function outsidePowayMessage(miles) {
+  const m = Math.round(miles);
+  if (miles < 25) {
+    return `Looks like you're ~${m} miles from Poway — close, but PNEC only covers Poway, CA. If you live in Poway and you're just out of town right now, pick your neighborhood from the dropdown.`;
+  }
+  if (miles < 200) {
+    return `Looks like you're ~${m} miles from Poway. PNEC is a Poway-only org, so the neighborhood map won't help you here — but stay safe out there, and bookmark us if you ever move to Poway! 🌵`;
+  }
+  if (miles < 1500) {
+    return `You're ~${m} miles from Poway — a different state, but the same planet. PNEC only covers Poway, CA. If you'd like emergency-prep resources for your area, search '<your county> CERT' or visit ready.gov. 🗺️`;
+  }
+  return `Greetings from ~${m} miles away! 🌎 You're definitely not in Poway. PNEC only covers Poway, California. If you'd like emergency-prep resources for your country, your national disaster agency is the right starting point.`;
+}
+
 function handleFindNeighborhoodClick() {
   const button = document.getElementById('register-find-neighborhood');
   setFindNeighborhoodLoading(button, true);
@@ -142,18 +192,45 @@ function handleFindNeighborhoodClick() {
         return;
       }
 
-      updateNeighborhoodHelp('Requesting your location...');
-
-      navigator.geolocation.getCurrentPosition(
-        position => resolveNeighborhoodFromLocation(position, button),
-        error => handleNeighborhoodLocationError(error, button),
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 120000 }
-      );
+      // v3.20: two-stage geolocation. The previous single-call with
+      // enableHighAccuracy:true + 10s timeout was failing constantly,
+      // especially on desktops (no GPS, slow WiFi triangulation). We
+      // now try high-accuracy with a shorter window first, and if it
+      // times out, fall back to a coarse fix with a longer window —
+      // which is plenty accurate for "are you in Poway?" detection.
+      tryGeolocate(button);
     })
     .catch(() => {
       setFindNeighborhoodLoading(button, false);
       showAddressFallback('Neighborhood data is not available right now. Try an address or choose from the list.');
     });
+}
+
+function tryGeolocate(button) {
+  updateNeighborhoodHelp('Requesting your location — please allow the browser prompt if it appears…');
+
+  // Stage 1: high accuracy, 8s timeout. Most desktop users will time
+  // out here. Indoor mobile users usually succeed.
+  navigator.geolocation.getCurrentPosition(
+    position => resolveNeighborhoodFromLocation(position, button),
+    error => {
+      // PERMISSION_DENIED and POSITION_UNAVAILABLE are terminal —
+      // no point retrying with a different accuracy.
+      if (error && (error.code === error.PERMISSION_DENIED ||
+                    error.code === error.POSITION_UNAVAILABLE)) {
+        handleNeighborhoodLocationError(error, button);
+        return;
+      }
+      // Stage 2: low accuracy, 20s timeout. Uses WiFi/IP fallback.
+      updateNeighborhoodHelp('Still working on it — trying a coarser GPS fix…');
+      navigator.geolocation.getCurrentPosition(
+        pos2 => resolveNeighborhoodFromLocation(pos2, button),
+        err2 => handleNeighborhoodLocationError(err2, button),
+        { enableHighAccuracy: false, timeout: 20000, maximumAge: 600000 }
+      );
+    },
+    { enableHighAccuracy: true, timeout: 8000, maximumAge: 120000 }
+  );
 }
 
 function ensureNeighborhoodsLoaded() {
@@ -164,8 +241,24 @@ function ensureNeighborhoodsLoaded() {
 }
 
 function resolveNeighborhoodFromLocation(position, button) {
-  const { latitude, longitude } = position.coords;
+  const { latitude, longitude, accuracy } = position.coords;
   const neighborhoods = neighborhoodState.neighborhoods || [];
+
+  // v3.20: before hitting the backend, decide if the user is even
+  // plausibly in Poway. We're CONFIDENT in the result only when the
+  // GPS accuracy is reasonable (≤25 km radius). Otherwise we still
+  // try the backend lookup — never want to tell a Poway resident
+  // they're not in Poway because of a noisy first WiFi triangulation.
+  const accuracyMeters = Number.isFinite(accuracy) ? accuracy : null;
+  const accurateEnough = accuracyMeters === null || accuracyMeters <= 25000;
+
+  if (accurateEnough && !isInsidePoway(latitude, longitude)) {
+    const miles = roughMilesFromPoway(latitude, longitude);
+    updateNeighborhoodHelp(outsidePowayMessage(miles), true);
+    showAddressFallback();
+    setFindNeighborhoodLoading(button, false);
+    return;
+  }
 
   lookupNeighborhoodFromCoordinates(latitude, longitude)
     .then(neighborhood => {
@@ -180,9 +273,12 @@ function resolveNeighborhoodFromLocation(position, button) {
         return;
       }
 
+      // We're inside (or near) Poway but couldn't pin a specific
+      // neighborhood. Don't make this feel like a failure — many
+      // residents straddle two areas anyway.
       updateNeighborhoodHelp(
-        'We found your location, but exact neighborhood boundaries are not configured yet. Search by address, neighborhood number/name, or choose from the list.',
-        true
+        "We got your location and you're in (or near) Poway, but we couldn't auto-pin a specific neighborhood. Pick yours from the dropdown — most folks know their street.",
+        false
       );
       showAddressFallback();
     })
@@ -198,19 +294,37 @@ function resolveNeighborhoodFromLocation(position, button) {
 
 function handleNeighborhoodLocationError(error, button) {
   setFindNeighborhoodLoading(button, false);
+  showAddressFallback();
 
   if (error && error.code === error.PERMISSION_DENIED) {
-    updateNeighborhoodHelp('Location access was denied. Type an address below and press Search.');
+    updateNeighborhoodHelp(
+      "Location access was blocked by your browser. Click the location/lock icon in your address bar to allow it, or just type an address below.",
+      true
+    );
+    focusAddressSearch();
+    return;
+  }
+  if (error && error.code === error.POSITION_UNAVAILABLE) {
+    updateNeighborhoodHelp(
+      "Your device couldn't get a location fix (no GPS / WiFi positioning available). Type an address below instead — it works the same way.",
+      true
+    );
     focusAddressSearch();
     return;
   }
   if (error && error.code === error.TIMEOUT) {
-    updateNeighborhoodHelp('Location lookup timed out. Type an address below or press Find your neighborhood again.');
+    updateNeighborhoodHelp(
+      "Both the fast and the slow location lookups timed out — likely a weak GPS / WiFi signal. Type an address below (street name is enough) or pick your neighborhood from the dropdown.",
+      true
+    );
     focusAddressSearch();
     return;
   }
 
-  updateNeighborhoodHelp('We could not determine your location. Type an address below and press Search.');
+  updateNeighborhoodHelp(
+    "We couldn't determine your location. Type an address below — or pick your neighborhood from the dropdown.",
+    true
+  );
   focusAddressSearch();
 }
 
