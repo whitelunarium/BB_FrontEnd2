@@ -18,6 +18,10 @@ permalink: /pages/find-your-neighborhood.html
 <meta name="twitter:description" content="Find which of Poway's 14 PNEC neighborhoods you live in. Connect to your block coordinator, get your evacuation route, and join the household roster for your area.">
 
 <meta name='robots' content='max-image-preview:large' />
+<!-- v3.20: open the TCP+TLS handshake to powaynec.com early so the 40+ external stylesheets and 30+ scripts cloned from there don't pay the full RTT cost serially. -->
+<link rel="preconnect" href="https://powaynec.com" crossorigin>
+<link rel="dns-prefetch" href="//powaynec.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel='dns-prefetch' href='//www.googletagmanager.com' />
 <link rel="alternate" type="application/rss+xml" title="Poway NEC &amp; FSC &raquo; Feed" href="https://powaynec.com/feed/" />
 <link rel="alternate" type="application/rss+xml" title="Poway NEC &amp; FSC &raquo; Comments Feed" href="https://powaynec.com/comments/feed/" />

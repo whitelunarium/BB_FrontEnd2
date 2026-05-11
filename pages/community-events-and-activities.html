@@ -14,6 +14,10 @@
 <meta name="twitter:description" content="Upcoming PNEC events, drills, training sessions, and the annual Emergency & Safety Fair. RSVP and bring a neighbor — preparedness is a team sport.">
 
 <meta name='robots' content='max-image-preview:large' />
+<!-- v3.20: open the TCP+TLS handshake to powaynec.com early so the 40+ external stylesheets and 30+ scripts cloned from there don't pay the full RTT cost serially. -->
+<link rel="preconnect" href="https://powaynec.com" crossorigin>
+<link rel="dns-prefetch" href="//powaynec.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel='dns-prefetch' href='//www.googletagmanager.com' />
 <link rel="alternate" type="application/rss+xml" title="Poway NEC &amp; FSC &raquo; Feed" href="https://powaynec.com/feed/" />
 <link rel="alternate" type="application/rss+xml" title="Poway NEC &amp; FSC &raquo; Comments Feed" href="https://powaynec.com/comments/feed/" />
