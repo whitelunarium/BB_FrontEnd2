@@ -444,14 +444,31 @@ permalink: /pages/admin-volunteer.html
       credentials: 'include'
     }).then(function(res) {
       if (res.status === 401) { showGate(); throw new Error('unauth'); }
+      if (res.status === 404) { showGate(); throw new Error('notdeployed'); }
+      if (!res.ok)            { throw new Error('http_' + res.status); }
       return res.json();
     }).then(function(data) {
       lastData = data;
       render(data);
       if (gate && !gate.hidden) showApp();
     }).catch(function(err) {
-      if (String(err.message) === 'unauth') {
+      var msg = String(err.message || '');
+      if (msg === 'unauth') {
+        authError.innerHTML = 'Wrong key. Try again or check with the board.';
         authError.classList.add('is-visible');
+      } else if (msg === 'notdeployed') {
+        authError.innerHTML = 'Backend doesn\'t have <code>/api/volunteer/interests</code> yet. The Flask server needs to be <strong>rebuilt + redeployed</strong> with the latest code.';
+        authError.classList.add('is-visible');
+      } else if (msg.indexOf('http_') === 0) {
+        // Non-2xx, not 401/404 — show status but stay in app if it was opened
+        console.warn('volunteer dashboard:', msg);
+        // Fallthrough silently — periodic poll will retry
+      } else {
+        // Network / CORS / unreachable — show a banner once
+        if (gate && gate.hidden === false) {
+          authError.innerHTML = 'Could not reach the Flask API. Check the server is up.';
+          authError.classList.add('is-visible');
+        }
       }
     });
   }
