@@ -311,3 +311,46 @@ deploy status:
 - Account/board questions: powaynec@gmail.com
 - Emergency on the production site: revert via the editor's History
   tab — pick the last known-good commit, click Restore.
+
+---
+
+## Deploys (technical)
+
+### Frontend (`Beasts_FrontEnd`)
+Every push to `main` triggers GitHub Pages to rebuild automatically.
+Look at the **Actions** tab of the repo to see deploy status. Typical
+turnaround: **5 min from push → live**.
+
+When the Live Theme Editor publishes a change, that's the same as a
+manual push — it goes through this exact pipeline.
+
+### Backend (`Beasts_Flask`)
+**No automatic deploy** as of this writing. Pushing to `main` does
+NOT auto-rebuild the Flask container. After a backend change:
+
+1. Build the new image:
+   ```bash
+   cd ~/Beasts_Flask
+   docker compose build
+   ```
+2. Restart the running container:
+   ```bash
+   docker compose up -d
+   ```
+3. Verify with the editor's health bar — Auth/GitHub/Groq pills
+   should all be green, and the workflow status shows the latest
+   commit SHA.
+
+Common gotcha: after adding new admin endpoints (like
+`/api/admin/publish/diff`), if you don't rebuild the container, the
+editor's diff button gives 404. Same for any new model — Flask
+needs to restart for `db.create_all()` to pick up new tables.
+
+### Verifying a backend deploy is current
+Run the E2E test script in `scripts/test-admin-editor.sh`:
+```bash
+PNEC_API=https://beasts.opencodingsociety.com \
+PNEC_ADMIN_KEY=… \
+./scripts/test-admin-editor.sh
+```
+It hits every admin endpoint and reports pass/fail per check.
