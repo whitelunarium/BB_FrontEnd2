@@ -1,110 +1,99 @@
 ---
 layout: pnec-base
 title: "Live Theme Editor — PNEC Admin"
-description: "PNEC admins: edit site pages in the browser, publish straight to GitHub, generate sections with AI. No coder required."
+description: "PNEC admins: edit site pages in the browser, publish straight to GitHub, see real diffs, view revision history, generate sections with AI. No coder required."
 body_class: inner-page admin-editor-page
 permalink: /pages/admin-editor.html
 ---
 
 <style>
-/* ── Live Theme Editor v3 (May 2026) ────────────────────────────
-   Brand-consistent cream + forest theme. Replaces the dark v2.
-   Three-column layout: page list / source editor / live preview.
+/* ════════════════════════════════════════════════════════════════
+   PNEC Live Theme Editor v3.17 (May 2026)
+   Full rebuild from feedback "EVERYTHING about the admin live
+   theme editor is broken." Cream + forest theme matching the site.
 
-   Architecture:
-   - Pages are listed grouped by where they live on the actual site
-     (Main Nav / Footer Links / Account / Admin / Resources).
-   - When you pick a page, we GET its current content from GitHub
-     via /api/admin/publish/file.
-   - You edit the HTML source in the center textarea (preview updates
-     on a 800ms debounce so you can see changes live).
-   - Click "Publish to GitHub" — POST /api/admin/publish/file commits
-     the change to the repo's main branch. Pages then rebuilds in
-     ~5 min. The dashboard polls /api/admin/publish/status so you
-     see when the rebuild finishes.
-   - The AI panel calls /api/admin/ai/section (Groq) to draft a new
-     section block you can paste into the source.
+   Three-pane layout: page list / source editor / live preview.
+   Top bar shows the health of every required dependency (GitHub
+   PAT, Groq key, repo reachability) so admins know if anything is
+   misconfigured BEFORE they try to edit.
 
-   Required server config (Beasts_Flask):
-     GITHUB_TOKEN  — fine-grained PAT, Contents:read+write on the repo
-     GITHUB_OWNER  — defaults to whitelunarium
-     GITHUB_REPO   — defaults to Beasts_FrontEnd
-     GITHUB_BRANCH — defaults to main
-     GROQ_API_KEY  — already set
-*/
+   Endpoints used (all under /api/admin/):
+     GET  /publish/health              connection status
+     GET  /publish/file?path=…         read file from repo
+     POST /publish/file                commit file change
+     POST /publish/diff                unified diff for preview
+     GET  /publish/history?path=…      commits for a file
+     POST /publish/rollback            restore file to a SHA
+     GET  /publish/status              recent Pages workflow runs
+     POST /ai/section                  Groq section generator
+   ════════════════════════════════════════════════════════════════ */
 
 .admin-editor-page { background: #fbf8f1; min-height: 100vh; }
+.admin-editor-page *, .admin-editor-page *::before, .admin-editor-page *::after { box-sizing: border-box; }
 
-.ae-shell {
-  display: grid;
-  grid-template-columns: 280px 1fr 1fr;
-  gap: 0;
-  height: calc(100vh - 64px);
-  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  color: #0a1628;
-  background: #fbf8f1;
-}
-@media (max-width: 1100px) {
-  .ae-shell { grid-template-columns: 240px 1fr; }
-  .ae-preview { display: none; }
-}
-@media (max-width: 720px) {
-  .ae-shell { grid-template-columns: 1fr; height: auto; }
-  .ae-sidebar { max-height: 280px; }
-}
-
-/* ─── Top bar ────────────────────────────────────────────────── */
+/* ─── Top bar ───────────────────────────────────────────────── */
 .ae-topbar {
-  display: flex; align-items: center; justify-content: space-between; gap: 16px;
-  padding: 14px 22px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 12px 22px;
   background: linear-gradient(180deg, #ffffff 0%, #fbf8f1 100%);
   border-bottom: 1px solid #e3e0d8;
-  position: sticky; top: 0; z-index: 20;
+  position: sticky; top: 0; z-index: 30;
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
-.ae-topbar-left h1 {
-  margin: 0;
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: #0e3b21;
-  letter-spacing: -0.012em;
+.ae-topbar h1 {
+  margin: 0; font-size: 1.05rem; font-weight: 800; color: #0e3b21;
+  letter-spacing: -0.012em; line-height: 1.15;
 }
-.ae-topbar-left p {
-  margin: 1px 0 0;
-  font-size: 0.78rem;
-  color: #5a6470;
+.ae-topbar .sub {
+  margin: 1px 0 0; font-size: 0.78rem; color: #5a6470;
 }
-.ae-topbar-right {
-  display: flex; gap: 10px; align-items: center;
+.ae-topbar-actions {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
 }
-.ae-status-pill {
+
+/* ─── Health bar (under top bar) ────────────────────────────── */
+.ae-health {
+  display: flex; gap: 8px; padding: 10px 22px;
+  background: #f7f1e2; border-bottom: 1px solid #e3e0d8;
+  font-family: 'DM Sans', sans-serif; font-size: 0.84rem;
+  flex-wrap: wrap; align-items: center;
+}
+.ae-health-pill {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 0.74rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  padding: 4px 10px; border-radius: 999px;
+  font-size: 0.78rem; font-weight: 700; letter-spacing: 0.02em;
+  white-space: nowrap;
 }
-.ae-status-pill.is-saved        { background: #d4efdf; color: #145a32; }
-.ae-status-pill.is-dirty        { background: #fdf0d5; color: #92400e; }
-.ae-status-pill.is-publishing   { background: #dbeafe; color: #1e40af; }
-.ae-status-pill.is-error        { background: #fee2e2; color: #991b1b; }
-.ae-status-pill::before {
+.ae-health-pill.is-ok       { background: #d4efdf; color: #145a32; }
+.ae-health-pill.is-fail     { background: #fee2e2; color: #80261b; }
+.ae-health-pill.is-pending  { background: #fdf0d5; color: #92400e; }
+.ae-health-pill::before {
   content: ''; width: 7px; height: 7px; border-radius: 50%;
   background: currentColor;
 }
-.ae-status-pill.is-publishing::before { animation: ae-pulse 1s ease-in-out infinite; }
+.ae-health-pill.is-pending::before { animation: ae-pulse 1s ease-in-out infinite; }
 @keyframes ae-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+.ae-health-msg {
+  flex: 1; min-width: 200px;
+  font-size: 0.84rem; color: #5a6470;
+}
+.ae-health-msg .err {
+  background: #fff;
+  border: 1px solid #fee2e2;
+  border-left: 3px solid #c0392b;
+  padding: 6px 10px; border-radius: 6px;
+  color: #80261b;
+  margin-left: 6px;
+}
 
+/* ─── Buttons ────────────────────────────────────────────────── */
 .ae-btn {
   padding: 8px 14px;
-  border: 1.5px solid #d8d4c4;
-  background: #ffffff;
-  color: #0e3b21;
-  border-radius: 8px;
-  font: inherit; font-size: 0.86rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background-color 0.15s, border-color 0.15s, color 0.15s, transform 0.06s;
+  border: 1.5px solid #d8d4c4; background: #ffffff; color: #0e3b21;
+  border-radius: 8px; font: inherit; font-size: 0.86rem; font-weight: 700;
+  cursor: pointer; white-space: nowrap;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s, transform 0.06s, box-shadow 0.15s;
+  font-family: 'DM Sans', sans-serif;
 }
 .ae-btn:hover { background: #d4efdf; border-color: #145a32; }
 .ae-btn:active { transform: translateY(1px); }
@@ -113,264 +102,351 @@ permalink: /pages/admin-editor.html
   color: #fffdf6; border-color: #145a32;
   box-shadow: 0 4px 12px rgba(20,90,50,0.20);
 }
-.ae-btn.is-primary:hover { filter: brightness(1.08); border-color: #145a32; color: #fffdf6; }
+.ae-btn.is-primary:hover { filter: brightness(1.08); color: #fffdf6; }
 .ae-btn.is-primary:disabled {
-  background: #b9c4b9; color: #fffdf6; cursor: wait;
-  filter: none; box-shadow: none;
+  background: #b9c4b9; color: #fffdf6; cursor: wait; filter: none; box-shadow: none;
 }
 .ae-btn.is-ghost { background: transparent; border-color: transparent; padding: 6px 10px; }
 .ae-btn.is-ghost:hover { background: #d4efdf; }
+.ae-btn.is-danger {
+  color: #80261b; border-color: rgba(192,57,43,0.32);
+}
+.ae-btn.is-danger:hover { background: rgba(192,57,43,0.10); }
 
-/* ─── Sidebar (page list) ────────────────────────────────────── */
+/* ─── Status pill (top-right) ────────────────────────────────── */
+.ae-status-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 999px;
+  font-size: 0.74rem; font-weight: 700; letter-spacing: 0.04em;
+  font-family: 'DM Sans', sans-serif;
+}
+.ae-status-pill.is-saved        { background: #d4efdf; color: #145a32; }
+.ae-status-pill.is-dirty        { background: #fdf0d5; color: #92400e; }
+.ae-status-pill.is-publishing   { background: #dbeafe; color: #1e40af; }
+.ae-status-pill.is-error        { background: #fee2e2; color: #80261b; }
+.ae-status-pill::before {
+  content: ''; width: 7px; height: 7px; border-radius: 50%;
+  background: currentColor;
+}
+.ae-status-pill.is-publishing::before { animation: ae-pulse 1s ease-in-out infinite; }
+
+/* ─── Shell layout ──────────────────────────────────────────── */
+.ae-shell {
+  display: grid;
+  grid-template-columns: 300px 1fr 460px;
+  gap: 0;
+  /* viewport - top bar - health bar */
+  height: calc(100vh - 64px - 50px);
+  font-family: 'DM Sans', sans-serif; color: #0a1628;
+  background: #fbf8f1;
+}
+@media (max-width: 1200px) {
+  .ae-shell { grid-template-columns: 260px 1fr 380px; }
+}
+@media (max-width: 1024px) {
+  .ae-shell { grid-template-columns: 240px 1fr; }
+  .ae-preview { display: none; }
+}
+@media (max-width: 720px) {
+  .ae-shell { grid-template-columns: 1fr; height: auto; }
+  .ae-sidebar { max-height: 280px; }
+}
+
+/* ─── Sidebar (page list + search) ───────────────────────────── */
 .ae-sidebar {
-  background: #f7f1e2;
-  border-right: 1px solid #e3e0d8;
-  overflow-y: auto;
-  padding: 14px 0;
+  background: #f7f1e2; border-right: 1px solid #e3e0d8;
+  overflow-y: auto; padding: 14px 0;
+  font-family: 'DM Sans', sans-serif;
 }
-.ae-sidebar-section {
-  margin-bottom: 12px;
+.ae-sidebar-search {
+  padding: 0 14px 12px;
 }
+.ae-sidebar-search input {
+  width: 100%; padding: 9px 12px;
+  border: 1.5px solid #d8d4c4; border-radius: 8px;
+  font: inherit; font-size: 0.86rem;
+  background: #ffffff;
+}
+.ae-sidebar-search input:focus {
+  outline: none; border-color: #1e8449;
+  box-shadow: 0 0 0 3px rgba(30,132,73,0.16);
+}
+.ae-sidebar-section { margin-bottom: 6px; }
+.ae-sidebar-section.is-hidden { display: none; }
 .ae-sidebar-section-title {
   padding: 4px 18px;
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #5a6470;
-  margin: 0 0 6px;
+  font-size: 0.7rem; font-weight: 800; letter-spacing: 0.1em;
+  text-transform: uppercase; color: #5a6470;
+  margin: 0 0 4px;
 }
 .ae-page-list { list-style: none; margin: 0; padding: 0; }
 .ae-page-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 9px 18px;
-  font-size: 0.92rem;
-  font-weight: 600;
-  color: #0a1628;
-  cursor: pointer;
-  border-left: 3px solid transparent;
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 18px;
+  font-size: 0.9rem; font-weight: 600; color: #0a1628;
+  cursor: pointer; border-left: 3px solid transparent;
   transition: background-color 0.12s, color 0.12s, border-color 0.12s;
   position: relative;
 }
-.ae-page-item:hover { background: rgba(212, 239, 223, 0.6); color: #145a32; }
+.ae-page-item.is-hidden { display: none; }
+.ae-page-item:hover { background: rgba(212,239,223,0.6); color: #145a32; }
 .ae-page-item.is-active {
-  background: #ffffff;
-  color: #145a32;
+  background: #ffffff; color: #145a32;
   border-left-color: #1e8449;
   font-weight: 800;
 }
-.ae-page-item-icon {
-  width: 16px; height: 16px;
-  flex-shrink: 0;
-  color: #475569;
-}
+.ae-page-item-icon { width: 14px; height: 14px; flex-shrink: 0; color: #475569; }
 .ae-page-item.is-active .ae-page-item-icon { color: #1e8449; }
-.ae-page-item-badge {
-  margin-left: auto;
-  background: #c87042;
-  color: #fff;
-  padding: 1px 6px;
-  border-radius: 999px;
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
+.ae-page-item-text {
+  flex: 1; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+.ae-page-item-test {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: transparent;
+  flex-shrink: 0;
+}
+.ae-page-item-test.is-ok    { background: #1e8449; }
+.ae-page-item-test.is-fail  { background: #c0392b; }
+.ae-page-item-test.is-pending { background: #f39c12; animation: ae-pulse 1s ease-in-out infinite; }
+
+.ae-sidebar-footer {
+  padding: 14px 18px; border-top: 1px solid #e3e0d8;
+  margin-top: 10px; font-size: 0.74rem; color: #5a6470;
+}
+.ae-sidebar-footer a { color: #145a32; font-weight: 700; }
 
 /* ─── Editor (center column) ─────────────────────────────────── */
 .ae-editor {
   display: flex; flex-direction: column;
   overflow: hidden;
-  background: #ffffff;
-  border-right: 1px solid #e3e0d8;
+  background: #ffffff; border-right: 1px solid #e3e0d8;
+  font-family: 'DM Sans', sans-serif;
 }
 .ae-editor-head {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding: 12px 18px;
-  border-bottom: 1px solid #e3e0d8;
-  background: #fbf8f1;
+  padding: 12px 18px; border-bottom: 1px solid #e3e0d8; background: #fbf8f1;
 }
 .ae-editor-head-title {
-  font-weight: 800;
-  color: #0e3b21;
-  font-size: 0.96rem;
-  display: flex; align-items: center; gap: 8px;
+  font-weight: 800; color: #0e3b21; font-size: 0.96rem;
 }
 .ae-editor-head-path {
   font-family: 'SF Mono', 'Menlo', Consolas, monospace;
-  font-size: 0.72rem;
-  color: #5a6470;
-  font-weight: 500;
+  font-size: 0.72rem; color: #5a6470; font-weight: 500;
 }
+.ae-editor-tabs {
+  display: flex; gap: 2px;
+  padding: 6px 12px; background: #fbf8f1;
+  border-bottom: 1px solid #e3e0d8;
+}
+.ae-editor-tab {
+  padding: 6px 14px;
+  background: transparent; border: 0;
+  font: inherit; font-size: 0.84rem; font-weight: 700;
+  color: #5a6470; cursor: pointer;
+  border-radius: 6px 6px 0 0;
+}
+.ae-editor-tab:hover { background: #d4efdf; color: #145a32; }
+.ae-editor-tab.is-active {
+  background: #ffffff; color: #145a32;
+  box-shadow: inset 0 -2px 0 #1e8449;
+}
+.ae-editor-tab-badge {
+  margin-left: 6px;
+  padding: 1px 7px; border-radius: 999px;
+  font-size: 0.66rem; font-weight: 800;
+  background: #c87042; color: #fff;
+}
+
+.ae-editor-pane { flex: 1; display: none; overflow: hidden; flex-direction: column; }
+.ae-editor-pane.is-active { display: flex; }
+
 .ae-editor-textarea {
-  flex: 1;
-  width: 100%;
+  flex: 1; width: 100%;
   padding: 18px;
-  border: 0;
-  resize: none;
+  border: 0; resize: none;
   font-family: 'SF Mono', 'Menlo', Consolas, monospace;
-  font-size: 0.86rem;
-  line-height: 1.55;
-  color: #0a1628;
-  background: #fffdf6;
-  outline: none;
-  tab-size: 2;
+  font-size: 0.86rem; line-height: 1.55;
+  color: #0a1628; background: #fffdf6;
+  outline: none; tab-size: 2;
 }
-.ae-editor-textarea:focus {
-  background: #ffffff;
-}
+.ae-editor-textarea:focus { background: #ffffff; }
+
 .ae-editor-foot {
-  padding: 10px 18px;
-  border-top: 1px solid #e3e0d8;
-  background: #fbf8f1;
-  font-size: 0.78rem;
-  color: #5a6470;
+  padding: 10px 18px; border-top: 1px solid #e3e0d8; background: #fbf8f1;
+  font-size: 0.78rem; color: #5a6470;
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
 }
 .ae-editor-counter { font-variant-numeric: tabular-nums; }
 
-/* ─── AI panel (slides in on demand) ─────────────────────────── */
-.ae-ai-modal {
-  position: fixed; inset: 0;
-  background: rgba(10, 22, 40, 0.55);
-  display: none;
-  align-items: center; justify-content: center;
-  z-index: 100;
-  padding: 20px;
-}
-.ae-ai-modal.is-open { display: flex; }
-.ae-ai-card {
-  background: #ffffff;
-  border-radius: 16px;
-  width: 100%; max-width: 640px;
-  padding: 28px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-  position: relative;
-}
-.ae-ai-card::before {
-  content: ''; position: absolute;
-  top: 0; left: 0; right: 0; height: 5px;
-  background: linear-gradient(90deg, #145a32 0%, #1e8449 50%, #27ae60 100%);
-  border-radius: 16px 16px 0 0;
-}
-.ae-ai-card h2 {
-  margin: 0 0 6px;
-  font-size: 1.3rem;
-  font-weight: 900;
-  color: #0e3b21;
-}
-.ae-ai-card .sub {
-  margin: 0 0 18px;
-  font-size: 0.9rem;
-  color: #5a6470;
-  line-height: 1.55;
-}
-.ae-ai-field { margin-bottom: 14px; }
-.ae-ai-field label {
-  display: block;
-  font-size: 0.78rem;
-  font-weight: 800;
-  color: #0e3b21;
-  margin-bottom: 6px;
-  letter-spacing: 0.02em;
-}
-.ae-ai-field input,
-.ae-ai-field select,
-.ae-ai-field textarea {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1.5px solid #d8d4c4;
-  border-radius: 8px;
-  font: inherit; font-size: 0.92rem;
-  background: #fbf8f1;
-  color: #0a1628;
-}
-.ae-ai-field input:focus,
-.ae-ai-field select:focus,
-.ae-ai-field textarea:focus {
-  outline: none; background: #ffffff; border-color: #1e8449;
-  box-shadow: 0 0 0 3px rgba(30, 132, 73, 0.16);
-}
-.ae-ai-field textarea { min-height: 100px; resize: vertical; }
-.ae-ai-buttons {
-  display: flex; gap: 10px; margin-top: 18px;
-}
-.ae-ai-buttons .ae-btn { flex: 1; padding: 12px; font-size: 0.95rem; }
-.ae-ai-result {
-  margin-top: 16px;
-  padding: 14px;
-  border: 1.5px dashed #1e8449;
-  background: #f7f1e2;
-  border-radius: 10px;
-  display: none;
-}
-.ae-ai-result.is-visible { display: block; }
-.ae-ai-result h3 {
-  margin: 0 0 8px;
-  font-size: 0.84rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  color: #145a32;
-}
-.ae-ai-result pre {
-  margin: 0;
-  padding: 12px;
-  background: #ffffff;
-  border-radius: 8px;
-  font-family: 'SF Mono', 'Menlo', Consolas, monospace;
-  font-size: 0.78rem;
-  line-height: 1.5;
-  color: #0a1628;
-  max-height: 200px;
+/* ─── Diff pane ──────────────────────────────────────────────── */
+.ae-diff-pane {
+  padding: 14px 18px;
   overflow-y: auto;
-  white-space: pre-wrap;
-  border: 1px solid #e3e0d8;
+  font-family: 'SF Mono', 'Menlo', Consolas, monospace;
+  font-size: 0.84rem; line-height: 1.5;
 }
-.ae-ai-result-actions { display: flex; gap: 8px; margin-top: 10px; }
+.ae-diff-summary {
+  padding: 10px 14px; margin-bottom: 14px;
+  background: #f7f1e2; border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.ae-diff-summary strong { color: #0e3b21; }
+.ae-diff-summary .added   { color: #145a32; font-weight: 700; }
+.ae-diff-summary .removed { color: #80261b; font-weight: 700; }
+.ae-diff-pre {
+  margin: 0; padding: 12px; border-radius: 8px;
+  background: #fffdf6; border: 1px solid #e3e0d8;
+  white-space: pre; overflow-x: auto;
+}
+.ae-diff-line { white-space: pre; }
+.ae-diff-line.diff-add { background: #d4efdf; color: #0e3b21; }
+.ae-diff-line.diff-del { background: #fde4e1; color: #80261b; }
+.ae-diff-line.diff-hunk { background: #fdf0d5; color: #92400e; font-weight: 700; padding: 4px 0; }
+.ae-diff-line.diff-file { color: #5a6470; font-weight: 700; }
+
+.ae-history-pane {
+  padding: 14px 18px; overflow-y: auto;
+}
+.ae-history-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; margin-bottom: 8px;
+  background: #fffdf6; border: 1px solid #e3e0d8; border-radius: 8px;
+}
+.ae-history-sha {
+  font-family: 'SF Mono', Consolas, monospace; font-size: 0.78rem;
+  color: #145a32; font-weight: 800;
+  text-decoration: none;
+}
+.ae-history-msg {
+  flex: 1; min-width: 0; font-size: 0.86rem; color: #0a1628;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ae-history-when {
+  font-size: 0.74rem; color: #5a6470; white-space: nowrap;
+}
 
 /* ─── Preview (right column) ─────────────────────────────────── */
 .ae-preview {
   display: flex; flex-direction: column;
-  background: #f7f1e2;
-  overflow: hidden;
+  background: #f7f1e2; overflow: hidden;
 }
 .ae-preview-head {
-  padding: 12px 18px;
-  background: #ffffff;
+  padding: 12px 18px; background: #ffffff;
   border-bottom: 1px solid #e3e0d8;
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
 }
-.ae-preview-title {
-  font-weight: 800; color: #0e3b21; font-size: 0.96rem;
+.ae-preview-title { font-weight: 800; color: #0e3b21; font-size: 0.96rem; }
+.ae-preview-url {
+  font-family: 'SF Mono', monospace; font-size: 0.72rem; color: #5a6470;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 220px;
 }
 .ae-preview-frame {
-  flex: 1;
-  border: 0;
-  width: 100%;
-  background: #ffffff;
+  flex: 1; border: 0; width: 100%; background: #ffffff;
 }
 .ae-preview-empty {
-  flex: 1;
-  display: grid; place-items: center;
-  padding: 32px;
-  text-align: center;
-  color: #5a6470;
+  flex: 1; display: grid; place-items: center; padding: 32px;
+  text-align: center; color: #5a6470;
 }
 .ae-preview-empty h3 { color: #0e3b21; margin: 0 0 6px; font-weight: 800; }
+
+/* ─── AI modal ───────────────────────────────────────────────── */
+.ae-ai-modal {
+  position: fixed; inset: 0;
+  background: rgba(10,22,40,0.55);
+  display: none; align-items: center; justify-content: center;
+  z-index: 100; padding: 20px;
+}
+.ae-ai-modal.is-open { display: flex; }
+.ae-ai-card {
+  background: #ffffff; border-radius: 16px;
+  width: 100%; max-width: 640px; padding: 28px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  position: relative;
+}
+.ae-ai-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px;
+  background: linear-gradient(90deg, #145a32 0%, #1e8449 50%, #27ae60 100%);
+  border-radius: 16px 16px 0 0;
+}
+.ae-ai-card h2 { margin: 0 0 6px; font-size: 1.3rem; font-weight: 900; color: #0e3b21; }
+.ae-ai-card .sub { margin: 0 0 18px; font-size: 0.9rem; color: #5a6470; line-height: 1.55; }
+.ae-ai-field { margin-bottom: 14px; }
+.ae-ai-field label {
+  display: block; font-size: 0.78rem; font-weight: 800;
+  color: #0e3b21; margin-bottom: 6px; letter-spacing: 0.02em;
+}
+.ae-ai-field input, .ae-ai-field select, .ae-ai-field textarea {
+  width: 100%; padding: 10px 12px;
+  border: 1.5px solid #d8d4c4; border-radius: 8px;
+  font: inherit; font-size: 0.92rem;
+  background: #fbf8f1; color: #0a1628;
+}
+.ae-ai-field input:focus, .ae-ai-field select:focus, .ae-ai-field textarea:focus {
+  outline: none; background: #ffffff; border-color: #1e8449;
+  box-shadow: 0 0 0 3px rgba(30,132,73,0.16);
+}
+.ae-ai-field textarea { min-height: 100px; resize: vertical; }
+.ae-ai-buttons { display: flex; gap: 10px; margin-top: 18px; }
+.ae-ai-buttons .ae-btn { flex: 1; padding: 12px; font-size: 0.95rem; }
+.ae-ai-result {
+  margin-top: 16px; padding: 14px;
+  border: 1.5px dashed #1e8449; background: #f7f1e2;
+  border-radius: 10px; display: none;
+}
+.ae-ai-result.is-visible { display: block; }
+.ae-ai-result h3 {
+  margin: 0 0 8px; font-size: 0.84rem; font-weight: 800;
+  letter-spacing: 0.04em; color: #145a32;
+}
+.ae-ai-result pre {
+  margin: 0; padding: 12px; background: #ffffff; border-radius: 8px;
+  font-family: 'SF Mono', 'Menlo', Consolas, monospace;
+  font-size: 0.78rem; line-height: 1.5; color: #0a1628;
+  max-height: 220px; overflow-y: auto; white-space: pre-wrap;
+  border: 1px solid #e3e0d8;
+}
+.ae-ai-result-actions { display: flex; gap: 8px; margin-top: 10px; }
+
+/* ─── Confirm dialog (publish, rollback) ─────────────────────── */
+.ae-dlg {
+  position: fixed; inset: 0; background: rgba(10,22,40,0.55);
+  display: none; align-items: center; justify-content: center;
+  z-index: 110; padding: 20px;
+}
+.ae-dlg.is-open { display: flex; }
+.ae-dlg-card {
+  background: #ffffff; border-radius: 14px;
+  width: 100%; max-width: 520px; padding: 24px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.30);
+}
+.ae-dlg-card h2 {
+  margin: 0 0 8px; font-size: 1.15rem; font-weight: 800; color: #0e3b21;
+}
+.ae-dlg-card p { margin: 0 0 14px; color: #5a6470; line-height: 1.55; font-size: 0.92rem; }
+.ae-dlg-card input, .ae-dlg-card textarea {
+  width: 100%; padding: 10px 12px;
+  border: 1.5px solid #d8d4c4; border-radius: 8px;
+  font: inherit; font-size: 0.92rem; background: #fbf8f1; margin-bottom: 14px;
+}
+.ae-dlg-card input:focus, .ae-dlg-card textarea:focus {
+  outline: none; border-color: #1e8449;
+  box-shadow: 0 0 0 3px rgba(30,132,73,0.16); background: #ffffff;
+}
+.ae-dlg-buttons { display: flex; gap: 10px; justify-content: flex-end; }
 
 /* ─── Toast ──────────────────────────────────────────────────── */
 .ae-toast {
   position: fixed; bottom: 24px; right: 24px;
-  background: #145a32;
-  color: #fffdf6;
-  padding: 12px 18px;
-  border-radius: 10px;
+  background: #145a32; color: #fffdf6;
+  padding: 12px 18px; border-radius: 10px;
   font-size: 0.9rem; font-weight: 700;
-  box-shadow: 0 8px 28px rgba(20, 90, 50, 0.40);
-  z-index: 200;
-  transform: translateY(80px);
-  opacity: 0;
+  box-shadow: 0 8px 28px rgba(20,90,50,0.40);
+  z-index: 200; transform: translateY(80px); opacity: 0;
   transition: transform 0.25s ease, opacity 0.25s ease;
-  max-width: 360px;
+  max-width: 420px;
 }
 .ae-toast.is-visible { transform: translateY(0); opacity: 1; }
 .ae-toast.is-error { background: #80261b; }
@@ -378,32 +454,27 @@ permalink: /pages/admin-editor.html
 
 /* ─── Auth gate ──────────────────────────────────────────────── */
 .ae-auth-gate {
-  max-width: 480px;
-  margin: 80px auto;
-  padding: 32px;
-  background: #ffffff;
-  border: 1px solid #e3e0d8;
-  border-radius: 16px;
-  text-align: center;
-  box-shadow: 0 6px 20px rgba(20,90,50,0.08);
+  max-width: 480px; margin: 80px auto; padding: 32px;
+  background: #ffffff; border: 1px solid #e3e0d8; border-radius: 16px;
+  text-align: center; box-shadow: 0 6px 20px rgba(20,90,50,0.08);
+  font-family: 'DM Sans', sans-serif;
 }
 .ae-auth-gate h2 { margin: 0 0 6px; color: #0e3b21; font-weight: 800; }
-.ae-auth-gate p  { color: #5a6470; margin: 0 0 16px; line-height: 1.55; }
+.ae-auth-gate p { color: #5a6470; margin: 0 0 16px; line-height: 1.55; }
 .ae-auth-gate input[type="password"] {
   width: 100%; padding: 11px 14px;
   border: 1.5px solid #d8d4c4; border-radius: 10px;
   font: inherit; margin-bottom: 12px;
 }
 .ae-auth-gate input[type="password"]:focus {
-  outline: none; border-color: #1e8449; box-shadow: 0 0 0 3px rgba(30,132,73,0.16);
+  outline: none; border-color: #1e8449;
+  box-shadow: 0 0 0 3px rgba(30,132,73,0.16);
 }
 .ae-auth-error {
-  color: #80261b;
-  background: rgba(192,57,43,0.08);
+  color: #80261b; background: rgba(192,57,43,0.08);
   border: 1px solid rgba(192,57,43,0.32);
   padding: 8px 12px; border-radius: 8px;
-  font-size: 0.86rem; margin-bottom: 12px;
-  display: none;
+  font-size: 0.86rem; margin-bottom: 12px; display: none;
 }
 .ae-auth-error.is-visible { display: block; }
 </style>
@@ -420,24 +491,40 @@ permalink: /pages/admin-editor.html
 <!-- ─── Main app ───────────────────────────────────────────────── -->
 <div id="ae-app" hidden>
   <header class="ae-topbar">
-    <div class="ae-topbar-left">
+    <div>
       <h1>Live Theme Editor</h1>
-      <p>Edit any page, publish straight to GitHub. No code review required.</p>
+      <p class="sub">Edit any page, see real diffs, publish to GitHub. The site rebuilds automatically.</p>
     </div>
-    <div class="ae-topbar-right">
-      <span class="ae-status-pill is-saved" id="ae-status">Synced</span>
+    <div class="ae-topbar-actions">
+      <span class="ae-status-pill is-saved" id="ae-status">Ready</span>
+      <button type="button" class="ae-btn is-ghost" id="ae-test-all" title="Re-run health check + load every page once">↻ Self-test</button>
       <button type="button" class="ae-btn" id="ae-ai-open">✨ Generate with AI</button>
       <button type="button" class="ae-btn is-primary" id="ae-publish">Publish to GitHub →</button>
     </div>
   </header>
 
+  <!-- Health bar -->
+  <div class="ae-health" id="ae-health">
+    <span class="ae-health-pill is-pending" id="ae-pill-auth">Auth</span>
+    <span class="ae-health-pill is-pending" id="ae-pill-github">GitHub</span>
+    <span class="ae-health-pill is-pending" id="ae-pill-groq">Groq AI</span>
+    <span class="ae-health-msg" id="ae-health-msg">Checking…</span>
+  </div>
+
   <div class="ae-shell">
-    <!-- ─ Page list ─────────────────────────────────────── -->
+    <!-- Page list -->
     <aside class="ae-sidebar" id="ae-sidebar">
-      <!-- groups injected by JS so the sidebar mirrors the real nav + footer -->
+      <div class="ae-sidebar-search">
+        <input type="search" id="ae-page-filter" placeholder="Filter pages…" autocomplete="off">
+      </div>
+      <!-- groups injected by JS -->
+      <div class="ae-sidebar-footer">
+        <strong>Tip:</strong> Cmd/Ctrl-S to publish. Esc to close any modal.
+        Click the dot next to a page to <a href="#" id="ae-clear-status">reset</a> its test status.
+      </div>
     </aside>
 
-    <!-- ─ Editor ────────────────────────────────────────── -->
+    <!-- Editor + tabs -->
     <main class="ae-editor">
       <div class="ae-editor-head">
         <div>
@@ -448,23 +535,52 @@ permalink: /pages/admin-editor.html
           <button type="button" class="ae-btn is-ghost" id="ae-reload" title="Reload current file from GitHub">↻ Reload</button>
         </div>
       </div>
-      <textarea class="ae-editor-textarea" id="ae-source" spellcheck="false" placeholder="Page source will appear here once you pick a page."></textarea>
-      <div class="ae-editor-foot">
-        <div id="ae-editor-hint">Tip: edit any text or HTML, then click <strong>Publish to GitHub</strong>. The site rebuilds in ~5 min.</div>
-        <div class="ae-editor-counter" id="ae-counter">0 chars</div>
+
+      <div class="ae-editor-tabs">
+        <button type="button" class="ae-editor-tab is-active" data-tab="source">Source</button>
+        <button type="button" class="ae-editor-tab" data-tab="diff">Diff <span class="ae-editor-tab-badge" id="ae-diff-count" style="display:none">0</span></button>
+        <button type="button" class="ae-editor-tab" data-tab="history">History</button>
+      </div>
+
+      <div class="ae-editor-pane is-active" data-pane="source">
+        <textarea class="ae-editor-textarea" id="ae-source" spellcheck="false"
+                  placeholder="Page source appears here once you pick a page from the left."></textarea>
+        <div class="ae-editor-foot">
+          <div id="ae-editor-hint">Tip: edit any HTML/text, then click <strong>Publish to GitHub</strong>. Site rebuilds in ~5 min.</div>
+          <div class="ae-editor-counter" id="ae-counter">0 chars</div>
+        </div>
+      </div>
+
+      <div class="ae-editor-pane" data-pane="diff">
+        <div class="ae-diff-pane">
+          <div class="ae-diff-summary" id="ae-diff-summary">
+            Click <strong>Compute diff</strong> to see what's about to change.
+            <button type="button" class="ae-btn is-primary" id="ae-compute-diff" style="margin-left:auto;">Compute diff</button>
+          </div>
+          <pre class="ae-diff-pre" id="ae-diff-pre" style="display:none"></pre>
+        </div>
+      </div>
+
+      <div class="ae-editor-pane" data-pane="history">
+        <div class="ae-history-pane" id="ae-history-pane">
+          Pick a page to see its recent commits.
+        </div>
       </div>
     </main>
 
-    <!-- ─ Live preview ──────────────────────────────────── -->
-    <aside class="ae-preview" id="ae-preview-wrap">
+    <!-- Live preview -->
+    <aside class="ae-preview">
       <div class="ae-preview-head">
-        <span class="ae-preview-title">Live preview</span>
+        <div>
+          <div class="ae-preview-title">Live preview</div>
+          <div class="ae-preview-url" id="ae-preview-url"></div>
+        </div>
         <button type="button" class="ae-btn is-ghost" id="ae-preview-refresh">↻ Refresh</button>
       </div>
       <div class="ae-preview-empty" id="ae-preview-empty">
         <div>
           <h3>Pick a page</h3>
-          <p>The live preview will load here once you select a page from the left.</p>
+          <p>The live site preview loads here. Refreshes automatically after each publish.</p>
         </div>
       </div>
       <iframe class="ae-preview-frame" id="ae-preview-frame" hidden></iframe>
@@ -476,7 +592,7 @@ permalink: /pages/admin-editor.html
 <div class="ae-ai-modal" id="ae-ai-modal" role="dialog" aria-labelledby="ae-ai-title">
   <div class="ae-ai-card">
     <h2 id="ae-ai-title">✨ Generate a section with AI</h2>
-    <p class="sub">Describe what you want the new section to say. PNEC's brand voice (neighborly, concrete, never alarmist) is built in. Generated by Groq · <code>llama-3.3-70b-versatile</code>.</p>
+    <p class="sub">Describe what you want. PNEC's brand voice (neighborly, concrete, never alarmist) is built into the backend prompt. Powered by Groq · <code>llama-3.3-70b-versatile</code>.</p>
 
     <div class="ae-ai-field">
       <label for="ae-ai-kind">Section kind</label>
@@ -514,9 +630,24 @@ permalink: /pages/admin-editor.html
       <pre id="ae-ai-output"></pre>
       <div class="ae-ai-result-actions">
         <button type="button" class="ae-btn is-primary" id="ae-ai-insert">Insert at cursor</button>
-        <button type="button" class="ae-btn" id="ae-ai-copy">Copy to clipboard</button>
+        <button type="button" class="ae-btn" id="ae-ai-copy">Copy</button>
         <button type="button" class="ae-btn" id="ae-ai-regen">Regenerate</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Publish dialog (with diff preview) ─────────────────────── -->
+<div class="ae-dlg" id="ae-publish-dlg" role="dialog" aria-labelledby="ae-pub-title">
+  <div class="ae-dlg-card" style="max-width:780px;">
+    <h2 id="ae-pub-title">🚀 Review changes before publishing</h2>
+    <p id="ae-pub-summary">Computing diff…</p>
+    <div id="ae-pub-diff" style="max-height:340px;overflow-y:auto;border:1px solid #e3e0d8;border-radius:8px;background:#fffdf6;padding:12px;font-family:'SF Mono',monospace;font-size:0.78rem;line-height:1.5;white-space:pre;display:none;"></div>
+    <label for="ae-pub-msg" style="display:block;margin:14px 0 4px;font-size:0.78rem;font-weight:800;color:#0e3b21;letter-spacing:0.02em;">Commit message</label>
+    <input type="text" id="ae-pub-msg" placeholder="Edit page via Live Theme Editor">
+    <div class="ae-dlg-buttons">
+      <button type="button" class="ae-btn" id="ae-pub-cancel">Cancel</button>
+      <button type="button" class="ae-btn is-primary" id="ae-pub-confirm" disabled>Publish</button>
     </div>
   </div>
 </div>
@@ -534,11 +665,11 @@ permalink: /pages/admin-editor.html
       : 'https://beasts.opencodingsociety.com'
   ));
 
-  /* PAGE GROUPS — mirror the real nav + footer + admin surface.
-     Every entry has: { label, path (in repo), preview (live URL path) }
-     `path` is the file in the GitHub repo, `preview` is what the
-     iframe loads. Many marketing pages render at /pages/<slug>.html
-     directly. */
+  // ──────────────────────────────────────────────────────────────────
+  // Page groups — mirror nav + footer + admin + layout
+  // Each entry: { label, path (in repo), preview (URL on this site) }
+  // Preview URLs match each page's Jekyll permalink (NOT just /pages/X).
+  // ──────────────────────────────────────────────────────────────────
   var GROUPS = [
     { title: 'Main navigation', items: [
       { label: 'Home',                          path: 'index.html',                                       preview: '/' },
@@ -562,7 +693,7 @@ permalink: /pages/admin-editor.html
       { label: 'Checklist',                     path: 'pages/checklist.html',                             preview: '/pages/checklist.html' },
       { label: 'Gallery',                       path: 'pages/gallery.html',                               preview: '/pages/gallery.html' },
       { label: 'Poway Statistics',              path: 'pages/poway-statistics-and-information.html',      preview: '/pages/poway-statistics-and-information.html' },
-      { label: 'Role Quiz',                     path: 'pages/role-quiz.html',                             preview: '/pages/role-quiz.html' },
+      { label: 'Role Quiz',                     path: 'pages/role-quiz.html',                             preview: '/role-quiz/' },
       { label: 'Onboarding',                    path: 'pages/onboarding.html',                            preview: '/pages/onboarding.html' },
       { label: 'Forgot Password',               path: 'pages/forgot-password.html',                       preview: '/pages/forgot-password.html' },
     ]},
@@ -586,7 +717,7 @@ permalink: /pages/admin-editor.html
       { label: 'Footer polish CSS',             path: 'assets/css/footer-polish.css',                     preview: '/' },
       { label: 'Chatbot CSS',                   path: 'assets/css/chatbot.css',                           preview: '/' },
       { label: 'Neighborhood map CSS',          path: 'assets/css/poway-neighborhood-map.css',            preview: '/pages/find-your-neighborhood.html' },
-      { label: 'Neighborhood data JSON',        path: 'assets/data/poway-neighborhoods.json',             preview: '/pages/find-your-neighborhood.html', badge: 'data' },
+      { label: 'Neighborhood data JSON',        path: 'assets/data/poway-neighborhoods.json',             preview: '/pages/find-your-neighborhood.html' },
     ]},
   ];
 
@@ -594,31 +725,12 @@ permalink: /pages/admin-editor.html
   // State
   // ──────────────────────────────────────────────────────────────────
   var adminKey   = sessionStorage.getItem('pnec_admin_key') || '';
-  var current    = null;     // { path, label, preview, originalContent }
-  var savedDigest= null;     // last server-saved content hash
+  var current    = null;     // {path, label, preview, originalContent}
+  var savedDigest= null;
   var dirty      = false;
-  var previewDebounce = null;
+  var lastDiffText = '';
 
-  // ──────────────────────────────────────────────────────────────────
-  // Helpers
-  // ──────────────────────────────────────────────────────────────────
   function $(id) { return document.getElementById(id); }
-
-  function toast(msg, opts) {
-    var el = $('ae-toast');
-    if (!el) return;
-    el.innerHTML = msg;
-    el.classList.toggle('is-error', !!(opts && opts.error));
-    el.classList.add('is-visible');
-    clearTimeout(el._t);
-    el._t = setTimeout(function() { el.classList.remove('is-visible'); }, (opts && opts.ms) || 4000);
-  }
-
-  function setStatus(state, label) {
-    var el = $('ae-status');
-    el.className = 'ae-status-pill is-' + state;
-    el.textContent = label;
-  }
 
   function digest(s) {
     var h = 0;
@@ -626,16 +738,54 @@ permalink: /pages/admin-editor.html
     return String(h);
   }
 
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function apiHeaders(extra) {
+    var h = { 'Accept': 'application/json', 'X-PNEC-Admin-Key': adminKey };
+    if (extra) for (var k in extra) h[k] = extra[k];
+    return h;
+  }
+
+  function toast(msg, opts) {
+    var el = $('ae-toast');
+    el.innerHTML = msg;
+    el.classList.toggle('is-error', !!(opts && opts.error));
+    el.classList.add('is-visible');
+    clearTimeout(el._t);
+    el._t = setTimeout(function() { el.classList.remove('is-visible'); }, (opts && opts.ms) || 4500);
+  }
+
+  function setStatus(state, label) {
+    var el = $('ae-status');
+    el.className = 'ae-status-pill is-' + state;
+    el.textContent = label;
+  }
   function setDirty(d) {
     dirty = d;
     if (d) setStatus('dirty', 'Unsaved changes');
     else   setStatus('saved', 'Synced with GitHub');
   }
 
-  function apiHeaders(extra) {
-    var h = { 'Accept': 'application/json', 'X-PNEC-Admin-Key': adminKey };
-    if (extra) Object.keys(extra).forEach(function(k) { h[k] = extra[k]; });
-    return h;
+  // Persist drafts so refreshing doesn't lose work
+  function draftKey(path) { return 'pnec_editor_draft:' + path; }
+  function saveDraft() {
+    if (!current) return;
+    try {
+      var v = $('ae-source').value;
+      if (v && v !== current.originalContent) {
+        localStorage.setItem(draftKey(current.path), v);
+      } else {
+        localStorage.removeItem(draftKey(current.path));
+      }
+    } catch (_e) {}
+  }
+  function loadDraft(path) {
+    try { return localStorage.getItem(draftKey(path)); }
+    catch (_e) { return null; }
   }
 
   // ──────────────────────────────────────────────────────────────────
@@ -645,80 +795,206 @@ permalink: /pages/admin-editor.html
   $('ae-auth-input').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') tryAuth();
   });
-
   function tryAuth() {
     var k = ($('ae-auth-input').value || '').trim();
     if (!k) return;
     adminKey = k;
     sessionStorage.setItem('pnec_admin_key', k);
     $('ae-auth-error').classList.remove('is-visible');
-    // Verify by attempting a GET against any file
-    fetch(API_BASE + '/api/admin/publish/file?path=index.html', {
-      method: 'GET', headers: apiHeaders(),
-    }).then(function(r) {
-      if (r.status === 401) {
+    runHealthCheck().then(function(h) {
+      if (h && h.auth && h.auth.ok) {
+        showApp();
+      } else {
         $('ae-auth-error').classList.add('is-visible');
-        return;
       }
-      showApp();
     }).catch(function() {
       $('ae-auth-error').classList.add('is-visible');
     });
   }
-
   function showApp() {
     $('ae-auth-gate').hidden = true;
     $('ae-app').hidden = false;
     renderSidebar();
+    runSelfTest();
   }
 
   // ──────────────────────────────────────────────────────────────────
-  // Sidebar render
+  // Health check
   // ──────────────────────────────────────────────────────────────────
-  function renderSidebar() {
-    var sb = $('ae-sidebar');
-    sb.innerHTML = GROUPS.map(function(g) {
-      return ''
-        + '<div class="ae-sidebar-section">'
-        +   '<h3 class="ae-sidebar-section-title">' + esc(g.title) + '</h3>'
-        +   '<ul class="ae-page-list">'
-        +     g.items.map(function(it) {
-                return ''
-                  + '<li class="ae-page-item" data-path="' + esc(it.path) + '" data-preview="' + esc(it.preview) + '" data-label="' + esc(it.label) + '">'
-                  +   icon('file')
-                  +   '<span>' + esc(it.label) + '</span>'
-                  +   (it.badge ? '<span class="ae-page-item-badge">' + esc(it.badge) + '</span>' : '')
-                  + '</li>';
-              }).join('')
-        +   '</ul>'
-        + '</div>';
-    }).join('');
-    sb.querySelectorAll('.ae-page-item').forEach(function(li) {
-      li.addEventListener('click', function() { selectPage({
-        path: li.getAttribute('data-path'),
-        preview: li.getAttribute('data-preview'),
-        label: li.getAttribute('data-label'),
-      }); });
+  function setPill(id, state, label) {
+    var el = $(id);
+    el.className = 'ae-health-pill is-' + state;
+    el.textContent = label;
+  }
+
+  function runHealthCheck() {
+    setPill('ae-pill-auth', 'pending', 'Auth');
+    setPill('ae-pill-github', 'pending', 'GitHub');
+    setPill('ae-pill-groq', 'pending', 'Groq AI');
+    $('ae-health-msg').textContent = 'Checking…';
+
+    return fetch(API_BASE + '/api/admin/publish/health', {
+      method: 'GET', headers: apiHeaders(),
+    }).then(function(r) {
+      if (r.status === 401) {
+        setPill('ae-pill-auth', 'fail', 'Auth · 401');
+        $('ae-health-msg').innerHTML = '<span class="err">Wrong admin key — try signing in again.</span>';
+        return { auth: { ok: false } };
+      }
+      return r.json();
+    }).then(function(h) {
+      if (!h) return null;
+
+      // Auth
+      if (h.auth && h.auth.ok) setPill('ae-pill-auth', 'ok', 'Auth · ok');
+      else setPill('ae-pill-auth', 'fail', 'Auth · failed');
+
+      // GitHub
+      if (h.github && h.github.ok) {
+        setPill('ae-pill-github', 'ok', 'GitHub · ' + (h.github.full_name || 'connected'));
+      } else {
+        setPill('ae-pill-github', 'fail', 'GitHub · not connected');
+      }
+
+      // Groq
+      if (h.groq && h.groq.ok) setPill('ae-pill-groq', 'ok', 'Groq AI · ' + (h.groq.model || 'ready'));
+      else setPill('ae-pill-groq', 'fail', 'Groq · disabled');
+
+      // Combine errors into the message
+      var msgs = [];
+      if (h.github && !h.github.ok && h.github.error) msgs.push('<span class="err"><strong>GitHub:</strong> ' + esc(h.github.error) + '</span>');
+      if (h.groq && !h.groq.ok && h.groq.error)       msgs.push('<span class="err"><strong>Groq:</strong> ' + esc(h.groq.error) + '</span>');
+      if (msgs.length) {
+        $('ae-health-msg').innerHTML = msgs.join(' ');
+      } else if (h.github && h.github.ok) {
+        $('ae-health-msg').innerHTML = 'Editing branch <strong>' + esc(h.github.branch || 'main') + '</strong> on <strong>' + esc(h.github.full_name) + '</strong>. Last push ' + esc(h.github.pushed_at || '—') + '.';
+      }
+      return h;
+    }).catch(function(err) {
+      setPill('ae-pill-auth', 'fail', 'Auth · err');
+      setPill('ae-pill-github', 'fail', 'GitHub · err');
+      setPill('ae-pill-groq', 'fail', 'Groq · err');
+      $('ae-health-msg').innerHTML = '<span class="err">Couldn\'t reach the PNEC API at ' + esc(API_BASE) + '. Is the Flask server up?</span>';
+      return null;
     });
   }
 
-  function esc(s) {
-    return String(s == null ? '' : s)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  // ──────────────────────────────────────────────────────────────────
+  // Sidebar
+  // ──────────────────────────────────────────────────────────────────
+  function renderSidebar() {
+    var sb = $('ae-sidebar');
+    // Insert groups before the footer (which is the last child)
+    var existing = sb.querySelectorAll('.ae-sidebar-section');
+    existing.forEach(function(el) { el.remove(); });
+    var footer = sb.querySelector('.ae-sidebar-footer');
+
+    var html = '';
+    GROUPS.forEach(function(g, gi) {
+      html += '<div class="ae-sidebar-section" data-group="' + gi + '">'
+            + '<h3 class="ae-sidebar-section-title">' + esc(g.title) + '</h3>'
+            + '<ul class="ae-page-list">';
+      g.items.forEach(function(it, ii) {
+        html += '<li class="ae-page-item" '
+              + 'data-path="' + esc(it.path) + '" '
+              + 'data-preview="' + esc(it.preview) + '" '
+              + 'data-label="' + esc(it.label) + '" '
+              + 'data-text="' + esc(it.label.toLowerCase() + ' ' + it.path.toLowerCase()) + '">'
+              + '<svg class="ae-page-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>'
+              + '<span class="ae-page-item-text">' + esc(it.label) + '</span>'
+              + '<span class="ae-page-item-test" data-test-status></span>'
+              + '</li>';
+      });
+      html += '</ul></div>';
+    });
+    if (footer) footer.insertAdjacentHTML('beforebegin', html);
+    else sb.insertAdjacentHTML('beforeend', html);
+
+    sb.querySelectorAll('.ae-page-item').forEach(function(li) {
+      li.addEventListener('click', function() {
+        selectPage({
+          path: li.getAttribute('data-path'),
+          preview: li.getAttribute('data-preview'),
+          label: li.getAttribute('data-label'),
+        });
+      });
+    });
+
+    // Filter
+    $('ae-page-filter').addEventListener('input', function(ev) {
+      var q = (ev.target.value || '').trim().toLowerCase();
+      sb.querySelectorAll('.ae-page-item').forEach(function(li) {
+        var hit = !q || li.getAttribute('data-text').indexOf(q) !== -1;
+        li.classList.toggle('is-hidden', !hit);
+      });
+      // hide group titles whose items all hidden
+      sb.querySelectorAll('.ae-sidebar-section').forEach(function(sec) {
+        var anyVisible = !!sec.querySelector('.ae-page-item:not(.is-hidden)');
+        sec.classList.toggle('is-hidden', !anyVisible);
+      });
+    });
   }
 
-  function icon(kind) {
-    if (kind === 'file') return '<svg class="ae-page-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
-    return '';
+  $('ae-clear-status').addEventListener('click', function(e) {
+    e.preventDefault();
+    document.querySelectorAll('.ae-page-item-test').forEach(function(d) {
+      d.className = 'ae-page-item-test';
+    });
+    toast('Test statuses cleared.');
+  });
+
+  // ──────────────────────────────────────────────────────────────────
+  // Self-test
+  // ──────────────────────────────────────────────────────────────────
+  function runSelfTest() {
+    // For each page in the list, HEAD-test the file path. Use a small
+    // concurrency window so we don't blast 30+ requests at once.
+    var items = [];
+    GROUPS.forEach(function(g) { g.items.forEach(function(it) { items.push(it); }); });
+
+    var concurrency = 4;
+    var idx = 0;
+    var pass = 0, fail = 0;
+
+    function next() {
+      if (idx >= items.length) {
+        toast('Self-test done: ' + pass + ' OK, ' + fail + ' failed.');
+        return;
+      }
+      var it = items[idx++];
+      var li = document.querySelector('.ae-page-item[data-path="' + it.path + '"] .ae-page-item-test');
+      if (li) li.className = 'ae-page-item-test is-pending';
+      fetch(API_BASE + '/api/admin/publish/file?path=' + encodeURIComponent(it.path), {
+        method: 'GET', headers: apiHeaders(),
+      }).then(function(r) {
+        if (r.ok) {
+          if (li) li.className = 'ae-page-item-test is-ok';
+          pass++;
+        } else {
+          if (li) li.className = 'ae-page-item-test is-fail';
+          fail++;
+        }
+      }).catch(function() {
+        if (li) li.className = 'ae-page-item-test is-fail';
+        fail++;
+      }).finally(function() {
+        next();
+      });
+    }
+    // Kick off N parallel chains
+    for (var i = 0; i < concurrency; i++) next();
   }
+
+  $('ae-test-all').addEventListener('click', function() {
+    runHealthCheck().then(runSelfTest);
+  });
 
   // ──────────────────────────────────────────────────────────────────
   // Page selection + load
   // ──────────────────────────────────────────────────────────────────
   function selectPage(p) {
-    if (dirty && !confirm('You have unsaved changes. Switch pages anyway?')) return;
-    $('ae-sidebar').querySelectorAll('.ae-page-item').forEach(function(li) {
+    if (dirty && !confirm('Discard unsaved changes and load ' + p.label + '?')) return;
+    document.querySelectorAll('.ae-page-item').forEach(function(li) {
       li.classList.toggle('is-active', li.getAttribute('data-path') === p.path);
     });
     current = { path: p.path, preview: p.preview, label: p.label, originalContent: '' };
@@ -726,101 +1002,289 @@ permalink: /pages/admin-editor.html
     $('ae-editor-path').textContent  = p.path;
     $('ae-source').value = 'Loading…';
     setStatus('publishing', 'Loading from GitHub…');
+    switchTab('source');
 
     fetch(API_BASE + '/api/admin/publish/file?path=' + encodeURIComponent(p.path), {
       method: 'GET', headers: apiHeaders(),
-    }).then(function(r) { return r.json(); }).then(function(j) {
-      if (!j.ok) throw new Error(j.detail || ('HTTP ' + (j.status || '???')));
-      current.originalContent = j.content || '';
-      $('ae-source').value = current.originalContent;
+    }).then(function(r) {
+      return r.json().then(function(j) { return { ok: r.ok, status: r.status, j: j }; });
+    }).then(function(res) {
+      if (!res.ok || !res.j.ok) {
+        throw new Error(humanizeError(res.j, res.status, 'load'));
+      }
+      current.originalContent = res.j.content || '';
+      var draft = loadDraft(p.path);
+      if (draft && draft !== current.originalContent) {
+        if (confirm('You have an unsaved draft for "' + p.label + '". Load it instead of the GitHub copy?')) {
+          $('ae-source').value = draft;
+        } else {
+          $('ae-source').value = current.originalContent;
+          localStorage.removeItem(draftKey(p.path));
+        }
+      } else {
+        $('ae-source').value = current.originalContent;
+      }
       savedDigest = digest(current.originalContent);
-      $('ae-counter').textContent = current.originalContent.length.toLocaleString() + ' chars';
-      setDirty(false);
+      $('ae-counter').textContent = $('ae-source').value.length.toLocaleString() + ' chars';
+      setDirty(digest($('ae-source').value) !== savedDigest);
+      // Mark the page as test-ok since the load worked
+      var dot = document.querySelector('.ae-page-item.is-active .ae-page-item-test');
+      if (dot) dot.className = 'ae-page-item-test is-ok';
       // Live preview
       var frame = $('ae-preview-frame');
+      var url = (location.protocol + '//' + location.host) + p.preview + (p.preview.indexOf('?') >= 0 ? '&' : '?') + 'cms_preview=1&t=' + Date.now();
       $('ae-preview-empty').style.display = 'none';
+      $('ae-preview-url').textContent = p.preview;
       frame.hidden = false;
-      frame.src = (location.protocol + '//' + location.host) + p.preview + (p.preview.indexOf('?') >= 0 ? '&' : '?') + 'cms_preview=1&t=' + Date.now();
+      frame.src = url;
     }).catch(function(err) {
       $('ae-source').value = '';
       setStatus('error', 'Load failed');
-      toast('Couldn\'t load <code>' + esc(p.path) + '</code>: ' + esc(String(err.message || err)), { error: true, ms: 7000 });
+      toast(esc(String(err.message || err)), { error: true, ms: 9000 });
+      // Mark this page as test-fail
+      var dot = document.querySelector('.ae-page-item.is-active .ae-page-item-test');
+      if (dot) dot.className = 'ae-page-item-test is-fail';
     });
+  }
+
+  function humanizeError(j, status, action) {
+    if (status === 401) return 'Admin key rejected. Sign in again with the right key.';
+    if (status === 404) return 'File not found in the repo. The page list may be out of date.';
+    if (j && j.detail) {
+      // Specific known error patterns
+      if (j.detail.indexOf('GITHUB_TOKEN') !== -1) {
+        return 'Server is missing GITHUB_TOKEN env var. Set a fine-grained PAT with Contents:read+write on the repo, then restart the Flask server.';
+      }
+      return 'Failed to ' + action + ': ' + j.detail;
+    }
+    return 'Failed to ' + action + ' (server ' + status + ').';
   }
 
   // ──────────────────────────────────────────────────────────────────
   // Edit + reload
   // ──────────────────────────────────────────────────────────────────
+  var draftSaveT;
   $('ae-source').addEventListener('input', function() {
     var v = $('ae-source').value;
     $('ae-counter').textContent = v.length.toLocaleString() + ' chars';
-    if (current) {
-      var d = digest(v);
-      setDirty(d !== savedDigest);
-    }
-    schedulePreviewRefresh();
+    if (current) setDirty(digest(v) !== savedDigest);
+    clearTimeout(draftSaveT);
+    draftSaveT = setTimeout(saveDraft, 400);
   });
-
   $('ae-reload').addEventListener('click', function() {
     if (!current) return;
     if (dirty && !confirm('Reload from GitHub will discard your unsaved changes. Continue?')) return;
+    localStorage.removeItem(draftKey(current.path));
     selectPage(current);
   });
-
   $('ae-preview-refresh').addEventListener('click', function() {
     var f = $('ae-preview-frame');
     if (f && f.src) f.src = f.src;
   });
 
-  function schedulePreviewRefresh() {
-    // We can't update the iframe to show local-only edits (it's
-    // pointed at the live URL). After publish, the iframe re-fetches
-    // automatically. So this is reserved for future inline-preview
-    // (would require a server endpoint that renders a draft).
+  // ──────────────────────────────────────────────────────────────────
+  // Tabs
+  // ──────────────────────────────────────────────────────────────────
+  document.querySelectorAll('.ae-editor-tab').forEach(function(t) {
+    t.addEventListener('click', function() { switchTab(t.getAttribute('data-tab')); });
+  });
+  function switchTab(name) {
+    document.querySelectorAll('.ae-editor-tab').forEach(function(t) {
+      t.classList.toggle('is-active', t.getAttribute('data-tab') === name);
+    });
+    document.querySelectorAll('.ae-editor-pane').forEach(function(p) {
+      p.classList.toggle('is-active', p.getAttribute('data-pane') === name);
+    });
+    if (name === 'diff') computeDiff();
+    if (name === 'history') loadHistory();
   }
 
   // ──────────────────────────────────────────────────────────────────
-  // Publish
+  // Diff
   // ──────────────────────────────────────────────────────────────────
-  $('ae-publish').addEventListener('click', publish);
+  $('ae-compute-diff').addEventListener('click', computeDiff);
 
-  function publish() {
+  function computeDiff() {
+    if (!current) return;
+    var content = $('ae-source').value;
+    $('ae-diff-summary').innerHTML = 'Computing…';
+    $('ae-diff-pre').style.display = 'none';
+
+    return fetch(API_BASE + '/api/admin/publish/diff', {
+      method: 'POST',
+      headers: apiHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ path: current.path, content: content })
+    }).then(function(r) { return r.json().then(function(j) { return {ok:r.ok,status:r.status,j:j}; }); })
+      .then(function(res) {
+        if (!res.ok || !res.j.ok) throw new Error(humanizeError(res.j, res.status, 'diff'));
+        var j = res.j;
+        var summary = '';
+        if (j.identical) {
+          summary = '<strong>No changes.</strong> Your edits match the version on GitHub.';
+        } else if (j.new_file) {
+          summary = '<strong>New file.</strong> ' + (content.split('\n').length).toLocaleString() + ' lines will be created at <code>' + esc(j.path) + '</code>.';
+        } else {
+          summary = '<strong>' + j.path + '</strong> &middot; '
+                  + '<span class="added">+' + j.lines_added + '</span> '
+                  + '<span class="removed">-' + j.lines_removed + '</span> lines';
+        }
+        $('ae-diff-summary').innerHTML = summary;
+        $('ae-diff-count').style.display = (j.lines_added + j.lines_removed > 0) ? 'inline-block' : 'none';
+        $('ae-diff-count').textContent = (j.lines_added + j.lines_removed);
+        lastDiffText = j.diff || '';
+        if (lastDiffText) {
+          $('ae-diff-pre').innerHTML = renderDiff(lastDiffText);
+          $('ae-diff-pre').style.display = 'block';
+        }
+        return j;
+      })
+      .catch(function(err) {
+        $('ae-diff-summary').innerHTML = '<span style="color:#80261b">' + esc(String(err.message || err)) + '</span>';
+        $('ae-diff-pre').style.display = 'none';
+        throw err;
+      });
+  }
+
+  function renderDiff(udiff) {
+    // Color each line: +, -, @@, file marker
+    return udiff.split('\n').map(function(line) {
+      var cls = '';
+      if (line.startsWith('+++') || line.startsWith('---')) cls = 'diff-line diff-file';
+      else if (line.startsWith('@@')) cls = 'diff-line diff-hunk';
+      else if (line.startsWith('+'))  cls = 'diff-line diff-add';
+      else if (line.startsWith('-'))  cls = 'diff-line diff-del';
+      else cls = 'diff-line';
+      return '<div class="' + cls + '">' + esc(line || ' ') + '</div>';
+    }).join('');
+  }
+
+  // ──────────────────────────────────────────────────────────────────
+  // History
+  // ──────────────────────────────────────────────────────────────────
+  function loadHistory() {
+    if (!current) return;
+    var el = $('ae-history-pane');
+    el.innerHTML = 'Loading commits…';
+    fetch(API_BASE + '/api/admin/publish/history?path=' + encodeURIComponent(current.path) + '&per_page=15', {
+      method: 'GET', headers: apiHeaders(),
+    }).then(function(r) { return r.json().then(function(j) { return {ok:r.ok,status:r.status,j:j}; }); })
+      .then(function(res) {
+        if (!res.ok || !res.j.ok) throw new Error(humanizeError(res.j, res.status, 'fetch history'));
+        var items = res.j.items || [];
+        if (!items.length) {
+          el.innerHTML = '<p style="color:#5a6470;">No commits found for this file.</p>';
+          return;
+        }
+        el.innerHTML = items.map(function(c) {
+          var when = c.author_date ? new Date(c.author_date).toLocaleString() : '';
+          return '<div class="ae-history-row">'
+              +   '<a class="ae-history-sha" href="' + esc(c.html_url || '#') + '" target="_blank" rel="noopener">' + esc(c.short_sha) + '</a>'
+              +   '<div class="ae-history-msg" title="' + esc(c.message) + '">' + esc(c.message) + '</div>'
+              +   '<span class="ae-history-when">' + esc(when) + '</span>'
+              +   '<button type="button" class="ae-btn is-danger" data-sha="' + esc(c.sha) + '">Restore</button>'
+              + '</div>';
+        }).join('');
+        el.querySelectorAll('[data-sha]').forEach(function(btn) {
+          btn.addEventListener('click', function() { rollbackTo(btn.getAttribute('data-sha')); });
+        });
+      })
+      .catch(function(err) {
+        el.innerHTML = '<p style="color:#80261b;">' + esc(String(err.message || err)) + '</p>';
+      });
+  }
+
+  function rollbackTo(sha) {
+    if (!current) return;
+    if (!confirm('Restore "' + current.label + '" to commit ' + sha.slice(0, 7) + '? This creates a NEW commit on main; it does not rewrite history.')) return;
+    setStatus('publishing', 'Rolling back…');
+    fetch(API_BASE + '/api/admin/publish/rollback', {
+      method: 'POST', headers: apiHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ path: current.path, sha: sha })
+    }).then(function(r) { return r.json().then(function(j) { return {ok:r.ok,status:r.status,j:j}; }); })
+      .then(function(res) {
+        if (!res.ok || !res.j.ok) throw new Error(humanizeError(res.j, res.status, 'rollback'));
+        toast('Rolled back to <a href="' + esc(res.j.html_url || '#') + '" target="_blank" rel="noopener">' + esc((res.j.commit_sha || '').slice(0, 7)) + '</a>. Reloading file…');
+        selectPage(current);
+      })
+      .catch(function(err) {
+        setStatus('error', 'Rollback failed');
+        toast(esc(String(err.message || err)), { error: true, ms: 8000 });
+      });
+  }
+
+  // ──────────────────────────────────────────────────────────────────
+  // Publish (with diff preview)
+  // ──────────────────────────────────────────────────────────────────
+  $('ae-publish').addEventListener('click', openPublishDlg);
+  $('ae-pub-cancel').addEventListener('click', function() { $('ae-publish-dlg').classList.remove('is-open'); });
+  $('ae-pub-confirm').addEventListener('click', doPublish);
+
+  function openPublishDlg() {
     if (!current) { toast('Pick a page first.', { error: true }); return; }
     var content = $('ae-source').value;
-    if (!content) { toast('Editor is empty — nothing to publish.', { error: true }); return; }
-    var d = digest(content);
-    if (d === savedDigest) { toast('No changes to publish.', {}); return; }
+    if (!content) { toast('Editor is empty.', { error: true }); return; }
+    if (digest(content) === savedDigest) { toast('No changes to publish.'); return; }
+    $('ae-pub-msg').value = 'Edit ' + current.label + ' via Live Theme Editor';
+    $('ae-pub-confirm').disabled = true;
+    $('ae-pub-summary').textContent = 'Computing diff…';
+    $('ae-pub-diff').style.display = 'none';
+    $('ae-publish-dlg').classList.add('is-open');
 
+    fetch(API_BASE + '/api/admin/publish/diff', {
+      method: 'POST',
+      headers: apiHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ path: current.path, content: content })
+    }).then(function(r) { return r.json().then(function(j) { return {ok:r.ok,status:r.status,j:j}; }); })
+      .then(function(res) {
+        if (!res.ok || !res.j.ok) throw new Error(humanizeError(res.j, res.status, 'diff'));
+        var j = res.j;
+        if (j.identical) {
+          $('ae-pub-summary').innerHTML = '<strong>No diff.</strong> Editor matches GitHub. Nothing to publish.';
+          return;
+        }
+        var s = '<strong>Editing ' + esc(current.label) + '</strong> · '
+              + '<span style="color:#145a32;font-weight:700">+' + j.lines_added + '</span> / '
+              + '<span style="color:#80261b;font-weight:700">-' + j.lines_removed + '</span> lines';
+        $('ae-pub-summary').innerHTML = s;
+        $('ae-pub-diff').innerHTML = renderDiff(j.diff || '');
+        $('ae-pub-diff').style.display = 'block';
+        $('ae-pub-confirm').disabled = false;
+      })
+      .catch(function(err) {
+        $('ae-pub-summary').innerHTML = '<span style="color:#80261b">Could not compute diff: ' + esc(String(err.message || err)) + '</span> — you can still publish anyway.';
+        $('ae-pub-confirm').disabled = false;
+      });
+  }
+
+  function doPublish() {
+    if (!current) return;
+    var content = $('ae-source').value;
+    var msg = ($('ae-pub-msg').value || '').trim() || ('Edit ' + current.label + ' via Live Theme Editor');
+    $('ae-pub-confirm').disabled = true;
+    $('ae-pub-confirm').textContent = 'Publishing…';
     setStatus('publishing', 'Publishing to GitHub…');
-    $('ae-publish').disabled = true;
-    $('ae-publish').textContent = 'Publishing…';
-
-    var msg = prompt('Commit message:', 'Edit ' + current.label + ' via Live Theme Editor') || ('Edit ' + current.label + ' via Live Theme Editor');
 
     fetch(API_BASE + '/api/admin/publish/file', {
       method: 'POST',
       headers: apiHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ path: current.path, content: content, message: msg })
-    }).then(function(r) { return r.json().then(function(j) { return { ok: r.ok, j: j, status: r.status }; }); })
+    }).then(function(r) { return r.json().then(function(j) { return {ok:r.ok,status:r.status,j:j}; }); })
       .then(function(res) {
-        if (!res.ok || !res.j.ok) {
-          var detail = (res.j && (res.j.detail || res.j.error || res.j.message)) || ('Server ' + res.status);
-          throw new Error(detail);
-        }
-        savedDigest = d;
+        if (!res.ok || !res.j.ok) throw new Error(humanizeError(res.j, res.status, 'publish'));
+        savedDigest = digest(content);
         current.originalContent = content;
+        localStorage.removeItem(draftKey(current.path));
         setDirty(false);
-        toast('Published! Commit <a href="' + esc(res.j.html_url || '#') + '" target="_blank" rel="noopener">'
-              + esc((res.j.commit_sha || '').slice(0, 7))
-              + '</a> — Pages rebuilds in ~5 min.', { ms: 8000 });
+        $('ae-publish-dlg').classList.remove('is-open');
+        $('ae-pub-confirm').disabled = false;
+        $('ae-pub-confirm').textContent = 'Publish';
+        toast('Published! Commit <a href="' + esc(res.j.html_url || '#') + '" target="_blank" rel="noopener">' + esc((res.j.commit_sha || '').slice(0, 7)) + '</a> — Pages rebuilds in ~5 min.', { ms: 9000 });
       })
-      .catch(function(e) {
+      .catch(function(err) {
+        $('ae-pub-confirm').disabled = false;
+        $('ae-pub-confirm').textContent = 'Publish';
         setStatus('error', 'Publish failed');
-        toast('Publish failed: ' + esc(String(e.message || e)), { error: true, ms: 8000 });
-      })
-      .finally(function() {
-        $('ae-publish').disabled = false;
-        $('ae-publish').textContent = 'Publish to GitHub →';
+        toast(esc(String(err.message || err)), { error: true, ms: 9000 });
       });
   }
 
@@ -830,10 +1294,7 @@ permalink: /pages/admin-editor.html
   var aiModal = $('ae-ai-modal');
   $('ae-ai-open').addEventListener('click', function() { aiModal.classList.add('is-open'); });
   $('ae-ai-cancel').addEventListener('click', function() { aiModal.classList.remove('is-open'); });
-  aiModal.addEventListener('click', function(ev) {
-    if (ev.target === aiModal) aiModal.classList.remove('is-open');
-  });
-
+  aiModal.addEventListener('click', function(ev) { if (ev.target === aiModal) aiModal.classList.remove('is-open'); });
   $('ae-ai-generate').addEventListener('click', generateAI);
   $('ae-ai-regen').addEventListener('click', generateAI);
 
@@ -852,14 +1313,14 @@ permalink: /pages/admin-editor.html
         tone: $('ae-ai-tone').value,
         page_context: current ? current.label : '',
       })
-    }).then(function(r) { return r.json().then(function(j) { return { ok: r.ok, j: j }; }); })
+    }).then(function(r) { return r.json().then(function(j) { return { ok: r.ok, j: j, status: r.status }; }); })
       .then(function(res) {
-        if (!res.ok || !res.j.ok) throw new Error((res.j && (res.j.detail || res.j.error)) || 'AI error');
+        if (!res.ok || !res.j.ok) throw new Error(humanizeError(res.j, res.status, 'generate'));
         $('ae-ai-output').textContent = res.j.html || '';
         $('ae-ai-result').classList.add('is-visible');
       })
-      .catch(function(e) {
-        toast('AI failed: ' + esc(String(e.message || e)), { error: true });
+      .catch(function(err) {
+        toast('AI: ' + esc(String(err.message || err)), { error: true, ms: 8000 });
       })
       .finally(function() {
         $('ae-ai-generate').disabled = false;
@@ -870,21 +1331,19 @@ permalink: /pages/admin-editor.html
   $('ae-ai-insert').addEventListener('click', function() {
     var html = $('ae-ai-output').textContent;
     if (!html) return;
+    if (!current) { toast('Pick a page first.', { error: true }); return; }
     var ta = $('ae-source');
     var cur = ta.selectionStart || ta.value.length;
     var end = ta.selectionEnd || cur;
     ta.value = ta.value.slice(0, cur) + '\n\n' + html + '\n\n' + ta.value.slice(end);
     ta.dispatchEvent(new Event('input'));
     aiModal.classList.remove('is-open');
-    toast('Inserted at cursor — review the source, then click <strong>Publish</strong>.', { ms: 6000 });
+    toast('Inserted at cursor. Review the source, then publish.', { ms: 6000 });
   });
-
   $('ae-ai-copy').addEventListener('click', function() {
     var html = $('ae-ai-output').textContent;
     if (!html) return;
-    navigator.clipboard.writeText(html).then(function() {
-      toast('Copied to clipboard.', {});
-    });
+    navigator.clipboard.writeText(html).then(function() { toast('Copied.'); });
   });
 
   // ──────────────────────────────────────────────────────────────────
@@ -893,10 +1352,11 @@ permalink: /pages/admin-editor.html
   document.addEventListener('keydown', function(ev) {
     if ((ev.metaKey || ev.ctrlKey) && ev.key === 's') {
       ev.preventDefault();
-      publish();
+      openPublishDlg();
     }
-    if (ev.key === 'Escape' && aiModal.classList.contains('is-open')) {
+    if (ev.key === 'Escape') {
       aiModal.classList.remove('is-open');
+      $('ae-publish-dlg').classList.remove('is-open');
     }
   });
 
@@ -905,16 +1365,23 @@ permalink: /pages/admin-editor.html
   // ──────────────────────────────────────────────────────────────────
   function boot() {
     if (!adminKey) { $('ae-auth-gate').hidden = false; return; }
-    // Verify key
-    fetch(API_BASE + '/api/admin/publish/file?path=index.html', {
-      method: 'GET', headers: apiHeaders(),
-    }).then(function(r) {
-      if (r.status === 401) { $('ae-auth-gate').hidden = false; return; }
-      showApp();
-    }).catch(function() {
-      $('ae-auth-gate').hidden = false;
+    runHealthCheck().then(function(h) {
+      if (!h || !h.auth || !h.auth.ok) {
+        $('ae-auth-gate').hidden = false;
+      } else {
+        showApp();
+      }
     });
   }
   boot();
+
+  // Warn before close if dirty
+  window.addEventListener('beforeunload', function(ev) {
+    if (dirty) {
+      ev.preventDefault();
+      ev.returnValue = '';
+      return '';
+    }
+  });
 })();
 </script>

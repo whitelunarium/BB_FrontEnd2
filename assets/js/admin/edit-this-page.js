@@ -57,7 +57,7 @@
   function buildButton(slug) {
     const btn = document.createElement('a');
     btn.id = 'pnec-edit-this-page';
-    btn.href = '/pages/admin-editor-v2.html?page=' + encodeURIComponent(slug || 'home');
+    btn.href = '/pages/admin-editor.html?page=' + encodeURIComponent(slug || 'home');
     // v2.41: open the editor in a new tab so the public site stays put.
     // Avoids the duplicated-navbar look the user pointed out and lets admins
     // keep both windows side-by-side.
