@@ -328,6 +328,17 @@ manual push — it goes through this exact pipeline.
 **No automatic deploy** as of this writing. Pushing to `main` does
 NOT auto-rebuild the Flask container. After a backend change:
 
+#### Easy mode: use the redeploy script
+```bash
+cd ~/Beasts_Flask
+PNEC_ADMIN_KEY=<your-admin-key> ./scripts/redeploy.sh
+```
+That script pulls latest main, rebuilds the image, restarts the
+container, and hits `/api/admin/publish/health` to confirm the new
+code is live. Reports green pills for GitHub + Groq if their env
+vars are set.
+
+#### Manual mode (if you want fine control):
 1. Build the new image:
    ```bash
    cd ~/Beasts_Flask
