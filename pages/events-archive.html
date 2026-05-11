@@ -1,0 +1,398 @@
+---
+layout: pnec-base
+title: "Past Events & Articles — Poway Neighborhood Emergency Corps"
+description: "Archive of PNEC community meetings, training presentations, and KUSI media features. Resources from past events on wildfire prep, power outages, neighborhood safety, and emergency planning."
+body_class: inner-page events-archive-page
+permalink: /pages/events-archive.html
+---
+
+<style>
+  /* ── events-archive page styles ──────────────────────────────── */
+  .events-archive-page { background: #fbf8f1; }
+
+  .ev-archive-shell {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: clamp(40px, 6vw, 80px) clamp(16px, 4vw, 32px);
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #0a1628;
+  }
+
+  .ev-archive-hero {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .ev-archive-eyebrow {
+    display: inline-block;
+    padding: 5px 12px;
+    background: #d4efdf;
+    color: #145a32;
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border-radius: 999px;
+    margin-bottom: 16px;
+  }
+  .ev-archive-hero h1 {
+    margin: 0 0 12px;
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    font-weight: 900;
+    letter-spacing: -0.028em;
+    color: #0e3b21;
+    line-height: 1.04;
+  }
+  .ev-archive-hero p {
+    margin: 0 auto;
+    max-width: 640px;
+    color: #475569;
+    font-size: 1.06rem;
+    line-height: 1.55;
+  }
+
+  .ev-archive-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin: 28px 0 48px;
+    padding: 16px;
+    background: #ffffff;
+    border: 1px solid #e3e0d8;
+    border-radius: 14px;
+  }
+  .ev-archive-nav a {
+    display: inline-block;
+    padding: 8px 14px;
+    background: #f7f1e2;
+    color: #145a32;
+    border-radius: 999px;
+    font-size: 0.86rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background-color 160ms ease, transform 100ms ease;
+  }
+  .ev-archive-nav a:hover {
+    background: #d4efdf;
+    transform: translateY(-1px);
+  }
+
+  .ev-article {
+    background: #ffffff;
+    border: 1px solid #e3e0d8;
+    border-radius: 16px;
+    padding: clamp(28px, 4vw, 44px);
+    margin-bottom: 32px;
+    scroll-margin-top: 100px;
+    box-shadow: 0 1px 0 rgba(20,90,50,0.04), 0 12px 32px rgba(20,90,50,0.06);
+  }
+  .ev-article--featured {
+    border: 2px solid #1e8449;
+    background: linear-gradient(180deg, #ffffff 0%, #f7f1e2 100%);
+  }
+  .ev-article-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    font-size: 0.82rem;
+    color: #475569;
+  }
+  .ev-article-date {
+    font-weight: 700;
+    color: #145a32;
+  }
+  .ev-article-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    background: #d4efdf;
+    color: #145a32;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .ev-article-tag--featured {
+    background: #1e8449;
+    color: #ffffff;
+  }
+  .ev-article h2 {
+    margin: 0 0 14px;
+    font-size: clamp(1.4rem, 2.4vw, 1.85rem);
+    font-weight: 900;
+    color: #0e3b21;
+    letter-spacing: -0.018em;
+    line-height: 1.15;
+  }
+  .ev-article-lede {
+    margin: 0 0 18px;
+    font-size: 1.04rem;
+    line-height: 1.55;
+    color: #2a3447;
+  }
+  .ev-article-body {
+    font-size: 0.98rem;
+    line-height: 1.65;
+    color: #2a3447;
+  }
+  .ev-article-body p { margin: 0 0 14px; }
+  .ev-article-body p:last-child { margin-bottom: 0; }
+  .ev-article-body ul {
+    margin: 0 0 16px;
+    padding-left: 22px;
+  }
+  .ev-article-body li {
+    margin-bottom: 6px;
+  }
+  .ev-article-body strong { color: #0e3b21; font-weight: 800; }
+  .ev-article-body a {
+    color: #145a32;
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-color: rgba(20, 90, 50, 0.25);
+    text-underline-offset: 3px;
+    transition: text-decoration-color 160ms ease;
+  }
+  .ev-article-body a:hover { text-decoration-color: #145a32; }
+
+  .ev-article-cta {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 10px 18px;
+    background: #145a32;
+    color: #fffdf6 !important;
+    border-radius: 8px;
+    font-weight: 700;
+    text-decoration: none !important;
+    transition: background-color 160ms ease;
+  }
+  .ev-article-cta:hover { background: #1e8449; }
+  .ev-article-cta + .ev-article-cta { margin-left: 8px; }
+  .ev-article-cta--ghost {
+    background: transparent;
+    color: #145a32 !important;
+    border: 1.5px solid #145a32;
+  }
+  .ev-article-cta--ghost:hover { background: #d4efdf; }
+
+  .ev-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 28px;
+    padding: 8px 14px;
+    color: #145a32;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: background-color 160ms ease;
+  }
+  .ev-back-link:hover { background: #d4efdf; }
+</style>
+
+<main class="ev-archive-shell">
+  <header class="ev-archive-hero">
+    <span class="ev-archive-eyebrow">Community archive</span>
+    <h1>Past meetings, talks, &amp; media</h1>
+    <p>Every PNEC community meeting, training presentation, and media feature is saved here. Watch the videos, download the handouts, and bring a neighbor next time.</p>
+  </header>
+
+  <nav class="ev-archive-nav" aria-label="Jump to event">
+    <a href="#twelfth-annual-fair">12th Annual Fair (May 2026)</a>
+    <a href="#kusi-segment">KUSI: Terri Sorenson</a>
+    <a href="#eleventh-annual-fair">11th Annual Fair</a>
+    <a href="#safe-poway-neighborhoods">Safe Poway Neighborhoods</a>
+    <a href="#alternative-power-options">Alternative Power Options</a>
+    <a href="#home-ignition-zone-assessment">HIZ Assessment</a>
+    <a href="#fire-smart-landscaping">Fire Smart Landscaping</a>
+  </nav>
+
+  <!-- ── 12th Annual Fair (featured upcoming event) ─────────── -->
+  <article id="twelfth-annual-fair" class="ev-article ev-article--featured">
+    <div class="ev-article-meta">
+      <span class="ev-article-date">Saturday, May 23, 2026 · 9 AM–1 PM</span>
+      <span class="ev-article-tag ev-article-tag--featured">Upcoming</span>
+    </div>
+    <h2>12th Annual Emergency &amp; Safety Fair</h2>
+    <p class="ev-article-lede">PNEC's biggest event of the year returns to Old Poway Park. Free, family-friendly, and stocked with the people, demos, and resources that make Poway households measurably more prepared.</p>
+    <div class="ev-article-body">
+      <p><strong>What to expect:</strong></p>
+      <ul>
+        <li>CERT (Community Emergency Response Team) live demos — light search-and-rescue, fire extinguisher practice, triage stations</li>
+        <li>PACT ham-radio operators showing how Poway stays connected when cell + landline fail</li>
+        <li>Free Home Ignition Zone walk-throughs with the same volunteers who do property assessments</li>
+        <li>"Three-Minute Bag" station — bring a backpack, leave with a real evacuation kit</li>
+        <li>Large Animal Rescue demo (horses, livestock — Poway has ~600 horses)</li>
+        <li>Poway Fire engines, kids' activities, food</li>
+      </ul>
+      <p><strong>Why it matters:</strong> the data is clear — neighborhoods that know each other before a disaster recover faster. The fair is the easiest 90 minutes you'll spend making your block more resilient.</p>
+      <p><strong>Location:</strong> Old Poway Park, 14134 Midland Rd. Free parking. ADA accessible.</p>
+      <a class="ev-article-cta" href="{{ '/pages/community-events-and-activities.html' | relative_url }}">See all upcoming events →</a>
+      <a class="ev-article-cta ev-article-cta--ghost" href="{{ '/pages/find-your-neighborhood.html' | relative_url }}">Find your neighborhood</a>
+    </div>
+  </article>
+
+  <!-- ── KUSI TV Segment ─────────────────────────────────────── -->
+  <article id="kusi-segment" class="ev-article">
+    <div class="ev-article-meta">
+      <span class="ev-article-date">KUSI News · Featured media</span>
+      <span class="ev-article-tag">Media</span>
+    </div>
+    <h2>Watch the KUSI Segment with PNEC's Terri Sorenson on Emergency Preparation</h2>
+    <p class="ev-article-lede">KUSI San Diego's local news segment with PNEC's Terri Sorenson on what Poway households should do <em>before</em> the next emergency — not during it.</p>
+    <div class="ev-article-body">
+      <p><strong>POWAY (KUSI)</strong> — Preparation for an emergency starts well before tragedy strikes. That's the message Terri Sorenson, a long-time Poway Neighborhood Emergency Corps volunteer, brought to KUSI's preparedness segment.</p>
+      <p>The interview covers PNEC's three core pillars:</p>
+      <ul>
+        <li><strong>Know your neighbors.</strong> Every block has a designated Neighborhood Emergency Coordinator (NEC) — when the power goes out at 2 AM in a wind storm, your NEC already knows which households have oxygen, mobility issues, or kids alone at home.</li>
+        <li><strong>Have a "three-minute bag" ready.</strong> Not a 72-hour kit (those are great too) — a small bag you can grab in three minutes flat with medications, IDs, glasses, phone charger, comfort items. The kind of evac that gets you out the door fast.</li>
+        <li><strong>Harden your home.</strong> Zone Zero (0–5 ft from your house) is the biggest predictor of structure survival in a wildfire. No mulch, no wood fences attached to the house, no juniper bushes — PNEC volunteers do free home walk-throughs.</li>
+      </ul>
+      <p>The segment ran during the lead-up to fire season as part of KUSI's "Be Prepared" series.</p>
+      <a class="ev-article-cta" href="{{ '/pages/programs-and-services.html' | relative_url }}">PNEC programs →</a>
+    </div>
+  </article>
+
+  <!-- ── 11th Annual Fair (past) ────────────────────────────── -->
+  <article id="eleventh-annual-fair" class="ev-article">
+    <div class="ev-article-meta">
+      <span class="ev-article-date">Saturday, May 31, 2025 · 9 AM–1 PM · Old Poway Park</span>
+      <span class="ev-article-tag">Past event</span>
+    </div>
+    <h2>11th Annual Emergency &amp; Safety Fair</h2>
+    <p class="ev-article-lede">Hundreds of Poway residents joined PNEC, Poway Fire, San Diego County OES, and 20+ partner organizations at Old Poway Park for the 11th annual fair.</p>
+    <div class="ev-article-body">
+      <p>The 2025 fair drew our biggest crowd yet. Highlights:</p>
+      <ul>
+        <li>Live CERT demos including the new "ember intrusion" station built around lessons from the 2024 fire season</li>
+        <li>Free Home Ignition Zone assessments scheduled on-site (the wait list grew so long we added two more volunteer teams)</li>
+        <li>PACT ham radio operators ran a working field-day station — kids loved trying the Morse code keys</li>
+        <li>Poway Fire's new electric engine on display alongside the traditional pumper</li>
+        <li>Large Animal Rescue demo with horses from a local rescue</li>
+      </ul>
+      <p>Thank you to every volunteer who staffed a booth, every neighbor who came out, and every partner organization who brought resources. The <a href="#twelfth-annual-fair">12th Annual Fair</a> is already on the calendar for May 23, 2026.</p>
+      <a class="ev-article-cta" href="#twelfth-annual-fair">Next year's fair →</a>
+    </div>
+  </article>
+
+  <!-- ── Safe Poway Neighborhoods (April 2023) ──────────────── -->
+  <article id="safe-poway-neighborhoods" class="ev-article">
+    <div class="ev-article-meta">
+      <span class="ev-article-date">April 2023 Community Meeting</span>
+      <span class="ev-article-tag">Past meeting</span>
+    </div>
+    <h2>Safe Poway Neighborhoods — Sheriff's Department Presentation</h2>
+    <p class="ev-article-lede">At the April 2023 Community Meeting, deputies from the San Diego Sheriff's Poway Station presented on neighborhood safety topics including package theft, vehicle break-ins, scam awareness, and how to report suspicious activity effectively.</p>
+    <div class="ev-article-body">
+      <p><strong>Key takeaways from the meeting:</strong></p>
+      <ul>
+        <li><strong>Report suspicious activity right away.</strong> Don't wait. The non-emergency Sheriff line (858-565-5200) is staffed 24/7 — even a small report builds the pattern that helps catch repeat offenders.</li>
+        <li><strong>911 vs. non-emergency.</strong> Call 911 for crimes in progress or immediate threats. Use non-emergency for cold reports, suspicious behavior, or "this might be nothing but…" situations.</li>
+        <li><strong>Package theft.</strong> Most theft happens within an hour of delivery. Schedule deliveries when you're home, use lockers/Amazon Hub, or buddy with a neighbor.</li>
+        <li><strong>Vehicle break-ins.</strong> Empty visible interior, lock every time, don't leave garage door openers in unlocked cars (these are used for follow-up burglaries).</li>
+        <li><strong>Scams.</strong> Sheriff will <em>never</em> call asking for gift cards, wire transfers, or threatening arrest. If in doubt, hang up and call them back directly.</li>
+      </ul>
+      <p><strong>Working with your NEC:</strong> Block coordinators serve as informal eyes-and-ears for neighborhood watch. Connecting with yours via <a href="{{ '/pages/find-your-neighborhood.html' | relative_url }}">Find Your Neighborhood</a> is a great first step.</p>
+      <a class="ev-article-cta" href="{{ '/pages/find-your-neighborhood.html' | relative_url }}">Find your block coordinator →</a>
+    </div>
+  </article>
+
+  <!-- ── Alternative Power Options (Feb 2023) ───────────────── -->
+  <article id="alternative-power-options" class="ev-article">
+    <div class="ev-article-meta">
+      <span class="ev-article-date">February 2023 Community Meeting</span>
+      <span class="ev-article-tag">Past meeting</span>
+    </div>
+    <h2>Alternative Power Options — Planning for PSPS Events</h2>
+    <p class="ev-article-lede">At the February 2023 Community Meeting we walked through alternative power options for Poway households during Public Safety Power Shutoffs (PSPS) — the planned outages SDG&amp;E now uses during high-wind fire-weather events.</p>
+    <div class="ev-article-body">
+      <p><strong>Why PSPS matters in Poway:</strong> SDG&amp;E has flagged Poway as a high-risk service area. When fire-weather thresholds are met (hot, dry, very windy), they may de-energize circuits to prevent ignition. That means your home could be without power for 24–72+ hours <em>before</em> any fire actually happens. Check the <a href="https://www.sdge.com/psps" target="_blank" rel="noopener">SDG&amp;E PSPS map</a> any time.</p>
+      <p><strong>Options we covered:</strong></p>
+      <ul>
+        <li><strong>Portable power stations</strong> (~$300–$2000). Lithium battery + AC inverter. Quiet, no fuel. Run a CPAP, charge phones, power a fridge for a day. Goal Zero / EcoFlow / Bluetti are common brands.</li>
+        <li><strong>Solar panels (portable, paired with a power station).</strong> Recharge during the day so the station lasts through multi-day events. Critical if outage is longer than one battery cycle.</li>
+        <li><strong>Gas generators</strong> (~$400–$2000). High output, but loud, fuel-dependent, fumes (NEVER run indoors or in a garage). Best for whole-home backup if you can install proper transfer switch.</li>
+        <li><strong>Whole-home battery systems</strong> (~$10k–$25k installed). Tesla Powerwall, Enphase, etc. Pair with rooftop solar for true grid-independence.</li>
+        <li><strong>EV as backup</strong> (if you have a Ford F-150 Lightning, Kia EV9, etc. with bidirectional charging). The car's battery can power your fridge + lights for days.</li>
+      </ul>
+      <p><strong>What to plan for, regardless of source:</strong></p>
+      <ul>
+        <li>Medical devices (CPAP, oxygen concentrator, refrigerated medications)</li>
+        <li>Communication — phone charging, NOAA weather radio, hand-crank or solar charger</li>
+        <li>Food — freezer can hold ~48 hrs if unopened; have shelf-stable backups</li>
+        <li>Lights — at least one battery-powered lantern per room, headlamps for hands-free</li>
+      </ul>
+      <p>Sign up with SDG&amp;E's PSPS notification system at <a href="https://www.sdge.com/psps" target="_blank" rel="noopener">sdge.com/psps</a> so you know when an event is forecast.</p>
+      <a class="ev-article-cta" href="{{ '/pages/preparedness-resources.html' | relative_url }}">Preparedness resources →</a>
+    </div>
+  </article>
+
+  <!-- ── HIZ Assessment ─────────────────────────────────────── -->
+  <article id="home-ignition-zone-assessment" class="ev-article">
+    <div class="ev-article-meta">
+      <span class="ev-article-date">Free for all Poway residents · Year-round</span>
+      <span class="ev-article-tag">Program</span>
+    </div>
+    <h2>Free Home Ignition Zone Assessment</h2>
+    <p class="ev-article-lede">A trained PNEC volunteer walks your property with you and gives you a written report on Zone Zero, Zone 1, and Zone 2 wildfire risk — completely free.</p>
+    <div class="ev-article-body">
+      <p><strong>What the zones mean:</strong></p>
+      <ul>
+        <li><strong>Zone Zero (0–5 ft from the structure):</strong> the single most important predictor of whether a home survives a wildfire. <em>No</em> combustibles. No mulch, no plants, no wood furniture, no wood fences <em>attached</em> to the house. Decomposed granite, rock, or hardscape only.</li>
+        <li><strong>Zone 1 (5–30 ft):</strong> low, irrigated, well-spaced plants. No ladder fuels (where flame can climb from grass to shrub to tree). No juniper, pampas grass, eucalyptus, Italian cypress.</li>
+        <li><strong>Zone 2 (30–100 ft):</strong> thin out the chaparral. Remove dead material, space tree canopies, keep grass under 4". This is "lean, clean, and green."</li>
+      </ul>
+      <p><strong>What the assessment covers:</strong></p>
+      <ul>
+        <li>Walk-around with photos of risk areas</li>
+        <li>Roof + vents + eaves (ember intrusion paths)</li>
+        <li>Windows (single vs. dual-pane, tempered glass)</li>
+        <li>Decks, fences, and any wood attached to the structure</li>
+        <li>Vegetation in each zone with specific plant recommendations</li>
+        <li>Written report with priority-ranked actions</li>
+      </ul>
+      <p><strong>Why it works:</strong> the research from the 2018 Camp Fire showed Zone Zero hardening saved homes that "shouldn't have survived" — embers traveled a mile, but the homes with non-combustible immediate surroundings made it through. Distance from fuel matters less than what's right next to your siding.</p>
+      <p><strong>Schedule one:</strong> Email <a href="mailto:powaynec@gmail.com?subject=HIZ%20assessment%20request">powaynec@gmail.com</a> with your address. Assessments take 60–90 minutes.</p>
+      <a class="ev-article-cta" href="{{ '/pages/programs-and-services.html' | relative_url }}">All PNEC programs →</a>
+      <a class="ev-article-cta ev-article-cta--ghost" href="#fire-smart-landscaping">Fire Smart Landscaping →</a>
+    </div>
+  </article>
+
+  <!-- ── Fire Smart Landscaping ─────────────────────────────── -->
+  <article id="fire-smart-landscaping" class="ev-article">
+    <div class="ev-article-meta">
+      <span class="ev-article-date">Presented by Fire Advisor Luca Carmignani (UC Coop Extension)</span>
+      <span class="ev-article-tag">Resource</span>
+    </div>
+    <h2>Fire Smart Landscaping</h2>
+    <p class="ev-article-lede">Fire Smart Landscaping is more than just maintenance — it's choosing the right plants for the right zones and arranging them so a wildfire can't use them as a fuel ladder to your home.</p>
+    <div class="ev-article-body">
+      <p><strong>Plants to AVOID near homes (especially within 30 ft):</strong></p>
+      <ul>
+        <li><strong>Juniper</strong> — high oil content, burns intensely, very common ember-ignition plant</li>
+        <li><strong>Pampas grass</strong> — dense dry plumes, throws embers</li>
+        <li><strong>Eucalyptus</strong> — oil-rich leaves, shed-prone bark, infamous wildfire fuel</li>
+        <li><strong>Italian cypress</strong> — torches almost instantly when ignited</li>
+        <li><strong>Untrimmed bougainvillea</strong> — its dead inner layers are a tinderbox</li>
+        <li><strong>Wood mulch in Zone Zero</strong> — embers smolder in mulch for hours; rock or decomposed granite only within 5 ft of structures</li>
+      </ul>
+      <p><strong>Better choices for fire-prone Poway:</strong></p>
+      <ul>
+        <li>Low-water succulents (agave, aloe, sedum)</li>
+        <li>Native sages (Cleveland sage, white sage — kept low and pruned)</li>
+        <li>Manzanita kept low and well-spaced</li>
+        <li>Lavender, rosemary — culinary + low fire risk if maintained</li>
+        <li>Decomposed-granite paths instead of bark mulch in walkways near structures</li>
+      </ul>
+      <p><strong>The principle:</strong> "lean, clean, and green." Plants that are well-watered, well-spaced, low-growing, and free of dead material are dramatically less likely to carry fire into your home. The full presentation from Fire Advisor Luca Carmignani goes deeper on each zone — schedule a <a href="#home-ignition-zone-assessment">free HIZ assessment</a> for property-specific guidance.</p>
+      <a class="ev-article-cta" href="#home-ignition-zone-assessment">Schedule a HIZ walk-through →</a>
+    </div>
+  </article>
+
+  <a class="ev-back-link" href="{{ '/pages/community-events-and-activities.html' | relative_url }}">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    Back to Community Events
+  </a>
+</main>
