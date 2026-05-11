@@ -1136,6 +1136,16 @@ permalink: /pages/admin-editor.html
     $('ae-diff-summary').innerHTML = 'Computing…';
     $('ae-diff-pre').style.display = 'none';
 
+    // Skip diff for very large files (>500KB) — server-side diff
+    // computation gets slow and the UI becomes unusable. Big files
+    // (like poway-neighborhoods.json at ~80KB) are fine; multi-MB
+    // assets should be edited outside the editor.
+    if (content.length > 500_000) {
+      var sz = (content.length / 1024).toFixed(0) + ' KB';
+      $('ae-diff-summary').innerHTML = '<strong>File too large for diff (' + sz + ').</strong> Publishing will still work, but skipping diff to keep the UI responsive. Review the source tab instead.';
+      return Promise.resolve(null);
+    }
+
     return fetch(API_BASE + '/api/admin/publish/diff', {
       method: 'POST',
       headers: apiHeaders({ 'Content-Type': 'application/json' }),
