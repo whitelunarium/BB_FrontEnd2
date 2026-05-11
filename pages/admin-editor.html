@@ -803,13 +803,41 @@ permalink: /pages/admin-editor.html
     adminKey = k;
     sessionStorage.setItem('pnec_admin_key', k);
     $('ae-auth-error').classList.remove('is-visible');
-    runHealthCheck().then(function(h) {
-      if (h && h.auth && h.auth.ok) {
+
+    // Probe the health endpoint. We distinguish three failure modes:
+    //   - 404: backend doesn't have the new endpoints (Flask needs
+    //          to be rebuilt + redeployed)
+    //   - 401: wrong admin key
+    //   - network error: API base unreachable / CORS / typo
+    fetch(API_BASE + '/api/admin/publish/health', {
+      method: 'GET', headers: apiHeaders(),
+    }).then(function(r) {
+      return r.json().then(function(j) { return { ok: r.ok, status: r.status, j: j }; }, function() { return { ok: r.ok, status: r.status, j: null }; });
+    }).then(function(res) {
+      if (res.status === 404) {
+        $('ae-auth-error').innerHTML = 'Backend doesn\'t have the new admin editor endpoints yet. The Flask server needs to be <strong>rebuilt + redeployed</strong> with the latest code. See <code>PNEC_ADMIN_SETUP.md</code> in the repo for the docker compose commands.';
+        $('ae-auth-error').classList.add('is-visible');
+        return;
+      }
+      if (res.status === 401) {
+        $('ae-auth-error').innerHTML = 'Wrong admin key. Try again or check with the board.';
+        $('ae-auth-error').classList.add('is-visible');
+        return;
+      }
+      if (!res.ok) {
+        $('ae-auth-error').innerHTML = 'Server returned ' + res.status + '. Check the Flask logs.';
+        $('ae-auth-error').classList.add('is-visible');
+        return;
+      }
+      // res.ok = true and we got JSON
+      if (res.j && res.j.auth && res.j.auth.ok) {
         showApp();
       } else {
+        $('ae-auth-error').innerHTML = 'Wrong admin key. Try again or check with the board.';
         $('ae-auth-error').classList.add('is-visible');
       }
-    }).catch(function() {
+    }).catch(function(err) {
+      $('ae-auth-error').innerHTML = 'Could not reach the Flask API at <code>' + esc(API_BASE) + '</code>. Check the server is up, the URL is right, and CORS allows this domain.';
       $('ae-auth-error').classList.add('is-visible');
     });
   }
