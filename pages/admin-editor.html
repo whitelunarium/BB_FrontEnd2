@@ -1,0 +1,920 @@
+---
+layout: pnec-base
+title: "Live Theme Editor — PNEC Admin"
+description: "PNEC admins: edit site pages in the browser, publish straight to GitHub, generate sections with AI. No coder required."
+body_class: inner-page admin-editor-page
+permalink: /pages/admin-editor.html
+---
+
+<style>
+/* ── Live Theme Editor v3 (May 2026) ────────────────────────────
+   Brand-consistent cream + forest theme. Replaces the dark v2.
+   Three-column layout: page list / source editor / live preview.
+
+   Architecture:
+   - Pages are listed grouped by where they live on the actual site
+     (Main Nav / Footer Links / Account / Admin / Resources).
+   - When you pick a page, we GET its current content from GitHub
+     via /api/admin/publish/file.
+   - You edit the HTML source in the center textarea (preview updates
+     on a 800ms debounce so you can see changes live).
+   - Click "Publish to GitHub" — POST /api/admin/publish/file commits
+     the change to the repo's main branch. Pages then rebuilds in
+     ~5 min. The dashboard polls /api/admin/publish/status so you
+     see when the rebuild finishes.
+   - The AI panel calls /api/admin/ai/section (Groq) to draft a new
+     section block you can paste into the source.
+
+   Required server config (Beasts_Flask):
+     GITHUB_TOKEN  — fine-grained PAT, Contents:read+write on the repo
+     GITHUB_OWNER  — defaults to whitelunarium
+     GITHUB_REPO   — defaults to Beasts_FrontEnd
+     GITHUB_BRANCH — defaults to main
+     GROQ_API_KEY  — already set
+*/
+
+.admin-editor-page { background: #fbf8f1; min-height: 100vh; }
+
+.ae-shell {
+  display: grid;
+  grid-template-columns: 280px 1fr 1fr;
+  gap: 0;
+  height: calc(100vh - 64px);
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #0a1628;
+  background: #fbf8f1;
+}
+@media (max-width: 1100px) {
+  .ae-shell { grid-template-columns: 240px 1fr; }
+  .ae-preview { display: none; }
+}
+@media (max-width: 720px) {
+  .ae-shell { grid-template-columns: 1fr; height: auto; }
+  .ae-sidebar { max-height: 280px; }
+}
+
+/* ─── Top bar ────────────────────────────────────────────────── */
+.ae-topbar {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 14px 22px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbf8f1 100%);
+  border-bottom: 1px solid #e3e0d8;
+  position: sticky; top: 0; z-index: 20;
+}
+.ae-topbar-left h1 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0e3b21;
+  letter-spacing: -0.012em;
+}
+.ae-topbar-left p {
+  margin: 1px 0 0;
+  font-size: 0.78rem;
+  color: #5a6470;
+}
+.ae-topbar-right {
+  display: flex; gap: 10px; align-items: center;
+}
+.ae-status-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.ae-status-pill.is-saved        { background: #d4efdf; color: #145a32; }
+.ae-status-pill.is-dirty        { background: #fdf0d5; color: #92400e; }
+.ae-status-pill.is-publishing   { background: #dbeafe; color: #1e40af; }
+.ae-status-pill.is-error        { background: #fee2e2; color: #991b1b; }
+.ae-status-pill::before {
+  content: ''; width: 7px; height: 7px; border-radius: 50%;
+  background: currentColor;
+}
+.ae-status-pill.is-publishing::before { animation: ae-pulse 1s ease-in-out infinite; }
+@keyframes ae-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+.ae-btn {
+  padding: 8px 14px;
+  border: 1.5px solid #d8d4c4;
+  background: #ffffff;
+  color: #0e3b21;
+  border-radius: 8px;
+  font: inherit; font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s, transform 0.06s;
+}
+.ae-btn:hover { background: #d4efdf; border-color: #145a32; }
+.ae-btn:active { transform: translateY(1px); }
+.ae-btn.is-primary {
+  background: linear-gradient(135deg, #145a32 0%, #1e8449 100%);
+  color: #fffdf6; border-color: #145a32;
+  box-shadow: 0 4px 12px rgba(20,90,50,0.20);
+}
+.ae-btn.is-primary:hover { filter: brightness(1.08); border-color: #145a32; color: #fffdf6; }
+.ae-btn.is-primary:disabled {
+  background: #b9c4b9; color: #fffdf6; cursor: wait;
+  filter: none; box-shadow: none;
+}
+.ae-btn.is-ghost { background: transparent; border-color: transparent; padding: 6px 10px; }
+.ae-btn.is-ghost:hover { background: #d4efdf; }
+
+/* ─── Sidebar (page list) ────────────────────────────────────── */
+.ae-sidebar {
+  background: #f7f1e2;
+  border-right: 1px solid #e3e0d8;
+  overflow-y: auto;
+  padding: 14px 0;
+}
+.ae-sidebar-section {
+  margin-bottom: 12px;
+}
+.ae-sidebar-section-title {
+  padding: 4px 18px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #5a6470;
+  margin: 0 0 6px;
+}
+.ae-page-list { list-style: none; margin: 0; padding: 0; }
+.ae-page-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 18px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #0a1628;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: background-color 0.12s, color 0.12s, border-color 0.12s;
+  position: relative;
+}
+.ae-page-item:hover { background: rgba(212, 239, 223, 0.6); color: #145a32; }
+.ae-page-item.is-active {
+  background: #ffffff;
+  color: #145a32;
+  border-left-color: #1e8449;
+  font-weight: 800;
+}
+.ae-page-item-icon {
+  width: 16px; height: 16px;
+  flex-shrink: 0;
+  color: #475569;
+}
+.ae-page-item.is-active .ae-page-item-icon { color: #1e8449; }
+.ae-page-item-badge {
+  margin-left: auto;
+  background: #c87042;
+  color: #fff;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+/* ─── Editor (center column) ─────────────────────────────────── */
+.ae-editor {
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  background: #ffffff;
+  border-right: 1px solid #e3e0d8;
+}
+.ae-editor-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 18px;
+  border-bottom: 1px solid #e3e0d8;
+  background: #fbf8f1;
+}
+.ae-editor-head-title {
+  font-weight: 800;
+  color: #0e3b21;
+  font-size: 0.96rem;
+  display: flex; align-items: center; gap: 8px;
+}
+.ae-editor-head-path {
+  font-family: 'SF Mono', 'Menlo', Consolas, monospace;
+  font-size: 0.72rem;
+  color: #5a6470;
+  font-weight: 500;
+}
+.ae-editor-textarea {
+  flex: 1;
+  width: 100%;
+  padding: 18px;
+  border: 0;
+  resize: none;
+  font-family: 'SF Mono', 'Menlo', Consolas, monospace;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: #0a1628;
+  background: #fffdf6;
+  outline: none;
+  tab-size: 2;
+}
+.ae-editor-textarea:focus {
+  background: #ffffff;
+}
+.ae-editor-foot {
+  padding: 10px 18px;
+  border-top: 1px solid #e3e0d8;
+  background: #fbf8f1;
+  font-size: 0.78rem;
+  color: #5a6470;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.ae-editor-counter { font-variant-numeric: tabular-nums; }
+
+/* ─── AI panel (slides in on demand) ─────────────────────────── */
+.ae-ai-modal {
+  position: fixed; inset: 0;
+  background: rgba(10, 22, 40, 0.55);
+  display: none;
+  align-items: center; justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+.ae-ai-modal.is-open { display: flex; }
+.ae-ai-card {
+  background: #ffffff;
+  border-radius: 16px;
+  width: 100%; max-width: 640px;
+  padding: 28px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  position: relative;
+}
+.ae-ai-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 5px;
+  background: linear-gradient(90deg, #145a32 0%, #1e8449 50%, #27ae60 100%);
+  border-radius: 16px 16px 0 0;
+}
+.ae-ai-card h2 {
+  margin: 0 0 6px;
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: #0e3b21;
+}
+.ae-ai-card .sub {
+  margin: 0 0 18px;
+  font-size: 0.9rem;
+  color: #5a6470;
+  line-height: 1.55;
+}
+.ae-ai-field { margin-bottom: 14px; }
+.ae-ai-field label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #0e3b21;
+  margin-bottom: 6px;
+  letter-spacing: 0.02em;
+}
+.ae-ai-field input,
+.ae-ai-field select,
+.ae-ai-field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #d8d4c4;
+  border-radius: 8px;
+  font: inherit; font-size: 0.92rem;
+  background: #fbf8f1;
+  color: #0a1628;
+}
+.ae-ai-field input:focus,
+.ae-ai-field select:focus,
+.ae-ai-field textarea:focus {
+  outline: none; background: #ffffff; border-color: #1e8449;
+  box-shadow: 0 0 0 3px rgba(30, 132, 73, 0.16);
+}
+.ae-ai-field textarea { min-height: 100px; resize: vertical; }
+.ae-ai-buttons {
+  display: flex; gap: 10px; margin-top: 18px;
+}
+.ae-ai-buttons .ae-btn { flex: 1; padding: 12px; font-size: 0.95rem; }
+.ae-ai-result {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1.5px dashed #1e8449;
+  background: #f7f1e2;
+  border-radius: 10px;
+  display: none;
+}
+.ae-ai-result.is-visible { display: block; }
+.ae-ai-result h3 {
+  margin: 0 0 8px;
+  font-size: 0.84rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #145a32;
+}
+.ae-ai-result pre {
+  margin: 0;
+  padding: 12px;
+  background: #ffffff;
+  border-radius: 8px;
+  font-family: 'SF Mono', 'Menlo', Consolas, monospace;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: #0a1628;
+  max-height: 200px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  border: 1px solid #e3e0d8;
+}
+.ae-ai-result-actions { display: flex; gap: 8px; margin-top: 10px; }
+
+/* ─── Preview (right column) ─────────────────────────────────── */
+.ae-preview {
+  display: flex; flex-direction: column;
+  background: #f7f1e2;
+  overflow: hidden;
+}
+.ae-preview-head {
+  padding: 12px 18px;
+  background: #ffffff;
+  border-bottom: 1px solid #e3e0d8;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.ae-preview-title {
+  font-weight: 800; color: #0e3b21; font-size: 0.96rem;
+}
+.ae-preview-frame {
+  flex: 1;
+  border: 0;
+  width: 100%;
+  background: #ffffff;
+}
+.ae-preview-empty {
+  flex: 1;
+  display: grid; place-items: center;
+  padding: 32px;
+  text-align: center;
+  color: #5a6470;
+}
+.ae-preview-empty h3 { color: #0e3b21; margin: 0 0 6px; font-weight: 800; }
+
+/* ─── Toast ──────────────────────────────────────────────────── */
+.ae-toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: #145a32;
+  color: #fffdf6;
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-size: 0.9rem; font-weight: 700;
+  box-shadow: 0 8px 28px rgba(20, 90, 50, 0.40);
+  z-index: 200;
+  transform: translateY(80px);
+  opacity: 0;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+  max-width: 360px;
+}
+.ae-toast.is-visible { transform: translateY(0); opacity: 1; }
+.ae-toast.is-error { background: #80261b; }
+.ae-toast a { color: #ffe8a7; font-weight: 800; }
+
+/* ─── Auth gate ──────────────────────────────────────────────── */
+.ae-auth-gate {
+  max-width: 480px;
+  margin: 80px auto;
+  padding: 32px;
+  background: #ffffff;
+  border: 1px solid #e3e0d8;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(20,90,50,0.08);
+}
+.ae-auth-gate h2 { margin: 0 0 6px; color: #0e3b21; font-weight: 800; }
+.ae-auth-gate p  { color: #5a6470; margin: 0 0 16px; line-height: 1.55; }
+.ae-auth-gate input[type="password"] {
+  width: 100%; padding: 11px 14px;
+  border: 1.5px solid #d8d4c4; border-radius: 10px;
+  font: inherit; margin-bottom: 12px;
+}
+.ae-auth-gate input[type="password"]:focus {
+  outline: none; border-color: #1e8449; box-shadow: 0 0 0 3px rgba(30,132,73,0.16);
+}
+.ae-auth-error {
+  color: #80261b;
+  background: rgba(192,57,43,0.08);
+  border: 1px solid rgba(192,57,43,0.32);
+  padding: 8px 12px; border-radius: 8px;
+  font-size: 0.86rem; margin-bottom: 12px;
+  display: none;
+}
+.ae-auth-error.is-visible { display: block; }
+</style>
+
+<!-- ─── Auth gate ──────────────────────────────────────────────── -->
+<div class="ae-auth-gate" id="ae-auth-gate" hidden>
+  <h2>Admin sign-in</h2>
+  <p>Enter the PNEC admin key to open the Live Theme Editor. The key stays in your browser session only — never in the URL.</p>
+  <div class="ae-auth-error" id="ae-auth-error">Wrong key. Try again or check with the board.</div>
+  <input type="password" id="ae-auth-input" placeholder="Admin key" autocomplete="off">
+  <button type="button" class="ae-btn is-primary" id="ae-auth-submit" style="width:100%;padding:12px;font-size:0.95rem">Sign in</button>
+</div>
+
+<!-- ─── Main app ───────────────────────────────────────────────── -->
+<div id="ae-app" hidden>
+  <header class="ae-topbar">
+    <div class="ae-topbar-left">
+      <h1>Live Theme Editor</h1>
+      <p>Edit any page, publish straight to GitHub. No code review required.</p>
+    </div>
+    <div class="ae-topbar-right">
+      <span class="ae-status-pill is-saved" id="ae-status">Synced</span>
+      <button type="button" class="ae-btn" id="ae-ai-open">✨ Generate with AI</button>
+      <button type="button" class="ae-btn is-primary" id="ae-publish">Publish to GitHub →</button>
+    </div>
+  </header>
+
+  <div class="ae-shell">
+    <!-- ─ Page list ─────────────────────────────────────── -->
+    <aside class="ae-sidebar" id="ae-sidebar">
+      <!-- groups injected by JS so the sidebar mirrors the real nav + footer -->
+    </aside>
+
+    <!-- ─ Editor ────────────────────────────────────────── -->
+    <main class="ae-editor">
+      <div class="ae-editor-head">
+        <div>
+          <div class="ae-editor-head-title" id="ae-editor-title">Pick a page from the left</div>
+          <div class="ae-editor-head-path" id="ae-editor-path"></div>
+        </div>
+        <div>
+          <button type="button" class="ae-btn is-ghost" id="ae-reload" title="Reload current file from GitHub">↻ Reload</button>
+        </div>
+      </div>
+      <textarea class="ae-editor-textarea" id="ae-source" spellcheck="false" placeholder="Page source will appear here once you pick a page."></textarea>
+      <div class="ae-editor-foot">
+        <div id="ae-editor-hint">Tip: edit any text or HTML, then click <strong>Publish to GitHub</strong>. The site rebuilds in ~5 min.</div>
+        <div class="ae-editor-counter" id="ae-counter">0 chars</div>
+      </div>
+    </main>
+
+    <!-- ─ Live preview ──────────────────────────────────── -->
+    <aside class="ae-preview" id="ae-preview-wrap">
+      <div class="ae-preview-head">
+        <span class="ae-preview-title">Live preview</span>
+        <button type="button" class="ae-btn is-ghost" id="ae-preview-refresh">↻ Refresh</button>
+      </div>
+      <div class="ae-preview-empty" id="ae-preview-empty">
+        <div>
+          <h3>Pick a page</h3>
+          <p>The live preview will load here once you select a page from the left.</p>
+        </div>
+      </div>
+      <iframe class="ae-preview-frame" id="ae-preview-frame" hidden></iframe>
+    </aside>
+  </div>
+</div>
+
+<!-- ─── AI modal ───────────────────────────────────────────────── -->
+<div class="ae-ai-modal" id="ae-ai-modal" role="dialog" aria-labelledby="ae-ai-title">
+  <div class="ae-ai-card">
+    <h2 id="ae-ai-title">✨ Generate a section with AI</h2>
+    <p class="sub">Describe what you want the new section to say. PNEC's brand voice (neighborly, concrete, never alarmist) is built in. Generated by Groq · <code>llama-3.3-70b-versatile</code>.</p>
+
+    <div class="ae-ai-field">
+      <label for="ae-ai-kind">Section kind</label>
+      <select id="ae-ai-kind">
+        <option value="hero">Hero (big intro at the top of a page)</option>
+        <option value="card_list">Card list (3-4 features or programs)</option>
+        <option value="image_with_text">Image + text (side-by-side)</option>
+        <option value="cta">Call to action (single button + headline)</option>
+        <option value="faq">FAQ (question + answer pairs)</option>
+        <option value="text" selected>Plain text section</option>
+      </select>
+    </div>
+
+    <div class="ae-ai-field">
+      <label for="ae-ai-tone">Tone</label>
+      <select id="ae-ai-tone">
+        <option value="neighborly" selected>Neighborly (default)</option>
+        <option value="urgent">Urgent (red-flag day, evacuation)</option>
+        <option value="formal">Formal (board / partner-facing)</option>
+      </select>
+    </div>
+
+    <div class="ae-ai-field">
+      <label for="ae-ai-prompt">Describe the section</label>
+      <textarea id="ae-ai-prompt" placeholder="e.g. 'A friendly hero block welcoming new Poway residents to PNEC, explaining what we do in 2-3 sentences and inviting them to find their neighborhood coordinator.'"></textarea>
+    </div>
+
+    <div class="ae-ai-buttons">
+      <button type="button" class="ae-btn" id="ae-ai-cancel">Cancel</button>
+      <button type="button" class="ae-btn is-primary" id="ae-ai-generate">Generate</button>
+    </div>
+
+    <div class="ae-ai-result" id="ae-ai-result">
+      <h3>Generated HTML</h3>
+      <pre id="ae-ai-output"></pre>
+      <div class="ae-ai-result-actions">
+        <button type="button" class="ae-btn is-primary" id="ae-ai-insert">Insert at cursor</button>
+        <button type="button" class="ae-btn" id="ae-ai-copy">Copy to clipboard</button>
+        <button type="button" class="ae-btn" id="ae-ai-regen">Regenerate</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="ae-toast" id="ae-toast"></div>
+
+<script>
+(function() {
+  // ──────────────────────────────────────────────────────────────────
+  // Config
+  // ──────────────────────────────────────────────────────────────────
+  var API_BASE = (window.PNEC_API_BASE || (
+    (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+      ? 'http://127.0.0.1:8425'
+      : 'https://beasts.opencodingsociety.com'
+  ));
+
+  /* PAGE GROUPS — mirror the real nav + footer + admin surface.
+     Every entry has: { label, path (in repo), preview (live URL path) }
+     `path` is the file in the GitHub repo, `preview` is what the
+     iframe loads. Many marketing pages render at /pages/<slug>.html
+     directly. */
+  var GROUPS = [
+    { title: 'Main navigation', items: [
+      { label: 'Home',                          path: 'index.html',                                       preview: '/' },
+      { label: 'About',                         path: 'pages/about.html',                                 preview: '/pages/about.html' },
+      { label: 'Programs & Services',           path: 'pages/programs-and-services.html',                 preview: '/pages/programs-and-services.html' },
+      { label: 'Preparedness & Help',           path: 'pages/preparedness-resources.html',                preview: '/pages/preparedness-resources.html' },
+      { label: 'Community Events',              path: 'pages/community-events-and-activities.html',       preview: '/pages/community-events-and-activities.html' },
+      { label: 'Find Your Neighborhood',        path: 'pages/find-your-neighborhood.html',                preview: '/pages/find-your-neighborhood.html' },
+      { label: 'Sign in / Register',            path: 'pages/register.html',                              preview: '/pages/register.html' },
+    ]},
+    { title: 'Footer links', items: [
+      { label: 'Volunteer',                     path: 'pages/volunteer.html',                             preview: '/pages/volunteer.html' },
+      { label: 'Donate',                        path: 'pages/donate.html',                                preview: '/donation-form/' },
+      { label: 'Contact',                       path: 'pages/contact.html',                               preview: '/pages/contact.html' },
+      { label: 'Events Archive',                path: 'pages/events-archive.html',                        preview: '/pages/events-archive.html' },
+      { label: 'Privacy Policy',                path: 'pages/privacy.html',                               preview: '/pages/privacy.html' },
+      { label: 'Security',                      path: 'pages/security.html',                              preview: '/pages/security.html' },
+    ]},
+    { title: 'Resource pages', items: [
+      { label: 'Emergency Kit',                 path: 'pages/kit.html',                                   preview: '/pages/kit.html' },
+      { label: 'Checklist',                     path: 'pages/checklist.html',                             preview: '/pages/checklist.html' },
+      { label: 'Gallery',                       path: 'pages/gallery.html',                               preview: '/pages/gallery.html' },
+      { label: 'Poway Statistics',              path: 'pages/poway-statistics-and-information.html',      preview: '/pages/poway-statistics-and-information.html' },
+      { label: 'Role Quiz',                     path: 'pages/role-quiz.html',                             preview: '/pages/role-quiz.html' },
+      { label: 'Onboarding',                    path: 'pages/onboarding.html',                            preview: '/pages/onboarding.html' },
+      { label: 'Forgot Password',               path: 'pages/forgot-password.html',                       preview: '/pages/forgot-password.html' },
+    ]},
+    { title: 'Admin (internal)', items: [
+      { label: 'Profile',                       path: 'pages/profile.html',                               preview: '/pages/profile.html' },
+      { label: 'Dashboard',                     path: 'pages/dashboard.html',                             preview: '/pages/dashboard.html' },
+      { label: 'Admin Hub',                     path: 'pages/admin.html',                                 preview: '/pages/admin.html' },
+      { label: 'Admin · Security',              path: 'pages/admin-security.html',                        preview: '/pages/admin-security.html' },
+      { label: 'Admin · Volunteer',             path: 'pages/admin-volunteer.html',                       preview: '/pages/admin-volunteer.html' },
+      { label: 'Admin · Chatbot analytics',     path: 'pages/admin-chatbot-analytics.html',               preview: '/pages/admin-chatbot-analytics.html' },
+    ]},
+    { title: 'Shared layout', items: [
+      { label: 'Site header (Poway live body)', path: '_includes/poway-live-body.html',                   preview: '/' },
+      { label: 'Site footer (auth)',            path: '_includes/poway-auth-footer.html',                 preview: '/' },
+      { label: 'Modern footer',                 path: '_includes/footer.html',                            preview: '/' },
+      { label: 'Chatbot widget include',        path: '_includes/chatbot/chatbot-widget.html',            preview: '/' },
+      { label: 'Neighborhood map include',      path: '_includes/poway-neighborhood-map.html',            preview: '/pages/find-your-neighborhood.html' },
+    ]},
+    { title: 'Site config', items: [
+      { label: 'Jekyll _config.yml',            path: '_config.yml',                                      preview: '/' },
+      { label: 'Footer polish CSS',             path: 'assets/css/footer-polish.css',                     preview: '/' },
+      { label: 'Chatbot CSS',                   path: 'assets/css/chatbot.css',                           preview: '/' },
+      { label: 'Neighborhood map CSS',          path: 'assets/css/poway-neighborhood-map.css',            preview: '/pages/find-your-neighborhood.html' },
+      { label: 'Neighborhood data JSON',        path: 'assets/data/poway-neighborhoods.json',             preview: '/pages/find-your-neighborhood.html', badge: 'data' },
+    ]},
+  ];
+
+  // ──────────────────────────────────────────────────────────────────
+  // State
+  // ──────────────────────────────────────────────────────────────────
+  var adminKey   = sessionStorage.getItem('pnec_admin_key') || '';
+  var current    = null;     // { path, label, preview, originalContent }
+  var savedDigest= null;     // last server-saved content hash
+  var dirty      = false;
+  var previewDebounce = null;
+
+  // ──────────────────────────────────────────────────────────────────
+  // Helpers
+  // ──────────────────────────────────────────────────────────────────
+  function $(id) { return document.getElementById(id); }
+
+  function toast(msg, opts) {
+    var el = $('ae-toast');
+    if (!el) return;
+    el.innerHTML = msg;
+    el.classList.toggle('is-error', !!(opts && opts.error));
+    el.classList.add('is-visible');
+    clearTimeout(el._t);
+    el._t = setTimeout(function() { el.classList.remove('is-visible'); }, (opts && opts.ms) || 4000);
+  }
+
+  function setStatus(state, label) {
+    var el = $('ae-status');
+    el.className = 'ae-status-pill is-' + state;
+    el.textContent = label;
+  }
+
+  function digest(s) {
+    var h = 0;
+    for (var i = 0; i < s.length; i++) h = ((h<<5)-h + s.charCodeAt(i)) | 0;
+    return String(h);
+  }
+
+  function setDirty(d) {
+    dirty = d;
+    if (d) setStatus('dirty', 'Unsaved changes');
+    else   setStatus('saved', 'Synced with GitHub');
+  }
+
+  function apiHeaders(extra) {
+    var h = { 'Accept': 'application/json', 'X-PNEC-Admin-Key': adminKey };
+    if (extra) Object.keys(extra).forEach(function(k) { h[k] = extra[k]; });
+    return h;
+  }
+
+  // ──────────────────────────────────────────────────────────────────
+  // Auth
+  // ──────────────────────────────────────────────────────────────────
+  $('ae-auth-submit').addEventListener('click', tryAuth);
+  $('ae-auth-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') tryAuth();
+  });
+
+  function tryAuth() {
+    var k = ($('ae-auth-input').value || '').trim();
+    if (!k) return;
+    adminKey = k;
+    sessionStorage.setItem('pnec_admin_key', k);
+    $('ae-auth-error').classList.remove('is-visible');
+    // Verify by attempting a GET against any file
+    fetch(API_BASE + '/api/admin/publish/file?path=index.html', {
+      method: 'GET', headers: apiHeaders(),
+    }).then(function(r) {
+      if (r.status === 401) {
+        $('ae-auth-error').classList.add('is-visible');
+        return;
+      }
+      showApp();
+    }).catch(function() {
+      $('ae-auth-error').classList.add('is-visible');
+    });
+  }
+
+  function showApp() {
+    $('ae-auth-gate').hidden = true;
+    $('ae-app').hidden = false;
+    renderSidebar();
+  }
+
+  // ──────────────────────────────────────────────────────────────────
+  // Sidebar render
+  // ──────────────────────────────────────────────────────────────────
+  function renderSidebar() {
+    var sb = $('ae-sidebar');
+    sb.innerHTML = GROUPS.map(function(g) {
+      return ''
+        + '<div class="ae-sidebar-section">'
+        +   '<h3 class="ae-sidebar-section-title">' + esc(g.title) + '</h3>'
+        +   '<ul class="ae-page-list">'
+        +     g.items.map(function(it) {
+                return ''
+                  + '<li class="ae-page-item" data-path="' + esc(it.path) + '" data-preview="' + esc(it.preview) + '" data-label="' + esc(it.label) + '">'
+                  +   icon('file')
+                  +   '<span>' + esc(it.label) + '</span>'
+                  +   (it.badge ? '<span class="ae-page-item-badge">' + esc(it.badge) + '</span>' : '')
+                  + '</li>';
+              }).join('')
+        +   '</ul>'
+        + '</div>';
+    }).join('');
+    sb.querySelectorAll('.ae-page-item').forEach(function(li) {
+      li.addEventListener('click', function() { selectPage({
+        path: li.getAttribute('data-path'),
+        preview: li.getAttribute('data-preview'),
+        label: li.getAttribute('data-label'),
+      }); });
+    });
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function icon(kind) {
+    if (kind === 'file') return '<svg class="ae-page-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+    return '';
+  }
+
+  // ──────────────────────────────────────────────────────────────────
+  // Page selection + load
+  // ──────────────────────────────────────────────────────────────────
+  function selectPage(p) {
+    if (dirty && !confirm('You have unsaved changes. Switch pages anyway?')) return;
+    $('ae-sidebar').querySelectorAll('.ae-page-item').forEach(function(li) {
+      li.classList.toggle('is-active', li.getAttribute('data-path') === p.path);
+    });
+    current = { path: p.path, preview: p.preview, label: p.label, originalContent: '' };
+    $('ae-editor-title').textContent = p.label;
+    $('ae-editor-path').textContent  = p.path;
+    $('ae-source').value = 'Loading…';
+    setStatus('publishing', 'Loading from GitHub…');
+
+    fetch(API_BASE + '/api/admin/publish/file?path=' + encodeURIComponent(p.path), {
+      method: 'GET', headers: apiHeaders(),
+    }).then(function(r) { return r.json(); }).then(function(j) {
+      if (!j.ok) throw new Error(j.detail || ('HTTP ' + (j.status || '???')));
+      current.originalContent = j.content || '';
+      $('ae-source').value = current.originalContent;
+      savedDigest = digest(current.originalContent);
+      $('ae-counter').textContent = current.originalContent.length.toLocaleString() + ' chars';
+      setDirty(false);
+      // Live preview
+      var frame = $('ae-preview-frame');
+      $('ae-preview-empty').style.display = 'none';
+      frame.hidden = false;
+      frame.src = (location.protocol + '//' + location.host) + p.preview + (p.preview.indexOf('?') >= 0 ? '&' : '?') + 'cms_preview=1&t=' + Date.now();
+    }).catch(function(err) {
+      $('ae-source').value = '';
+      setStatus('error', 'Load failed');
+      toast('Couldn\'t load <code>' + esc(p.path) + '</code>: ' + esc(String(err.message || err)), { error: true, ms: 7000 });
+    });
+  }
+
+  // ──────────────────────────────────────────────────────────────────
+  // Edit + reload
+  // ──────────────────────────────────────────────────────────────────
+  $('ae-source').addEventListener('input', function() {
+    var v = $('ae-source').value;
+    $('ae-counter').textContent = v.length.toLocaleString() + ' chars';
+    if (current) {
+      var d = digest(v);
+      setDirty(d !== savedDigest);
+    }
+    schedulePreviewRefresh();
+  });
+
+  $('ae-reload').addEventListener('click', function() {
+    if (!current) return;
+    if (dirty && !confirm('Reload from GitHub will discard your unsaved changes. Continue?')) return;
+    selectPage(current);
+  });
+
+  $('ae-preview-refresh').addEventListener('click', function() {
+    var f = $('ae-preview-frame');
+    if (f && f.src) f.src = f.src;
+  });
+
+  function schedulePreviewRefresh() {
+    // We can't update the iframe to show local-only edits (it's
+    // pointed at the live URL). After publish, the iframe re-fetches
+    // automatically. So this is reserved for future inline-preview
+    // (would require a server endpoint that renders a draft).
+  }
+
+  // ──────────────────────────────────────────────────────────────────
+  // Publish
+  // ──────────────────────────────────────────────────────────────────
+  $('ae-publish').addEventListener('click', publish);
+
+  function publish() {
+    if (!current) { toast('Pick a page first.', { error: true }); return; }
+    var content = $('ae-source').value;
+    if (!content) { toast('Editor is empty — nothing to publish.', { error: true }); return; }
+    var d = digest(content);
+    if (d === savedDigest) { toast('No changes to publish.', {}); return; }
+
+    setStatus('publishing', 'Publishing to GitHub…');
+    $('ae-publish').disabled = true;
+    $('ae-publish').textContent = 'Publishing…';
+
+    var msg = prompt('Commit message:', 'Edit ' + current.label + ' via Live Theme Editor') || ('Edit ' + current.label + ' via Live Theme Editor');
+
+    fetch(API_BASE + '/api/admin/publish/file', {
+      method: 'POST',
+      headers: apiHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ path: current.path, content: content, message: msg })
+    }).then(function(r) { return r.json().then(function(j) { return { ok: r.ok, j: j, status: r.status }; }); })
+      .then(function(res) {
+        if (!res.ok || !res.j.ok) {
+          var detail = (res.j && (res.j.detail || res.j.error || res.j.message)) || ('Server ' + res.status);
+          throw new Error(detail);
+        }
+        savedDigest = d;
+        current.originalContent = content;
+        setDirty(false);
+        toast('Published! Commit <a href="' + esc(res.j.html_url || '#') + '" target="_blank" rel="noopener">'
+              + esc((res.j.commit_sha || '').slice(0, 7))
+              + '</a> — Pages rebuilds in ~5 min.', { ms: 8000 });
+      })
+      .catch(function(e) {
+        setStatus('error', 'Publish failed');
+        toast('Publish failed: ' + esc(String(e.message || e)), { error: true, ms: 8000 });
+      })
+      .finally(function() {
+        $('ae-publish').disabled = false;
+        $('ae-publish').textContent = 'Publish to GitHub →';
+      });
+  }
+
+  // ──────────────────────────────────────────────────────────────────
+  // AI modal
+  // ──────────────────────────────────────────────────────────────────
+  var aiModal = $('ae-ai-modal');
+  $('ae-ai-open').addEventListener('click', function() { aiModal.classList.add('is-open'); });
+  $('ae-ai-cancel').addEventListener('click', function() { aiModal.classList.remove('is-open'); });
+  aiModal.addEventListener('click', function(ev) {
+    if (ev.target === aiModal) aiModal.classList.remove('is-open');
+  });
+
+  $('ae-ai-generate').addEventListener('click', generateAI);
+  $('ae-ai-regen').addEventListener('click', generateAI);
+
+  function generateAI() {
+    var prompt = ($('ae-ai-prompt').value || '').trim();
+    if (!prompt) { toast('Type a description first.', { error: true }); return; }
+    $('ae-ai-generate').disabled = true;
+    $('ae-ai-generate').textContent = 'Generating…';
+
+    fetch(API_BASE + '/api/admin/ai/section', {
+      method: 'POST',
+      headers: apiHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({
+        prompt: prompt,
+        section_kind: $('ae-ai-kind').value,
+        tone: $('ae-ai-tone').value,
+        page_context: current ? current.label : '',
+      })
+    }).then(function(r) { return r.json().then(function(j) { return { ok: r.ok, j: j }; }); })
+      .then(function(res) {
+        if (!res.ok || !res.j.ok) throw new Error((res.j && (res.j.detail || res.j.error)) || 'AI error');
+        $('ae-ai-output').textContent = res.j.html || '';
+        $('ae-ai-result').classList.add('is-visible');
+      })
+      .catch(function(e) {
+        toast('AI failed: ' + esc(String(e.message || e)), { error: true });
+      })
+      .finally(function() {
+        $('ae-ai-generate').disabled = false;
+        $('ae-ai-generate').textContent = 'Generate';
+      });
+  }
+
+  $('ae-ai-insert').addEventListener('click', function() {
+    var html = $('ae-ai-output').textContent;
+    if (!html) return;
+    var ta = $('ae-source');
+    var cur = ta.selectionStart || ta.value.length;
+    var end = ta.selectionEnd || cur;
+    ta.value = ta.value.slice(0, cur) + '\n\n' + html + '\n\n' + ta.value.slice(end);
+    ta.dispatchEvent(new Event('input'));
+    aiModal.classList.remove('is-open');
+    toast('Inserted at cursor — review the source, then click <strong>Publish</strong>.', { ms: 6000 });
+  });
+
+  $('ae-ai-copy').addEventListener('click', function() {
+    var html = $('ae-ai-output').textContent;
+    if (!html) return;
+    navigator.clipboard.writeText(html).then(function() {
+      toast('Copied to clipboard.', {});
+    });
+  });
+
+  // ──────────────────────────────────────────────────────────────────
+  // Keyboard shortcuts
+  // ──────────────────────────────────────────────────────────────────
+  document.addEventListener('keydown', function(ev) {
+    if ((ev.metaKey || ev.ctrlKey) && ev.key === 's') {
+      ev.preventDefault();
+      publish();
+    }
+    if (ev.key === 'Escape' && aiModal.classList.contains('is-open')) {
+      aiModal.classList.remove('is-open');
+    }
+  });
+
+  // ──────────────────────────────────────────────────────────────────
+  // Boot
+  // ──────────────────────────────────────────────────────────────────
+  function boot() {
+    if (!adminKey) { $('ae-auth-gate').hidden = false; return; }
+    // Verify key
+    fetch(API_BASE + '/api/admin/publish/file?path=index.html', {
+      method: 'GET', headers: apiHeaders(),
+    }).then(function(r) {
+      if (r.status === 401) { $('ae-auth-gate').hidden = false; return; }
+      showApp();
+    }).catch(function() {
+      $('ae-auth-gate').hidden = false;
+    });
+  }
+  boot();
+})();
+</script>
