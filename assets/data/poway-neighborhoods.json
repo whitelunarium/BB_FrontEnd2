@@ -107,7 +107,48 @@
           0.49564,
           0.68059
         ]
-      ]
+      ],
+      "lat": 32.95174,
+      "lng": -117.05519,
+      "nearest_fire_station": {
+        "name": "Station 1",
+        "address": "13050 Community Rd",
+        "cover": "Central Poway",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "Very High",
+      "fhsz_advice": "Highest wildfire risk. Zone Zero (0–5 ft) hardening is CRITICAL — no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days — do not wait for an order.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #1 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 1",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 1 (Heritage II — Northpointe).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 2,
@@ -185,7 +226,48 @@
           0.42224,
           0.33243
         ]
-      ]
+      ],
+      "lat": 32.98372,
+      "lng": -117.06678,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Mickey Cafagna Community Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-668-4569",
+        "note": "Primary city cooling center"
+      },
+      "fhsz": "Very High",
+      "fhsz_advice": "Highest wildfire risk. Zone Zero (0–5 ft) hardening is CRITICAL — no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days — do not wait for an order.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #2 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 2",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 2 (Highlands Ranch).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 3,
@@ -274,7 +356,48 @@
           0.19549,
           0.85033
         ]
-      ]
+      ],
+      "lat": 32.935,
+      "lng": -117.09023,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "Very High",
+      "fhsz_advice": "Highest wildfire risk. Zone Zero (0–5 ft) hardening is CRITICAL — no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days — do not wait for an order.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #3 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 3",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 3 (Old Coach).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 4,
@@ -368,7 +491,48 @@
           0.38953,
           0.42896
         ]
-      ]
+      ],
+      "lat": 32.97813,
+      "lng": -117.07037,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Mickey Cafagna Community Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-668-4569",
+        "note": "Primary city cooling center"
+      },
+      "fhsz": "High",
+      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5–30 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #4 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 4",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 4 (Lomas Verde).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 5,
@@ -445,7 +609,48 @@
           0.31686,
           0.27495
         ]
-      ]
+      ],
+      "lat": 32.99239,
+      "lng": -117.07469,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Mickey Cafagna Community Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-668-4569",
+        "note": "Primary city cooling center"
+      },
+      "fhsz": "High",
+      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5–30 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #5 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 5",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 5 (Vineland Hills).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 6,
@@ -531,7 +736,48 @@
           0.74709,
           0.14371
         ]
-      ]
+      ],
+      "lat": 33.00888,
+      "lng": -117.02589,
+      "nearest_fire_station": {
+        "name": "Station 2",
+        "address": "16912 Westling Ct",
+        "cover": "NE / Espola corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Library",
+        "address": "13137 Poway Rd",
+        "phone": "858-513-2900",
+        "note": "Quiet, air-conditioned"
+      },
+      "fhsz": "Very High",
+      "fhsz_advice": "Highest wildfire risk. Zone Zero (0–5 ft) hardening is CRITICAL — no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days — do not wait for an order.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #6 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 6",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 6 (Stoneridge Country Club).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 7,
@@ -576,7 +822,48 @@
           0.46148,
           0.49295
         ]
-      ]
+      ],
+      "lat": 32.97204,
+      "lng": -117.06669,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Mickey Cafagna Community Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-668-4569",
+        "note": "Primary city cooling center"
+      },
+      "fhsz": "High",
+      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5–30 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #7 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 7",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 7 (Old Coach Collection).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 8,
@@ -609,7 +896,48 @@
           0.38227,
           0.4897
         ]
-      ]
+      ],
+      "lat": 32.9703,
+      "lng": -117.07037,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Mickey Cafagna Community Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-668-4569",
+        "note": "Primary city cooling center"
+      },
+      "fhsz": "High",
+      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5–30 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #8 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 8",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 8 (Serena).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 9,
@@ -678,7 +1006,48 @@
           0.66279,
           0.16974
         ]
-      ]
+      ],
+      "lat": 33.00861,
+      "lng": -117.05033,
+      "nearest_fire_station": {
+        "name": "Station 2",
+        "address": "16912 Westling Ct",
+        "cover": "NE / Espola corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Library",
+        "address": "13137 Poway Rd",
+        "phone": "858-513-2900",
+        "note": "Quiet, air-conditioned"
+      },
+      "fhsz": "High",
+      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5–30 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #9 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 9",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 9 (Summerfield Estates).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 10,
@@ -727,7 +1096,48 @@
           0.3423,
           0.19631
         ]
-      ]
+      ],
+      "lat": 33.00111,
+      "lng": -117.07091,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Mickey Cafagna Community Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-668-4569",
+        "note": "Primary city cooling center"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #10 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 10",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 10 (Valle Verde).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 11,
@@ -808,7 +1218,48 @@
           0.34157,
           0.3487
         ]
-      ]
+      ],
+      "lat": 32.98389,
+      "lng": -117.07397,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Mickey Cafagna Community Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-668-4569",
+        "note": "Primary city cooling center"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #11 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 11",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 11 (Silver Saddle).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 12,
@@ -889,7 +1340,48 @@
           0.42878,
           0.26356
         ]
-      ]
+      ],
+      "lat": 32.99345,
+      "lng": -117.06813,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Mickey Cafagna Community Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-668-4569",
+        "note": "Primary city cooling center"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #12 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 12",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 12 (Green Valley Estates).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 13,
@@ -926,7 +1418,48 @@
           0.3234,
           0.30803
         ]
-      ]
+      ],
+      "lat": 32.98993,
+      "lng": -117.07819,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Mickey Cafagna Community Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-668-4569",
+        "note": "Primary city cooling center"
+      },
+      "fhsz": "High",
+      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5–30 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #13 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 13",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 13 (Bridlewood Americana).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 14,
@@ -995,7 +1528,48 @@
           0.32994,
           0.39913
         ]
-      ]
+      ],
+      "lat": 32.9783,
+      "lng": -117.07576,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Mickey Cafagna Community Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-668-4569",
+        "note": "Primary city cooling center"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #14 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 14",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 14 (The Grove).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 15,
@@ -1072,7 +1646,48 @@
           0.42805,
           0.39967
         ]
-      ]
+      ],
+      "lat": 32.97696,
+      "lng": -117.06219,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Mickey Cafagna Community Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-668-4569",
+        "note": "Primary city cooling center"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #15 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 15",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 15 (Stone Canyon).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 16,
@@ -1169,7 +1784,48 @@
           0.32195,
           0.39859
         ]
-      ]
+      ],
+      "lat": 32.97718,
+      "lng": -117.07559,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Mickey Cafagna Community Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-668-4569",
+        "note": "Primary city cooling center"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #16 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 16",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 16 (Green Valley Knolls).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 17,
@@ -1242,7 +1898,48 @@
           0.41279,
           0.4859
         ]
-      ]
+      ],
+      "lat": 32.97522,
+      "lng": -117.06723,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Mickey Cafagna Community Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-668-4569",
+        "note": "Primary city cooling center"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #17 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 17",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 17 (Green Valley Highlands).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 18,
@@ -1307,7 +2004,48 @@
           0.41279,
           0.43167
         ]
-      ]
+      ],
+      "lat": 32.97522,
+      "lng": -117.06714,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Mickey Cafagna Community Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-668-4569",
+        "note": "Primary city cooling center"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #18 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 18",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 18 (Green Valley Summit).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 19,
@@ -1396,7 +2134,48 @@
           0.43968,
           0.53308
         ]
-      ]
+      ],
+      "lat": 32.96701,
+      "lng": -117.06543,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Mickey Cafagna Community Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-668-4569",
+        "note": "Primary city cooling center"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #19 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 19",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 19 (Green Valley Estates South).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 20,
@@ -1429,7 +2208,48 @@
           0.44186,
           0.39967
         ]
-      ]
+      ],
+      "lat": 32.97713,
+      "lng": -117.0621,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Mickey Cafagna Community Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-668-4569",
+        "note": "Primary city cooling center"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #20 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 20",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 20 (Country Squire Estates).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 21,
@@ -1518,7 +2338,48 @@
           0.4673,
           0.52495
         ]
-      ]
+      ],
+      "lat": 32.96533,
+      "lng": -117.05797,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Mickey Cafagna Community Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-668-4569",
+        "note": "Primary city cooling center"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #21 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 21",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 21 (Bridlewood Lakeside).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 22,
@@ -1567,7 +2428,48 @@
           0.49491,
           0.44414
         ]
-      ]
+      ],
+      "lat": 32.97399,
+      "lng": -117.05357,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Mickey Cafagna Community Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-668-4569",
+        "note": "Primary city cooling center"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #22 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 22",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 22 (The Grove (East)).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 23,
@@ -1664,7 +2566,48 @@
           0.50509,
           0.5179
         ]
-      ]
+      ],
+      "lat": 32.96482,
+      "lng": -117.05537,
+      "nearest_fire_station": {
+        "name": "Station 4",
+        "address": "14391 Midland Rd",
+        "cover": "Old Poway / Midland",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Mickey Cafagna Community Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-668-4569",
+        "note": "Primary city cooling center"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #23 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 23",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 23 (Hilltop Circle).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 24,
@@ -1757,7 +2700,48 @@
           0.30233,
           0.56996
         ]
-      ]
+      ],
+      "lat": 32.96382,
+      "lng": -117.0772,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Mickey Cafagna Community Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-668-4569",
+        "note": "Primary city cooling center"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #24 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 24",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 24 (La Manda).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 25,
@@ -1855,7 +2839,48 @@
           0.37573,
           0.55803
         ]
-      ]
+      ],
+      "lat": 32.9632,
+      "lng": -117.07226,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Mickey Cafagna Community Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-668-4569",
+        "note": "Primary city cooling center"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #25 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 25",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 25 (West Central Poway).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 26,
@@ -1888,7 +2913,48 @@
           0.38227,
           0.4897
         ]
-      ]
+      ],
+      "lat": 32.97109,
+      "lng": -117.071,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Mickey Cafagna Community Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-668-4569",
+        "note": "Primary city cooling center"
+      },
+      "fhsz": "High",
+      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5–30 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #26 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 26",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 26 (Williams Ranch).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 27,
@@ -1993,7 +3059,48 @@
           0.39971,
           0.5949
         ]
-      ]
+      ],
+      "lat": 32.95795,
+      "lng": -117.0684,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "High",
+      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5–30 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #27 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 27",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 27 (Del Poniente).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 28,
@@ -2070,7 +3177,48 @@
           0.3532,
           0.61171
         ]
-      ]
+      ],
+      "lat": 32.95772,
+      "lng": -117.07307,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "Very High",
+      "fhsz_advice": "Highest wildfire risk. Zone Zero (0–5 ft) hardening is CRITICAL — no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days — do not wait for an order.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #28 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 28",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 28 (High Valley).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 29,
@@ -2147,7 +3295,48 @@
           0.44186,
           0.58568
         ]
-      ]
+      ],
+      "lat": 32.95767,
+      "lng": -117.06103,
+      "nearest_fire_station": {
+        "name": "Station 1",
+        "address": "13050 Community Rd",
+        "cover": "Central Poway",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #29 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 29",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 29 (Colony).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 30,
@@ -2240,7 +3429,48 @@
           0.44331,
           0.59273
         ]
-      ]
+      ],
+      "lat": 32.95744,
+      "lng": -117.06121,
+      "nearest_fire_station": {
+        "name": "Station 1",
+        "address": "13050 Community Rd",
+        "cover": "Central Poway",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #30 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 30",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 30 (Rancho Arbolitos West).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 31,
@@ -2309,7 +3539,48 @@
           0.4593,
           0.5141
         ]
-      ]
+      ],
+      "lat": 32.96712,
+      "lng": -117.06534,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Mickey Cafagna Community Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-668-4569",
+        "note": "Primary city cooling center"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #31 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 31",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 31 (Huntington Gate).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 32,
@@ -2375,7 +3646,48 @@
           0.50509,
           0.5141
         ]
-      ]
+      ],
+      "lat": 32.96443,
+      "lng": -117.05707,
+      "nearest_fire_station": {
+        "name": "Station 4",
+        "address": "14391 Midland Rd",
+        "cover": "Old Poway / Midland",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Mickey Cafagna Community Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-668-4569",
+        "note": "Primary city cooling center"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #32 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 32",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 32 (East Central Poway).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 33,
@@ -2468,7 +3780,48 @@
           0.35247,
           0.61171
         ]
-      ]
+      ],
+      "lat": 32.95716,
+      "lng": -117.07316,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "Very High",
+      "fhsz_advice": "Highest wildfire risk. Zone Zero (0–5 ft) hardening is CRITICAL — no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days — do not wait for an order.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #33 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 33",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 33 (Rattlesnake Canyon).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 34,
@@ -2529,7 +3882,48 @@
           0.50872,
           0.61714
         ]
-      ]
+      ],
+      "lat": 32.9566,
+      "lng": -117.05429,
+      "nearest_fire_station": {
+        "name": "Station 1",
+        "address": "13050 Community Rd",
+        "cover": "Central Poway",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "Very High",
+      "fhsz_advice": "Highest wildfire risk. Zone Zero (0–5 ft) hardening is CRITICAL — no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days — do not wait for an order.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #34 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 34",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 34 (East Poway).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 35,
@@ -2626,7 +4020,48 @@
           0.42224,
           0.6513
         ]
-      ]
+      ],
+      "lat": 32.9528,
+      "lng": -117.06597,
+      "nearest_fire_station": {
+        "name": "Station 1",
+        "address": "13050 Community Rd",
+        "cover": "Central Poway",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #35 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 35",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 35 (Pomerado Pines).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 36,
@@ -2735,7 +4170,48 @@
           0.2311,
           0.67787
         ]
-      ]
+      ],
+      "lat": 32.95124,
+      "lng": -117.08053,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #36 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 36",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 36 (Poway Valley North).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 37,
@@ -2828,7 +4304,48 @@
           0.35102,
           0.71258
         ]
-      ]
+      ],
+      "lat": 32.95057,
+      "lng": -117.07855,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #37 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 37",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 37 (Palisades).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 38,
@@ -2909,7 +4426,48 @@
           0.31686,
           0.63124
         ]
-      ]
+      ],
+      "lat": 32.95532,
+      "lng": -117.08232,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #38 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 38",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 38 (Rancho Arbolitos East).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 39,
@@ -2982,7 +4540,48 @@
           0.37573,
           0.56453
         ]
-      ]
+      ],
+      "lat": 32.9632,
+      "lng": -117.07154,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Mickey Cafagna Community Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-668-4569",
+        "note": "Primary city cooling center"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #39 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 39",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 39 (Upper Windmill).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 40,
@@ -3059,7 +4658,48 @@
           0.35538,
           0.34544
         ]
-      ]
+      ],
+      "lat": 32.98356,
+      "lng": -117.08152,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Mickey Cafagna Community Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-668-4569",
+        "note": "Primary city cooling center"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #40 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 40",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 40 (Lower Windmill).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 41,
@@ -3137,7 +4777,48 @@
           0.39971,
           0.59111
         ]
-      ]
+      ],
+      "lat": 32.95308,
+      "lng": -117.06813,
+      "nearest_fire_station": {
+        "name": "Station 1",
+        "address": "13050 Community Rd",
+        "cover": "Central Poway",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #41 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 41",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 41 (Old Poway).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 42,
@@ -3222,7 +4903,48 @@
           0.52544,
           0.67137
         ]
-      ]
+      ],
+      "lat": 32.94867,
+      "lng": -117.05132,
+      "nearest_fire_station": {
+        "name": "Station 1",
+        "address": "13050 Community Rd",
+        "cover": "Central Poway",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #42 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 42",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 42 (Tierra Bonita).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 43,
@@ -3327,7 +5049,48 @@
           0.51163,
           0.62744
         ]
-      ]
+      ],
+      "lat": 32.95705,
+      "lng": -117.05366,
+      "nearest_fire_station": {
+        "name": "Station 1",
+        "address": "13050 Community Rd",
+        "cover": "Central Poway",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "High",
+      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5–30 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #43 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 43",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 43 (Sunrise Ranch).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 44,
@@ -3388,7 +5151,48 @@
           0.7173,
           0.62961
         ]
-      ]
+      ],
+      "lat": 32.95784,
+      "lng": -117.03721,
+      "nearest_fire_station": {
+        "name": "Station 1",
+        "address": "13050 Community Rd",
+        "cover": "Central Poway",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "High",
+      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5–30 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #44 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 44",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 44 (Poway Grade).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 45,
@@ -3465,7 +5269,48 @@
           0.38372,
           0.43818
         ]
-      ]
+      ],
+      "lat": 32.97808,
+      "lng": -117.07037,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Mickey Cafagna Community Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-668-4569",
+        "note": "Primary city cooling center"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #45 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 45",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 45 (Poway Valley South).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 46,
@@ -3554,7 +5399,48 @@
           0.46076,
           0.67896
         ]
-      ]
+      ],
+      "lat": 32.94861,
+      "lng": -117.05887,
+      "nearest_fire_station": {
+        "name": "Station 1",
+        "address": "13050 Community Rd",
+        "cover": "Central Poway",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #46 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 46",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 46 (Golden City).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 47,
@@ -3651,7 +5537,48 @@
           0.41788,
           0.6936
         ]
-      ]
+      ],
+      "lat": 32.94855,
+      "lng": -117.05887,
+      "nearest_fire_station": {
+        "name": "Station 1",
+        "address": "13050 Community Rd",
+        "cover": "Central Poway",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #47 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 47",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 47 (Country View).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 48,
@@ -3748,7 +5675,48 @@
           0.3561,
           0.71638
         ]
-      ]
+      ],
+      "lat": 32.94755,
+      "lng": -117.06884,
+      "nearest_fire_station": {
+        "name": "Station 1",
+        "address": "13050 Community Rd",
+        "cover": "Central Poway",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #48 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 48",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 48 (Poway Portals).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 49,
@@ -3834,7 +5802,48 @@
           0.49346,
           0.70282
         ]
-      ]
+      ],
+      "lat": 32.94654,
+      "lng": -117.05186,
+      "nearest_fire_station": {
+        "name": "Station 1",
+        "address": "13050 Community Rd",
+        "cover": "Central Poway",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "Very High",
+      "fhsz_advice": "Highest wildfire risk. Zone Zero (0–5 ft) hardening is CRITICAL — no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days — do not wait for an order.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #49 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 49",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 49 (Southwest Poway).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 50,
@@ -3935,7 +5944,48 @@
           0.33067,
           0.75759
         ]
-      ]
+      ],
+      "lat": 32.94514,
+      "lng": -117.08331,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #50 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 50",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 50 (Tustin Hills).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 51,
@@ -4036,7 +6086,48 @@
           0.28997,
           0.72397
         ]
-      ]
+      ],
+      "lat": 32.94598,
+      "lng": -117.0852,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #51 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 51",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 51 (Poway Royal Estates).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 52,
@@ -4097,7 +6188,48 @@
           0.34884,
           0.74566
         ]
-      ]
+      ],
+      "lat": 32.94542,
+      "lng": -117.07505,
+      "nearest_fire_station": {
+        "name": "Station 1",
+        "address": "13050 Community Rd",
+        "cover": "Central Poway",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #52 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 52",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 52 (Park Creek).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 53,
@@ -4190,7 +6322,48 @@
           0.5734,
           0.73482
         ]
-      ]
+      ],
+      "lat": 32.94475,
+      "lng": -117.04566,
+      "nearest_fire_station": {
+        "name": "Station 1",
+        "address": "13050 Community Rd",
+        "cover": "Central Poway",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #53 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 53",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 53 (Westgate).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 54,
@@ -4251,7 +6424,48 @@
           0.44186,
           0.73915
         ]
-      ]
+      ],
+      "lat": 32.94335,
+      "lng": -117.06183,
+      "nearest_fire_station": {
+        "name": "Station 1",
+        "address": "13050 Community Rd",
+        "cover": "Central Poway",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #54 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 54",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 54 (Gate Drive).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 55,
@@ -4340,7 +6554,48 @@
           0.22965,
           0.76573
         ]
-      ]
+      ],
+      "lat": 32.94268,
+      "lng": -117.08835,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "Moderate",
+      "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #55 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 55",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 55 (Ann-O-Reno Terrace).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 56,
@@ -4429,7 +6684,48 @@
           0.29578,
           0.79176
         ]
-      ]
+      ],
+      "lat": 32.93977,
+      "lng": -117.08098,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "Very High",
+      "fhsz_advice": "Highest wildfire risk. Zone Zero (0–5 ft) hardening is CRITICAL — no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days — do not wait for an order.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #56 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 56",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 56 (Garden Road South).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 57,
@@ -4538,7 +6834,48 @@
           0.31977,
           0.85087
         ]
-      ]
+      ],
+      "lat": 32.93603,
+      "lng": -117.07253,
+      "nearest_fire_station": {
+        "name": "Station 1",
+        "address": "13050 Community Rd",
+        "cover": "Central Poway",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "Very High",
+      "fhsz_advice": "Highest wildfire risk. Zone Zero (0–5 ft) hardening is CRITICAL — no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days — do not wait for an order.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #57 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 57",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 57 (Garden Road North).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 58,
@@ -4627,7 +6964,48 @@
           0.5923,
           0.68709
         ]
-      ]
+      ],
+      "lat": 32.95224,
+      "lng": -117.03056,
+      "nearest_fire_station": {
+        "name": "Station 1",
+        "address": "13050 Community Rd",
+        "cover": "Central Poway",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Library",
+        "address": "13137 Poway Rd",
+        "phone": "858-513-2900",
+        "note": "Quiet, air-conditioned"
+      },
+      "fhsz": "Very High",
+      "fhsz_advice": "Highest wildfire risk. Zone Zero (0–5 ft) hardening is CRITICAL — no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days — do not wait for an order.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #58 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 58",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 58 (Sycamore Creek).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 59,
@@ -4708,7 +7086,48 @@
           0.18241,
           0.85412
         ]
-      ]
+      ],
+      "lat": 32.935,
+      "lng": -117.09032,
+      "nearest_fire_station": {
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "cover": "West / I-15 corridor",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "High",
+      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5–30 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #59 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 59",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 59 (Rolling Hills Estates).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     },
     {
       "id": 60,
@@ -4754,7 +7173,122 @@
           0.25727,
           0.84653
         ]
-      ]
+      ],
+      "lat": 32.935,
+      "lng": -117.08232,
+      "nearest_fire_station": {
+        "name": "Station 1",
+        "address": "13050 Community Rd",
+        "cover": "Central Poway",
+        "phone_non_emergency": "858-668-4471"
+      },
+      "nearest_hospital": {
+        "name": "Palomar Medical Center Poway",
+        "address": "15615 Pomerado Rd, Poway 92064",
+        "phone": "858-613-4000",
+        "er": "24/7 emergency department"
+      },
+      "nearest_cooling_center": {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "note": "Priority for 60+"
+      },
+      "fhsz": "Very High",
+      "fhsz_advice": "Highest wildfire risk. Zone Zero (0–5 ft) hardening is CRITICAL — no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days — do not wait for an order.",
+      "block_party": {
+        "available": true,
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #60 to schedule."
+      },
+      "contact_protocol": {
+        "method": "email",
+        "address": "powaynec@gmail.com",
+        "subject": "NEC contact request — neighborhood 60",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 60 (Creek Rd / Beeler Canyon).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+      },
+      "quick_contacts": {
+        "emergency": "911",
+        "sheriff_non_emergency": "858-565-5200",
+        "pnec_homebound": "858-668-1250",
+        "sd_211": "2-1-1 (or 858-300-1211)",
+        "alert_san_diego": "https://readysandiego.org/alertsandiego",
+        "sdge_psps": "https://www.sdge.com/psps"
+      }
     }
-  ]
+  ],
+  "poway_resources": {
+    "fire_stations": [
+      {
+        "id": 1,
+        "name": "Station 1",
+        "address": "13050 Community Rd",
+        "lat": 32.9605,
+        "lng": -117.0395,
+        "cover": "Central Poway"
+      },
+      {
+        "id": 2,
+        "name": "Station 2",
+        "address": "16912 Westling Ct",
+        "lat": 33.012,
+        "lng": -117.013,
+        "cover": "NE / Espola corridor"
+      },
+      {
+        "id": 3,
+        "name": "Station 3",
+        "address": "14322 Pomerado Rd",
+        "lat": 32.9785,
+        "lng": -117.067,
+        "cover": "West / I-15 corridor"
+      },
+      {
+        "id": 4,
+        "name": "Station 4",
+        "address": "14391 Midland Rd",
+        "lat": 32.9695,
+        "lng": -117.04,
+        "cover": "Old Poway / Midland"
+      }
+    ],
+    "fire_phone": "858-668-4471",
+    "hospital": {
+      "name": "Palomar Medical Center Poway",
+      "address": "15615 Pomerado Rd, Poway 92064",
+      "phone": "858-613-4000",
+      "er": "24/7 emergency department"
+    },
+    "cooling_centers": [
+      {
+        "name": "Mickey Cafagna Community Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-668-4569",
+        "lat": 32.961,
+        "lng": -117.0388,
+        "note": "Primary city cooling center"
+      },
+      {
+        "name": "Poway Library",
+        "address": "13137 Poway Rd",
+        "phone": "858-513-2900",
+        "lat": 32.9614,
+        "lng": -117.0367,
+        "note": "Quiet, air-conditioned"
+      },
+      {
+        "name": "Poway Senior Center",
+        "address": "13094 Civic Center Dr",
+        "phone": "858-748-6094",
+        "lat": 32.9609,
+        "lng": -117.0388,
+        "note": "Priority for 60+"
+      }
+    ],
+    "sheriff_non_emergency": "858-565-5200",
+    "sheriff_poway_station": {
+      "address": "13100 Bowron Rd",
+      "phone": "858-513-2800"
+    }
+  }
 }

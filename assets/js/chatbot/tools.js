@@ -280,19 +280,36 @@ async function tool_findNeighborhood(args) {
   }
   const top = matches[0];
   const wuiBadge = top.wui ? ` <span style="background:#c0392b;color:#fff;padding:1px 7px;border-radius:4px;font-size:0.7rem;font-weight:700;letter-spacing:0.04em;">WUI</span>` : '';
+  const fhszBadge = top.fhsz ? ` <span style="background:${top.fhsz === 'Very High' ? '#c0392b' : top.fhsz === 'High' ? '#e07a3f' : '#d4a04c'};color:#fff;padding:1px 7px;border-radius:4px;font-size:0.7rem;font-weight:700;letter-spacing:0.04em;">${_escape(top.fhsz)} FHSZ</span>` : '';
+
+  const fs = top.nearest_fire_station;
+  const hp = top.nearest_hospital;
+  const cc = top.nearest_cooling_center;
+  const qc = top.quick_contacts || {};
+
   const altsHtml = matches.length > 1
     ? `<p class="pnec-bot-data-card-body" style="margin-top:8px;font-size:0.84em;color:#5a6470;">Other matches: ${matches.slice(1, 5).map(m => `<a href="/pages/find-your-neighborhood.html#n${m.number}">#${m.number} ${_escape(m.name)}</a>`).join(', ')}</p>`
     : '';
+
   return {
     html: `
       <div class="pnec-bot-data-card">
-        <span class="pnec-bot-data-card-eyebrow">Neighborhood #${_escape(String(top.number))} · Zone ${_escape(top.zone || '?')}${wuiBadge}</span>
+        <span class="pnec-bot-data-card-eyebrow">Neighborhood #${_escape(String(top.number))} · Zone ${_escape(top.zone || '?')}${wuiBadge}${fhszBadge}</span>
         <h5 class="pnec-bot-data-card-title">${_escape(top.name)}</h5>
-        ${top.evac_guidance ? `<p class="pnec-bot-data-card-body"><strong>Evac:</strong> ${_escape(top.evac_guidance)}</p>` : ''}
-        ${top.notes ? `<p class="pnec-bot-data-card-body" style="margin-top:6px;font-style:italic;color:#5a6470;">${_escape(top.notes)}</p>` : ''}
-        <p class="pnec-bot-data-card-body" style="margin-top:8px;">For your NEC + ham operator contact, email <a href="mailto:powaynec@gmail.com?subject=NEC%20contact%20request%20%E2%80%94%20neighborhood%20${top.number}">powaynec@gmail.com</a> with neighborhood #${top.number}.</p>
+
+        ${top.evac_guidance ? `<p class="pnec-bot-data-card-body" style="margin-top:8px;"><strong>🧭 Evac:</strong> ${_escape(top.evac_guidance)}</p>` : ''}
+        ${top.fhsz_advice ? `<p class="pnec-bot-data-card-body" style="margin-top:6px;font-size:0.86em;"><strong>🔥 ${_escape(top.fhsz)} fire-hazard:</strong> ${_escape(top.fhsz_advice)}</p>` : ''}
+
+        ${fs ? `<p class="pnec-bot-data-card-body" style="margin-top:6px;font-size:0.86em;"><strong>🚒 Fire station:</strong> ${_escape(fs.name)} — ${_escape(fs.address)}. Non-emergency <a href="tel:${(fs.phone_non_emergency || '').replace(/[^\\d]/g,'')}">${_escape(fs.phone_non_emergency || '')}</a>; emergency <a href="tel:911">911</a>.</p>` : ''}
+        ${hp ? `<p class="pnec-bot-data-card-body" style="margin-top:6px;font-size:0.86em;"><strong>🏥 ER:</strong> ${_escape(hp.name)} — ${_escape(hp.address)}, <a href="tel:${(hp.phone || '').replace(/[^\\d]/g,'')}">${_escape(hp.phone || '')}</a>.</p>` : ''}
+        ${cc ? `<p class="pnec-bot-data-card-body" style="margin-top:6px;font-size:0.86em;"><strong>❄️ Cooling center:</strong> ${_escape(cc.name)} — ${_escape(cc.address)}, <a href="tel:${(cc.phone || '').replace(/[^\\d]/g,'')}">${_escape(cc.phone || '')}</a>.</p>` : ''}
+
+        <p class="pnec-bot-data-card-body" style="margin-top:8px;"><strong>📞 NEC + ham operator:</strong> PNEC sends coordinator contact by email (privacy). Email <a href="mailto:powaynec@gmail.com?subject=NEC%20contact%20request%20%E2%80%94%20neighborhood%20${top.number}">powaynec@gmail.com</a> — subject pre-filled with neighborhood <strong>#${top.number}</strong>. Reply within 1–2 days.</p>
+
+        ${qc.pnec_homebound ? `<p class="pnec-bot-data-card-body" style="margin-top:6px;font-size:0.86em;"><strong>Homebound helpline:</strong> <a href="tel:${qc.pnec_homebound.replace(/[^\\d]/g,'')}">${_escape(qc.pnec_homebound)}</a> · <strong>SD Sheriff non-emergency:</strong> <a href="tel:${(qc.sheriff_non_emergency || '').replace(/[^\\d]/g,'')}">${_escape(qc.sheriff_non_emergency || '')}</a></p>` : ''}
+
         ${altsHtml}
-        <a href="/pages/find-your-neighborhood.html#n${top.number}" target="_blank" style="margin-top:8px;display:inline-block;">Open on the interactive map →</a>
+        <a href="/pages/find-your-neighborhood.html#n${top.number}" target="_blank" style="margin-top:10px;display:inline-block;font-weight:700;">Open on the interactive map →</a>
       </div>`
   };
 }

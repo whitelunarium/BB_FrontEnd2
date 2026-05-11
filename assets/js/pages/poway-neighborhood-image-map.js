@@ -216,7 +216,19 @@
       C: 'Zone C — Neighborhood interior',
       D: 'Zone D — Deep urban / commercial',
     };
+    const fhszColors = {
+      'Very High': '#c0392b',
+      'High':      '#e07a3f',
+      'Moderate':  '#d4a04c',
+    };
+    const fhszColor = fhszColors[n.fhsz] || '#7a6a4a';
     const subjectFilled = (protocol.request_subject || '').replace('{{number}}', String(n.number));
+
+    // v3.13: build the contact-protocol mailto with body pre-filled
+    const cp = n.contact_protocol || {};
+    const mailtoUrl = `mailto:${encodeURIComponent(cp.address || 'powaynec@gmail.com')}` +
+                     `?subject=${encodeURIComponent(cp.subject || subjectFilled || 'NEC contact request')}` +
+                     `&body=${encodeURIComponent(cp.body || '')}`;
 
     detail.innerHTML = `
       <button type="button" class="panel-close" aria-label="Close detail panel">×</button>
@@ -231,9 +243,18 @@
         ${n.wui ? '<span class="wui-flag" title="Wildland-urban interface">WUI</span>' : ''}
       </div>
 
+      ${n.fhsz ? `
+        <div class="pnec-nmap-section">
+          <h4>🔥 CAL FIRE hazard zone</h4>
+          <p>
+            <span class="fhsz-badge" style="--fhsz-color:${fhszColor}">${escapeHtml(n.fhsz)} FHSZ</span>
+          </p>
+          ${n.fhsz_advice ? `<p style="margin-top:6px;">${escapeHtml(n.fhsz_advice)}</p>` : ''}
+        </div>` : ''}
+
       ${(n.key_streets && n.key_streets.length) ? `
         <div class="pnec-nmap-section">
-          <h4>Key streets</h4>
+          <h4>📍 Key streets</h4>
           <ul class="street-list">${n.key_streets.map((s) =>
             `<li class="street-pill">${escapeHtml(s)}</li>`
           ).join('')}</ul>
@@ -247,27 +268,69 @@
 
       ${n.notes ? `
         <div class="pnec-nmap-section">
-          <h4>📌 Notes</h4>
+          <h4>📌 Local notes</h4>
           <p>${escapeHtml(n.notes)}</p>
         </div>` : ''}
 
-      <div class="pnec-nmap-section">
+      ${n.nearest_fire_station ? `
+        <div class="pnec-nmap-section">
+          <h4>🚒 Closest fire station</h4>
+          <p>
+            <strong>${escapeHtml(n.nearest_fire_station.name)}</strong> — ${escapeHtml(n.nearest_fire_station.cover)}<br>
+            <span style="color:#5a6470;">${escapeHtml(n.nearest_fire_station.address)}</span><br>
+            Non-emergency: <a href="tel:${escapeAttr((n.nearest_fire_station.phone_non_emergency || '').replace(/[^\\d]/g,''))}">${escapeHtml(n.nearest_fire_station.phone_non_emergency || '')}</a>
+            &middot; <strong>Emergency: <a href="tel:911">911</a></strong>
+          </p>
+        </div>` : ''}
+
+      ${n.nearest_hospital ? `
+        <div class="pnec-nmap-section">
+          <h4>🏥 Closest ER</h4>
+          <p>
+            <strong>${escapeHtml(n.nearest_hospital.name)}</strong><br>
+            <span style="color:#5a6470;">${escapeHtml(n.nearest_hospital.address)}</span><br>
+            ${escapeHtml(n.nearest_hospital.er || '')} ·
+            <a href="tel:${escapeAttr((n.nearest_hospital.phone || '').replace(/[^\\d]/g,''))}">${escapeHtml(n.nearest_hospital.phone || '')}</a>
+          </p>
+        </div>` : ''}
+
+      ${n.nearest_cooling_center ? `
+        <div class="pnec-nmap-section">
+          <h4>❄️ Closest cooling center</h4>
+          <p>
+            <strong>${escapeHtml(n.nearest_cooling_center.name)}</strong><br>
+            <span style="color:#5a6470;">${escapeHtml(n.nearest_cooling_center.address)}</span><br>
+            <a href="tel:${escapeAttr((n.nearest_cooling_center.phone || '').replace(/[^\\d]/g,''))}">${escapeHtml(n.nearest_cooling_center.phone || '')}</a>
+            ${n.nearest_cooling_center.note ? ` · <span style="color:#5a6470;">${escapeHtml(n.nearest_cooling_center.note)}</span>` : ''}
+          </p>
+        </div>` : ''}
+
+      <div class="pnec-nmap-section pnec-nmap-section--accent">
         <h4>📞 Get your NEC + ham operator contact</h4>
-        <p>For privacy, PNEC sends coordinator contact info by email request only. Your neighborhood number is <strong>#${escapeHtml(String(n.number))}</strong>.</p>
-        <a class="pnec-nmap-cta"
-           href="mailto:${encodeURIComponent(protocol.request_email || 'powaynec@gmail.com')}?subject=${encodeURIComponent(subjectFilled || 'NEC contact request')}">
-          Email PNEC for my coordinator
+        <p>For privacy, PNEC publishes coordinator info by <strong>email request only</strong>. Your neighborhood number <strong>#${escapeHtml(String(n.number))}</strong> is already in the email subject so volunteers can route you fast (1–2 day reply).</p>
+        <a class="pnec-nmap-cta" href="${mailtoUrl}">
+          Email PNEC for my coordinator →
         </a>
       </div>
 
-      <div class="pnec-nmap-section">
-        <h4>🚨 In an emergency</h4>
-        <p>
-          <strong>911</strong> first, then <strong>Alert San Diego</strong> (county reverse 9-1-1, must register at
-          <a href="${escapeAttr(protocol.alert_san_diego_url || '#')}" target="_blank" rel="noopener">readysandiego.org</a>).
-          Homebound? Call PNEC at <a href="tel:${(protocol.homebound_helpline || '').replace(/[^\d]/g,'')}">${escapeHtml(protocol.homebound_helpline || '858-668-1250')}</a>.
-        </p>
-      </div>
+      ${n.block_party ? `
+        <div class="pnec-nmap-section">
+          <h4>🎉 Disaster Ready Block Party</h4>
+          <p>${escapeHtml(n.block_party.pitch || '')}</p>
+        </div>` : ''}
+
+      ${n.quick_contacts ? `
+        <div class="pnec-nmap-section">
+          <h4>🚨 Emergency quick contacts</h4>
+          <ul class="quick-contact-list">
+            <li><strong>Emergency</strong> <a href="tel:911">911</a></li>
+            <li><strong>Sheriff non-emergency</strong> <a href="tel:${(n.quick_contacts.sheriff_non_emergency || '').replace(/[^\\d]/g,'')}">${escapeHtml(n.quick_contacts.sheriff_non_emergency)}</a></li>
+            <li><strong>PNEC homebound helpline</strong> <a href="tel:${(n.quick_contacts.pnec_homebound || '').replace(/[^\\d]/g,'')}">${escapeHtml(n.quick_contacts.pnec_homebound)}</a></li>
+            <li><strong>211 San Diego</strong> <a href="tel:211">211</a> (or <a href="tel:8583001211">858-300-1211</a>)</li>
+            <li><strong>Alert San Diego (register)</strong> <a href="${escapeAttr(n.quick_contacts.alert_san_diego)}" target="_blank" rel="noopener">readysandiego.org</a></li>
+            <li><strong>SDG&amp;E PSPS status</strong> <a href="${escapeAttr(n.quick_contacts.sdge_psps)}" target="_blank" rel="noopener">sdge.com/psps</a></li>
+          </ul>
+        </div>` : ''}
     `;
 
     const closeBtn = detail.querySelector('.panel-close');
