@@ -14,7 +14,7 @@
 
 // Bumping VERSION invalidates the cache on the next SW activation so
 // returning users pick up new module code instead of serving stale.
-const VERSION = 'pnec-bot-v3-13';
+const VERSION = 'pnec-bot-v3-14';
 const STATIC_CACHE = `${VERSION}-static`;
 const API_CACHE    = `${VERSION}-api`;
 
