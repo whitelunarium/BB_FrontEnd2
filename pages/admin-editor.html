@@ -1039,6 +1039,7 @@ permalink: /pages/admin-editor.html
         throw new Error(humanizeError(res.j, res.status, 'load'));
       }
       current.originalContent = res.j.content || '';
+      current.expectedSha = res.j.sha || null;   // for conflict detection on publish
       var draft = loadDraft(p.path);
       if (draft && draft !== current.originalContent) {
         if (confirm('You have an unsaved draft for "' + p.label + '". Load it instead of the GitHub copy?')) {
@@ -1076,10 +1077,20 @@ permalink: /pages/admin-editor.html
   function humanizeError(j, status, action) {
     if (status === 401) return 'Admin key rejected. Sign in again with the right key.';
     if (status === 404) return 'File not found in the repo. The page list may be out of date.';
+    if (status === 409) {
+      return 'Conflict — someone else committed an edit to this file while you had it open. Click <strong>↻ Reload</strong> to load their version, then re-apply your edits.';
+    }
+    if (status === 504) return 'Server timed out. Try again — if it keeps happening, the upstream service (GitHub or Groq) may be down.';
     if (j && j.detail) {
       // Specific known error patterns
       if (j.detail.indexOf('GITHUB_TOKEN') !== -1) {
         return 'Server is missing GITHUB_TOKEN env var. Set a fine-grained PAT with Contents:read+write on the repo, then restart the Flask server.';
+      }
+      if (j.detail.indexOf('GROQ_API_KEY') !== -1) {
+        return 'Server is missing GROQ_API_KEY env var. Set a Groq API key on the Flask host to enable AI generation.';
+      }
+      if (j.detail.indexOf('rate-limit') !== -1) {
+        return 'Rate-limited. Wait a minute and try again.';
       }
       return 'Failed to ' + action + ': ' + j.detail;
     }
@@ -1303,7 +1314,12 @@ permalink: /pages/admin-editor.html
     fetch(API_BASE + '/api/admin/publish/file', {
       method: 'POST',
       headers: apiHeaders({ 'Content-Type': 'application/json' }),
-      body: JSON.stringify({ path: current.path, content: content, message: msg })
+      body: JSON.stringify({
+        path: current.path,
+        content: content,
+        message: msg,
+        expected_sha: current.expectedSha || undefined,  // conflict detection
+      })
     }).then(function(r) { return r.json().then(function(j) { return {ok:r.ok,status:r.status,j:j}; }); })
       .then(function(res) {
         if (!res.ok || !res.j.ok) throw new Error(humanizeError(res.j, res.status, 'publish'));
