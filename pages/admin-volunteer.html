@@ -623,9 +623,18 @@ permalink: /pages/admin-volunteer.html
       },
       body: JSON.stringify({ status: status }),
       credentials: 'include'
-    }).then(function(res) { return res.json(); })
-      .then(function() { load(); })
-      .catch(function() { alert('Failed to update — try again.'); });
+    }).then(function(res) {
+      if (!res.ok) { throw new Error('Server returned ' + res.status); }
+      return res.json();
+    }).then(function() {
+      load();
+    }).catch(function(err) {
+      console.warn('updateStatus failed:', err);
+      // Non-blocking toast via brief alert. (The dashboard auto-refreshes
+      // every 20s so the failed update will retry naturally on next poll
+      // if the admin re-clicks.)
+      alert('Couldn\'t update status — ' + (err.message || 'try again') + '.');
+    });
   }
 
   function addNoteFor(id, noteFromArg) {
