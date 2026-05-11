@@ -21,8 +21,11 @@
   --pb-bg-bot-msg:    #f4f7f5;
   --pb-bg-user-msg:   linear-gradient(135deg, #1e8449 0%, #145a32 100%);
   --pb-fg:            #0a1628;
-  --pb-fg-muted:      #5a6975;
-  --pb-fg-faint:      #8b96a1;
+  /* v3.19 a11y: darkened muted + faint so contrast ratio passes WCAG AA
+     against the cream/white surfaces. Was #5a6975 / #8b96a1 — failed
+     contrast 2.77:1 on settings help text and segmented buttons. */
+  --pb-fg-muted:      #475569;
+  --pb-fg-faint:      #5a6470;
   --pb-fg-on-green:   #ffffff;
   --pb-fg-link:       #145a32;
   --pb-border:        rgba(15, 30, 25, 0.10);
