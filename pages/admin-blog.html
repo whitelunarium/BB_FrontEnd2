@@ -1,0 +1,779 @@
+---
+layout: pnec-base
+title: "Blog Manager — PNEC Admin"
+description: "PNEC admins: create, edit, publish, and delete blog posts. Insert images, GIFs, and links inline. Everything saves to the live site automatically."
+body_class: inner-page admin-blog-page
+permalink: /pages/admin-blog.html
+---
+
+<style>
+/* ════════════════════════════════════════════════════════════════
+   PNEC Admin Blog Manager (v3.19, May 2026)
+   Cream + forest theme. Two-pane layout: post list / editor.
+   Endpoints used:
+     GET    /api/blog?all=1            list all posts (incl. drafts)
+     GET    /api/blog/<slug>           one post (admin sees drafts too)
+     POST   /api/blog                  create
+     PATCH  /api/blog/<id>             update (incl. publish/unpublish)
+     DELETE /api/blog/<id>             remove
+     POST   /api/admin/publish/upload  cover/inline image upload
+   ════════════════════════════════════════════════════════════════ */
+
+.admin-blog-page { background: #fbf8f1; min-height: 100vh; }
+.admin-blog-page *, .admin-blog-page *::before, .admin-blog-page *::after { box-sizing: border-box; }
+
+/* ─── Top bar ───────────────────────────────────────────────── */
+.ab-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 14px 22px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbf8f1 100%);
+  border-bottom: 1px solid #e3e0d8;
+  position: sticky; top: 0; z-index: 30;
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+.ab-topbar h1 {
+  margin: 0; font-size: 1.05rem; font-weight: 800; color: #0e3b21;
+  letter-spacing: -0.012em; line-height: 1.15;
+}
+.ab-topbar .sub { margin: 1px 0 0; font-size: 0.78rem; color: #5a6470; }
+.ab-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+.ab-btn {
+  padding: 8px 14px;
+  border: 1.5px solid #d8d4c4; background: #ffffff; color: #0e3b21;
+  border-radius: 8px; font: inherit; font-size: 0.86rem; font-weight: 700;
+  cursor: pointer; white-space: nowrap;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s, transform 0.06s, box-shadow 0.15s;
+  font-family: 'DM Sans', sans-serif;
+}
+.ab-btn:hover { background: #d4efdf; border-color: #145a32; }
+.ab-btn:active { transform: translateY(1px); }
+.ab-btn.is-primary {
+  background: linear-gradient(135deg, #145a32 0%, #1e8449 100%);
+  color: #fffdf6; border-color: #145a32;
+  box-shadow: 0 4px 12px rgba(20,90,50,0.20);
+}
+.ab-btn.is-primary:hover { filter: brightness(1.08); color: #fffdf6; }
+.ab-btn.is-primary:disabled { background: #b9c4b9; cursor: wait; filter: none; box-shadow: none; }
+.ab-btn.is-ghost { background: transparent; border-color: transparent; padding: 6px 10px; }
+.ab-btn.is-danger { color: #80261b; border-color: rgba(192,57,43,0.32); }
+.ab-btn.is-danger:hover { background: rgba(192,57,43,0.10); }
+
+/* ─── Status pill ───────────────────────────────────────────── */
+.ab-status-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 999px;
+  font-size: 0.74rem; font-weight: 700; letter-spacing: 0.04em;
+}
+.ab-status-pill::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.ab-status-pill.is-draft     { background: #fdf0d5; color: #92400e; }
+.ab-status-pill.is-published { background: #d4efdf; color: #145a32; }
+.ab-status-pill.is-saving    { background: #dbeafe; color: #1e40af; }
+.ab-status-pill.is-saving::before { animation: ab-pulse 1s ease-in-out infinite; }
+@keyframes ab-pulse { 0%,100%{opacity:1}50%{opacity:.4} }
+
+/* ─── Shell ─────────────────────────────────────────────────── */
+.ab-shell {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 0;
+  height: calc(100vh - 64px);
+  font-family: 'DM Sans', sans-serif; color: #0a1628;
+}
+@media (max-width: 900px) {
+  .ab-shell { grid-template-columns: 1fr; height: auto; }
+  .ab-sidebar { max-height: 320px; }
+}
+
+/* ─── Sidebar: post list ────────────────────────────────────── */
+.ab-sidebar {
+  background: #f7f1e2; border-right: 1px solid #e3e0d8;
+  overflow-y: auto;
+}
+.ab-sidebar-head {
+  padding: 14px 16px;
+  border-bottom: 1px solid #e3e0d8;
+  display: flex; justify-content: space-between; align-items: center;
+  background: #fbf8f1;
+}
+.ab-sidebar-head h2 { margin: 0; font-size: 0.82rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #5a6470; }
+.ab-post-list { list-style: none; margin: 0; padding: 8px 0; }
+.ab-post-item {
+  padding: 10px 16px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: background-color 0.12s, border-color 0.12s;
+}
+.ab-post-item:hover { background: rgba(212,239,223,0.6); }
+.ab-post-item.is-active { background: #ffffff; border-left-color: #1e8449; }
+.ab-post-item .title { font-weight: 700; color: #0e3b21; font-size: 0.96rem; margin-bottom: 4px; }
+.ab-post-item .meta { display: flex; gap: 8px; align-items: center; font-size: 0.74rem; color: #5a6470; }
+.ab-post-item .meta .pill {
+  padding: 1px 7px; border-radius: 999px; font-weight: 700; font-size: 0.66rem; letter-spacing: 0.04em;
+}
+.ab-post-item .meta .pill.draft     { background: #fdf0d5; color: #92400e; }
+.ab-post-item .meta .pill.published { background: #d4efdf; color: #145a32; }
+
+.ab-empty {
+  text-align: center; padding: 36px 16px;
+  color: #5a6470; font-size: 0.9rem;
+}
+.ab-empty button { margin-top: 12px; }
+
+/* ─── Editor pane ───────────────────────────────────────────── */
+.ab-editor {
+  display: flex; flex-direction: column;
+  background: #ffffff;
+  overflow: hidden;
+}
+.ab-editor-empty {
+  flex: 1; display: grid; place-items: center;
+  text-align: center; padding: 40px;
+  color: #5a6470;
+}
+.ab-editor-empty h2 { margin: 0 0 8px; color: #0e3b21; font-weight: 800; }
+
+.ab-form { display: flex; flex-direction: column; overflow: hidden; flex: 1; }
+.ab-form-row {
+  padding: 14px 22px;
+  border-bottom: 1px solid #e3e0d8;
+  background: #fbf8f1;
+}
+.ab-field { display: flex; flex-direction: column; gap: 6px; }
+.ab-field + .ab-field { margin-top: 10px; }
+.ab-field label {
+  font-size: 0.74rem; font-weight: 800; letter-spacing: 0.04em;
+  color: #5a6470; text-transform: uppercase;
+}
+.ab-field input[type="text"],
+.ab-field input[type="url"],
+.ab-field textarea,
+.ab-field select {
+  width: 100%; padding: 9px 12px;
+  border: 1.5px solid #d8d4c4; border-radius: 8px;
+  font: inherit; font-size: 0.94rem;
+  background: #ffffff; color: #0a1628;
+}
+.ab-field input:focus, .ab-field textarea:focus, .ab-field select:focus {
+  outline: none; border-color: #1e8449;
+  box-shadow: 0 0 0 3px rgba(30,132,73,0.16);
+}
+.ab-field-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
+@media (max-width: 700px) { .ab-field-grid { grid-template-columns: 1fr; } }
+
+.ab-title-input {
+  font-size: 1.4rem !important; font-weight: 800 !important;
+  color: #0e3b21 !important;
+  border: 0 !important; padding: 0 !important;
+  background: transparent !important;
+}
+.ab-title-input:focus { box-shadow: none !important; }
+
+.ab-cover-row {
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.ab-cover-preview {
+  width: 120px; height: 70px;
+  background: #f7f1e2;
+  border: 1.5px dashed #d8d4c4;
+  border-radius: 8px;
+  display: grid; place-items: center;
+  color: #5a6470; font-size: 0.74rem;
+  overflow: hidden;
+}
+.ab-cover-preview img { width: 100%; height: 100%; object-fit: cover; }
+.ab-cover-actions { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+
+/* ─── Toolbar ───────────────────────────────────────────────── */
+.ab-toolbar {
+  display: flex; gap: 6px; padding: 8px 22px; flex-wrap: wrap;
+  background: #fbf8f1; border-bottom: 1px solid #e3e0d8;
+}
+.ab-tool {
+  padding: 6px 10px; min-width: 32px;
+  border: 1px solid transparent; background: transparent; color: #0e3b21;
+  border-radius: 6px; font: inherit; font-size: 0.86rem; font-weight: 700;
+  cursor: pointer; transition: background-color 0.12s;
+}
+.ab-tool:hover { background: #d4efdf; }
+.ab-tool .ab-tool-divider { display: inline-block; width: 1px; height: 18px; background: #d8d4c4; }
+
+.ab-content-pane {
+  flex: 1; display: flex; min-height: 0;
+}
+.ab-content-textarea {
+  flex: 1; width: 100%; padding: 22px;
+  border: 0; resize: none;
+  font-family: 'SF Mono', 'Menlo', Consolas, monospace;
+  font-size: 0.92rem; line-height: 1.6;
+  color: #0a1628; background: #fffdf6;
+  outline: none; tab-size: 2;
+}
+.ab-content-textarea:focus { background: #ffffff; }
+
+.ab-foot {
+  padding: 10px 22px;
+  border-top: 1px solid #e3e0d8;
+  background: #fbf8f1;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  font-size: 0.78rem; color: #5a6470;
+}
+
+/* ─── Toast ─────────────────────────────────────────────────── */
+.ab-toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: #145a32; color: #fffdf6;
+  padding: 12px 18px; border-radius: 10px;
+  font-size: 0.9rem; font-weight: 700;
+  box-shadow: 0 8px 28px rgba(20,90,50,0.40);
+  z-index: 200; transform: translateY(80px); opacity: 0;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+  max-width: 420px;
+}
+.ab-toast.is-visible { transform: translateY(0); opacity: 1; }
+.ab-toast.is-error { background: #80261b; }
+.ab-toast a { color: #ffe8a7; font-weight: 800; }
+
+/* ─── Auth gate ─────────────────────────────────────────────── */
+.ab-auth-gate {
+  max-width: 480px; margin: 80px auto; padding: 32px;
+  background: #ffffff; border: 1px solid #e3e0d8; border-radius: 16px;
+  text-align: center; box-shadow: 0 6px 20px rgba(20,90,50,0.08);
+}
+.ab-auth-gate h2 { margin: 0 0 6px; color: #0e3b21; font-weight: 800; }
+.ab-auth-gate p { color: #5a6470; margin: 0 0 16px; line-height: 1.55; }
+.ab-auth-gate input[type="password"] {
+  width: 100%; padding: 11px 14px;
+  border: 1.5px solid #d8d4c4; border-radius: 10px;
+  font: inherit; margin-bottom: 12px;
+}
+.ab-auth-gate input[type="password"]:focus {
+  outline: none; border-color: #1e8449; box-shadow: 0 0 0 3px rgba(30,132,73,0.16);
+}
+.ab-auth-error {
+  color: #80261b; background: rgba(192,57,43,0.08);
+  border: 1px solid rgba(192,57,43,0.32);
+  padding: 8px 12px; border-radius: 8px;
+  font-size: 0.86rem; margin-bottom: 12px; display: none;
+}
+.ab-auth-error.is-visible { display: block; }
+</style>
+
+<!-- ─── Auth gate ──────────────────────────────────────────────── -->
+<div class="ab-auth-gate" id="ab-auth-gate" hidden>
+  <h2>Admin sign-in</h2>
+  <p>Enter the PNEC admin key to manage blog posts.</p>
+  <div class="ab-auth-error" id="ab-auth-error">Wrong key. Try again or check with the board.</div>
+  <input type="password" id="ab-auth-input" placeholder="Admin key" autocomplete="off">
+  <button type="button" class="ab-btn is-primary" id="ab-auth-submit" style="width:100%;padding:12px;font-size:0.95rem">Sign in</button>
+</div>
+
+<!-- ─── Main app ───────────────────────────────────────────────── -->
+<div id="ab-app" hidden>
+  <header class="ab-topbar">
+    <div>
+      <h1>📝 Blog Manager</h1>
+      <p class="sub">Write posts, drop in images + links, publish to the live site.</p>
+    </div>
+    <div class="ab-actions">
+      <span class="ab-status-pill is-published" id="ab-status">Ready</span>
+      <button type="button" class="ab-btn" id="ab-new">+ New post</button>
+      <button type="button" class="ab-btn" id="ab-preview" disabled>👁 Preview</button>
+      <button type="button" class="ab-btn is-primary" id="ab-save" disabled>Save</button>
+    </div>
+  </header>
+
+  <div class="ab-shell">
+    <aside class="ab-sidebar">
+      <div class="ab-sidebar-head">
+        <h2>All posts</h2>
+        <button type="button" class="ab-btn is-ghost" id="ab-refresh" title="Refresh post list">↻</button>
+      </div>
+      <ul class="ab-post-list" id="ab-post-list"></ul>
+    </aside>
+
+    <main class="ab-editor" id="ab-editor">
+      <div class="ab-editor-empty" id="ab-editor-empty">
+        <div>
+          <h2>Pick a post or start a new one</h2>
+          <p>Click <strong>+ New post</strong> above, or select an existing one from the left.</p>
+        </div>
+      </div>
+      <form class="ab-form" id="ab-form" hidden onsubmit="event.preventDefault()">
+        <div class="ab-form-row">
+          <div class="ab-field">
+            <label for="ab-title">Title</label>
+            <input class="ab-title-input" type="text" id="ab-title" placeholder="Untitled post" maxlength="255">
+          </div>
+        </div>
+        <div class="ab-form-row">
+          <div class="ab-field-grid">
+            <div class="ab-field">
+              <label for="ab-slug">URL slug</label>
+              <input type="text" id="ab-slug" placeholder="auto-generated from the title">
+            </div>
+            <div class="ab-field">
+              <label for="ab-published">Status</label>
+              <select id="ab-published">
+                <option value="0">Draft (only admins see it)</option>
+                <option value="1">Published (live on the site)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="ab-form-row">
+          <div class="ab-field">
+            <label for="ab-excerpt">Excerpt <span style="font-weight:600;color:#94a3b8;text-transform:none;">(optional — shown on the blog index)</span></label>
+            <textarea id="ab-excerpt" rows="2" maxlength="500" placeholder="A short summary that appears on /pages/blog.html"></textarea>
+          </div>
+          <div class="ab-field" style="margin-top:12px;">
+            <label>Cover image</label>
+            <div class="ab-cover-row">
+              <div class="ab-cover-preview" id="ab-cover-preview">No cover</div>
+              <div class="ab-cover-actions">
+                <input type="url" id="ab-cover-url" placeholder="https:// — or upload below" style="flex:1;">
+                <div style="display:flex; gap:6px;">
+                  <button type="button" class="ab-btn" id="ab-cover-upload">📷 Upload cover</button>
+                  <button type="button" class="ab-btn is-ghost" id="ab-cover-clear">Clear</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ab-toolbar" role="toolbar" aria-label="Formatting toolbar">
+          <button type="button" class="ab-tool" data-wrap="<strong>|</strong>" title="Bold (Cmd/Ctrl-B)"><b>B</b></button>
+          <button type="button" class="ab-tool" data-wrap="<em>|</em>" title="Italic (Cmd/Ctrl-I)"><i>I</i></button>
+          <button type="button" class="ab-tool" data-wrap="<u>|</u>" title="Underline">U</button>
+          <span class="ab-tool" aria-hidden="true" style="cursor:default;padding:6px 4px;color:#d8d4c4;">|</span>
+          <button type="button" class="ab-tool" data-insert='&lt;h2&gt;Heading&lt;/h2&gt;' title="Heading 2">H2</button>
+          <button type="button" class="ab-tool" data-insert='&lt;h3&gt;Subheading&lt;/h3&gt;' title="Heading 3">H3</button>
+          <button type="button" class="ab-tool" data-wrap="<p>|</p>" title="Paragraph">¶</button>
+          <span class="ab-tool" aria-hidden="true" style="cursor:default;padding:6px 4px;color:#d8d4c4;">|</span>
+          <button type="button" class="ab-tool" data-action="link" title="Insert link (Cmd/Ctrl-K)">🔗 Link</button>
+          <button type="button" class="ab-tool" data-action="image" title="Upload + insert image">📷 Image</button>
+          <button type="button" class="ab-tool" data-insert='&lt;ul&gt;&#10;  &lt;li&gt;Item&lt;/li&gt;&#10;  &lt;li&gt;Item&lt;/li&gt;&#10;&lt;/ul&gt;' title="Bullet list">• List</button>
+          <button type="button" class="ab-tool" data-insert='&lt;ol&gt;&#10;  &lt;li&gt;Step&lt;/li&gt;&#10;  &lt;li&gt;Step&lt;/li&gt;&#10;&lt;/ol&gt;' title="Numbered list">1. List</button>
+          <button type="button" class="ab-tool" data-insert='&lt;blockquote&gt;Quote&lt;/blockquote&gt;' title="Quote">❝</button>
+          <button type="button" class="ab-tool" data-insert='&lt;hr&gt;' title="Horizontal rule">—</button>
+          <span class="ab-tool" aria-hidden="true" style="cursor:default;padding:6px 4px;color:#d8d4c4;">|</span>
+          <button type="button" class="ab-tool" id="ab-delete" title="Delete post" style="margin-left:auto;color:#80261b;">🗑 Delete</button>
+        </div>
+
+        <div class="ab-content-pane">
+          <textarea class="ab-content-textarea" id="ab-content" spellcheck="false"
+                    placeholder="Write your post here. HTML allowed — use the toolbar above or type tags directly. Images you upload go straight to the repo."></textarea>
+        </div>
+
+        <div class="ab-foot">
+          <div id="ab-foot-meta">Last saved: never</div>
+          <div id="ab-counter">0 chars</div>
+        </div>
+      </form>
+    </main>
+  </div>
+
+  <input type="file" id="ab-img-input" hidden accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml">
+</div>
+
+<div class="ab-toast" id="ab-toast"></div>
+
+<script>
+(function() {
+  var API_BASE = (window.PNEC_API_BASE || (
+    (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+      ? 'http://127.0.0.1:8425'
+      : 'https://beasts.opencodingsociety.com'
+  ));
+
+  // State
+  var adminKey = sessionStorage.getItem('pnec_admin_key') || '';
+  var posts = [];          // [{ id, title, slug, ... }]
+  var currentId = null;    // currently-edited post id (null = unsaved new)
+  var currentData = null;  // full post object for currentId
+
+  // Element shortcuts
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function toast(msg, opts) {
+    var el = $('ab-toast');
+    el.innerHTML = msg;
+    el.classList.toggle('is-error', !!(opts && opts.error));
+    el.classList.add('is-visible');
+    clearTimeout(el._t);
+    el._t = setTimeout(function() { el.classList.remove('is-visible'); }, (opts && opts.ms) || 4500);
+  }
+
+  function setStatus(state, label) {
+    var el = $('ab-status');
+    el.className = 'ab-status-pill is-' + state;
+    el.textContent = label;
+  }
+
+  function apiHeaders(extra) {
+    var h = { 'Accept': 'application/json', 'X-PNEC-Admin-Key': adminKey };
+    if (extra) for (var k in extra) h[k] = extra[k];
+    return h;
+  }
+
+  // ─── Auth ─────────────────────────────────────────────────────
+  $('ab-auth-submit').addEventListener('click', tryAuth);
+  $('ab-auth-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') tryAuth();
+  });
+  function tryAuth() {
+    var k = ($('ab-auth-input').value || '').trim();
+    if (!k) return;
+    adminKey = k;
+    sessionStorage.setItem('pnec_admin_key', k);
+    $('ab-auth-error').classList.remove('is-visible');
+    // probe by listing posts (any non-2xx → show error)
+    fetch(API_BASE + '/api/blog?all=1', {
+      method: 'GET', headers: apiHeaders(),
+    }).then(function(r) {
+      if (r.status === 401) {
+        $('ab-auth-error').innerHTML = 'Wrong key. Try again or check with the board.';
+        $('ab-auth-error').classList.add('is-visible');
+        return;
+      }
+      if (r.status === 404) {
+        $('ab-auth-error').innerHTML = 'Backend doesn\'t have the new blog auth yet. The Flask server needs to be <strong>rebuilt + redeployed</strong>. See PNEC_ADMIN_SETUP.md.';
+        $('ab-auth-error').classList.add('is-visible');
+        return;
+      }
+      if (!r.ok) {
+        $('ab-auth-error').innerHTML = 'Server returned ' + r.status + '.';
+        $('ab-auth-error').classList.add('is-visible');
+        return;
+      }
+      showApp();
+    }).catch(function() {
+      $('ab-auth-error').innerHTML = 'Could not reach the Flask API.';
+      $('ab-auth-error').classList.add('is-visible');
+    });
+  }
+
+  function showApp() {
+    $('ab-auth-gate').hidden = true;
+    $('ab-app').hidden = false;
+    loadPosts();
+  }
+
+  // ─── List ─────────────────────────────────────────────────────
+  $('ab-refresh').addEventListener('click', loadPosts);
+
+  function loadPosts() {
+    setStatus('saving', 'Loading posts…');
+    fetch(API_BASE + '/api/blog?all=1', { headers: apiHeaders() })
+      .then(function(r) { return r.json().then(function(j) { return { ok: r.ok, j: j }; }); })
+      .then(function(res) {
+        if (!res.ok) throw new Error('list failed');
+        posts = res.j.posts || [];
+        renderList();
+        setStatus('published', posts.length + ' posts');
+      })
+      .catch(function(err) {
+        toast('Could not load posts: ' + esc(String(err.message || err)), { error: true });
+        setStatus('draft', 'Load failed');
+      });
+  }
+
+  function renderList() {
+    var ul = $('ab-post-list');
+    if (!posts.length) {
+      ul.innerHTML = '<li class="ab-empty"><div>No posts yet.</div><button type="button" class="ab-btn is-primary" id="ab-empty-new">+ New post</button></li>';
+      var ne = document.getElementById('ab-empty-new');
+      if (ne) ne.addEventListener('click', newPost);
+      return;
+    }
+    ul.innerHTML = posts.map(function(p) {
+      var status = p.published ? '<span class="pill published">Live</span>' : '<span class="pill draft">Draft</span>';
+      var when = p.updated_at ? new Date(p.updated_at).toLocaleDateString() : '';
+      return '<li class="ab-post-item' + (p.id === currentId ? ' is-active' : '') + '" data-id="' + p.id + '">'
+           +   '<div class="title">' + esc(p.title) + '</div>'
+           +   '<div class="meta">' + status + '<span>' + esc(when) + '</span></div>'
+           + '</li>';
+    }).join('');
+    ul.querySelectorAll('[data-id]').forEach(function(li) {
+      li.addEventListener('click', function() {
+        var id = parseInt(li.getAttribute('data-id'), 10);
+        openPost(id);
+      });
+    });
+  }
+
+  // ─── Open / new / save ────────────────────────────────────────
+  $('ab-new').addEventListener('click', newPost);
+  $('ab-save').addEventListener('click', save);
+  $('ab-delete').addEventListener('click', deletePost);
+  $('ab-preview').addEventListener('click', preview);
+
+  function newPost() {
+    currentId = null;
+    currentData = { title: '', slug: '', content: '', excerpt: '', cover_image_url: '', published: false };
+    openForm();
+  }
+
+  function openPost(id) {
+    var p = posts.find(function(x) { return x.id === id; });
+    if (!p) return;
+    setStatus('saving', 'Loading…');
+    fetch(API_BASE + '/api/blog/' + encodeURIComponent(p.slug), { headers: apiHeaders() })
+      .then(function(r) { return r.json().then(function(j) { return { ok: r.ok, j: j }; }); })
+      .then(function(res) {
+        if (!res.ok || !res.j.post) throw new Error('not found');
+        currentId = res.j.post.id;
+        currentData = res.j.post;
+        openForm();
+        renderList();
+      })
+      .catch(function() { toast('Could not open post.', { error: true }); setStatus('draft', 'Error'); });
+  }
+
+  function openForm() {
+    $('ab-editor-empty').hidden = true;
+    $('ab-form').hidden = false;
+    $('ab-title').value = currentData.title || '';
+    $('ab-slug').value = currentData.slug || '';
+    $('ab-published').value = currentData.published ? '1' : '0';
+    $('ab-excerpt').value = currentData.excerpt || '';
+    $('ab-cover-url').value = currentData.cover_image_url || '';
+    $('ab-content').value = currentData.content || '';
+    updateCoverPreview();
+    updateCounter();
+    setStatus(currentData.published ? 'published' : 'draft', currentData.published ? 'Live' : 'Draft');
+    $('ab-save').disabled = false;
+    $('ab-preview').disabled = !currentData.slug;
+    $('ab-delete').style.display = currentId ? '' : 'none';
+  }
+
+  function save() {
+    var title = $('ab-title').value.trim();
+    if (!title) { toast('Title is required.', { error: true }); return; }
+    var body = {
+      title: title,
+      slug: $('ab-slug').value.trim() || undefined,
+      content: $('ab-content').value,
+      excerpt: $('ab-excerpt').value.trim() || null,
+      cover_image_url: $('ab-cover-url').value.trim() || null,
+      published: $('ab-published').value === '1',
+    };
+    $('ab-save').disabled = true;
+    $('ab-save').textContent = 'Saving…';
+    setStatus('saving', 'Saving…');
+
+    var method = currentId ? 'PATCH' : 'POST';
+    var url = currentId ? (API_BASE + '/api/blog/' + currentId) : (API_BASE + '/api/blog');
+
+    fetch(url, {
+      method: method,
+      headers: apiHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify(body),
+    }).then(function(r) { return r.json().then(function(j) { return { ok: r.ok, status: r.status, j: j }; }); })
+      .then(function(res) {
+        if (!res.ok) {
+          var d = (res.j && (res.j.detail || res.j.message)) || ('Server ' + res.status);
+          throw new Error(d);
+        }
+        var p = res.j.post;
+        currentId = p.id;
+        currentData = p;
+        toast('Saved! Post is <strong>' + (p.published ? 'live on the site' : 'a draft') + '</strong>. <a href="/pages/blog-post.html?slug=' + encodeURIComponent(p.slug) + '" target="_blank">View →</a>', { ms: 7000 });
+        $('ab-preview').disabled = false;
+        loadPosts();
+        setStatus(p.published ? 'published' : 'draft', p.published ? 'Live' : 'Draft');
+      })
+      .catch(function(err) {
+        toast('Save failed: ' + esc(String(err.message || err)), { error: true });
+        setStatus('draft', 'Error');
+      })
+      .finally(function() {
+        $('ab-save').disabled = false;
+        $('ab-save').textContent = 'Save';
+      });
+  }
+
+  function deletePost() {
+    if (!currentId) return;
+    if (!confirm('Delete "' + ($('ab-title').value || 'this post') + '"? Cannot be undone.')) return;
+    fetch(API_BASE + '/api/blog/' + currentId, { method: 'DELETE', headers: apiHeaders() })
+      .then(function(r) {
+        if (!r.ok) throw new Error('delete failed ' + r.status);
+        toast('Deleted.');
+        currentId = null; currentData = null;
+        $('ab-editor-empty').hidden = false;
+        $('ab-form').hidden = true;
+        loadPosts();
+      })
+      .catch(function(err) { toast(esc(String(err.message || err)), { error: true }); });
+  }
+
+  function preview() {
+    if (!currentData || !currentData.slug) return;
+    window.open('/pages/blog-post.html?slug=' + encodeURIComponent(currentData.slug), '_blank', 'noopener');
+  }
+
+  // ─── Live counter ─────────────────────────────────────────────
+  $('ab-content').addEventListener('input', updateCounter);
+  function updateCounter() {
+    $('ab-counter').textContent = ($('ab-content').value || '').length.toLocaleString() + ' chars';
+  }
+
+  // ─── Toolbar ──────────────────────────────────────────────────
+  document.querySelectorAll('.ab-tool[data-wrap]').forEach(function(btn) {
+    btn.addEventListener('click', function() { wrap(btn.getAttribute('data-wrap')); });
+  });
+  document.querySelectorAll('.ab-tool[data-insert]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      insertAtCursor(btn.getAttribute('data-insert').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#10;/g, '\n').replace(/&amp;/g, '&'));
+    });
+  });
+  document.querySelectorAll('.ab-tool[data-action]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var a = btn.getAttribute('data-action');
+      if (a === 'link') insertLink();
+      if (a === 'image') $('ab-img-input').click();
+    });
+  });
+
+  function wrap(template) {
+    var ta = $('ab-content');
+    var s = ta.selectionStart, e = ta.selectionEnd;
+    var val = ta.value;
+    var sel = val.slice(s, e);
+    var parts = template.split('|');
+    var before = parts[0], after = parts[1] || '';
+    ta.value = val.slice(0, s) + before + sel + after + val.slice(e);
+    ta.selectionStart = s + before.length;
+    ta.selectionEnd = s + before.length + sel.length;
+    ta.focus();
+    updateCounter();
+  }
+
+  function insertAtCursor(text) {
+    var ta = $('ab-content');
+    var s = ta.selectionStart;
+    var val = ta.value;
+    ta.value = val.slice(0, s) + text + val.slice(ta.selectionEnd);
+    ta.selectionStart = ta.selectionEnd = s + text.length;
+    ta.focus();
+    updateCounter();
+  }
+
+  function insertLink() {
+    var url = prompt('Link URL (https://…)');
+    if (!url) return;
+    var text = prompt('Link text', url) || url;
+    wrap('<a href="' + url.replace(/"/g, '&quot;') + '" target="_blank" rel="noopener">|</a>');
+    // After wrap, if no selection was active, paste text now
+    var ta = $('ab-content');
+    if (ta.selectionStart === ta.selectionEnd) {
+      var s = ta.selectionStart;
+      ta.value = ta.value.slice(0, s) + text + ta.value.slice(s);
+      ta.selectionStart = ta.selectionEnd = s + text.length;
+    }
+    updateCounter();
+  }
+
+  // ─── Image upload (toolbar + cover) ───────────────────────────
+  var imgUploadKind = null;   // 'cover' | 'inline'
+  $('ab-img-input').addEventListener('change', function(ev) {
+    var file = ev.target.files && ev.target.files[0];
+    if (!file) return;
+    ev.target.value = '';
+    if (file.size > 5_000_000) { toast('Image too large (max 5 MB).', { error: true }); return; }
+    var reader = new FileReader();
+    reader.onload = function() {
+      var dataUrl = reader.result || '';
+      var b64 = String(dataUrl).split(',')[1] || '';
+      if (!b64) { toast('Could not read file.', { error: true }); return; }
+      var safe = file.name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 60);
+      var stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      var repoPath = 'assets/images/uploads/' + stamp + '_' + safe;
+
+      setStatus('saving', 'Uploading ' + safe + '…');
+      fetch(API_BASE + '/api/admin/publish/upload', {
+        method: 'POST',
+        headers: apiHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ path: repoPath, content_b64: b64,
+                              message: 'Upload ' + safe + ' (blog admin)' }),
+      }).then(function(r) { return r.json().then(function(j) { return { ok: r.ok, status: r.status, j: j }; }); })
+        .then(function(res) {
+          if (!res.ok || !res.j.ok) {
+            var d = (res.j && (res.j.detail || res.j.error)) || ('Upload failed (' + res.status + ')');
+            throw new Error(d);
+          }
+          var siteUrl = '/' + repoPath;
+          if (imgUploadKind === 'cover') {
+            $('ab-cover-url').value = siteUrl;
+            updateCoverPreview();
+            toast('Cover set. Save the post to commit.', { ms: 6000 });
+          } else {
+            insertAtCursor('<img src="' + siteUrl + '" alt="" loading="lazy">');
+            toast('Image inserted. <a href="' + (res.j.html_url || '#') + '" target="_blank">commit ' + ((res.j.commit_sha || '').slice(0,7)) + '</a>', { ms: 7000 });
+          }
+          setStatus(currentData && currentData.published ? 'published' : 'draft', currentData && currentData.published ? 'Live' : 'Draft');
+        })
+        .catch(function(err) { toast('Upload failed: ' + esc(String(err.message || err)), { error: true }); setStatus('draft', 'Error'); });
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Toolbar image button → inline insert
+  document.querySelector('.ab-tool[data-action="image"]').addEventListener('click', function() {
+    imgUploadKind = 'inline';
+  });
+  // Cover upload button
+  $('ab-cover-upload').addEventListener('click', function() {
+    imgUploadKind = 'cover';
+    $('ab-img-input').click();
+  });
+  $('ab-cover-clear').addEventListener('click', function() {
+    $('ab-cover-url').value = '';
+    updateCoverPreview();
+  });
+  $('ab-cover-url').addEventListener('input', updateCoverPreview);
+
+  function updateCoverPreview() {
+    var url = $('ab-cover-url').value.trim();
+    var prev = $('ab-cover-preview');
+    if (url) {
+      prev.innerHTML = '<img src="' + esc(url) + '" alt="cover preview">';
+    } else {
+      prev.textContent = 'No cover';
+    }
+  }
+
+  // ─── Keyboard shortcuts ───────────────────────────────────────
+  document.addEventListener('keydown', function(ev) {
+    if (!(ev.metaKey || ev.ctrlKey)) return;
+    if (ev.key === 's') { ev.preventDefault(); save(); }
+    if (ev.key === 'b') { ev.preventDefault(); wrap('<strong>|</strong>'); }
+    if (ev.key === 'i') { ev.preventDefault(); wrap('<em>|</em>'); }
+    if (ev.key === 'k') { ev.preventDefault(); insertLink(); }
+  });
+
+  // ─── Boot ─────────────────────────────────────────────────────
+  function boot() {
+    if (!adminKey) { $('ab-auth-gate').hidden = false; return; }
+    fetch(API_BASE + '/api/blog?all=1', { headers: apiHeaders() })
+      .then(function(r) {
+        if (r.status === 401) { $('ab-auth-gate').hidden = false; return; }
+        if (!r.ok) {
+          $('ab-auth-gate').hidden = false;
+          $('ab-auth-error').innerHTML = 'Backend returned ' + r.status + '. May need redeploy.';
+          $('ab-auth-error').classList.add('is-visible');
+          return;
+        }
+        showApp();
+      })
+      .catch(function() { $('ab-auth-gate').hidden = false; });
+  }
+  boot();
+})();
+</script>
