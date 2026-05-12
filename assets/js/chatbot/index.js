@@ -361,6 +361,16 @@ class HelperBot {
   }
 
   _maybeAutoOpen(prefs) {
+    // v3.25: never auto-open on phones. On a 375px screen the panel
+    // fills the entire viewport which covers everything else the user
+    // came to do. They can still tap the FAB to open it intentionally.
+    // Desktop behavior unchanged.
+    try {
+      if (typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+          && window.matchMedia('(max-width: 767.98px)').matches) {
+        return;
+      }
+    } catch (_e) { /* fall through to old behavior */ }
     const now = Date.now();
     const lastDismiss = prefs.dismissedAt || 0;
     const lastAuto    = prefs.autoOpenedAt || 0;
@@ -957,7 +967,19 @@ class HelperBot {
     const html = document.documentElement;
     // Theme — set exactly one
     ['pb-theme-auto','pb-theme-light','pb-theme-dark'].forEach(c => html.classList.remove(c));
-    html.classList.add(`pb-theme-${prefs.theme || 'auto'}`);
+    // v3.25: on phones, treat 'auto' as 'light'. Many iPhone users have
+    // system dark mode enabled all day; the auto-dark chat panel looked
+    // like a black void to the team. Desktop 'auto' behavior unchanged.
+    // If the user has EXPLICITLY chosen 'dark', we still honor it.
+    let effectiveTheme = prefs.theme || 'auto';
+    try {
+      if (effectiveTheme === 'auto'
+          && typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+          && window.matchMedia('(max-width: 767.98px)').matches) {
+        effectiveTheme = 'light';
+      }
+    } catch (_e) { /* fall through */ }
+    html.classList.add(`pb-theme-${effectiveTheme}`);
     // Accent
     ['pb-accent-forest','pb-accent-sky','pb-accent-sunset','pb-accent-lavender'].forEach(c => html.classList.remove(c));
     html.classList.add(`pb-accent-${prefs.accent || 'forest'}`);

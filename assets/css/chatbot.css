@@ -48,8 +48,14 @@
   --pb-z-modal:       9996;
 }
 
+/* v3.25: auto-dark now requires `html.pb-theme-auto` so the JS-set
+   class `pb-theme-light` (used on phones — see _applyAppearance in
+   chatbot/index.js) can short-circuit the system dark-mode override.
+   Without this scope, mobile users with system dark mode saw a black
+   chat panel even though we'd forced light theme in JS.
+   pb-theme-dark gets its own rule block lower in the file. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  html.pb-theme-auto {
     --pb-bg-panel:       #141c1a;
     --pb-bg-panel-solid: #141c1a;
     --pb-bg-rail:        #0e1614;
