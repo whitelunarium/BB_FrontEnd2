@@ -166,6 +166,55 @@ gtag("config", "GT-55XBSG8");
 <!-- v3.20: chatbot CSS is below-the-fold, load it without blocking first paint -->
 <link rel="preload" href="/assets/css/chatbot.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
 <noscript><link rel="stylesheet" href="/assets/css/chatbot.css" /></noscript>
+<style>
+/* v3.24: mobile-only overrides for the cloned header + footer.
+   Gated to phones via @media (max-width: 767.98px) — desktop is
+   provably untouched. Scoped to .jupiterx-header / .jupiterx-footer. */
+@media (max-width: 767.98px) {
+  /* HEADER: shrink the DONATE NOW button so it stops dwarfing the logo */
+  .jupiterx-header .donatepopup .raven-button,
+  .jupiterx-header .elementor-widget-raven-button .raven-button {
+    padding: 8px 14px !important;
+    border-radius: 8px !important;
+    line-height: 1.2 !important;
+    min-height: 0 !important;
+  }
+  .jupiterx-header .donatepopup .raven-button-text,
+  .jupiterx-header .elementor-widget-raven-button .raven-button-text {
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.04em !important;
+    text-transform: uppercase !important;
+    white-space: nowrap !important;
+  }
+  .jupiterx-header .donatepopup .raven-button-icon,
+  .jupiterx-header .elementor-widget-raven-button .raven-button-icon {
+    font-size: 0.85em !important;
+    margin-left: 4px !important;
+  }
+  .jupiterx-header .donatepopup .button-text-container,
+  .jupiterx-header .donatepopup .raven-button-texts-wrapper {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  /* FOOTER: Quick Links menu always-open on mobile */
+  .jupiterx-footer .elementor-nav-menu--dropdown,
+  .jupiterx-footer nav.elementor-nav-menu__container.elementor-nav-menu--dropdown,
+  .jupiterx-footer .elementor-nav-menu--dropdown[aria-hidden="true"] {
+    display: block !important;
+    visibility: visible !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .jupiterx-footer .elementor-nav-menu--dropdown .elementor-nav-menu { display: block !important; }
+  .jupiterx-footer .elementor-nav-menu--dropdown li,
+  .jupiterx-footer .elementor-nav-menu--dropdown .menu-item {
+    display: list-item !important; opacity: 1 !important;
+  }
+  .jupiterx-footer .elementor-nav-menu--dropdown a { display: block !important; }
+  .jupiterx-footer .elementor-menu-toggle { display: none !important; }
+}
+</style>
 </head><body data-cms-page="about" class="wp-singular page-template-default page page-id-80 wp-theme-jupiterx no-js ctct-jupiterx elementor-default elementor-kit-771 elementor-page elementor-page-80 jupiterx-header-overlapped jupiterx-header-overlapped-tablet jupiterx-header-overlapped-mobile" itemscope="itemscope" itemtype="http://schema.org/WebPage"><a class="jupiterx-a11y jupiterx-a11y-skip-navigation-link" href="#jupiterx-main">Skip to content</a><div class="jupiterx-site"><header class="jupiterx-header jupiterx-header-custom" data-jupiterx-settings="{&quot;breakpoint&quot;:&quot;767.98&quot;,&quot;template&quot;:&quot;2820&quot;,&quot;overlap&quot;:&quot;desktop,tablet,mobile&quot;}" role="banner" itemscope="itemscope" itemtype="http://schema.org/WPHeader">		<header data-elementor-type="header" data-elementor-id="2820" class="elementor elementor-2820" data-elementor-post-type="elementor_library">
 					<section class="elementor-section elementor-top-section elementor-element elementor-element-090b3a9 elementor-section-content-top elementor-section-boxed elementor-section-height-default elementor-section-height-default" data-id="090b3a9" data-element_type="section" data-e-type="section">
 						<div class="elementor-container elementor-column-gap-default">

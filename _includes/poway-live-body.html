@@ -1,3 +1,79 @@
+<style>
+/* ════════════════════════════════════════════════════════════════
+   v3.24: mobile-only overrides for the Elementor-cloned header + footer
+   ----------------------------------------------------------------
+   Gated to phones via @media (max-width: 767.98px) — matches
+   Elementor's own tablet breakpoint, so DESKTOP IS PROVABLY UNTOUCHED.
+   Scoped to .jupiterx-header / .jupiterx-footer so even within mobile
+   widths these rules can't bleed into other parts of the page.
+   ════════════════════════════════════════════════════════════════ */
+@media (max-width: 767.98px) {
+  /* ── HEADER: the giant DONATE NOW button next to the title ──
+     The cloned raven-button widget inherited huge font + padding
+     from the WP CDN styles, which dominated the header band and
+     dwarfed the logo. Bring it back in line. */
+  .jupiterx-header .donatepopup .raven-button,
+  .jupiterx-header .elementor-widget-raven-button .raven-button {
+    padding: 8px 14px !important;
+    border-radius: 8px !important;
+    line-height: 1.2 !important;
+    min-height: 0 !important;
+  }
+  .jupiterx-header .donatepopup .raven-button-text,
+  .jupiterx-header .elementor-widget-raven-button .raven-button-text {
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.04em !important;
+    text-transform: uppercase !important;
+    white-space: nowrap !important;
+  }
+  .jupiterx-header .donatepopup .raven-button-icon,
+  .jupiterx-header .elementor-widget-raven-button .raven-button-icon {
+    font-size: 0.85em !important;
+    margin-left: 4px !important;
+  }
+  /* The "DONATE NOW" text was wrapping onto two lines (DONATE / NOW)
+     because the column is narrow. The white-space:nowrap above keeps
+     it on one line, and the smaller padding/font keeps it from
+     overflowing. The widget-text wrapper was also adding spacing —
+     tighten it. */
+  .jupiterx-header .donatepopup .button-text-container,
+  .jupiterx-header .donatepopup .raven-button-texts-wrapper {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* ── FOOTER: Quick Links menu always-open ──
+     The Elementor footer nav widget collapses to a burger toggle
+     below 768px. Per team request, render it expanded on phones —
+     the hamburger isn't obvious and the open list reads better. */
+  .jupiterx-footer .elementor-nav-menu--dropdown,
+  .jupiterx-footer nav.elementor-nav-menu__container.elementor-nav-menu--dropdown,
+  .jupiterx-footer .elementor-nav-menu--dropdown[aria-hidden="true"] {
+    display: block !important;
+    visibility: visible !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .jupiterx-footer .elementor-nav-menu--dropdown .elementor-nav-menu {
+    display: block !important;
+  }
+  .jupiterx-footer .elementor-nav-menu--dropdown li,
+  .jupiterx-footer .elementor-nav-menu--dropdown .menu-item {
+    display: list-item !important;
+    opacity: 1 !important;
+  }
+  .jupiterx-footer .elementor-nav-menu--dropdown a {
+    display: block !important;
+  }
+  /* Hide the now-redundant burger toggle so it doesn't look like a
+     control with no effect. Scoped to .jupiterx-footer so the top
+     nav's mobile burger (if any) is untouched. */
+  .jupiterx-footer .elementor-menu-toggle {
+    display: none !important;
+  }
+}
+</style>
 <a class="jupiterx-a11y jupiterx-a11y-skip-navigation-link" href="#jupiterx-main">Skip to content</a><div class="jupiterx-site"><header class="jupiterx-header jupiterx-header-custom" data-jupiterx-settings="{&quot;breakpoint&quot;:&quot;767.98&quot;,&quot;template&quot;:&quot;6&quot;,&quot;overlap&quot;:&quot;desktop,tablet,mobile&quot;}" role="banner" itemscope="itemscope" itemtype="http://schema.org/WPHeader">		<header data-elementor-type="header" data-elementor-id="6" class="elementor elementor-6" data-elementor-post-type="elementor_library">
 					<section class="elementor-section elementor-top-section elementor-element elementor-element-b000349 elementor-section-content-top elementor-section-boxed elementor-section-height-default elementor-section-height-default" data-id="b000349" data-element_type="section" data-e-type="section" style="background-color:rgba(39,174,96,0.65); backdrop-filter:blur(6px);">
 						<div class="elementor-container elementor-column-gap-default">
