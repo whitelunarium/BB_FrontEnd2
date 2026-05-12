@@ -132,10 +132,20 @@
 
   {% include poway-alert-banner.html %}
 
+  {%- comment -%}
+    v3.23: skip the chatbot on admin pages — admins don't need it and
+    it loads 366 lines of widget markup + 4000+ lines of JS modules.
+    Detected by either `skip_chatbot: true` in front matter OR a
+    body_class containing "admin-".
+  {%- endcomment -%}
+  {%- assign _skip_chatbot = false -%}
+  {%- if page.skip_chatbot -%}{%- assign _skip_chatbot = true -%}{%- endif -%}
+  {%- if page.body_class and page.body_class contains 'admin-' -%}{%- assign _skip_chatbot = true -%}{%- endif -%}
+
   {% if page.use_poway_source_clone %}
   {% include poway-live-body.html %}
   {% unless page.use_poway_embed %}
-  {% include chatbot/chatbot-widget.html %}
+  {% unless _skip_chatbot %}{% include chatbot/chatbot-widget.html %}{% endunless %}
   {% include pnec-page-scripts.html %}
   {% endunless %}
   {% else %}
@@ -160,8 +170,8 @@
   {% if page.use_poway_live_styles %}
   {% include poway-auth-footer.html %}
   {% endif %}
-  <!-- FAQ Chatbot Widget (on every page) -->
-  {% include chatbot/chatbot-widget.html %}
+  <!-- FAQ Chatbot Widget — skipped on admin pages (see _skip_chatbot above) -->
+  {% unless _skip_chatbot %}{% include chatbot/chatbot-widget.html %}{% endunless %}
   {% endunless %}
 
   {% unless page.use_poway_embed %}

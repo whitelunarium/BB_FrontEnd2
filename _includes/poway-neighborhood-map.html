@@ -54,12 +54,15 @@
         <div class="pnec-nmap-loader-spinner"></div>
         <div>Loading neighborhood data…</div>
       </div>
-      <img class="pnec-nmap-img"
-           id="pnec-nmap-img"
-           src="{{ '/images/pnec/emergency-neighborhood-map.png' | relative_url }}"
-           alt="Poway Emergency Neighborhood Map showing 60 numbered districts."
-           width="1376" height="1844"
-           loading="eager" decoding="async" />
+      <picture>
+        <source srcset="{{ '/images/pnec/emergency-neighborhood-map.webp' | relative_url }}" type="image/webp">
+        <img class="pnec-nmap-img"
+             id="pnec-nmap-img"
+             src="{{ '/images/pnec/emergency-neighborhood-map.png' | relative_url }}"
+             alt="Poway Emergency Neighborhood Map showing 60 numbered districts."
+             width="1376" height="1844"
+             loading="eager" decoding="async" fetchpriority="high" />
+      </picture>
       <svg class="pnec-nmap-svg" id="pnec-nmap-svg" viewBox="0 0 1376 1844" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
         <!-- Hotspots injected by poway-neighborhood-image-map.js -->
       </svg>

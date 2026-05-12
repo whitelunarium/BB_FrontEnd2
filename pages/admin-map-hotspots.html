@@ -231,8 +231,11 @@ permalink: /pages/admin-map-hotspots.html
     <!-- Map stage -->
     <div class="amh-stage-wrap">
       <div class="amh-stage" id="amh-stage">
-        <img src="{{ '/images/pnec/emergency-neighborhood-map.png' | relative_url }}"
-             alt="Poway Emergency Neighborhood Map" />
+        <picture>
+          <source srcset="{{ '/images/pnec/emergency-neighborhood-map.webp' | relative_url }}" type="image/webp">
+          <img src="{{ '/images/pnec/emergency-neighborhood-map.png' | relative_url }}"
+               alt="Poway Emergency Neighborhood Map" decoding="async" />
+        </picture>
         <svg id="amh-svg" viewBox="0 0 1376 1844" preserveAspectRatio="xMidYMid meet"></svg>
       </div>
     </div>

@@ -265,9 +265,12 @@ permalink: /pages/admin-map-align.html
 <div class="ama-shell">
   <div class="ama-stage-wrap">
     <div class="ama-stage mode-quick" id="ama-stage">
-      <img id="ama-img"
-           src="{{ '/images/pnec/emergency-neighborhood-map.png' | relative_url }}"
-           alt="Poway Emergency Neighborhood Map" />
+      <picture>
+        <source srcset="{{ '/images/pnec/emergency-neighborhood-map.webp' | relative_url }}" type="image/webp">
+        <img id="ama-img"
+             src="{{ '/images/pnec/emergency-neighborhood-map.png' | relative_url }}"
+             alt="Poway Emergency Neighborhood Map" decoding="async" />
+      </picture>
       <svg id="ama-svg" viewBox="0 0 1376 1844" preserveAspectRatio="xMidYMid meet"></svg>
     </div>
   </div>
@@ -503,12 +506,28 @@ permalink: /pages/admin-map-align.html
     advanceQuick(1);
   });
 
-  // Live crosshair preview in quick mode
+  // Live crosshair preview in quick mode — rAF-throttled so mousemove
+  // doesn't trigger a synchronous repaint on every pixel. Previously
+  // each mousemove wrote two CSS variables, which on a 1376×1844 stage
+  // caused layout thrashing and visible lag.
+  let _crosshairRaf = null;
+  let _crosshairX = 0, _crosshairY = 0;
   stage.addEventListener('mousemove', e => {
     if (mode !== 'quick') return;
-    const rect = stage.getBoundingClientRect();
-    stage.style.setProperty('--mx', (e.clientX - rect.left) + 'px');
-    stage.style.setProperty('--my', (e.clientY - rect.top) + 'px');
+    _crosshairX = e.clientX; _crosshairY = e.clientY;
+    if (_crosshairRaf) return;
+    _crosshairRaf = requestAnimationFrame(() => {
+      _crosshairRaf = null;
+      const rect = stage.getBoundingClientRect();
+      stage.style.setProperty('--mx', (_crosshairX - rect.left) + 'px');
+      stage.style.setProperty('--my', (_crosshairY - rect.top) + 'px');
+    });
+  });
+  // Clear crosshair when leaving the stage
+  stage.addEventListener('mouseleave', () => {
+    if (_crosshairRaf) { cancelAnimationFrame(_crosshairRaf); _crosshairRaf = null; }
+    stage.style.setProperty('--mx', '-10px');
+    stage.style.setProperty('--my', '-10px');
   });
 
   // ─── Drag mode ─────────────────────────────────────────────────
