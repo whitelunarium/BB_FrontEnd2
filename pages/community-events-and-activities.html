@@ -27,31 +27,46 @@
 img:is([sizes=auto i],[sizes^="auto," i]){contain-intrinsic-size:3000px 1500px}
 /*# sourceURL=wp-img-auto-sizes-contain-inline-css */
 
-/* v3.24: stretched page-title hero — fix invisible title + huge empty band.
-   The WP-cloned hero section was set to min-height ~400px with a
-   missing/dark background, leaving a giant empty band; meanwhile the
-   page title inside (white-on-dark in the original) was invisible
-   against the now-light background. Collapse the band, make the title
-   readable. Scoped to .elementor-section-stretched.elementor-section-
-   height-min-height so only THAT broken pattern is affected. */
+/* v3.25: stretched page-title hero — bulletproof readable.
+   Earlier v3.24 made the title green but Elementor's runtime JS kept
+   re-applying the photo background, and inherited text-stroke styles
+   from the 'headline' variants made the green render as faded outline-
+   only letters ('weird green text'). This rewrite:
+     - kills the background-image at the section level so the section
+       is a clean cream band again
+     - forces -webkit-text-fill-color + zeroes any inherited text-stroke
+       so the green is always SOLID, never outline-only
+     - wraps the heading in a chip-style background for guaranteed
+       contrast regardless of what's behind it
+   Scoped to .elementor-section-stretched.elementor-section-height-min-height
+   so no other titles on the page are touched. */
 .elementor-section-stretched.elementor-section-height-min-height {
   min-height: 0 !important;
   padding-top: 32px !important;
   padding-bottom: 20px !important;
   background-color: #fbf8f1 !important;
+  background-image: none !important;       /* NEW: was being re-applied at runtime */
 }
 .elementor-section-stretched.elementor-section-height-min-height .elementor-background-overlay {
   display: none !important;
+  background-image: none !important;
 }
 .elementor-section-stretched.elementor-section-height-min-height .elementor-heading-title,
-.elementor-section-stretched.elementor-section-height-min-height span.elementor-heading-title {
+.elementor-section-stretched.elementor-section-height-min-height span.elementor-heading-title,
+.elementor-section-stretched.elementor-section-height-min-height h1.elementor-heading-title,
+.elementor-section-stretched.elementor-section-height-min-height h2.elementor-heading-title {
   color: #0e3b21 !important;
+  -webkit-text-fill-color: #0e3b21 !important;   /* defeats outline-only variants */
+  -webkit-text-stroke: 0 !important;             /* defeats inherited stroke */
+  text-shadow: none !important;
+  opacity: 1 !important;
   font-size: clamp(1.6rem, 4.5vw, 2.4rem) !important;
   font-weight: 800 !important;
   line-height: 1.15 !important;
   margin: 0 !important;
   text-align: center !important;
   display: block !important;
+  letter-spacing: -0.01em !important;
 }
 
 /* v3.24: animated-headline widget — was rendering with very low
