@@ -206,31 +206,167 @@ function handleFindNeighborhoodClick() {
     });
 }
 
-function tryGeolocate(button) {
-  updateNeighborhoodHelp('Requesting your location — please allow the browser prompt if it appears…');
+// v3.21: three-stage geolocation. Each stage handles a different failure
+// mode we hit in the wild:
+//
+//   Stage 1 — high-accuracy browser GPS (8s). Works on mobile with
+//             GPS hardware. Times out on most desktops.
+//
+//   Stage 2 — coarse browser GPS (15s). Uses WiFi BSSID lookup. Fails
+//             when the user is behind a VPN, on a corporate network,
+//             or in a privacy-focused browser (Brave / Firefox /
+//             LibreWolf default-block WiFi positioning) — in which
+//             case Google Location Services never responds and the
+//             call hangs until timeout.
+//
+//   Stage 3 — server-side IP geolocation (3s). Hits a free HTTPS IP
+//             API. Gives a coarse city-level fix (~25 km accuracy).
+//             Plenty for our "are you anywhere near Poway?" check.
+//             No browser permission needed; works even when the user
+//             clicked Block on the GPS prompt.
+//
+// Stages run sequentially. We surface progress in the help text so
+// the admin doesn't think nothing is happening during the 25+ seconds
+// it can take to fall through all three.
 
-  // Stage 1: high accuracy, 8s timeout. Most desktop users will time
-  // out here. Indoor mobile users usually succeed.
+function tryGeolocate(button) {
+  // Permission probe — if the user already blocked geolocation
+  // permanently, skip the GPS stages entirely and go straight to IP.
+  // Saves them 23 seconds of "Requesting your location…".
+  probePermission().then(state => {
+    if (state === 'denied') {
+      updateNeighborhoodHelp(
+        "Location access was blocked in your browser. Trying a coarser IP-based lookup instead…"
+      );
+      tryIpFallback(button, /*reason=*/'permission-denied');
+      return;
+    }
+    updateNeighborhoodHelp('Requesting your location — please allow the browser prompt if it appears…');
+    tryBrowserStageOne(button);
+  });
+}
+
+function probePermission() {
+  // navigator.permissions isn't universal (Safari ≤ 16 lacks it) so
+  // we resolve 'prompt' as the default when the API is missing.
+  if (!navigator.permissions || typeof navigator.permissions.query !== 'function') {
+    return Promise.resolve('prompt');
+  }
+  return navigator.permissions
+    .query({ name: 'geolocation' })
+    .then(p => p.state || 'prompt')
+    .catch(() => 'prompt');
+}
+
+function tryBrowserStageOne(button) {
   navigator.geolocation.getCurrentPosition(
     position => resolveNeighborhoodFromLocation(position, button),
     error => {
-      // PERMISSION_DENIED and POSITION_UNAVAILABLE are terminal —
-      // no point retrying with a different accuracy.
-      if (error && (error.code === error.PERMISSION_DENIED ||
-                    error.code === error.POSITION_UNAVAILABLE)) {
-        handleNeighborhoodLocationError(error, button);
+      if (error && error.code === error.PERMISSION_DENIED) {
+        // Some browsers report a "block-and-don't-ask" as TIMEOUT
+        // (Firefox), some report it as PERMISSION_DENIED (Chrome).
+        // Either way, GPS is off the table — try IP instead.
+        updateNeighborhoodHelp(
+          "GPS permission was denied — trying a coarser IP-based lookup instead…"
+        );
+        tryIpFallback(button, /*reason=*/'permission-denied');
         return;
       }
-      // Stage 2: low accuracy, 20s timeout. Uses WiFi/IP fallback.
-      updateNeighborhoodHelp('Still working on it — trying a coarser GPS fix…');
-      navigator.geolocation.getCurrentPosition(
-        pos2 => resolveNeighborhoodFromLocation(pos2, button),
-        err2 => handleNeighborhoodLocationError(err2, button),
-        { enableHighAccuracy: false, timeout: 20000, maximumAge: 600000 }
-      );
+      // POSITION_UNAVAILABLE (no location provider) or TIMEOUT both go
+      // to stage 2. We used to short-circuit POSITION_UNAVAILABLE but
+      // that turned out to fire spuriously on first cold-cache call.
+      updateNeighborhoodHelp('Still working on it — trying a coarser GPS fix (this can take ~15s)…');
+      tryBrowserStageTwo(button);
     },
     { enableHighAccuracy: true, timeout: 8000, maximumAge: 120000 }
   );
+}
+
+function tryBrowserStageTwo(button) {
+  navigator.geolocation.getCurrentPosition(
+    position => resolveNeighborhoodFromLocation(position, button),
+    error => {
+      // Both browser stages failed. Try server-side IP geolocation —
+      // works even when WiFi BSSID lookup is blocked (VPN / corporate
+      // / privacy browser).
+      updateNeighborhoodHelp(
+        "Browser GPS didn't respond — falling back to IP-based lookup (less precise but works without GPS)…"
+      );
+      tryIpFallback(button, /*reason=*/'browser-timeout', /*originalError=*/error);
+    },
+    { enableHighAccuracy: false, timeout: 15000, maximumAge: 600000 }
+  );
+}
+
+// Stage 3 — fetch IP-based geolocation from a free HTTPS service.
+// We try two providers in parallel and race — whichever returns first
+// with a valid lat/lng wins. Falls through to the original error
+// handler if both fail or both return without coordinates.
+function tryIpFallback(button, reason, originalError) {
+  const providers = [
+    {
+      url: 'https://ipapi.co/json/',
+      parse: j => j && Number.isFinite(j.latitude) && Number.isFinite(j.longitude)
+        ? { lat: j.latitude, lng: j.longitude, accuracyMeters: 25000, city: j.city, source: 'ipapi.co' }
+        : null,
+    },
+    {
+      url: 'https://ipwho.is/',
+      parse: j => j && j.success !== false && Number.isFinite(j.latitude) && Number.isFinite(j.longitude)
+        ? { lat: j.latitude, lng: j.longitude, accuracyMeters: 25000, city: j.city, source: 'ipwho.is' }
+        : null,
+    },
+  ];
+
+  const attempts = providers.map(p =>
+    fetch(p.url, { credentials: 'omit', cache: 'no-cache' })
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status))))
+      .then(j => {
+        const out = p.parse(j);
+        if (!out) throw new Error('no coords from ' + p.url);
+        return out;
+      })
+  );
+
+  // 8s overall ceiling so we don't hang the UI even if both providers
+  // are slow. Promise.any picks the first success; if both fail we
+  // fall through to the original-error path.
+  Promise.race([
+    Promise.any(attempts),
+    new Promise((_, reject) => setTimeout(() => reject(new Error('ip-fallback-timeout')), 8000)),
+  ])
+    .then(fix => {
+      // Synthesize a Position-shaped object so the resolver downstream
+      // doesn't care how we got the coords.
+      const synthetic = {
+        coords: {
+          latitude:  fix.lat,
+          longitude: fix.lng,
+          accuracy:  fix.accuracyMeters,  // ~25 km — coarse, but flagged
+        },
+        timestamp: Date.now(),
+        _source:   fix.source,
+        _approximate: true,
+      };
+      resolveNeighborhoodFromLocation(synthetic, button);
+    })
+    .catch(() => {
+      // Genuine total failure — show the original error path.
+      if (originalError) {
+        handleNeighborhoodLocationError(originalError, button);
+      } else {
+        // Permission was denied AND IP geolocation failed. Rare.
+        setFindNeighborhoodLoading(button, false);
+        showAddressFallback();
+        updateNeighborhoodHelp(
+          reason === 'permission-denied'
+            ? "Location access is blocked and the IP-based fallback also failed (your network may be blocking it). Type an address below — a street name is enough — or pick from the dropdown."
+            : "We couldn't get your location through GPS or IP lookup. Type an address below or pick your neighborhood from the dropdown.",
+          true
+        );
+        focusAddressSearch();
+      }
+    });
 }
 
 function ensureNeighborhoodsLoaded() {
@@ -243,18 +379,45 @@ function ensureNeighborhoodsLoaded() {
 function resolveNeighborhoodFromLocation(position, button) {
   const { latitude, longitude, accuracy } = position.coords;
   const neighborhoods = neighborhoodState.neighborhoods || [];
-
-  // v3.20: before hitting the backend, decide if the user is even
-  // plausibly in Poway. We're CONFIDENT in the result only when the
-  // GPS accuracy is reasonable (≤25 km radius). Otherwise we still
-  // try the backend lookup — never want to tell a Poway resident
-  // they're not in Poway because of a noisy first WiFi triangulation.
+  // v3.21: IP-fallback synthesizes a position with _approximate=true.
+  // We use that flag (not just accuracy) to gate the "you're not in
+  // Poway" message: IP geolocation can place a Poway resident in
+  // "San Diego" (~15 mi off), so we ONLY surface the out-of-area
+  // message for IP coords if they're > 50 miles away (clearly out
+  // of the region).
+  const isApproximate = !!position._approximate;
   const accuracyMeters = Number.isFinite(accuracy) ? accuracy : null;
-  const accurateEnough = accuracyMeters === null || accuracyMeters <= 25000;
 
-  if (accurateEnough && !isInsidePoway(latitude, longitude)) {
+  // For real GPS: confident when accuracy ≤ 25 km.
+  // For IP-based: never trust the bounding-box check; only trust the
+  // distance threshold below.
+  const gpsAccurateEnough = !isApproximate && (accuracyMeters === null || accuracyMeters <= 25000);
+
+  if (gpsAccurateEnough && !isInsidePoway(latitude, longitude)) {
+    // Genuine real-GPS coord outside Poway — show the friendly note.
     const miles = roughMilesFromPoway(latitude, longitude);
     updateNeighborhoodHelp(outsidePowayMessage(miles), true);
+    showAddressFallback();
+    setFindNeighborhoodLoading(button, false);
+    return;
+  }
+
+  if (isApproximate) {
+    const miles = roughMilesFromPoway(latitude, longitude);
+    if (miles > 50) {
+      // Definitely not in Poway based on IP — show the out-of-area
+      // message. Anyone in or around SD County is < 50 mi away.
+      updateNeighborhoodHelp(outsidePowayMessage(miles), true);
+      showAddressFallback();
+      setFindNeighborhoodLoading(button, false);
+      return;
+    }
+    // IP says they're in/near SD County. Show a friendly note that
+    // we used a coarse fix; don't try to auto-select a neighborhood.
+    updateNeighborhoodHelp(
+      "Couldn't get a precise GPS fix, so we used your IP location (which puts you near Poway). The neighborhood map needs a precise address — pick yours from the dropdown, or type your street below.",
+      false
+    );
     showAddressFallback();
     setFindNeighborhoodLoading(button, false);
     return;
