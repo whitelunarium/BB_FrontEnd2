@@ -209,7 +209,105 @@
       'ul.elementor-nav-menu, .pnec-header-nav ul'
     );
     Array.prototype.forEach.call(lists, function (ul) { patchOneList(ul, items); });
+    // v3.23: always render our own auth chip (Login / Profile) as the
+    // FINAL nav item. Sidesteps the race between auth-ui's first call
+    // and the patcher's DOM mutation that caused the Login button to
+    // disappear on marketing pages after our refactor.
+    renderAuthChip();
   }
+
+  // ──────────────────────────────────────────────────────────────────
+  // v3.23: read the cached PNEC user and append a Login OR Profile <li>
+  // to every nav UL. This is independent of auth-ui.js's flow — we
+  // build the <li> ourselves and tag it with `data-pnec-auth-chip="1"`
+  // so we can replace it cleanly on every re-render.
+  // ──────────────────────────────────────────────────────────────────
+  function readCachedUser() {
+    try {
+      var raw = localStorage.getItem('pnec_user') || sessionStorage.getItem('pnec_user');
+      return raw ? JSON.parse(raw) : null;
+    } catch (_e) { return null; }
+  }
+
+  function renderAuthChip() {
+    var user = readCachedUser();
+    var lists = document.querySelectorAll(
+      'ul.elementor-nav-menu, .pnec-header-nav ul'
+    );
+    Array.prototype.forEach.call(lists, function (ul) {
+      // Detect mobile dropdown (tabindex=-1 on links) for tabindex behavior
+      var sample = ul.querySelector('a.elementor-item');
+      var useTabindexMinus1 = !!(sample && sample.getAttribute('tabindex') === '-1');
+
+      // Remove any previously-rendered chip so re-renders are clean
+      Array.prototype.forEach.call(
+        ul.querySelectorAll('li[data-pnec-auth-chip="1"]'),
+        function (n) { n.parentNode.removeChild(n); }
+      );
+
+      // Hide any static auth-related <li>s that came from the original
+      // page markup. They'd otherwise appear alongside our chip and
+      // confuse the user. We pick them up via the same heuristics that
+      // isAuthLi uses (class menu-item-login, id="poway-auth-...",
+      // anchor to register.html / #login). We mark them with our hide
+      // attribute instead of removing — so a future page-level script
+      // can still find them if it needs to.
+      Array.prototype.forEach.call(ul.children, function (li) {
+        if (li.getAttribute && li.getAttribute('data-pnec-auth-chip') === '1') return;
+        var isAuth = false;
+        if (li.id && /^poway-auth-(display|login|register|logout)-item/.test(li.id)) isAuth = true;
+        if (li.classList && (li.classList.contains('menu-item-login') ||
+                              li.classList.contains('poway-auth-display'))) isAuth = true;
+        if (!isAuth) {
+          var a = li.querySelector && li.querySelector('a[href]');
+          if (a) {
+            var href = (a.getAttribute('href') || '').toLowerCase();
+            if (href.indexOf('register.html') !== -1 || href.indexOf('#login') !== -1) isAuth = true;
+          }
+        }
+        if (isAuth) {
+          // !important so auth-ui's later display='list-item' can't
+          // un-hide it (we want our own chip to be the only one).
+          li.style.setProperty('display', 'none', 'important');
+          li.setAttribute('data-pnec-auth-hidden', '1');
+        }
+      });
+
+      // Build our chip. For a signed-in user it's "First Name" linking
+      // to /pages/profile.html. For a signed-out user it's "Login"
+      // linking to /pages/register.html#login.
+      var li = document.createElement('li');
+      li.setAttribute('data-pnec-auth-chip', '1');
+      li.className = 'menu-item menu-item-type-post_type menu-item-object-page';
+
+      var a = document.createElement('a');
+      a.className = 'elementor-item';
+      if (useTabindexMinus1) a.setAttribute('tabindex', '-1');
+
+      if (user) {
+        var name = (user.display_name || user.first_name || user.name || user.username || user.email || 'My profile').trim();
+        // First name only to keep the nav compact
+        var first = String(name).split(/[\s@]/)[0] || 'Profile';
+        a.href = absUrl('/pages/profile.html');
+        a.textContent = first;
+        a.setAttribute('aria-label', 'My profile — ' + name);
+      } else {
+        a.href = absUrl('/pages/register.html#login');
+        a.textContent = 'Login';
+      }
+      li.appendChild(a);
+      ul.appendChild(li);
+    });
+  }
+
+  // Listen for sign-in / sign-out events fired by auth-ui so the chip
+  // updates without a page reload.
+  window.addEventListener('pnec:auth-ready', renderAuthChip);
+  window.addEventListener('pnec:auth-changed', renderAuthChip);
+  // storage event for cross-tab sync (sign in/out in another tab)
+  window.addEventListener('storage', function (e) {
+    if (e.key === 'pnec_user') renderAuthChip();
+  });
 
   function run() {
     fetch(navJsonUrl(), { credentials: 'omit', cache: 'no-cache' })
