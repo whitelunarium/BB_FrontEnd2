@@ -1,0 +1,633 @@
+---
+layout: pnec-base
+title: "Map Alignment Tool — PNEC Admin"
+description: "Quickly re-align all 60 neighborhood hotspots by clicking each painted number on the official emergency map. Exports a fixed JSON file."
+body_class: inner-page admin-map-align-page
+permalink: /pages/admin-map-align.html
+---
+
+<style>
+/* ════════════════════════════════════════════════════════════════
+   PNEC Map Alignment Tool (v3.22, May 2026)
+
+   Two modes:
+   - QUICK: prompts for each neighborhood in order. Admin clicks on
+     the painted number for that neighborhood on the map. ~30 seconds
+     for all 60.
+   - DRAG: shows all 60 markers; admin drags any to reposition.
+   Both modes export a downloadable JSON. No auth / no Flask required —
+   admin then commits the file via admin-editor or sends it to the dev.
+   ════════════════════════════════════════════════════════════════ */
+.admin-map-align-page { background:#fbf8f1; min-height:100vh; }
+.admin-map-align-page *, .admin-map-align-page *::before, .admin-map-align-page *::after { box-sizing:border-box; }
+
+.ama-topbar {
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; padding:14px 22px;
+  background:linear-gradient(180deg,#fff 0%,#fbf8f1 100%);
+  border-bottom:1px solid #e3e0d8;
+  position:sticky; top:0; z-index:30;
+  font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;
+}
+.ama-topbar h1 { margin:0; font-size:1.08rem; font-weight:800; color:#0e3b21; }
+.ama-topbar .sub { margin:1px 0 0; font-size:.78rem; color:#475569; }
+.ama-actions { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+
+.ama-btn {
+  padding:8px 14px;
+  border:1.5px solid #d8d4c4; background:#fff; color:#0e3b21;
+  border-radius:8px; font-size:.86rem; font-weight:700;
+  cursor:pointer; white-space:nowrap;
+  transition:background-color .15s,border-color .15s,color .15s,transform .06s;
+  font-family:'DM Sans',sans-serif;
+}
+.ama-btn:hover { background:#d4efdf; border-color:#145a32; }
+.ama-btn:disabled { opacity:.5; cursor:not-allowed; }
+.ama-btn.is-primary {
+  background:linear-gradient(135deg,#145a32 0%,#1e8449 100%);
+  color:#fffdf6; border-color:#145a32;
+  box-shadow:0 4px 12px rgba(20,90,50,.2);
+}
+.ama-btn.is-primary:hover { filter:brightness(1.08); color:#fffdf6; }
+.ama-btn.is-large { padding:11px 22px; font-size:.95rem; }
+
+/* ─── Mode tabs ───────────────────────────────────────────── */
+.ama-tabs { display:flex; gap:6px; padding:0 22px 8px; }
+.ama-tab {
+  padding:7px 14px; border:1.5px solid #d8d4c4;
+  background:#fff; border-radius:8px 8px 0 0; cursor:pointer;
+  font-weight:700; font-size:.85rem; color:#0e3b21;
+  font-family:'DM Sans',sans-serif;
+}
+.ama-tab.is-active { background:#145a32; color:#fffdf6; border-color:#145a32; }
+
+/* ─── Layout ──────────────────────────────────────────────── */
+.ama-shell {
+  display:grid;
+  grid-template-columns:1fr 320px;
+  gap:14px; padding:8px 14px 14px;
+  font-family:'DM Sans',sans-serif; color:#0a1628;
+  align-items:start;
+}
+@media (max-width:1100px) { .ama-shell { grid-template-columns:1fr; } }
+
+/* ─── Map stage ───────────────────────────────────────────── */
+.ama-stage-wrap {
+  background:#fff; border:1.5px solid #e3e0d8; border-radius:12px;
+  padding:10px; position:relative; min-height:200px;
+}
+.ama-stage {
+  position:relative; width:100%;
+  aspect-ratio:1376/1844;
+  background:#f7f1e2;
+  border-radius:8px; overflow:hidden;
+  user-select:none;
+  cursor:crosshair;
+}
+.ama-stage.mode-drag { cursor:default; }
+.ama-stage img {
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:contain; pointer-events:none;
+}
+.ama-stage svg {
+  position:absolute; inset:0; width:100%; height:100%;
+  pointer-events:none;
+}
+.ama-stage.mode-drag svg { pointer-events:auto; }
+/* In drag mode, only the circles themselves should accept events.
+   In quick mode, the entire stage gets clicks. */
+.ama-hotspot {
+  pointer-events:auto;
+  cursor:grab;
+  transition:r .15s, fill .15s, stroke-width .15s;
+}
+.ama-hotspot:hover  { r:13; fill:#facc15; stroke-width:3; }
+.ama-hotspot.is-dragging { cursor:grabbing; r:16; fill:#facc15; stroke-width:4; }
+.ama-hotspot.is-current  { r:18; fill:#ef4444; stroke:#fff; stroke-width:4; animation:ama-pulse 1.4s ease-in-out infinite; }
+@keyframes ama-pulse {
+  0%,100% { r:18; }
+  50%     { r:22; }
+}
+.ama-hotspot-label {
+  font:700 14px/1 'DM Sans',sans-serif;
+  fill:#0a1628; paint-order:stroke;
+  stroke:#fff; stroke-width:3; stroke-linejoin:round;
+  pointer-events:none;
+  text-anchor:middle; dominant-baseline:central;
+}
+
+/* Cross-hair preview in quick mode */
+.ama-stage.mode-quick::after {
+  content:''; position:absolute; pointer-events:none;
+  width:1px; height:100%; background:rgba(220,38,38,0.5);
+  left:var(--mx, -10px); top:0;
+}
+.ama-stage.mode-quick::before {
+  content:''; position:absolute; pointer-events:none;
+  width:100%; height:1px; background:rgba(220,38,38,0.5);
+  top:var(--my, -10px); left:0;
+}
+
+/* ─── Side panel ──────────────────────────────────────────── */
+.ama-panel {
+  background:#fff; border:1.5px solid #e3e0d8; border-radius:12px;
+  padding:16px;
+  position:sticky; top:78px;
+  max-height:calc(100vh - 100px); overflow:auto;
+}
+.ama-panel h2 { margin:0 0 8px; font-size:1rem; color:#0e3b21; }
+.ama-panel .hint { margin:0 0 12px; font-size:.85rem; color:#475569; line-height:1.5; }
+
+/* ─── QUICK mode: big current-target card ────────────────── */
+.ama-quick-card {
+  background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%);
+  border:2px solid #f59e0b; border-radius:12px;
+  padding:18px 16px; margin-bottom:14px;
+  text-align:center;
+}
+.ama-quick-card .num {
+  display:inline-block; font-size:2.2rem; font-weight:900; color:#92400e;
+  background:#fff; border:3px solid #f59e0b; border-radius:50%;
+  width:64px; height:64px; line-height:58px;
+  margin-bottom:8px;
+  box-shadow:0 4px 12px rgba(245,158,11,0.3);
+}
+.ama-quick-card .name { font-size:1.05rem; font-weight:800; color:#0a1628; margin-bottom:4px; }
+.ama-quick-card .prompt { font-size:.88rem; color:#92400e; font-weight:600; }
+.ama-progress {
+  display:flex; align-items:center; gap:10px; margin:12px 0;
+  font-size:.85rem; color:#475569;
+}
+.ama-progress-bar {
+  flex:1; height:10px; background:#e5e7eb; border-radius:999px; overflow:hidden;
+}
+.ama-progress-fill {
+  height:100%; background:linear-gradient(90deg,#22c55e 0%,#16a34a 100%);
+  transition:width .25s ease;
+}
+.ama-quick-actions { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+
+.ama-quick-done {
+  background:#d1fae5; border:2px solid #10b981; border-radius:12px;
+  padding:18px; text-align:center;
+}
+.ama-quick-done h3 { margin:0 0 6px; color:#065f46; font-size:1.1rem; }
+.ama-quick-done p  { margin:0 0 12px; color:#0e3b21; font-size:.9rem; }
+
+/* ─── DRAG mode: filter + list ────────────────────────────── */
+.ama-filter {
+  display:block; width:100%; padding:7px 10px;
+  border:1.5px solid #d8d4c4; border-radius:7px;
+  font:inherit; font-size:.85rem; margin:6px 0 10px;
+}
+.ama-list {
+  list-style:none; margin:0; padding:4px;
+  display:flex; flex-direction:column; gap:3px;
+  max-height:55vh; overflow:auto;
+  border:1px solid #e3e0d8; border-radius:8px;
+  background:#fafaf6;
+}
+.ama-list li {
+  display:flex; align-items:center; gap:8px;
+  padding:5px 8px; border-radius:6px;
+  cursor:pointer; font-size:.83rem;
+  transition:background-color .12s;
+}
+.ama-list li:hover { background:#d4efdf; }
+.ama-list li.is-selected { background:#145a32; color:#fffdf6; font-weight:700; }
+.ama-list-num {
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:30px; height:22px; padding:0 6px;
+  border-radius:5px; font-weight:700; font-size:.78rem;
+  background:#0e3b21; color:#fffdf6;
+}
+.ama-list li.is-aligned .amh-list-num { background:#16a34a; }
+
+/* ─── Status pill + toast ─────────────────────────────────── */
+.ama-status {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:4px 10px; border-radius:999px;
+  font-size:.74rem; font-weight:700; letter-spacing:.04em;
+  background:#dbeafe; color:#1e40af;
+}
+.ama-toast {
+  position:fixed; right:22px; bottom:22px; z-index:100;
+  background:#0e3b21; color:#fffdf6; padding:12px 18px;
+  border-radius:10px; font-weight:600; font-size:.9rem;
+  font-family:'DM Sans',sans-serif;
+  box-shadow:0 12px 28px rgba(10,22,40,.30);
+  opacity:0; transform:translateY(6px);
+  transition:opacity .18s,transform .18s;
+  pointer-events:none;
+}
+.ama-toast.is-shown { opacity:1; transform:translateY(0); }
+.ama-toast.is-err { background:#80261b; }
+
+/* Help block above the map */
+.ama-help {
+  margin:0 14px 8px; padding:10px 14px;
+  background:#eef2ff; border:1px solid #c7d2fe;
+  border-radius:8px;
+  font-size:.85rem; color:#3730a3; font-family:'DM Sans',sans-serif;
+  line-height:1.5;
+}
+.ama-help strong { color:#1e3a8a; }
+</style>
+
+<div class="ama-topbar">
+  <div>
+    <h1>Map alignment tool</h1>
+    <p class="sub">
+      Two modes: <strong>Quick</strong> (click each painted number in order — fastest) or
+      <strong>Drag</strong> (reposition individual markers). Export when done.
+    </p>
+  </div>
+  <div class="ama-actions">
+    <span id="ama-status" class="ama-status">Ready</span>
+    <button id="ama-reset"    class="ama-btn" type="button">Reset all</button>
+    <button id="ama-export"   class="ama-btn is-primary" type="button">Download JSON ⬇</button>
+  </div>
+</div>
+
+<div class="ama-tabs">
+  <button class="ama-tab is-active" data-mode="quick" type="button">⚡ Quick (click each number)</button>
+  <button class="ama-tab" data-mode="drag" type="button">✋ Drag (reposition individually)</button>
+</div>
+
+<div class="ama-help" id="ama-help">
+  <strong>Quick mode:</strong> The side panel shows one neighborhood at a time.
+  Look at the official map for the painted number (e.g. <strong>"8"</strong>), then
+  <strong>click that spot on the map</strong>. The tool advances to the next one automatically.
+  When you've done all 60, click <strong>Download JSON</strong>, then paste it into the live editor
+  (<code>assets/data/poway-neighborhoods.json</code>) or send it to your developer.
+</div>
+
+<div class="ama-shell">
+  <div class="ama-stage-wrap">
+    <div class="ama-stage mode-quick" id="ama-stage">
+      <img id="ama-img"
+           src="{{ '/images/pnec/emergency-neighborhood-map.png' | relative_url }}"
+           alt="Poway Emergency Neighborhood Map" />
+      <svg id="ama-svg" viewBox="0 0 1376 1844" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+  </div>
+
+  <aside class="ama-panel">
+    <!-- QUICK MODE PANEL -->
+    <div id="ama-quick-panel">
+      <h2>Click each number</h2>
+      <p class="hint">
+        Look at the map, find the painted number shown below, and click it.
+        The tool advances on every click.
+      </p>
+
+      <div id="ama-quick-card" class="ama-quick-card">
+        <div class="num" id="ama-quick-num">—</div>
+        <div class="name" id="ama-quick-name">Loading…</div>
+        <div class="prompt">Click on this painted number on the map ↑</div>
+      </div>
+
+      <div class="ama-progress">
+        <span><span id="ama-quick-done">0</span>/<span id="ama-quick-total">60</span></span>
+        <div class="ama-progress-bar"><div class="ama-progress-fill" id="ama-quick-bar" style="width:0%"></div></div>
+      </div>
+
+      <div class="ama-quick-actions">
+        <button id="ama-quick-skip" class="ama-btn" type="button">Skip this one →</button>
+        <button id="ama-quick-back" class="ama-btn" type="button">← Back</button>
+        <button id="ama-quick-jump" class="ama-btn" type="button">Jump to #…</button>
+      </div>
+
+      <div id="ama-quick-done-card" class="ama-quick-done" hidden>
+        <h3>🎉 All 60 aligned!</h3>
+        <p>Click <strong>Download JSON</strong> in the top bar to save the corrected file.</p>
+      </div>
+    </div>
+
+    <!-- DRAG MODE PANEL -->
+    <div id="ama-drag-panel" hidden>
+      <h2>Drag any marker</h2>
+      <p class="hint">
+        Click a list entry to highlight its marker, then drag it on the map.
+        Aligned markers turn green in the list.
+      </p>
+      <input id="ama-filter" class="ama-filter" type="search" placeholder="Filter by name or number…" />
+      <ul id="ama-list" class="ama-list"></ul>
+    </div>
+  </aside>
+</div>
+
+<div id="ama-toast" class="ama-toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ─── Constants ─────────────────────────────────────────────────
+  const DATA_URL = '{{ "/assets/data/poway-neighborhoods.json" | relative_url }}';
+  const MAP_W = 1376, MAP_H = 1844;
+
+  // ─── DOM refs ──────────────────────────────────────────────────
+  const $ = (id) => document.getElementById(id);
+  const stage = $('ama-stage');
+  const svg = $('ama-svg');
+  const statusEl = $('ama-status');
+  const toastEl = $('ama-toast');
+  const helpEl = $('ama-help');
+  const quickPanel = $('ama-quick-panel');
+  const dragPanel = $('ama-drag-panel');
+  const quickCard = $('ama-quick-card');
+  const quickDoneCard = $('ama-quick-done-card');
+  const quickNum = $('ama-quick-num');
+  const quickName = $('ama-quick-name');
+  const quickDone = $('ama-quick-done');
+  const quickTotal = $('ama-quick-total');
+  const quickBar = $('ama-quick-bar');
+  const listEl = $('ama-list');
+  const filterEl = $('ama-filter');
+
+  // ─── State ─────────────────────────────────────────────────────
+  let data = null;
+  let initialData = null;
+  let mode = 'quick';
+  let quickIndex = 0;          // 0-based pointer into data.neighborhoods
+  let alignedIds = new Set();  // ids that were clicked/dragged this session
+  let selectedId = null;
+  let hotspotEls = {};         // id → {circle, label}
+
+  // ─── Boot ──────────────────────────────────────────────────────
+  fetch(DATA_URL, { cache: 'no-cache' })
+    .then(r => r.json())
+    .then(j => {
+      data = j;
+      initialData = JSON.parse(JSON.stringify(j));
+      data.neighborhoods.sort((a, b) => a.number - b.number);
+      quickTotal.textContent = data.neighborhoods.length;
+      render();
+      bindHandlers();
+      setMode('quick');
+    })
+    .catch(e => toast('Failed to load: ' + e.message, true));
+
+  // ─── Toast ─────────────────────────────────────────────────────
+  let toastTimer;
+  function toast(msg, isErr) {
+    toastEl.textContent = msg;
+    toastEl.classList.toggle('is-err', !!isErr);
+    toastEl.classList.add('is-shown');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('is-shown'), 2600);
+  }
+
+  // ─── Mode switching ────────────────────────────────────────────
+  function setMode(m) {
+    mode = m;
+    stage.classList.toggle('mode-quick', m === 'quick');
+    stage.classList.toggle('mode-drag', m === 'drag');
+    quickPanel.hidden = m !== 'quick';
+    dragPanel.hidden = m !== 'drag';
+    document.querySelectorAll('.ama-tab').forEach(b => {
+      b.classList.toggle('is-active', b.getAttribute('data-mode') === m);
+    });
+    helpEl.innerHTML = m === 'quick'
+      ? '<strong>Quick mode:</strong> Look at the map for the painted number shown in the side panel, then <strong>click that spot on the map</strong>. The tool auto-advances after each click. ~30 seconds for all 60.'
+      : '<strong>Drag mode:</strong> Click any list entry to highlight its marker (red, pulsing). Drag the marker on the map to reposition. Drag any marker, any order, any time.';
+    refreshQuickPanel();
+    refreshList();
+  }
+
+  // ─── Render markers ────────────────────────────────────────────
+  function render() {
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    hotspotEls = {};
+    data.neighborhoods.forEach(n => {
+      const px = n.x * MAP_W, py = n.y * MAP_H;
+      const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c.setAttribute('cx', px); c.setAttribute('cy', py);
+      c.setAttribute('r', 10);
+      c.setAttribute('fill', alignedIds.has(n.id) ? '#22c55e' : '#fbbf24');
+      c.setAttribute('stroke', '#0a1628'); c.setAttribute('stroke-width', '2');
+      c.setAttribute('class', 'ama-hotspot');
+      c.setAttribute('data-id', n.id);
+      svg.appendChild(c);
+
+      const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      t.setAttribute('x', px); t.setAttribute('y', py);
+      t.setAttribute('class', 'ama-hotspot-label');
+      t.textContent = String(n.number);
+      svg.appendChild(t);
+
+      hotspotEls[n.id] = { circle: c, label: t };
+      bindDrag(c, n);
+    });
+    highlightCurrent();
+  }
+
+  function moveMarker(n, normX, normY) {
+    n.x = +normX.toFixed(5);
+    n.y = +normY.toFixed(5);
+    n.polygon = octagon(n.x, n.y);
+    const px = n.x * MAP_W, py = n.y * MAP_H;
+    const els = hotspotEls[n.id];
+    if (!els) return;
+    els.circle.setAttribute('cx', px); els.circle.setAttribute('cy', py);
+    els.label.setAttribute('x', px);   els.label.setAttribute('y', py);
+    els.circle.setAttribute('fill', '#22c55e');  // aligned: green
+    alignedIds.add(n.id);
+    updateProgress();
+    refreshList();
+  }
+
+  function octagon(cx, cy, r) {
+    r = r || 0.016;
+    const pts = [];
+    for (let i = 0; i < 8; i++) {
+      const a = 2 * Math.PI * i / 8;
+      pts.push([+(cx + r * Math.cos(a)).toFixed(5), +(cy + r * Math.sin(a)).toFixed(5)]);
+    }
+    return pts;
+  }
+
+  // ─── Quick mode ────────────────────────────────────────────────
+  function currentQuickEntry() {
+    return data.neighborhoods[quickIndex] || null;
+  }
+
+  function highlightCurrent() {
+    Object.values(hotspotEls).forEach(e => e.circle.classList.remove('is-current'));
+    const e = currentQuickEntry();
+    if (mode === 'quick' && e && hotspotEls[e.id]) {
+      hotspotEls[e.id].circle.classList.add('is-current');
+    }
+  }
+
+  function refreshQuickPanel() {
+    if (mode !== 'quick') return;
+    const e = currentQuickEntry();
+    if (!e || quickIndex >= data.neighborhoods.length) {
+      quickCard.style.display = 'none';
+      quickDoneCard.hidden = false;
+      return;
+    }
+    quickCard.style.display = '';
+    quickDoneCard.hidden = true;
+    quickNum.textContent = e.number;
+    quickName.textContent = e.name;
+    updateProgress();
+    highlightCurrent();
+  }
+
+  function updateProgress() {
+    quickDone.textContent = alignedIds.size;
+    quickBar.style.width = ((alignedIds.size / data.neighborhoods.length) * 100).toFixed(1) + '%';
+  }
+
+  function advanceQuick(delta) {
+    quickIndex = Math.max(0, Math.min(data.neighborhoods.length, quickIndex + delta));
+    refreshQuickPanel();
+  }
+
+  // Handle click on the map in quick mode
+  stage.addEventListener('click', e => {
+    if (mode !== 'quick') return;
+    // Ignore if clicked on an existing marker (drag handler will take over)
+    if (e.target && e.target.tagName === 'circle') return;
+    const entry = currentQuickEntry();
+    if (!entry) return;
+    const pt = clientToSvg(e.clientX, e.clientY);
+    if (!pt) return;
+    const nx = Math.max(0, Math.min(1, pt.x / MAP_W));
+    const ny = Math.max(0, Math.min(1, pt.y / MAP_H));
+    moveMarker(entry, nx, ny);
+    statusEl.textContent = `Aligned #${entry.number}`;
+    advanceQuick(1);
+  });
+
+  // Live crosshair preview in quick mode
+  stage.addEventListener('mousemove', e => {
+    if (mode !== 'quick') return;
+    const rect = stage.getBoundingClientRect();
+    stage.style.setProperty('--mx', (e.clientX - rect.left) + 'px');
+    stage.style.setProperty('--my', (e.clientY - rect.top) + 'px');
+  });
+
+  // ─── Drag mode ─────────────────────────────────────────────────
+  function bindDrag(circle, n) {
+    let dragging = false;
+    circle.addEventListener('pointerdown', e => {
+      if (mode !== 'drag') return;
+      e.preventDefault(); e.stopPropagation();
+      dragging = true;
+      circle.classList.add('is-dragging');
+      selectedId = n.id;
+      refreshList();
+      document.addEventListener('pointermove', onMove);
+      document.addEventListener('pointerup', onUp, { once: true });
+    });
+    function onMove(e) {
+      if (!dragging) return;
+      const pt = clientToSvg(e.clientX, e.clientY);
+      if (!pt) return;
+      const nx = Math.max(0, Math.min(1, pt.x / MAP_W));
+      const ny = Math.max(0, Math.min(1, pt.y / MAP_H));
+      moveMarker(n, nx, ny);
+    }
+    function onUp() {
+      dragging = false;
+      circle.classList.remove('is-dragging');
+      document.removeEventListener('pointermove', onMove);
+      statusEl.textContent = `Aligned #${n.number}`;
+    }
+  }
+
+  function refreshList() {
+    if (mode !== 'drag') return;
+    const q = (filterEl.value || '').trim().toLowerCase();
+    listEl.innerHTML = '';
+    data.neighborhoods.forEach(n => {
+      if (q && String(n.number).indexOf(q) === -1 && (n.name || '').toLowerCase().indexOf(q) === -1) return;
+      const li = document.createElement('li');
+      if (n.id === selectedId) li.classList.add('is-selected');
+      if (alignedIds.has(n.id)) li.classList.add('is-aligned');
+      const numClass = alignedIds.has(n.id) ? 'amh-list-num' : 'amh-list-num';
+      li.innerHTML = '<span class="ama-list-num" style="' + (alignedIds.has(n.id) ? 'background:#16a34a' : '') + '">#' + n.number + '</span>' +
+                     '<span>' + escapeHtml(n.name) + '</span>';
+      li.addEventListener('click', () => {
+        selectedId = n.id;
+        try { hotspotEls[n.id].circle.scrollIntoView({ behavior:'smooth', block:'center' }); } catch(_) {}
+        Object.values(hotspotEls).forEach(e => e.circle.classList.remove('is-current'));
+        hotspotEls[n.id].circle.classList.add('is-current');
+        refreshList();
+      });
+      listEl.appendChild(li);
+    });
+  }
+  filterEl && filterEl.addEventListener('input', refreshList);
+
+  // ─── Coordinate math ───────────────────────────────────────────
+  function clientToSvg(cx, cy) {
+    const rect = svg.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return null;
+    const viewAspect = MAP_W / MAP_H;
+    const rectAspect = rect.width / rect.height;
+    let dispW, dispH, offX, offY;
+    if (rectAspect > viewAspect) {
+      dispH = rect.height; dispW = dispH * viewAspect;
+      offX = (rect.width - dispW) / 2; offY = 0;
+    } else {
+      dispW = rect.width; dispH = dispW / viewAspect;
+      offX = 0; offY = (rect.height - dispH) / 2;
+    }
+    const rx = cx - rect.left - offX;
+    const ry = cy - rect.top  - offY;
+    return { x: (rx / dispW) * MAP_W, y: (ry / dispH) * MAP_H };
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ─── Handlers ──────────────────────────────────────────────────
+  function bindHandlers() {
+    document.querySelectorAll('.ama-tab').forEach(b => {
+      b.addEventListener('click', () => setMode(b.getAttribute('data-mode')));
+    });
+    $('ama-quick-skip').addEventListener('click', () => advanceQuick(1));
+    $('ama-quick-back').addEventListener('click', () => advanceQuick(-1));
+    $('ama-quick-jump').addEventListener('click', () => {
+      const v = prompt('Jump to neighborhood number (1–' + data.neighborhoods.length + '):');
+      if (!v) return;
+      const idx = data.neighborhoods.findIndex(n => n.number === parseInt(v, 10));
+      if (idx >= 0) { quickIndex = idx; refreshQuickPanel(); }
+    });
+    $('ama-reset').addEventListener('click', () => {
+      if (!confirm('Reset ALL alignments back to the loaded baseline? Your in-progress fixes will be lost.')) return;
+      data = JSON.parse(JSON.stringify(initialData));
+      data.neighborhoods.sort((a, b) => a.number - b.number);
+      alignedIds.clear();
+      quickIndex = 0;
+      render();
+      refreshQuickPanel();
+      refreshList();
+      statusEl.textContent = 'Reset';
+    });
+    $('ama-export').addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'poway-neighborhoods.json';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast('Downloaded poway-neighborhoods.json — ' + alignedIds.size + ' realigned this session');
+    });
+
+    // Keyboard shortcuts (quick mode)
+    document.addEventListener('keydown', e => {
+      if (mode !== 'quick') return;
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+      if (e.key === 'ArrowRight' || e.key === 's' || e.key === 'S') { e.preventDefault(); advanceQuick(1); }
+      if (e.key === 'ArrowLeft' || e.key === 'b' || e.key === 'B') { e.preventDefault(); advanceQuick(-1); }
+    });
+  }
+})();
+</script>
