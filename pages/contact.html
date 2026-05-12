@@ -26,6 +26,33 @@
 <style id='wp-img-auto-sizes-contain-inline-css' type='text/css'>
 img:is([sizes=auto i],[sizes^="auto," i]){contain-intrinsic-size:3000px 1500px}
 /*# sourceURL=wp-img-auto-sizes-contain-inline-css */
+
+/* v3.27: marketing pages only — kill the giant 'POWAY NEIGHBORHOOD
+   EMERGENCY CORPS' watermark + collapse the empty header band.
+   Background: the WP-cloned hero photo behind the band is broken
+   (image URL returns 404 / never set), so the white-text logo PNG
+   renders against the cream page and looks like a faded watermark.
+   Plus the section has a tall min-height that wastes ~400px above
+   the actual page title. Fix:
+     1. Hide the white-text logo PNG (invisible anyway)
+     2. Collapse the band's min-height to a thin strip
+     3. Keep the donate button (lives in the same band, at right)
+   Scoped to .jupiterx-header so home/login pages are untouched
+   (their poway-live-body.html header has its own working bg). */
+.jupiterx-header img[src*=Poway-NEC-Logo-White] {
+  display: none !important;
+}
+.jupiterx-header section.elementor-top-section + section.elementor-top-section,
+.jupiterx-header section.elementor-top-section + section.elementor-top-section .elementor-container,
+.jupiterx-header section.elementor-top-section + section.elementor-top-section .elementor-widget-wrap,
+.jupiterx-header section.elementor-top-section + section.elementor-top-section .elementor-column {
+  min-height: 0 !important;
+  height: auto !important;
+}
+.jupiterx-header section.elementor-top-section + section.elementor-top-section {
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+}
 </style>
 <link rel='stylesheet' id='font-awesome-5-all-css' href='https://powaynec.com/wp-content/plugins/elementor/assets/lib/font-awesome/css/all.min.css?ver=3.35.9' type='text/css' media='all' />
 <link rel='stylesheet' id='font-awesome-4-shim-css' href='https://powaynec.com/wp-content/plugins/elementor/assets/lib/font-awesome/css/v4-shims.min.css?ver=3.35.9' type='text/css' media='all' />

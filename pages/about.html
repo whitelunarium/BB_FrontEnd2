@@ -18,6 +18,33 @@
   body[data-cms-page]:not(.cms-hydrated) [data-cms-override] {
     visibility: hidden;
   }
+
+/* v3.27: marketing pages only — kill the giant 'POWAY NEIGHBORHOOD
+   EMERGENCY CORPS' watermark + collapse the empty header band.
+   Background: the WP-cloned hero photo behind the band is broken
+   (image URL returns 404 / never set), so the white-text logo PNG
+   renders against the cream page and looks like a faded watermark.
+   Plus the section has a tall min-height that wastes ~400px above
+   the actual page title. Fix:
+     1. Hide the white-text logo PNG (invisible anyway)
+     2. Collapse the band's min-height to a thin strip
+     3. Keep the donate button (lives in the same band, at right)
+   Scoped to .jupiterx-header so home/login pages are untouched
+   (their poway-live-body.html header has its own working bg). */
+.jupiterx-header img[src*=Poway-NEC-Logo-White] {
+  display: none !important;
+}
+.jupiterx-header section.elementor-top-section + section.elementor-top-section,
+.jupiterx-header section.elementor-top-section + section.elementor-top-section .elementor-container,
+.jupiterx-header section.elementor-top-section + section.elementor-top-section .elementor-widget-wrap,
+.jupiterx-header section.elementor-top-section + section.elementor-top-section .elementor-column {
+  min-height: 0 !important;
+  height: auto !important;
+}
+.jupiterx-header section.elementor-top-section + section.elementor-top-section {
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+}
 </style>
 <script>
   setTimeout(function () { document.body && document.body.classList.add('cms-hydrated'); }, 800);
