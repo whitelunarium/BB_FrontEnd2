@@ -11,12 +11,12 @@
     "_notes": [
       "Hotspot positions are normalized (0-1 of image width/height) so they scale at any display size.",
       "Zones reflect approximate wildfire risk: A = canyon-edge / wildland-urban-interface (highest), B = adjacent fuel, C = neighborhood-interior, D = deep urban / commercial.",
-      "Coordinator + ham-operator contact fields are intentionally null — PNEC publishes those by email request only (privacy). The contact_protocol field tells users how to actually reach their NEC."
+      "Coordinator + ham-operator contact fields are intentionally null \u2014 PNEC publishes those by email request only (privacy). The contact_protocol field tells users how to actually reach their NEC."
     ]
   },
   "global_protocol": {
     "request_email": "powaynec@gmail.com",
-    "request_subject": "NEC contact request — neighborhood {{number}}",
+    "request_subject": "NEC contact request \u2014 neighborhood {{number}}",
     "homebound_helpline": "858-668-1250",
     "alert_san_diego_url": "https://readysandiego.org/alertsandiego",
     "sd_emergency_app": "Search 'SD Emergency' on iOS or Android",
@@ -26,7 +26,7 @@
     {
       "id": 1,
       "number": 1,
-      "name": "Heritage II — Northpointe",
+      "name": "Heritage II \u2014 Northpointe",
       "x": 0.52108,
       "y": 0.13612,
       "zone": "A",
@@ -36,7 +36,7 @@
         "Northpointe Dr"
       ],
       "wui": true,
-      "evac_guidance": "North/west edge of city — fire approach most likely from N. Drive S on Espola or W on Twin Peaks toward I-15.",
+      "evac_guidance": "North/west edge of city \u2014 fire approach most likely from N. Drive S on Espola or W on Twin Peaks toward I-15.",
       "notes": "Backs to open chaparral on the Escondido side.",
       "polygon": [
         [
@@ -129,17 +129,17 @@
         "note": "Quiet, air-conditioned"
       },
       "fhsz": "Very High",
-      "fhsz_advice": "Highest wildfire risk. Zone Zero (0–5 ft) hardening is CRITICAL — no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days — do not wait for an order.",
+      "fhsz_advice": "Highest wildfire risk. Zone Zero (0\u20135 ft) hardening is CRITICAL \u2014 no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days \u2014 do not wait for an order.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #1 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #1 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 1",
-        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 1 (Heritage II — Northpointe).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "subject": "NEC contact request \u2014 neighborhood 1",
+        "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 1 (Heritage II \u2014 Northpointe).\\n\\nMy address: \\n\\nThanks!",
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -163,120 +163,40 @@
         "Espola Rd"
       ],
       "wui": true,
-      "evac_guidance": "Espola Rd south to Twin Peaks then I-15. Avoid going east — pushes you deeper into canyon country.",
+      "evac_guidance": "Espola Rd south to Twin Peaks then I-15. Avoid going east \u2014 pushes you deeper into canyon country.",
       "notes": "Large WUI footprint along the NE border.",
       "polygon": [
         [
-          0.66424,
-          0.12473
+          0.51237,
+          0.22072
         ],
         [
-          0.60465,
-          0.1269
-        ],
-        [
-          0.60392,
-          0.0808
-        ],
-        [
-          0.55305,
-          0.08514
-        ],
-        [
-          0.55814,
-          0.0564
-        ],
-        [
-          0.51235,
-          0.0743
-        ],
-        [
-          0.49419,
-          0.11171
-        ],
-        [
-          0.44331,
-          0.09761
-        ],
-        [
-          0.43169,
-          0.12364
-        ],
-        [
-          0.39608,
-          0.11605
-        ],
-        [
-          0.375,
-          0.17516
-        ],
-        [
-          0.35392,
-          0.17733
-        ],
-        [
-          0.36047,
-          0.19252
-        ],
-        [
-          0.34012,
-          0.19848
-        ],
-        [
-          0.26962,
-          0.32158
-        ],
-        [
-          0.43459,
-          0.31941
-        ],
-        [
-          0.4782,
-          0.3487
-        ],
-        [
-          0.49201,
-          0.34382
-        ],
-        [
-          0.4782,
-          0.3308
-        ],
-        [
-          0.54142,
-          0.31616
+          0.50768,
+          0.23203
         ],
         [
           0.49637,
-          0.34002
+          0.23672
         ],
         [
-          0.66424,
-          0.33948
+          0.48506,
+          0.23203
         ],
         [
-          0.6468,
-          0.3064
+          0.48037,
+          0.22072
         ],
         [
-          0.57558,
-          0.31887
+          0.48506,
+          0.20941
         ],
         [
-          0.55959,
-          0.30911
+          0.49637,
+          0.20472
         ],
         [
-          0.61701,
-          0.30477
-        ],
-        [
-          0.63299,
-          0.26085
-        ],
-        [
-          0.66497,
-          0.25976
+          0.50768,
+          0.20941
         ]
       ],
       "lat": 32.99988,
@@ -300,17 +220,17 @@
         "note": "Primary city cooling center"
       },
       "fhsz": "Very High",
-      "fhsz_advice": "Highest wildfire risk. Zone Zero (0–5 ft) hardening is CRITICAL — no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days — do not wait for an order.",
+      "fhsz_advice": "Highest wildfire risk. Zone Zero (0\u20135 ft) hardening is CRITICAL \u2014 no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days \u2014 do not wait for an order.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #2 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #2 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 2",
+        "subject": "NEC contact request \u2014 neighborhood 2",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 2 (Highlands Ranch).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -333,8 +253,8 @@
         "Old Coach Rd"
       ],
       "wui": true,
-      "evac_guidance": "Old Coach Rd south to Espola, west on Twin Peaks. Old Coach itself dead-ends at the country club — DO NOT loop back if a fire is upslope.",
-      "notes": "Premium estates with long driveways — ember intrusion risk on wood-shake roofs is high.",
+      "evac_guidance": "Old Coach Rd south to Espola, west on Twin Peaks. Old Coach itself dead-ends at the country club \u2014 DO NOT loop back if a fire is upslope.",
+      "notes": "Premium estates with long driveways \u2014 ember intrusion risk on wood-shake roofs is high.",
       "polygon": [
         [
           0.66352,
@@ -398,17 +318,17 @@
         "note": "Quiet, air-conditioned"
       },
       "fhsz": "Very High",
-      "fhsz_advice": "Highest wildfire risk. Zone Zero (0–5 ft) hardening is CRITICAL — no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days — do not wait for an order.",
+      "fhsz_advice": "Highest wildfire risk. Zone Zero (0\u20135 ft) hardening is CRITICAL \u2014 no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days \u2014 do not wait for an order.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #3 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #3 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 3",
+        "subject": "NEC contact request \u2014 neighborhood 3",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 3 (Old Coach).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -436,116 +356,36 @@
       "notes": "Mid-density residential with some open-space adjacency to the south.",
       "polygon": [
         [
-          0.66424,
-          0.12473
+          0.51237,
+          0.22072
         ],
         [
-          0.60465,
-          0.1269
-        ],
-        [
-          0.60392,
-          0.0808
-        ],
-        [
-          0.55305,
-          0.08514
-        ],
-        [
-          0.55814,
-          0.0564
-        ],
-        [
-          0.51235,
-          0.0743
-        ],
-        [
-          0.49419,
-          0.11171
-        ],
-        [
-          0.44331,
-          0.09761
-        ],
-        [
-          0.43169,
-          0.12364
-        ],
-        [
-          0.39608,
-          0.11605
-        ],
-        [
-          0.375,
-          0.17516
-        ],
-        [
-          0.35392,
-          0.17733
-        ],
-        [
-          0.36047,
-          0.19252
-        ],
-        [
-          0.34012,
-          0.19848
-        ],
-        [
-          0.26962,
-          0.32158
-        ],
-        [
-          0.43459,
-          0.31941
-        ],
-        [
-          0.4782,
-          0.3487
-        ],
-        [
-          0.49201,
-          0.34382
-        ],
-        [
-          0.4782,
-          0.3308
-        ],
-        [
-          0.54142,
-          0.31616
+          0.50768,
+          0.23203
         ],
         [
           0.49637,
-          0.34002
+          0.23672
         ],
         [
-          0.66424,
-          0.33948
+          0.48506,
+          0.23203
         ],
         [
-          0.6468,
-          0.3064
+          0.48037,
+          0.22072
         ],
         [
-          0.57558,
-          0.31887
+          0.48506,
+          0.20941
         ],
         [
-          0.55959,
-          0.30911
+          0.49637,
+          0.20472
         ],
         [
-          0.61701,
-          0.30477
-        ],
-        [
-          0.63299,
-          0.26085
-        ],
-        [
-          0.66497,
-          0.25976
+          0.50768,
+          0.20941
         ]
       ],
       "lat": 32.99988,
@@ -569,17 +409,17 @@
         "note": "Primary city cooling center"
       },
       "fhsz": "High",
-      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5–30 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
+      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5\u201330 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #4 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #4 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 4",
+        "subject": "NEC contact request \u2014 neighborhood 4",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 4 (Lomas Verde).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -602,7 +442,7 @@
         "Vineland Rd"
       ],
       "wui": false,
-      "evac_guidance": "Vineland → Twin Peaks → I-15.",
+      "evac_guidance": "Vineland \u2192 Twin Peaks \u2192 I-15.",
       "notes": "",
       "polygon": [
         [
@@ -687,17 +527,17 @@
         "note": "Primary city cooling center"
       },
       "fhsz": "High",
-      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5–30 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
+      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5\u201330 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #5 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #5 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 5",
+        "subject": "NEC contact request \u2014 neighborhood 5",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 5 (Vineland Hills).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -722,7 +562,7 @@
       ],
       "wui": true,
       "evac_guidance": "Stone Canyon to Espola, then Twin Peaks west. The club's golf-course interior can serve as a safety zone if cut off.",
-      "notes": "Golf-course neighborhood — interior fairways are non-combustible firebreaks.",
+      "notes": "Golf-course neighborhood \u2014 interior fairways are non-combustible firebreaks.",
       "polygon": [
         [
           0.3859,
@@ -830,17 +670,17 @@
         "note": "Primary city cooling center"
       },
       "fhsz": "Very High",
-      "fhsz_advice": "Highest wildfire risk. Zone Zero (0–5 ft) hardening is CRITICAL — no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days — do not wait for an order.",
+      "fhsz_advice": "Highest wildfire risk. Zone Zero (0\u20135 ft) hardening is CRITICAL \u2014 no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days \u2014 do not wait for an order.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #6 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #6 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 6",
+        "subject": "NEC contact request \u2014 neighborhood 6",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 6 (Stoneridge Country Club).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -972,17 +812,17 @@
         "note": "Primary city cooling center"
       },
       "fhsz": "High",
-      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5–30 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
+      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5\u201330 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #7 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #7 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 7",
+        "subject": "NEC contact request \u2014 neighborhood 7",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 7 (Old Coach Collection).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -1146,17 +986,17 @@
         "note": "Primary city cooling center"
       },
       "fhsz": "High",
-      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5–30 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
+      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5\u201330 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #8 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #8 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 8",
+        "subject": "NEC contact request \u2014 neighborhood 8",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 8 (Serena).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -1179,7 +1019,7 @@
         "Summerfield Ln"
       ],
       "wui": false,
-      "evac_guidance": "Summerfield → Espola → Twin Peaks. Standard interior-neighborhood path.",
+      "evac_guidance": "Summerfield \u2192 Espola \u2192 Twin Peaks. Standard interior-neighborhood path.",
       "notes": "",
       "polygon": [
         [
@@ -1260,17 +1100,17 @@
         "note": "Primary city cooling center"
       },
       "fhsz": "High",
-      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5–30 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
+      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5\u201330 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #9 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #9 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 9",
+        "subject": "NEC contact request \u2014 neighborhood 9",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 9 (Summerfield Estates).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -1353,14 +1193,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #10 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #10 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 10",
+        "subject": "NEC contact request \u2014 neighborhood 10",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 10 (Valle Verde).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -1527,14 +1367,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #11 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #11 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 11",
+        "subject": "NEC contact request \u2014 neighborhood 11",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 11 (Silver Saddle).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -1557,7 +1397,7 @@
         "Green Valley Truck Trail"
       ],
       "wui": false,
-      "evac_guidance": "Green Valley → Pomerado south or Espola south.",
+      "evac_guidance": "Green Valley \u2192 Pomerado south or Espola south.",
       "notes": "",
       "polygon": [
         [
@@ -1681,14 +1521,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #12 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #12 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 12",
+        "subject": "NEC contact request \u2014 neighborhood 12",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 12 (Green Valley Estates).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -1711,7 +1551,7 @@
         "Bridlewood Rd"
       ],
       "wui": false,
-      "evac_guidance": "Bridlewood → Espola → Twin Peaks.",
+      "evac_guidance": "Bridlewood \u2192 Espola \u2192 Twin Peaks.",
       "notes": "",
       "polygon": [
         [
@@ -1804,17 +1644,17 @@
         "note": "Primary city cooling center"
       },
       "fhsz": "High",
-      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5–30 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
+      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5\u201330 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #13 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #13 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 13",
+        "subject": "NEC contact request \u2014 neighborhood 13",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 13 (Bridlewood Americana).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -1837,7 +1677,7 @@
         "Grove Way"
       ],
       "wui": false,
-      "evac_guidance": "Grove → Espola → Twin Peaks.",
+      "evac_guidance": "Grove \u2192 Espola \u2192 Twin Peaks.",
       "notes": "",
       "polygon": [
         [
@@ -1921,14 +1761,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #14 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #14 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 14",
+        "subject": "NEC contact request \u2014 neighborhood 14",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 14 (The Grove).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -1951,7 +1791,7 @@
         "Stone Canyon Rd"
       ],
       "wui": false,
-      "evac_guidance": "Stone Canyon → Pomerado south.",
+      "evac_guidance": "Stone Canyon \u2192 Pomerado south.",
       "notes": "",
       "polygon": [
         [
@@ -2039,14 +1879,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #15 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #15 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 15",
+        "subject": "NEC contact request \u2014 neighborhood 15",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 15 (Stone Canyon).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -2069,7 +1909,7 @@
         "Green Valley Way"
       ],
       "wui": false,
-      "evac_guidance": "Green Valley → Espola → Twin Peaks.",
+      "evac_guidance": "Green Valley \u2192 Espola \u2192 Twin Peaks.",
       "notes": "",
       "polygon": [
         [
@@ -2169,14 +2009,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #16 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #16 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 16",
+        "subject": "NEC contact request \u2014 neighborhood 16",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 16 (Green Valley Knolls).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -2199,7 +2039,7 @@
         "Green Valley Rd"
       ],
       "wui": false,
-      "evac_guidance": "Green Valley → Espola south.",
+      "evac_guidance": "Green Valley \u2192 Espola south.",
       "notes": "",
       "polygon": [
         [
@@ -2263,14 +2103,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #17 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #17 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 17",
+        "subject": "NEC contact request \u2014 neighborhood 17",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 17 (Green Valley Highlands).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -2293,7 +2133,7 @@
         "Summit View"
       ],
       "wui": false,
-      "evac_guidance": "Summit → Espola south.",
+      "evac_guidance": "Summit \u2192 Espola south.",
       "notes": "",
       "polygon": [
         [
@@ -2369,14 +2209,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #18 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #18 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 18",
+        "subject": "NEC contact request \u2014 neighborhood 18",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 18 (Green Valley Summit).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -2399,7 +2239,7 @@
         "Green Valley Rd"
       ],
       "wui": false,
-      "evac_guidance": "Green Valley → Pomerado south.",
+      "evac_guidance": "Green Valley \u2192 Pomerado south.",
       "notes": "",
       "polygon": [
         [
@@ -2547,14 +2387,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #19 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #19 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 19",
+        "subject": "NEC contact request \u2014 neighborhood 19",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 19 (Green Valley Estates South).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -2577,7 +2417,7 @@
         "Country Squire Rd"
       ],
       "wui": false,
-      "evac_guidance": "Country Squire → Espola → Twin Peaks.",
+      "evac_guidance": "Country Squire \u2192 Espola \u2192 Twin Peaks.",
       "notes": "",
       "polygon": [
         [
@@ -2621,14 +2461,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #20 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #20 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 20",
+        "subject": "NEC contact request \u2014 neighborhood 20",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 20 (Country Squire Estates).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -2651,7 +2491,7 @@
         "Bridlewood Lakeside"
       ],
       "wui": false,
-      "evac_guidance": "Bridlewood → Espola south.",
+      "evac_guidance": "Bridlewood \u2192 Espola south.",
       "notes": "Backs to Lake Poway open space.",
       "polygon": [
         [
@@ -2775,14 +2615,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #21 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #21 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 21",
+        "subject": "NEC contact request \u2014 neighborhood 21",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 21 (Bridlewood Lakeside).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -2805,7 +2645,7 @@
         "Grove Ct"
       ],
       "wui": false,
-      "evac_guidance": "Grove → Espola south.",
+      "evac_guidance": "Grove \u2192 Espola south.",
       "notes": "",
       "polygon": [
         [
@@ -2869,14 +2709,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #22 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #22 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 22",
+        "subject": "NEC contact request \u2014 neighborhood 22",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 22 (The Grove (East)).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -2899,7 +2739,7 @@
         "Hilltop Cir"
       ],
       "wui": false,
-      "evac_guidance": "Hilltop → Pomerado south.",
+      "evac_guidance": "Hilltop \u2192 Pomerado south.",
       "notes": "",
       "polygon": [
         [
@@ -2983,14 +2823,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #23 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #23 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 23",
+        "subject": "NEC contact request \u2014 neighborhood 23",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 23 (Hilltop Circle).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -3013,7 +2853,7 @@
         "La Manda Dr"
       ],
       "wui": false,
-      "evac_guidance": "La Manda → Espola → Twin Peaks.",
+      "evac_guidance": "La Manda \u2192 Espola \u2192 Twin Peaks.",
       "notes": "",
       "polygon": [
         [
@@ -3105,14 +2945,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #24 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #24 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 24",
+        "subject": "NEC contact request \u2014 neighborhood 24",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 24 (La Manda).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -3137,7 +2977,7 @@
       ],
       "wui": false,
       "evac_guidance": "Poway Rd west to I-15. Most central evac path.",
-      "notes": "Commercial heart of Poway — fewest fire concerns, most traffic.",
+      "notes": "Commercial heart of Poway \u2014 fewest fire concerns, most traffic.",
       "polygon": [
         [
           0.32631,
@@ -3244,14 +3084,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #25 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #25 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 25",
+        "subject": "NEC contact request \u2014 neighborhood 25",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 25 (West Central Poway).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -3275,7 +3115,7 @@
       ],
       "wui": true,
       "evac_guidance": "Ted Williams Pkwy west to SR-56. The 2025 Ted Williams roadside ignition cleared from this corridor.",
-      "notes": "Adjacent to the 2025 ignition site — Ted Williams roadside.",
+      "notes": "Adjacent to the 2025 ignition site \u2014 Ted Williams roadside.",
       "polygon": [
         [
           0.29578,
@@ -3315,17 +3155,17 @@
         "note": "Primary city cooling center"
       },
       "fhsz": "High",
-      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5–30 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
+      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5\u201330 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #26 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #26 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 26",
+        "subject": "NEC contact request \u2014 neighborhood 26",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 26 (Williams Ranch).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -3348,7 +3188,7 @@
         "Del Poniente Rd"
       ],
       "wui": false,
-      "evac_guidance": "Del Poniente → Pomerado south.",
+      "evac_guidance": "Del Poniente \u2192 Pomerado south.",
       "notes": "",
       "polygon": [
         [
@@ -3401,17 +3241,17 @@
         "note": "Primary city cooling center"
       },
       "fhsz": "High",
-      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5–30 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
+      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5\u201330 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #27 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #27 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 27",
+        "subject": "NEC contact request \u2014 neighborhood 27",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 27 (Del Poniente).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -3434,8 +3274,8 @@
         "High Valley Rd"
       ],
       "wui": true,
-      "evac_guidance": "High Valley → Espola south. This is canyon-edge — leave EARLY when winds turn east, don't wait for the order.",
-      "notes": "Backs directly to Iron Mountain wildland — Zone Zero hardening is critical here.",
+      "evac_guidance": "High Valley \u2192 Espola south. This is canyon-edge \u2014 leave EARLY when winds turn east, don't wait for the order.",
+      "notes": "Backs directly to Iron Mountain wildland \u2014 Zone Zero hardening is critical here.",
       "polygon": [
         [
           0.63299,
@@ -3539,17 +3379,17 @@
         "note": "Primary city cooling center"
       },
       "fhsz": "Very High",
-      "fhsz_advice": "Highest wildfire risk. Zone Zero (0–5 ft) hardening is CRITICAL — no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days — do not wait for an order.",
+      "fhsz_advice": "Highest wildfire risk. Zone Zero (0\u20135 ft) hardening is CRITICAL \u2014 no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days \u2014 do not wait for an order.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #28 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #28 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 28",
+        "subject": "NEC contact request \u2014 neighborhood 28",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 28 (High Valley).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -3572,7 +3412,7 @@
         "Colony Pl"
       ],
       "wui": false,
-      "evac_guidance": "Colony → Poway Rd west.",
+      "evac_guidance": "Colony \u2192 Poway Rd west.",
       "notes": "",
       "polygon": [
         [
@@ -3640,14 +3480,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #29 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #29 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 29",
+        "subject": "NEC contact request \u2014 neighborhood 29",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 29 (Colony).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -3738,14 +3578,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #30 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #30 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 30",
+        "subject": "NEC contact request \u2014 neighborhood 30",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 30 (Rancho Arbolitos West).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -3768,7 +3608,7 @@
         "Huntington Dr"
       ],
       "wui": false,
-      "evac_guidance": "Huntington → Pomerado south.",
+      "evac_guidance": "Huntington \u2192 Pomerado south.",
       "notes": "",
       "polygon": [
         [
@@ -3848,14 +3688,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #31 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #31 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 31",
+        "subject": "NEC contact request \u2014 neighborhood 31",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 31 (Huntington Gate).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -4011,14 +3851,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #32 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #32 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 32",
+        "subject": "NEC contact request \u2014 neighborhood 32",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 32 (East Central Poway).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -4041,8 +3881,8 @@
         "Rattlesnake Canyon Rd"
       ],
       "wui": true,
-      "evac_guidance": "Out the canyon mouth onto Espola → south. Single-road access — leave at first ember sighting.",
-      "notes": "Single-egress canyon — the hardest evacuation profile in Poway. Leave EARLY.",
+      "evac_guidance": "Out the canyon mouth onto Espola \u2192 south. Single-road access \u2014 leave at first ember sighting.",
+      "notes": "Single-egress canyon \u2014 the hardest evacuation profile in Poway. Leave EARLY.",
       "polygon": [
         [
           0.53634,
@@ -4090,17 +3930,17 @@
         "note": "Primary city cooling center"
       },
       "fhsz": "Very High",
-      "fhsz_advice": "Highest wildfire risk. Zone Zero (0–5 ft) hardening is CRITICAL — no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days — do not wait for an order.",
+      "fhsz_advice": "Highest wildfire risk. Zone Zero (0\u20135 ft) hardening is CRITICAL \u2014 no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days \u2014 do not wait for an order.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #33 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #33 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 33",
+        "subject": "NEC contact request \u2014 neighborhood 33",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 33 (Rattlesnake Canyon).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -4124,7 +3964,7 @@
       ],
       "wui": true,
       "evac_guidance": "Espola south then Twin Peaks/Poway Rd west.",
-      "notes": "Eastern edge bordering Sycamore Canyon Open Space — high fuel load.",
+      "notes": "Eastern edge bordering Sycamore Canyon Open Space \u2014 high fuel load.",
       "polygon": [
         [
           0.53706,
@@ -4244,17 +4084,17 @@
         "note": "Quiet, air-conditioned"
       },
       "fhsz": "Very High",
-      "fhsz_advice": "Highest wildfire risk. Zone Zero (0–5 ft) hardening is CRITICAL — no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days — do not wait for an order.",
+      "fhsz_advice": "Highest wildfire risk. Zone Zero (0\u20135 ft) hardening is CRITICAL \u2014 no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days \u2014 do not wait for an order.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #34 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #34 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 34",
+        "subject": "NEC contact request \u2014 neighborhood 34",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 34 (East Poway).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -4389,14 +4229,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #35 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #35 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 35",
+        "subject": "NEC contact request \u2014 neighborhood 35",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 35 (Pomerado Pines).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -4599,14 +4439,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #36 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #36 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 36",
+        "subject": "NEC contact request \u2014 neighborhood 36",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 36 (Poway Valley North).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -4629,7 +4469,7 @@
         "Palisades Dr"
       ],
       "wui": false,
-      "evac_guidance": "Palisades → Pomerado south.",
+      "evac_guidance": "Palisades \u2192 Pomerado south.",
       "notes": "",
       "polygon": [
         [
@@ -4749,14 +4589,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #37 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #37 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 37",
+        "subject": "NEC contact request \u2014 neighborhood 37",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 37 (Palisades).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -4779,7 +4619,7 @@
         "Arbolitos Dr"
       ],
       "wui": false,
-      "evac_guidance": "Arbolitos → Pomerado south.",
+      "evac_guidance": "Arbolitos \u2192 Pomerado south.",
       "notes": "",
       "polygon": [
         [
@@ -4879,14 +4719,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #38 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #38 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 38",
+        "subject": "NEC contact request \u2014 neighborhood 38",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 38 (Rancho Arbolitos East).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -4909,7 +4749,7 @@
         "Windmill Ranch Rd"
       ],
       "wui": false,
-      "evac_guidance": "Windmill Ranch → Espola south.",
+      "evac_guidance": "Windmill Ranch \u2192 Espola south.",
       "notes": "",
       "polygon": [
         [
@@ -4997,14 +4837,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #39 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #39 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 39",
+        "subject": "NEC contact request \u2014 neighborhood 39",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 39 (Upper Windmill).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -5027,7 +4867,7 @@
         "Windmill Ranch Rd"
       ],
       "wui": false,
-      "evac_guidance": "Windmill Ranch → Poway Rd west.",
+      "evac_guidance": "Windmill Ranch \u2192 Poway Rd west.",
       "notes": "",
       "polygon": [
         [
@@ -5179,14 +5019,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #40 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #40 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 40",
+        "subject": "NEC contact request \u2014 neighborhood 40",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 40 (Lower Windmill).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -5210,8 +5050,8 @@
         "Old Poway Park"
       ],
       "wui": false,
-      "evac_guidance": "Midland → Poway Rd west.",
-      "notes": "Old Poway Park is the venue for the May 23, 2026 Annual Emergency & Safety Fair — also a potential staging area.",
+      "evac_guidance": "Midland \u2192 Poway Rd west.",
+      "notes": "Old Poway Park is the venue for the May 23, 2026 Annual Emergency & Safety Fair \u2014 also a potential staging area.",
       "polygon": [
         [
           0.3859,
@@ -5318,14 +5158,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #41 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #41 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 41",
+        "subject": "NEC contact request \u2014 neighborhood 41",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 41 (Old Poway).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -5348,7 +5188,7 @@
         "Tierra Bonita Rd"
       ],
       "wui": false,
-      "evac_guidance": "Tierra Bonita → Poway Rd west.",
+      "evac_guidance": "Tierra Bonita \u2192 Poway Rd west.",
       "notes": "",
       "polygon": [
         [
@@ -5436,14 +5276,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #42 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #42 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 42",
+        "subject": "NEC contact request \u2014 neighborhood 42",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 42 (Tierra Bonita).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -5466,7 +5306,7 @@
         "Sunrise Ranch Rd"
       ],
       "wui": false,
-      "evac_guidance": "Sunrise → Espola south.",
+      "evac_guidance": "Sunrise \u2192 Espola south.",
       "notes": "",
       "polygon": [
         [
@@ -5543,17 +5383,17 @@
         "note": "Priority for 60+"
       },
       "fhsz": "High",
-      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5–30 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
+      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5\u201330 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #43 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #43 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 43",
+        "subject": "NEC contact request \u2014 neighborhood 43",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 43 (Sunrise Ranch).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -5576,7 +5416,7 @@
         "Poway Grade"
       ],
       "wui": false,
-      "evac_guidance": "Down the grade to Espola → south.",
+      "evac_guidance": "Down the grade to Espola \u2192 south.",
       "notes": "",
       "polygon": [
         [
@@ -5649,17 +5489,17 @@
         "note": "Priority for 60+"
       },
       "fhsz": "High",
-      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5–30 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
+      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5\u201330 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #44 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #44 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 44",
+        "subject": "NEC contact request \u2014 neighborhood 44",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 44 (Poway Grade).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -5778,14 +5618,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #45 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #45 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 45",
+        "subject": "NEC contact request \u2014 neighborhood 45",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 45 (Poway Valley South).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -5808,7 +5648,7 @@
         "Golden City Way"
       ],
       "wui": false,
-      "evac_guidance": "Golden City → Poway Rd west.",
+      "evac_guidance": "Golden City \u2192 Poway Rd west.",
       "notes": "",
       "polygon": [
         [
@@ -5932,14 +5772,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #46 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #46 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 46",
+        "subject": "NEC contact request \u2014 neighborhood 46",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 46 (Golden City).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -5962,7 +5802,7 @@
         "Country View Way"
       ],
       "wui": false,
-      "evac_guidance": "Country View → Poway Rd west.",
+      "evac_guidance": "Country View \u2192 Poway Rd west.",
       "notes": "",
       "polygon": [
         [
@@ -6082,14 +5922,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #47 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #47 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 47",
+        "subject": "NEC contact request \u2014 neighborhood 47",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 47 (Country View).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -6172,14 +6012,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #48 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #48 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 48",
+        "subject": "NEC contact request \u2014 neighborhood 48",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 48 (Poway Portals).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -6203,8 +6043,8 @@
         "Scripps Poway Pkwy"
       ],
       "wui": true,
-      "evac_guidance": "Scripps Poway Pkwy west to I-15. Backs to Sycamore Canyon Open Space — fire approach from S/SW.",
-      "notes": "Adjacent to the Sycamore Canyon Open Space — a major fuel block.",
+      "evac_guidance": "Scripps Poway Pkwy west to I-15. Backs to Sycamore Canyon Open Space \u2014 fire approach from S/SW.",
+      "notes": "Adjacent to the Sycamore Canyon Open Space \u2014 a major fuel block.",
       "polygon": [
         [
           0.11337,
@@ -6292,17 +6132,17 @@
         "note": "Priority for 60+"
       },
       "fhsz": "Very High",
-      "fhsz_advice": "Highest wildfire risk. Zone Zero (0–5 ft) hardening is CRITICAL — no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days — do not wait for an order.",
+      "fhsz_advice": "Highest wildfire risk. Zone Zero (0\u20135 ft) hardening is CRITICAL \u2014 no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days \u2014 do not wait for an order.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #49 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #49 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 49",
+        "subject": "NEC contact request \u2014 neighborhood 49",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 49 (Southwest Poway).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -6325,7 +6165,7 @@
         "Tustin St"
       ],
       "wui": false,
-      "evac_guidance": "Tustin → Poway Rd west.",
+      "evac_guidance": "Tustin \u2192 Poway Rd west.",
       "notes": "",
       "polygon": [
         [
@@ -6445,14 +6285,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #50 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #50 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 50",
+        "subject": "NEC contact request \u2014 neighborhood 50",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 50 (Tustin Hills).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -6475,7 +6315,7 @@
         "Royal Crest Dr"
       ],
       "wui": false,
-      "evac_guidance": "Royal Crest → Poway Rd west.",
+      "evac_guidance": "Royal Crest \u2192 Poway Rd west.",
       "notes": "",
       "polygon": [
         [
@@ -6579,14 +6419,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #51 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #51 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 51",
+        "subject": "NEC contact request \u2014 neighborhood 51",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 51 (Poway Royal Estates).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -6609,7 +6449,7 @@
         "Park Creek Way"
       ],
       "wui": false,
-      "evac_guidance": "Park Creek → Poway Rd west.",
+      "evac_guidance": "Park Creek \u2192 Poway Rd west.",
       "notes": "",
       "polygon": [
         [
@@ -6713,14 +6553,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #52 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #52 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 52",
+        "subject": "NEC contact request \u2014 neighborhood 52",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 52 (Park Creek).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -6743,7 +6583,7 @@
         "Westgate Pl"
       ],
       "wui": false,
-      "evac_guidance": "Westgate → Poway Rd west.",
+      "evac_guidance": "Westgate \u2192 Poway Rd west.",
       "notes": "",
       "polygon": [
         [
@@ -6855,14 +6695,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #53 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #53 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 53",
+        "subject": "NEC contact request \u2014 neighborhood 53",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 53 (Westgate).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -6885,7 +6725,7 @@
         "Gate Dr"
       ],
       "wui": false,
-      "evac_guidance": "Gate Dr → Poway Rd west.",
+      "evac_guidance": "Gate Dr \u2192 Poway Rd west.",
       "notes": "",
       "polygon": [
         [
@@ -6985,14 +6825,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #54 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #54 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 54",
+        "subject": "NEC contact request \u2014 neighborhood 54",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 54 (Gate Drive).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -7015,7 +6855,7 @@
         "Ann-O-Reno Way"
       ],
       "wui": false,
-      "evac_guidance": "Ann-O-Reno → Twin Peaks west.",
+      "evac_guidance": "Ann-O-Reno \u2192 Twin Peaks west.",
       "notes": "",
       "polygon": [
         [
@@ -7139,14 +6979,14 @@
       "fhsz_advice": "Standard wildfire risk for Poway. Annual brush clearance + a 3-minute go-bag covers most scenarios.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #55 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #55 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 55",
+        "subject": "NEC contact request \u2014 neighborhood 55",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 55 (Ann-O-Reno Terrace).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -7169,8 +7009,8 @@
         "Garden Rd"
       ],
       "wui": true,
-      "evac_guidance": "Garden Rd → Pomerado west or Twin Peaks west to I-15.",
-      "notes": "Garden Rd corridor sat in the 2007 Witch Creek precautionary-evac zone — WUI south side has highest priority for Zone Zero.",
+      "evac_guidance": "Garden Rd \u2192 Pomerado west or Twin Peaks west to I-15.",
+      "notes": "Garden Rd corridor sat in the 2007 Witch Creek precautionary-evac zone \u2014 WUI south side has highest priority for Zone Zero.",
       "polygon": [
         [
           0.37427,
@@ -7302,17 +7142,17 @@
         "note": "Priority for 60+"
       },
       "fhsz": "Very High",
-      "fhsz_advice": "Highest wildfire risk. Zone Zero (0–5 ft) hardening is CRITICAL — no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days — do not wait for an order.",
+      "fhsz_advice": "Highest wildfire risk. Zone Zero (0\u20135 ft) hardening is CRITICAL \u2014 no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days \u2014 do not wait for an order.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #56 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #56 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 56",
+        "subject": "NEC contact request \u2014 neighborhood 56",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 56 (Garden Road South).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -7336,7 +7176,7 @@
       ],
       "wui": true,
       "evac_guidance": "Garden Rd north to Twin Peaks west.",
-      "notes": "WUI corridor — see Garden Road South notes.",
+      "notes": "WUI corridor \u2014 see Garden Road South notes.",
       "polygon": [
         [
           0.49273,
@@ -7480,17 +7320,17 @@
         "note": "Priority for 60+"
       },
       "fhsz": "Very High",
-      "fhsz_advice": "Highest wildfire risk. Zone Zero (0–5 ft) hardening is CRITICAL — no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days — do not wait for an order.",
+      "fhsz_advice": "Highest wildfire risk. Zone Zero (0\u20135 ft) hardening is CRITICAL \u2014 no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days \u2014 do not wait for an order.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #57 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #57 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 57",
+        "subject": "NEC contact request \u2014 neighborhood 57",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 57 (Garden Road North).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -7513,8 +7353,8 @@
         "Sycamore Creek Rd"
       ],
       "wui": true,
-      "evac_guidance": "Sycamore Creek → Poway Rd west. Single-road segments inside — leave early.",
-      "notes": "Backs to Sycamore Canyon Open Space — fire approach from the south.",
+      "evac_guidance": "Sycamore Creek \u2192 Poway Rd west. Single-road segments inside \u2014 leave early.",
+      "notes": "Backs to Sycamore Canyon Open Space \u2014 fire approach from the south.",
       "polygon": [
         [
           0.62209,
@@ -7582,17 +7422,17 @@
         "note": "Quiet, air-conditioned"
       },
       "fhsz": "Very High",
-      "fhsz_advice": "Highest wildfire risk. Zone Zero (0–5 ft) hardening is CRITICAL — no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days — do not wait for an order.",
+      "fhsz_advice": "Highest wildfire risk. Zone Zero (0\u20135 ft) hardening is CRITICAL \u2014 no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days \u2014 do not wait for an order.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #58 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #58 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 58",
+        "subject": "NEC contact request \u2014 neighborhood 58",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 58 (Sycamore Creek).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -7615,7 +7455,7 @@
         "Rolling Hills Dr"
       ],
       "wui": false,
-      "evac_guidance": "Rolling Hills → Pomerado south.",
+      "evac_guidance": "Rolling Hills \u2192 Pomerado south.",
       "notes": "",
       "polygon": [
         [
@@ -7744,17 +7584,17 @@
         "note": "Priority for 60+"
       },
       "fhsz": "High",
-      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5–30 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
+      "fhsz_advice": "Elevated wildfire risk. Maintain Zone 1 (5\u201330 ft) clearance and ember-resistant vents/roof. PNEC offers a free Home Ignition Zone assessment.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #59 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #59 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 59",
+        "subject": "NEC contact request \u2014 neighborhood 59",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 59 (Rolling Hills Estates).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
@@ -7778,8 +7618,8 @@
         "Beeler Canyon Rd"
       ],
       "wui": true,
-      "evac_guidance": "Creek Rd west to Pomerado, south to Scripps Poway Pkwy. Beeler Canyon residents have a longer escape — leave at first warning.",
-      "notes": "Far southern edge — single-egress canyon residential. Highest evac priority of any Poway neighborhood.",
+      "evac_guidance": "Creek Rd west to Pomerado, south to Scripps Poway Pkwy. Beeler Canyon residents have a longer escape \u2014 leave at first warning.",
+      "notes": "Far southern edge \u2014 single-egress canyon residential. Highest evac priority of any Poway neighborhood.",
       "polygon": [
         [
           0.20058,
@@ -7891,17 +7731,17 @@
         "note": "Priority for 60+"
       },
       "fhsz": "Very High",
-      "fhsz_advice": "Highest wildfire risk. Zone Zero (0–5 ft) hardening is CRITICAL — no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days — do not wait for an order.",
+      "fhsz_advice": "Highest wildfire risk. Zone Zero (0\u20135 ft) hardening is CRITICAL \u2014 no combustibles, no wood fences attached to home, no mulch. Schedule a free HIZ assessment with PNEC. Leave EARLY on red-flag days \u2014 do not wait for an order.",
       "block_party": {
         "available": true,
-        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk — completely free. Email powaynec@gmail.com with neighborhood #60 to schedule."
+        "pitch": "PNEC sends a volunteer to your neighborhood block party with kit demos, NEC introductions, and a 15-minute preparedness talk \u2014 completely free. Email powaynec@gmail.com with neighborhood #60 to schedule."
       },
       "contact_protocol": {
         "method": "email",
         "address": "powaynec@gmail.com",
-        "subject": "NEC contact request — neighborhood 60",
+        "subject": "NEC contact request \u2014 neighborhood 60",
         "body": "Hi PNEC,\\n\\nI'd like to connect with the Neighborhood Emergency Coordinator and Ham Radio Operator for neighborhood 60 (Creek Rd / Beeler Canyon).\\n\\nMy address: \\n\\nThanks!",
-        "why_email": "PNEC publishes coordinator personal contact info by email request only — that keeps volunteer names off public pages while still connecting you within 1–2 days."
+        "why_email": "PNEC publishes coordinator personal contact info by email request only \u2014 that keeps volunteer names off public pages while still connecting you within 1\u20132 days."
       },
       "quick_contacts": {
         "emergency": "911",
