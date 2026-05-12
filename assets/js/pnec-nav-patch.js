@@ -160,11 +160,16 @@
   }
 
   function patchAll(items) {
-    // Match Elementor's class and the explicit pnec-header-nav class so
-    // we cover every nav variant the WP clone emits AND the data-driven
-    // header on pnec-base pages.
+    // v3.26: scope to ULs inside a <header> element so the FOOTER's
+    // Quick Links UL (also class="elementor-nav-menu") is left alone.
+    // Earlier versions used the bare `ul.elementor-nav-menu` selector
+    // and ended up stripping the footer Quick Links items and
+    // replacing them with the top-nav items — looked empty on mobile
+    // because the cream-styled forest-green items rendered into the
+    // dark-styled footer column. Selector list also keeps the
+    // pnec-header-nav fallback for the data-driven pnec-base header.
     var lists = document.querySelectorAll(
-      'ul.elementor-nav-menu, .pnec-header-nav ul'
+      'header ul.elementor-nav-menu, .pnec-header-nav ul'
     );
     Array.prototype.forEach.call(lists, function (ul) { patchOneList(ul, items); });
     // v3.23: always render our own auth chip (Login / Profile) as the
@@ -203,8 +208,10 @@
   function renderAuthChip() {
     ensureHideStyle();
     var user = readCachedUser();
+    // v3.26: same header-scoped selector as patchAll — keeps the auth
+    // chip out of the footer's Quick Links UL.
     var lists = document.querySelectorAll(
-      'ul.elementor-nav-menu, .pnec-header-nav ul'
+      'header ul.elementor-nav-menu, .pnec-header-nav ul'
     );
     Array.prototype.forEach.call(lists, function (ul) {
       // Detect mobile dropdown (tabindex=-1 on links) for tabindex behavior

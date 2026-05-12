@@ -219,6 +219,23 @@ gtag("config", "GT-55XBSG8");
    Gated to phones via @media (max-width: 767.98px) — desktop is
    provably untouched. Scoped to .jupiterx-header / .jupiterx-footer. */
 @media (max-width: 767.98px) {
+  /* v3.26: mobile-only logo image was being sized at 100vw via the
+     WP-cloned <img sizes='(max-width:1024px) 100vw, 1024px'> attribute,
+     so on a 375px screen it rendered as a 375px-tall faded watermark
+     dominating the page. Constrain its max-width + center it. Scoped
+     to .jupiterx-header and the .elementor-hidden-desktop logo widget
+     so no other images are affected. */
+  .jupiterx-header .elementor-hidden-desktop.elementor-widget-image {
+    text-align: center !important;
+    margin: 4px auto 0 !important;
+  }
+  .jupiterx-header .elementor-hidden-desktop.elementor-widget-image img {
+    max-width: 220px !important;
+    width: 220px !important;
+    height: auto !important;
+    display: inline-block !important;
+  }
+
   /* HEADER: shrink the DONATE NOW button so it stops dwarfing the logo */
   .jupiterx-header .donatepopup .raven-button,
   .jupiterx-header .elementor-widget-raven-button .raven-button {
