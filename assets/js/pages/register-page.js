@@ -181,192 +181,189 @@ function outsidePowayMessage(miles) {
 function handleFindNeighborhoodClick() {
   const button = document.getElementById('register-find-neighborhood');
   setFindNeighborhoodLoading(button, true);
-  updateNeighborhoodHelp('Preparing neighborhood lookup...');
+  updateNeighborhoodHelp('Finding your location…');
+  // Always show the address fallback so the user can type at any
+  // point during the lookup if they're impatient.
+  showAddressFallback();
 
   ensureNeighborhoodsLoaded()
-    .then(() => {
-      if (!navigator.geolocation) {
-        updateNeighborhoodHelp('Your browser does not support location lookup. Type an address below and press Search.');
-        focusAddressSearch();
-        setFindNeighborhoodLoading(button, false);
-        return;
-      }
-
-      // v3.20: two-stage geolocation. The previous single-call with
-      // enableHighAccuracy:true + 10s timeout was failing constantly,
-      // especially on desktops (no GPS, slow WiFi triangulation). We
-      // now try high-accuracy with a shorter window first, and if it
-      // times out, fall back to a coarse fix with a longer window —
-      // which is plenty accurate for "are you in Poway?" detection.
-      tryGeolocate(button);
-    })
+    .then(() => geolocateUser(button))
     .catch(() => {
       setFindNeighborhoodLoading(button, false);
-      showAddressFallback('Neighborhood data is not available right now. Try an address or choose from the list.');
+      updateNeighborhoodHelp('Neighborhood data is not available right now. Pick from the list or type an address below.', true);
     });
 }
 
-// v3.21: three-stage geolocation. Each stage handles a different failure
-// mode we hit in the wild:
+// v3.22: IP-FIRST geolocation. Earlier 3-stage approach (GPS → GPS → IP)
+// was failing in the wild because:
+//   - High-accuracy GPS times out on desktops (no GPS chip)
+//   - Coarse GPS hangs forever behind VPNs / corporate WiFi / privacy
+//     browsers — Google Location Services unreachable, no error fires
+//   - The IP fallback I had used ipwho.is + ipapi.co, both of which
+//     reject cross-origin requests on the free plan. So fallback ALSO
+//     failed.
+// Net: the user waited 23+ seconds and got "type an address below."
 //
-//   Stage 1 — high-accuracy browser GPS (8s). Works on mobile with
-//             GPS hardware. Times out on most desktops.
+// New approach:
+//   Phase 1 (parallel, ~500ms):
+//     - Hit two CORS-friendly IP geolocation services (geojs.io,
+//       ipinfo.io). First to respond wins. ~25 km accuracy is plenty
+//       for "are you in Poway or 200 miles away?"
+//   Phase 2 (optional, only if IP says we're near Poway, 5s max):
+//     - Try browser GPS for neighborhood-level precision.
+//   Hard ceiling: 6 seconds total.
 //
-//   Stage 2 — coarse browser GPS (15s). Uses WiFi BSSID lookup. Fails
-//             when the user is behind a VPN, on a corporate network,
-//             or in a privacy-focused browser (Brave / Firefox /
-//             LibreWolf default-block WiFi positioning) — in which
-//             case Google Location Services never responds and the
-//             call hangs until timeout.
-//
-//   Stage 3 — server-side IP geolocation (3s). Hits a free HTTPS IP
-//             API. Gives a coarse city-level fix (~25 km accuracy).
-//             Plenty for our "are you anywhere near Poway?" check.
-//             No browser permission needed; works even when the user
-//             clicked Block on the GPS prompt.
-//
-// Stages run sequentially. We surface progress in the help text so
-// the admin doesn't think nothing is happening during the 25+ seconds
-// it can take to fall through all three.
+// The user always sees progress text and can pick from the dropdown
+// at any time — the lookup never blocks the form.
 
-function tryGeolocate(button) {
-  // Permission probe — if the user already blocked geolocation
-  // permanently, skip the GPS stages entirely and go straight to IP.
-  // Saves them 23 seconds of "Requesting your location…".
-  probePermission().then(state => {
-    if (state === 'denied') {
-      updateNeighborhoodHelp(
-        "Location access was blocked in your browser. Trying a coarser IP-based lookup instead…"
-      );
-      tryIpFallback(button, /*reason=*/'permission-denied');
-      return;
-    }
-    updateNeighborhoodHelp('Requesting your location — please allow the browser prompt if it appears…');
-    tryBrowserStageOne(button);
-  });
-}
+function geolocateUser(button) {
+  let resolved = false;
 
-function probePermission() {
-  // navigator.permissions isn't universal (Safari ≤ 16 lacks it) so
-  // we resolve 'prompt' as the default when the API is missing.
-  if (!navigator.permissions || typeof navigator.permissions.query !== 'function') {
-    return Promise.resolve('prompt');
-  }
-  return navigator.permissions
-    .query({ name: 'geolocation' })
-    .then(p => p.state || 'prompt')
-    .catch(() => 'prompt');
-}
+  // Hard overall ceiling — never spin longer than this
+  const overallTimer = setTimeout(() => {
+    if (resolved) return;
+    resolved = true;
+    setFindNeighborhoodLoading(button, false);
+    updateNeighborhoodHelp(
+      "Couldn't pin your location automatically. Type an address below (street name is enough) or pick your neighborhood from the dropdown.",
+      true
+    );
+    focusAddressSearch();
+  }, 6000);
 
-function tryBrowserStageOne(button) {
-  navigator.geolocation.getCurrentPosition(
-    position => resolveNeighborhoodFromLocation(position, button),
-    error => {
-      if (error && error.code === error.PERMISSION_DENIED) {
-        // Some browsers report a "block-and-don't-ask" as TIMEOUT
-        // (Firefox), some report it as PERMISSION_DENIED (Chrome).
-        // Either way, GPS is off the table — try IP instead.
-        updateNeighborhoodHelp(
-          "GPS permission was denied — trying a coarser IP-based lookup instead…"
-        );
-        tryIpFallback(button, /*reason=*/'permission-denied');
+  // Phase 1: IP geolocation (fast, doesn't need permission)
+  tryIpGeolocation()
+    .then(ipFix => {
+      if (resolved) return;
+      const miles = roughMilesFromPoway(ipFix.lat, ipFix.lng);
+      // If user is definitely far away (>50 mi), surface the fun
+      // out-of-area message immediately. No point asking for GPS.
+      if (miles > 50) {
+        resolved = true;
+        clearTimeout(overallTimer);
+        setFindNeighborhoodLoading(button, false);
+        updateNeighborhoodHelp(outsidePowayMessage(miles), true);
+        focusAddressSearch();
         return;
       }
-      // POSITION_UNAVAILABLE (no location provider) or TIMEOUT both go
-      // to stage 2. We used to short-circuit POSITION_UNAVAILABLE but
-      // that turned out to fire spuriously on first cold-cache call.
-      updateNeighborhoodHelp('Still working on it — trying a coarser GPS fix (this can take ~15s)…');
-      tryBrowserStageTwo(button);
-    },
-    { enableHighAccuracy: true, timeout: 8000, maximumAge: 120000 }
-  );
+      // User is in/near SD County. Try GPS for neighborhood-level
+      // precision, but don't block on it — fall back to IP fix if GPS
+      // doesn't respond within 3s.
+      updateNeighborhoodHelp("Got your general area (near Poway). Trying for a precise GPS fix…");
+      tryGpsFix(3500)
+        .then(gpsFix => {
+          if (resolved) return;
+          resolved = true;
+          clearTimeout(overallTimer);
+          resolveNeighborhoodFromLocation({
+            coords: { latitude: gpsFix.lat, longitude: gpsFix.lng, accuracy: gpsFix.accuracy },
+            _source: 'gps',
+            _approximate: false,
+          }, button);
+        })
+        .catch(() => {
+          if (resolved) return;
+          resolved = true;
+          clearTimeout(overallTimer);
+          // GPS didn't respond — use the IP fix.
+          resolveNeighborhoodFromLocation({
+            coords: { latitude: ipFix.lat, longitude: ipFix.lng, accuracy: ipFix.accuracyMeters || 25000 },
+            _source: ipFix.source,
+            _approximate: true,
+          }, button);
+        });
+    })
+    .catch(() => {
+      // IP lookup failed entirely. Try GPS as a long-shot.
+      if (resolved) return;
+      updateNeighborhoodHelp("IP location failed — trying browser GPS as a backup (up to 4s)…");
+      tryGpsFix(4000)
+        .then(gpsFix => {
+          if (resolved) return;
+          resolved = true;
+          clearTimeout(overallTimer);
+          resolveNeighborhoodFromLocation({
+            coords: { latitude: gpsFix.lat, longitude: gpsFix.lng, accuracy: gpsFix.accuracy },
+            _source: 'gps',
+            _approximate: false,
+          }, button);
+        })
+        .catch(() => {
+          if (resolved) return;
+          resolved = true;
+          clearTimeout(overallTimer);
+          setFindNeighborhoodLoading(button, false);
+          updateNeighborhoodHelp(
+            "Couldn't pin your location (network blocked both IP and GPS lookups). Type an address below or pick from the dropdown.",
+            true
+          );
+          focusAddressSearch();
+        });
+    });
 }
 
-function tryBrowserStageTwo(button) {
-  navigator.geolocation.getCurrentPosition(
-    position => resolveNeighborhoodFromLocation(position, button),
-    error => {
-      // Both browser stages failed. Try server-side IP geolocation —
-      // works even when WiFi BSSID lookup is blocked (VPN / corporate
-      // / privacy browser).
-      updateNeighborhoodHelp(
-        "Browser GPS didn't respond — falling back to IP-based lookup (less precise but works without GPS)…"
-      );
-      tryIpFallback(button, /*reason=*/'browser-timeout', /*originalError=*/error);
-    },
-    { enableHighAccuracy: false, timeout: 15000, maximumAge: 600000 }
-  );
-}
-
-// Stage 3 — fetch IP-based geolocation from a free HTTPS service.
-// We try two providers in parallel and race — whichever returns first
-// with a valid lat/lng wins. Falls through to the original error
-// handler if both fail or both return without coordinates.
-function tryIpFallback(button, reason, originalError) {
+// IP geolocation via two CORS-friendly providers. Returns the FIRST
+// successful response. ~500ms typical.
+function tryIpGeolocation() {
   const providers = [
     {
-      url: 'https://ipapi.co/json/',
-      parse: j => j && Number.isFinite(j.latitude) && Number.isFinite(j.longitude)
-        ? { lat: j.latitude, lng: j.longitude, accuracyMeters: 25000, city: j.city, source: 'ipapi.co' }
-        : null,
+      url: 'https://get.geojs.io/v1/ip/geo.json',
+      parse: j => {
+        const lat = parseFloat(j && j.latitude);
+        const lng = parseFloat(j && j.longitude);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+        return { lat, lng, accuracyMeters: 25000, city: j.city, source: 'geojs.io' };
+      },
     },
     {
-      url: 'https://ipwho.is/',
-      parse: j => j && j.success !== false && Number.isFinite(j.latitude) && Number.isFinite(j.longitude)
-        ? { lat: j.latitude, lng: j.longitude, accuracyMeters: 25000, city: j.city, source: 'ipwho.is' }
-        : null,
+      url: 'https://ipinfo.io/json',
+      parse: j => {
+        if (!j || !j.loc) return null;
+        const [lat, lng] = String(j.loc).split(',').map(parseFloat);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+        return { lat, lng, accuracyMeters: 25000, city: j.city, source: 'ipinfo.io' };
+      },
     },
   ];
-
   const attempts = providers.map(p =>
     fetch(p.url, { credentials: 'omit', cache: 'no-cache' })
-      .then(r => (r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status))))
+      .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
       .then(j => {
         const out = p.parse(j);
-        if (!out) throw new Error('no coords from ' + p.url);
+        if (!out) throw new Error('no coords');
         return out;
       })
   );
-
-  // 8s overall ceiling so we don't hang the UI even if both providers
-  // are slow. Promise.any picks the first success; if both fail we
-  // fall through to the original-error path.
-  Promise.race([
+  return Promise.race([
     Promise.any(attempts),
-    new Promise((_, reject) => setTimeout(() => reject(new Error('ip-fallback-timeout')), 8000)),
-  ])
-    .then(fix => {
-      // Synthesize a Position-shaped object so the resolver downstream
-      // doesn't care how we got the coords.
-      const synthetic = {
-        coords: {
-          latitude:  fix.lat,
-          longitude: fix.lng,
-          accuracy:  fix.accuracyMeters,  // ~25 km — coarse, but flagged
-        },
-        timestamp: Date.now(),
-        _source:   fix.source,
-        _approximate: true,
-      };
-      resolveNeighborhoodFromLocation(synthetic, button);
-    })
-    .catch(() => {
-      // Genuine total failure — show the original error path.
-      if (originalError) {
-        handleNeighborhoodLocationError(originalError, button);
-      } else {
-        // Permission was denied AND IP geolocation failed. Rare.
-        setFindNeighborhoodLoading(button, false);
-        showAddressFallback();
-        updateNeighborhoodHelp(
-          reason === 'permission-denied'
-            ? "Location access is blocked and the IP-based fallback also failed (your network may be blocking it). Type an address below — a street name is enough — or pick from the dropdown."
-            : "We couldn't get your location through GPS or IP lookup. Type an address below or pick your neighborhood from the dropdown.",
-          true
-        );
-        focusAddressSearch();
-      }
-    });
+    new Promise((_, rej) => setTimeout(() => rej(new Error('ip-timeout')), 4000)),
+  ]);
+}
+
+// Browser GPS with a SHORT timeout. We don't waste 15s waiting for GPS
+// that often never returns — if it doesn't fire in `ms` it's rejected.
+function tryGpsFix(ms) {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) { reject(new Error('no-geolocation')); return; }
+    let done = false;
+    const timer = setTimeout(() => {
+      if (done) return; done = true;
+      reject(new Error('gps-timeout'));
+    }, ms);
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        if (done) return; done = true; clearTimeout(timer);
+        resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
+      },
+      err => {
+        if (done) return; done = true; clearTimeout(timer);
+        reject(err);
+      },
+      // Use enableHighAccuracy:false for speed — the network/WiFi fix
+      // is usually sub-second and accurate enough.
+      { enableHighAccuracy: false, timeout: ms, maximumAge: 60000 }
+    );
+  });
 }
 
 function ensureNeighborhoodsLoaded() {
