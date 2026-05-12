@@ -30,6 +30,53 @@ permalink: /pages/find-your-neighborhood.html
 <style id='wp-img-auto-sizes-contain-inline-css' type='text/css'>
 img:is([sizes=auto i],[sizes^="auto," i]){contain-intrinsic-size:3000px 1500px}
 /*# sourceURL=wp-img-auto-sizes-contain-inline-css */
+
+/* v3.24: stretched page-title hero — fix invisible title + huge empty band.
+   The WP-cloned hero section was set to min-height ~400px with a
+   missing/dark background, leaving a giant empty band; meanwhile the
+   page title inside (white-on-dark in the original) was invisible
+   against the now-light background. Collapse the band, make the title
+   readable. Scoped to .elementor-section-stretched.elementor-section-
+   height-min-height so only THAT broken pattern is affected. */
+.elementor-section-stretched.elementor-section-height-min-height {
+  min-height: 0 !important;
+  padding-top: 32px !important;
+  padding-bottom: 20px !important;
+  background-color: #fbf8f1 !important;
+}
+.elementor-section-stretched.elementor-section-height-min-height .elementor-background-overlay {
+  display: none !important;
+}
+.elementor-section-stretched.elementor-section-height-min-height .elementor-heading-title,
+.elementor-section-stretched.elementor-section-height-min-height span.elementor-heading-title {
+  color: #0e3b21 !important;
+  font-size: clamp(1.6rem, 4.5vw, 2.4rem) !important;
+  font-weight: 800 !important;
+  line-height: 1.15 !important;
+  margin: 0 !important;
+  text-align: center !important;
+  display: block !important;
+}
+
+/* v3.24: animated-headline widget — was rendering with very low
+   contrast (faded gray). Force a solid dark color + clear underline
+   so the section headers are readable. */
+.elementor-widget-animated-headline .elementor-headline,
+.elementor-widget-animated-headline .elementor-headline-dynamic-text,
+.elementor-widget-animated-headline .elementor-headline-text-active,
+.elementor-widget-animated-headline .elementor-headline-dynamic-wrapper,
+.elementor-widget-animated-headline .elementor-headline-text-wrapper {
+  color: #0e3b21 !important;
+  opacity: 1 !important;
+  font-weight: 700 !important;
+}
+.elementor-widget-animated-headline .elementor-headline-dynamic-text {
+  background-image: linear-gradient(to right, #1e8449, #1e8449) !important;
+  background-repeat: no-repeat !important;
+  background-position: 0 100% !important;
+  background-size: 100% 3px !important;
+  padding-bottom: 4px !important;
+}
 </style>
 <link rel='stylesheet' id='font-awesome-5-all-css' href='https://powaynec.com/wp-content/plugins/elementor/assets/lib/font-awesome/css/all.min.css?ver=3.35.9' type='text/css' media='all' />
 <link rel='stylesheet' id='font-awesome-4-shim-css' href='https://powaynec.com/wp-content/plugins/elementor/assets/lib/font-awesome/css/v4-shims.min.css?ver=3.35.9' type='text/css' media='all' />
