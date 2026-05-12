@@ -107,30 +107,18 @@
     var sample = ul.querySelector('a.elementor-item');
     var useTabindexMinus1 = !!(sample && sample.getAttribute('tabindex') === '-1');
 
-    // Items we MUST preserve. Two cases:
-    //   (1) pnec-base layout — explicit IDs poway-auth-* already exist;
-    //       auth-ui.js toggles visibility based on session state.
-    //   (2) WP-clone layout — uses class="menu-item-login" with no ID
-    //       and a static Login link. auth-ui.js can't find it. v3.20:
-    //       we now stamp the missing IDs onto those WP-clone items so
-    //       auth-ui can manage them on marketing pages too.
-    var keepIds = {
-      'poway-auth-display-item': true,
-      'poway-auth-display-item-mobile': true,
-      'poway-auth-logout-item': true,
-      'poway-auth-logout-item-mobile': true,
-      'poway-auth-login-item': true,
-      'poway-auth-login-item-mobile': true,
-    };
+    // v3.24: this patcher no longer stamps poway-auth-* IDs onto static
+    // markup. We render our OWN auth chip in renderAuthChip() and hide
+    // anything pre-existing via a stylesheet rule (see ensureHideStyle).
+    // Stamping caused a "double Login" bug because auth-ui.js writes
+    // `loginItem.style.display = 'list-item'` which silently overrode
+    // our inline !important and un-hid the static <li>.
 
-    function isAuthLi(li) {
+    function looksLikeAuthLi(li) {
       if (!li) return false;
-      if (li.id && keepIds[li.id]) return true;
-      // WP-clone Login entry — has class "menu-item-login" but no ID
-      if (li.classList && li.classList.contains('menu-item-login')) return true;
-      // Catch any anchor pointing to register/login as a last-resort
-      // backstop. (Doesn't fire for ordinary nav links because they
-      // never href to register.html.)
+      if (li.id && /^poway-auth-(display|login|register|logout)-item/.test(li.id)) return true;
+      if (li.classList && (li.classList.contains('menu-item-login') ||
+                            li.classList.contains('poway-auth-display'))) return true;
       var a = li.querySelector && li.querySelector('a[href]');
       if (a) {
         var href = (a.getAttribute('href') || '').toLowerCase();
@@ -140,62 +128,32 @@
       return false;
     }
 
-    // v3.20: stamp the auth-ui-expected IDs onto WP-clone Login/Profile
-    // items so the session-aware swap works on marketing pages too. We
-    // only do this if the ID isn't already set — leaves pnec-base pages
-    // alone. The "-mobile" variant goes onto the mobile dropdown <ul>
-    // (detected by tabindex="-1" sample) so auth-ui can target it.
-    function bridgeAuthIds(li) {
-      if (!li || li.id) return;                // pnec-base already has an ID
-      if (!li.classList || !li.classList.contains('menu-item-login')) return;
-      li.id = useTabindexMinus1 ? 'poway-auth-login-item-mobile' : 'poway-auth-login-item';
-    }
-
     var home = ul.querySelector('li.pnec-nav-home') || ul.querySelector('li.menu-item-home');
 
-    // First pass: identify items to keep (home + auth) and stamp IDs
-    // onto WP-clone auth items so auth-ui can find them later.
-    var preservedAuth = [];
-    Array.prototype.forEach.call(ul.children, function (li) {
-      if (isAuthLi(li)) {
-        bridgeAuthIds(li);
-        preservedAuth.push(li);
-      }
-    });
-
-    // Second pass: remove everything that ISN'T home/auth/already-managed.
+    // v3.24: REMOVE all non-home <li>s outright. Including auth ones.
+    // Our chip (renderAuthChip) is the single source of truth for the
+    // Login / Profile entry — no more keeping a hidden static <li>
+    // around that auth-ui.js can re-show via style.display writes.
+    //
+    // Auth-ui.js's renderPowayAuthHeader does an early-return when
+    // none of poway-auth-display-item/login-item/register-item exist,
+    // so deleting them is safe — the function just no-ops, and our
+    // chip handles the visible role.
     Array.prototype.slice.call(ul.children).forEach(function (li) {
       if (li === home) return;
-      if (isAuthLi(li)) return;
       ul.removeChild(li);
     });
 
-    // Build the new sequence and insert.
+    // Insert the data-driven managed items after home.
     var frag = document.createDocumentFragment();
     items.forEach(function (it) {
       frag.appendChild(buildItem(it, { tabindex: useTabindexMinus1 }));
     });
-
-    // Insert before the first auth item so order is:
-    //   Home → managed items → auth (profile / login / logout)
-    var firstAuth = preservedAuth[0] || null;
     var refNode = home ? home.nextSibling : ul.firstChild;
-    if (firstAuth) {
-      ul.insertBefore(frag, firstAuth);
-    } else if (refNode) {
+    if (refNode) {
       ul.insertBefore(frag, refNode);
     } else {
       ul.appendChild(frag);
-    }
-
-    // v3.20: ask auth-ui to refresh its hooks now that we've stamped
-    // new IDs onto the WP-clone Login button. The event is no-op when
-    // auth-ui hasn't loaded yet — it picks up the IDs on its normal
-    // init pass.
-    if (preservedAuth.length) {
-      try {
-        window.dispatchEvent(new CustomEvent('pnec:nav-patched'));
-      } catch (_e) { /* IE fallback not needed in 2026 */ }
     }
 
     ul.setAttribute('data-pnec-nav-applied', '1');
@@ -229,7 +187,21 @@
     } catch (_e) { return null; }
   }
 
+  // Injects a one-time stylesheet rule that hides static auth items
+  // marked with .pnec-auth-original. We use a stylesheet rule with
+  // !important so it overrides any later inline `style.display = X`
+  // writes from auth-ui.js (those use empty priority, which loses to
+  // a stylesheet !important).
+  function ensureHideStyle() {
+    if (document.getElementById('pnec-nav-patch-style')) return;
+    var s = document.createElement('style');
+    s.id = 'pnec-nav-patch-style';
+    s.textContent = 'li.pnec-auth-original{display:none !important}';
+    (document.head || document.documentElement).appendChild(s);
+  }
+
   function renderAuthChip() {
+    ensureHideStyle();
     var user = readCachedUser();
     var lists = document.querySelectorAll(
       'ul.elementor-nav-menu, .pnec-header-nav ul'
@@ -245,14 +217,11 @@
         function (n) { n.parentNode.removeChild(n); }
       );
 
-      // Hide any static auth-related <li>s that came from the original
-      // page markup. They'd otherwise appear alongside our chip and
-      // confuse the user. We pick them up via the same heuristics that
-      // isAuthLi uses (class menu-item-login, id="poway-auth-...",
-      // anchor to register.html / #login). We mark them with our hide
-      // attribute instead of removing — so a future page-level script
-      // can still find them if it needs to.
-      Array.prototype.forEach.call(ul.children, function (li) {
+      // v3.24: any leftover static auth <li>s (rare, but a defense
+      // against pages that don't run patchOneList — e.g. if the data
+      // fetch failed) get REMOVED outright. No more "hide and pray
+      // auth-ui doesn't un-hide it" dance.
+      Array.prototype.slice.call(ul.children).forEach(function (li) {
         if (li.getAttribute && li.getAttribute('data-pnec-auth-chip') === '1') return;
         var isAuth = false;
         if (li.id && /^poway-auth-(display|login|register|logout)-item/.test(li.id)) isAuth = true;
@@ -265,12 +234,7 @@
             if (href.indexOf('register.html') !== -1 || href.indexOf('#login') !== -1) isAuth = true;
           }
         }
-        if (isAuth) {
-          // !important so auth-ui's later display='list-item' can't
-          // un-hide it (we want our own chip to be the only one).
-          li.style.setProperty('display', 'none', 'important');
-          li.setAttribute('data-pnec-auth-hidden', '1');
-        }
+        if (isAuth) ul.removeChild(li);
       });
 
       // Build our chip. For a signed-in user it's "First Name" linking
