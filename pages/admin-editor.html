@@ -1453,18 +1453,53 @@ permalink: /pages/admin-editor.html
       return 'Conflict — someone else committed an edit to this file while you had it open. Click <strong>↻ Reload</strong> to load their version, then re-apply your edits.';
     }
     if (status === 504) return 'Server timed out. Try again — if it keeps happening, the upstream service (GitHub or Groq) may be down.';
-    if (j && (j.error === 'GROQ_RATE_LIMITED' || (j.detail || '').indexOf('rate-limit') !== -1)) {
+
+    // Prompt-engineer-specific error codes from Beasts_Flask
+    var code = j && j.error;
+    var detail = (j && j.detail) || '';
+    if (code === 'GROQ_RATE_LIMITED' || detail.indexOf('rate-limit') !== -1) {
       return 'Groq rate-limit hit (free-tier is 12000 tokens/minute). Wait ~60s and try again — large pages use about 5500 tokens per generation.';
     }
-    if (j && j.detail) {
-      // Specific known error patterns
-      if (j.detail.indexOf('GITHUB_TOKEN') !== -1) {
+    if (code === 'GROQ_AUTH') {
+      return 'The Groq API key on the server is invalid or revoked. Get a new one at console.groq.com and update GROQ_API_KEY in the Flask .env, then redeploy.';
+    }
+    if (code === 'GROQ_TIMEOUT') {
+      return 'Groq took longer than 45s to respond. Usually transient — try again, or pick a smaller page.';
+    }
+    if (code === 'GROQ_NETWORK') {
+      return 'Server could not reach Groq. Check Flask host network or status.groq.com.';
+    }
+    if (code === 'GROQ_NO_CONTENT' || code === 'GROQ_NO_CHOICES' || code === 'GROQ_BAD_SHAPE' || code === 'GROQ_BAD_JSON') {
+      return 'Groq returned an empty/malformed response. Hit "↻ Re-engineer" — these errors are usually transient.';
+    }
+    if (code === 'GROQ_API_ERROR') {
+      return 'Groq API error: ' + (detail || 'unknown') + '. If this persists, the model may be down.';
+    }
+    if (code === 'PAGE_NOT_FOUND') {
+      return 'That page is not in the repo. Pick a path from the autocomplete or check spelling.';
+    }
+    if (code === 'INVALID_PATH') {
+      return 'Path looks wrong. Use a repo-relative path like "pages/about.html" (no leading slash, no "..").';
+    }
+    if (code === 'INVALID_DESCRIPTION') {
+      return 'Description is required and must be ≤ 4000 chars.';
+    }
+    if (code === 'INVALID_TARGET_AI') {
+      return 'Target AI must be Claude, Gemini, or ChatGPT.';
+    }
+    if (code === 'GITHUB_ERROR') {
+      return 'GitHub returned an error fetching the page — usually a stale token. Check GITHUB_TOKEN on the Flask server.';
+    }
+
+    if (detail) {
+      // Specific known error patterns from older codepaths
+      if (detail.indexOf('GITHUB_TOKEN') !== -1) {
         return 'Server is missing GITHUB_TOKEN env var. Set a fine-grained PAT with Contents:read+write on the repo, then restart the Flask server.';
       }
-      if (j.detail.indexOf('GROQ_API_KEY') !== -1) {
+      if (detail.indexOf('GROQ_API_KEY') !== -1) {
         return 'Server is missing GROQ_API_KEY env var. Set a Groq API key on the Flask host to enable AI generation.';
       }
-      return 'Failed to ' + action + ': ' + j.detail;
+      return 'Failed to ' + action + ': ' + detail;
     }
     return 'Failed to ' + action + ' (server ' + status + ').';
   }
