@@ -505,6 +505,47 @@ permalink: /pages/admin-editor.html
   line-height: 1.5; min-height: 1.5em;
   transition: opacity 0.3s ease;
 }
+.ae-ai-thinking-cancel {
+  margin-top: 10px;
+  text-align: center;
+}
+.ae-ai-thinking-cancel .ae-btn {
+  font-size: 0.78rem; padding: 6px 14px;
+  color: #6b7280; border: 1px solid #d8d4c4;
+}
+.ae-ai-thinking-cancel .ae-btn:hover {
+  background: #fbf8f1; color: #80261b; border-color: rgba(192,57,43,0.32);
+}
+
+/* ── "Try the same description with: [Claude] [Gemini] [ChatGPT]" ── */
+/* Shown inside the result panel once a prompt has been generated. */
+.ae-ai-switch-target {
+  display: none; align-items: center; flex-wrap: wrap; gap: 8px;
+  margin-top: 14px; padding-top: 12px;
+  border-top: 1px dashed #e3e0d8;
+}
+.ae-ai-switch-target.is-visible { display: flex; }
+.ae-ai-switch-target-label {
+  font-size: 0.78rem; font-weight: 700; color: #6b7280;
+}
+.ae-ai-switch-target-btn {
+  padding: 6px 14px;
+  border: 1.5px solid #d8d4c4; border-radius: 999px;
+  background: #fbf8f1; color: #0e3b21;
+  font: inherit; font-size: 0.82rem; font-weight: 700;
+  cursor: pointer; white-space: nowrap;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+.ae-ai-switch-target-btn:hover {
+  background: #d4efdf; border-color: #145a32;
+}
+.ae-ai-switch-target-btn.is-current {
+  background: #145a32; color: #fffdf6; border-color: #145a32;
+  cursor: default;
+}
+.ae-ai-switch-target-btn:disabled {
+  opacity: 0.5; cursor: not-allowed;
+}
 
 /* Respect prefers-reduced-motion — replace animation with a calm,
    static "Working…" badge so it's still clear something is happening. */
@@ -847,6 +888,9 @@ permalink: /pages/admin-editor.html
       </div>
       <div class="ae-ai-thinking-shimmer"></div>
       <div class="ae-ai-thinking-stages" id="ae-ai-thinking-stages">Reading the current page…</div>
+      <div class="ae-ai-thinking-cancel">
+        <button type="button" class="ae-btn is-ghost" id="ae-ai-cancel-gen">✕ Cancel</button>
+      </div>
     </div>
 
     <!-- Engineered-prompt result panel -->
@@ -862,6 +906,12 @@ permalink: /pages/admin-editor.html
         <button type="button" class="ae-btn is-primary" id="ae-ai-copy">📋 Copy prompt</button>
         <a class="ae-btn is-link-style" id="ae-ai-open-target" target="_blank" rel="noopener" href="https://claude.ai">Open Claude →</a>
         <button type="button" class="ae-btn" id="ae-ai-regen">↻ Re-engineer</button>
+      </div>
+      <div class="ae-ai-switch-target" id="ae-ai-switch-target-wrap">
+        <span class="ae-ai-switch-target-label">Try the same description with:</span>
+        <button type="button" class="ae-ai-switch-target-btn" data-switch="claude">Claude</button>
+        <button type="button" class="ae-ai-switch-target-btn" data-switch="gemini">Gemini</button>
+        <button type="button" class="ae-ai-switch-target-btn" data-switch="chatgpt">ChatGPT</button>
       </div>
       <div class="ae-ai-steps" id="ae-ai-steps-wrap">
         <div class="ae-ai-steps-title">How to use this</div>
@@ -1881,21 +1931,36 @@ permalink: /pages/admin-editor.html
     box.setAttribute('aria-hidden', 'true');
   }
 
-  function engineerPrompt() {
+  // AbortController for the in-flight Groq request — lets us implement
+  // a real Cancel button instead of just hiding the spinner.
+  var inflightAbort = null;
+
+  function engineerPrompt(overrideTarget) {
     var pathVal = ($('ae-ai-path').value || '').trim();
     var descVal = ($('ae-ai-description').value || '').trim();
-    var target  = selectedTargetAI();
+    var target  = overrideTarget || selectedTargetAI();
     var targetLabel = ({ claude: 'Claude', gemini: 'Gemini', chatgpt: 'ChatGPT' })[target] || 'Claude';
 
     if (!pathVal) { toast('Type a page path first.', { error: true }); return; }
     if (!descVal) { toast('Describe what you want to change first.', { error: true }); return; }
     if (descVal.length > 4000) { toast('Description is too long (max 4000 chars).', { error: true }); return; }
 
+    // If the user clicked a "Try with Gemini" / etc. button, sync the
+    // radio so subsequent clicks of "Re-engineer" use the new target.
+    if (overrideTarget) {
+      var radio = document.querySelector('input[name="ae-ai-target"][value="' + overrideTarget + '"]');
+      if (radio) { radio.checked = true; syncTargetCards(); }
+    }
+
     // Lock the form + show the loading animation
     $('ae-ai-generate').disabled = true;
     $('ae-ai-generate').textContent = 'Engineering…';
     $('ae-ai-result').classList.remove('is-visible');
     startThinking(targetLabel);
+
+    // Cancel any prior in-flight request before starting a new one
+    if (inflightAbort) { try { inflightAbort.abort(); } catch (_) {} }
+    inflightAbort = (typeof AbortController !== 'undefined') ? new AbortController() : null;
 
     fetch(API_BASE + '/api/admin/ai/prompt-engineer', {
       method: 'POST',
@@ -1904,7 +1969,8 @@ permalink: /pages/admin-editor.html
         path:        pathVal,
         description: descVal,
         target_ai:   target,
-      })
+      }),
+      signal: inflightAbort ? inflightAbort.signal : undefined,
     })
       .then(function(r) { return r.json().then(function(j) { return { ok: r.ok, j: j, status: r.status }; }); })
       .then(function(res) {
@@ -1920,9 +1986,14 @@ permalink: /pages/admin-editor.html
         renderPromptResult(res.j);
       })
       .catch(function(err) {
+        // AbortError is expected when the user cancels — don't toast
+        if (err && (err.name === 'AbortError' || /aborted/i.test(String(err.message || '')))) {
+          return;
+        }
         toast('AI: ' + esc(String(err.message || err)), { error: true, ms: 9000 });
       })
       .finally(function() {
+        inflightAbort = null;
         stopThinking();
         // Only re-enable + reset label if we're NOT in the rate-limit
         // cooldown — that path manages the button itself.
@@ -1932,6 +2003,29 @@ permalink: /pages/admin-editor.html
         }
       });
   }
+
+  // Cancel the in-flight Groq request
+  $('ae-ai-cancel-gen').addEventListener('click', function() {
+    if (inflightAbort) {
+      try { inflightAbort.abort(); } catch (_) {}
+      toast('Cancelled.', { ms: 2200 });
+    }
+    stopThinking();
+    if (!$('ae-ai-generate').dataset.cooldown) {
+      $('ae-ai-generate').disabled = false;
+      $('ae-ai-generate').textContent = '⚡ Engineer prompt';
+    }
+  });
+
+  // "Try the same description with [target]" — re-engineer with a
+  // different target without re-typing.
+  document.querySelectorAll('.ae-ai-switch-target-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var nextTarget = btn.getAttribute('data-switch');
+      if (!nextTarget) return;
+      engineerPrompt(nextTarget);
+    });
+  });
 
   // ── Rate-limit cooldown: counts down on the Generate button ───────
   function startRateLimitCooldown(seconds) {
@@ -1983,6 +2077,15 @@ permalink: /pages/admin-editor.html
       if (m) { li.innerHTML = '<strong>' + esc(m[1]) + '</strong>' + esc(m[2]); }
       else   { li.textContent = s; }
       stepsEl.appendChild(li);
+    });
+
+    // Mark the current target on the switch-target row + show it
+    var switchWrap = $('ae-ai-switch-target-wrap');
+    switchWrap.classList.add('is-visible');
+    document.querySelectorAll('.ae-ai-switch-target-btn').forEach(function(b) {
+      var isCurrent = b.getAttribute('data-switch') === j.target_ai;
+      b.classList.toggle('is-current', isCurrent);
+      b.disabled = isCurrent;
     });
 
     $('ae-ai-result').classList.add('is-visible');
