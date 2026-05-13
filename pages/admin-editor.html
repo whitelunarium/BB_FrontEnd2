@@ -2429,7 +2429,14 @@ iframe#ae-ai-paste-iframe[hidden] { display: none; }
         if (err && (err.name === 'AbortError' || /aborted/i.test(String(err.message || '')))) {
           return;
         }
-        toast('AI: ' + esc(String(err.message || err)), { error: true, ms: 9000 });
+        // Network-level failure (server down, offline, CORS blocked):
+        // give a more useful message than "Failed to fetch".
+        var msg = String(err.message || err);
+        if (/Failed to fetch|NetworkError|Load failed/i.test(msg)) {
+          toast('Couldn\'t reach the PNEC API. Check your connection — or the Flask server may be down. Try again in a moment.', { error: true, ms: 10000 });
+          return;
+        }
+        toast('AI: ' + esc(msg), { error: true, ms: 9000 });
       })
       .finally(function() {
         inflightAbort = null;
@@ -2573,8 +2580,10 @@ iframe#ae-ai-paste-iframe[hidden] { display: none; }
 
     // Confirm we're about to replace everything (the editor textarea
     // may have unsaved manual edits)
-    var confirmMsg = 'Replace the editor\'s entire content for ' + current.label + '? '
-      + 'This won\'t publish — you can still review, preview, and click Publish.';
+    var confirmMsg = 'Replace the current editor content for "' + current.label + '"?\n\n'
+      + 'You have unsaved manual edits — they will be REPLACED by the AI\'s '
+      + 'response. (Nothing publishes yet; you can still review and edit '
+      + 'before clicking Publish.)';
     if (dirty && !confirm(confirmMsg)) return;
     var ta = $('ae-source');
     // Sanitize before insertion (strip stray markdown fences, leading
