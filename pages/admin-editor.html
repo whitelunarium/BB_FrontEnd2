@@ -2287,9 +2287,28 @@ iframe#ae-ai-paste-iframe[hidden] { display: none; }
   // Lets the admin paste the modified HTML the target AI returned,
   // preview it in a sandboxed iframe, and swap it into the editor
   // textarea — without leaving the modal.
+  // Cleans the common LLM noise from around an HTML doc response:
+  // markdown code fences, leading commentary, BOM, leading HTML
+  // comments. Returns the cleaned full text, ready to slot into the
+  // editor. We DO NOT touch HTML comments INSIDE the document body —
+  // only the leading + trailing junk an LLM adds outside <html>.
+  function sanitizeAIResponseHTML(text) {
+    if (!text) return '';
+    var t = String(text).replace(/^﻿/, '');     // BOM
+    // Trim leading whitespace
+    t = t.replace(/^\s+/, '');
+    // Strip a leading markdown code fence like ```html\n
+    t = t.replace(/^```[a-z]*\s*\n?/i, '');
+    // Strip leading HTML comments before the doctype (LLM "explanations")
+    t = t.replace(/^(<!--[\s\S]*?-->\s*)+/, '');
+    // Strip a trailing markdown fence ``` and any trailing whitespace
+    t = t.replace(/\s*```\s*$/, '');
+    t = t.replace(/\s+$/, '');
+    return t;
+  }
   function looksLikeHtmlDoc(text) {
     if (!text) return false;
-    var head = text.trim().slice(0, 200).toLowerCase();
+    var head = sanitizeAIResponseHTML(text).slice(0, 200);
     return /^<!doctype html|^<html\b/i.test(head);
   }
 
@@ -2319,20 +2338,25 @@ iframe#ae-ai-paste-iframe[hidden] { display: none; }
 
   // Preview button: render the pasted HTML in the sandboxed iframe
   $('ae-ai-paste-preview').addEventListener('click', function() {
-    var val = ($('ae-ai-paste-input').value || '').trim();
-    if (!val) { toast('Paste the AI response first.', { error: true }); return; }
-    if (!looksLikeHtmlDoc(val)) {
+    var raw = ($('ae-ai-paste-input').value || '').trim();
+    if (!raw) { toast('Paste the AI response first.', { error: true }); return; }
+    if (!looksLikeHtmlDoc(raw)) {
       toast('Paste a complete HTML document (starting with <!DOCTYPE html>).', { error: true, ms: 6000 });
       return;
     }
     var iframe = $('ae-ai-paste-iframe');
-    iframe.srcdoc = val;
+    // Sanitize before preview so the user sees what would actually
+    // land in the editor (no stray ```html fences, leading commentary).
+    iframe.srcdoc = sanitizeAIResponseHTML(raw);
     iframe.hidden = false;
     iframe.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
   // Apply button: replace the editor textarea with the pasted content,
-  // close the modal, and toast the next step.
+  // close the modal, and toast the next step. Includes a safety check
+  // for the case where the engineered prompt was for page A but the
+  // editor currently has page B open — that would silently corrupt B
+  // with content meant for A.
   $('ae-ai-paste-apply').addEventListener('click', function() {
     var val = ($('ae-ai-paste-input').value || '').trim();
     if (!val) return;
@@ -2344,13 +2368,35 @@ iframe#ae-ai-paste-iframe[hidden] { display: none; }
       toast('No page is open in the editor. Open a page from the sidebar first.', { error: true, ms: 6000 });
       return;
     }
+
+    // Path mismatch check: was the engineered prompt for the same
+    // page the editor currently has open?
+    var promptForPath = $('ae-ai-output').dataset.forPath || '';
+    if (promptForPath && promptForPath !== current.path) {
+      // Look up the friendly label for the prompt's path
+      var promptForLabel = promptForPath;
+      GROUPS.forEach(function(g) {
+        g.items.forEach(function(it) {
+          if (it.path === promptForPath) promptForLabel = it.label + ' (' + it.path + ')';
+        });
+      });
+      var msg = 'This prompt was engineered for ' + promptForLabel + ', '
+              + 'but the editor currently has "' + current.label + '" (' + current.path + ') open. '
+              + 'Applying now would overwrite "' + current.label + '" with content meant for a different page. '
+              + 'Open the correct page from the sidebar first, then click Apply again.';
+      toast(esc(msg), { error: true, ms: 12000 });
+      return;
+    }
+
     // Confirm we're about to replace everything (the editor textarea
     // may have unsaved manual edits)
     var confirmMsg = 'Replace the editor\'s entire content for ' + current.label + '? '
       + 'This won\'t publish — you can still review, preview, and click Publish.';
     if (dirty && !confirm(confirmMsg)) return;
     var ta = $('ae-source');
-    ta.value = val;
+    // Sanitize before insertion (strip stray markdown fences, leading
+    // commentary, BOM) so the editor source is clean Jekyll/HTML.
+    ta.value = sanitizeAIResponseHTML(val);
     ta.dispatchEvent(new Event('input'));
     closeAIModal();
     toast('Applied. Review the source, click "↻ Refresh" on the preview, then Publish.', { ms: 8000 });
@@ -2384,6 +2430,10 @@ iframe#ae-ai-paste-iframe[hidden] { display: none; }
   function renderPromptResult(j) {
     // Populate the engineered prompt + meta line
     $('ae-ai-output').value = j.prompt || '';
+    // Stash the path this prompt was generated for so the Apply step
+    // can warn if the editor is currently on a different file.
+    $('ae-ai-output').dataset.forPath = j.page_path || '';
+    $('ae-ai-output').dataset.forLabel = j.target_ai_label || '';
     $('ae-ai-result-title').textContent = 'Engineered prompt for ' + (j.target_ai_label || 'the target AI');
     var kb = j.page_bytes ? (' · ' + Math.round(j.page_bytes / 1024) + ' KB of page HTML embedded') : '';
     $('ae-ai-result-meta').textContent = 'Ready to paste' + kb;
