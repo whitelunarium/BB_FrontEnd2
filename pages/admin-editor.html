@@ -547,6 +547,35 @@ permalink: /pages/admin-editor.html
   opacity: 0.5; cursor: not-allowed;
 }
 
+/* ── "Show the page summary Groq used" expandable ─────────────── */
+/* Surfaces the trimmed page representation that Groq actually saw
+   when writing the engineered prompt, so admins can sanity-check
+   that key landmarks (h1/h2 anchors, sections) made it through. */
+.ae-ai-summary-details {
+  margin-top: 14px; padding-top: 12px;
+  border-top: 1px dashed #e3e0d8;
+}
+.ae-ai-summary-details summary {
+  cursor: pointer;
+  display: flex; align-items: center; gap: 10px;
+  font-size: 0.78rem; font-weight: 700; color: #6b7280;
+  user-select: none;
+  list-style: none;        /* Hide default disclosure triangle (we use ▸/▾ in JS) */
+}
+.ae-ai-summary-details summary::-webkit-details-marker { display: none; }
+.ae-ai-summary-details summary:hover .ae-ai-summary-summary-label { color: #145a32; }
+.ae-ai-summary-meta {
+  font-size: 0.7rem; color: #94a3b8; font-weight: 700;
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+.ae-ai-summary-pre {
+  margin: 10px 0 0; padding: 12px;
+  background: #fbf8f1; border: 1px solid #e3e0d8; border-radius: 8px;
+  font-family: 'SF Mono', 'Menlo', Consolas, monospace;
+  font-size: 0.72rem; line-height: 1.5; color: #475569;
+  max-height: 240px; overflow-y: auto; white-space: pre-wrap;
+}
+
 /* Respect prefers-reduced-motion — replace animation with a calm,
    static "Working…" badge so it's still clear something is happening. */
 @media (prefers-reduced-motion: reduce) {
@@ -917,6 +946,13 @@ permalink: /pages/admin-editor.html
         <div class="ae-ai-steps-title">How to use this</div>
         <ol id="ae-ai-steps"></ol>
       </div>
+      <details class="ae-ai-summary-details" id="ae-ai-summary-details">
+        <summary>
+          <span class="ae-ai-summary-summary-label">▸ Show the page summary Groq used</span>
+          <span class="ae-ai-summary-meta" id="ae-ai-summary-meta"></span>
+        </summary>
+        <pre class="ae-ai-summary-pre" id="ae-ai-summary-pre" aria-label="Page summary that Groq used to engineer the prompt"></pre>
+      </details>
     </div>
   </div>
 </div>
@@ -1899,6 +1935,10 @@ permalink: /pages/admin-editor.html
     dl.dataset.populated = '1';
   }
 
+  // Track the element that had focus before the modal opened, so we
+  // can restore it on close (standard a11y pattern for dialogs).
+  var lastFocusedBeforeModal = null;
+
   function openAIModal() {
     populateAIPathDatalist();
     // Prefill the page path from the currently-open file (if any).
@@ -1913,7 +1953,9 @@ permalink: /pages/admin-editor.html
     } else {
       hint.textContent = 'Start typing a page name or path. Autocomplete suggests every known PNEC page.';
     }
+    lastFocusedBeforeModal = document.activeElement;
     aiModal.classList.add('is-open');
+    aiModal.addEventListener('keydown', focusTrapHandler);
     // Move focus inside the dialog so screen readers + keyboard users
     // don't get stranded behind the modal.
     setTimeout(function() { ($('ae-ai-description') || pathInput).focus(); }, 30);
@@ -1921,11 +1963,43 @@ permalink: /pages/admin-editor.html
 
   function closeAIModal() {
     aiModal.classList.remove('is-open');
+    aiModal.removeEventListener('keydown', focusTrapHandler);
     stopThinking();
     // Closing the modal cancels any in-flight Groq request — otherwise
     // the spinner stays running in the background and the .finally
     // handler still mutates the (now-hidden) button.
     if (inflightAbort) { try { inflightAbort.abort(); } catch (_) {} }
+    // Restore focus to the trigger
+    if (lastFocusedBeforeModal && typeof lastFocusedBeforeModal.focus === 'function') {
+      try { lastFocusedBeforeModal.focus(); } catch (_) {}
+    }
+  }
+
+  // ── Focus trap ────────────────────────────────────────────────────
+  // Keeps Tab / Shift-Tab inside the modal so keyboard users can't
+  // accidentally land on the page underneath. Standard pattern: query
+  // all focusable elements on each Tab, find current position, wrap.
+  function focusTrapHandler(ev) {
+    if (ev.key !== 'Tab') return;
+    var focusables = aiModal.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), ' +
+      'textarea:not([disabled]), select:not([disabled]), details, summary, ' +
+      '[tabindex]:not([tabindex="-1"])'
+    );
+    // Filter out anything visually hidden / inside a hidden subtree
+    var visible = Array.prototype.filter.call(focusables, function(el) {
+      return el.offsetParent !== null;
+    });
+    if (visible.length === 0) return;
+    var first = visible[0];
+    var last  = visible[visible.length - 1];
+    if (ev.shiftKey && document.activeElement === first) {
+      ev.preventDefault();
+      last.focus();
+    } else if (!ev.shiftKey && document.activeElement === last) {
+      ev.preventDefault();
+      first.focus();
+    }
   }
 
   // ── Thinking-stage cycler ─────────────────────────────────────────
@@ -2126,6 +2200,20 @@ permalink: /pages/admin-editor.html
       b.classList.toggle('is-current', isCurrent);
       b.disabled = isCurrent;
     });
+
+    // Summary-preview expandable (shows what Groq saw to write the prompt)
+    if (j.summary_preview) {
+      $('ae-ai-summary-pre').textContent = j.summary_preview;
+      var meta = (Math.round((j.summary_bytes || 0) / 1024 * 10) / 10) + ' KB used by Groq';
+      if (j.summary_trimmed) meta += ' · summary was truncated';
+      if (j.summary_preview_truncated) meta += ' · preview shows head + tail';
+      $('ae-ai-summary-meta').textContent = meta;
+      $('ae-ai-summary-details').style.display = '';
+      // Reset to collapsed each time a new prompt is generated
+      $('ae-ai-summary-details').open = false;
+    } else {
+      $('ae-ai-summary-details').style.display = 'none';
+    }
 
     $('ae-ai-result').classList.add('is-visible');
     // Scroll the result into view inside the modal card
