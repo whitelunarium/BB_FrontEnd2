@@ -2494,6 +2494,10 @@ iframe#ae-ai-paste-iframe[hidden] { display: none; }
       setTimeout(function() {
         window.open(url, '_blank', 'noopener,noreferrer');
         toast('Opened ' + esc(label) + '. Paste with Cmd/Ctrl-V.', { ms: 5000 });
+        // Auto-expand the "paste back" panel so when the admin returns
+        // they immediately see where to paste the AI's response.
+        var pasteDetails = $('ae-ai-paste-details');
+        if (pasteDetails) pasteDetails.open = true;
       }, 280);
     });
   });
