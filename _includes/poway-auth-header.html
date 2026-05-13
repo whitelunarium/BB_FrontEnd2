@@ -1,3 +1,11 @@
+<style id="pnec-critical-css">/* v3.28: critical-path CSS — ensures the auth-style header pages (forgot-password / register fallback / etc.) don't FOUC with the white wordmark + empty band. Same rules as the marketing pages and homepage. */
+.jupiterx-header img[src*="Poway-NEC-Logo-White"]{display:none!important}
+.jupiterx-header section.elementor-top-section+section.elementor-top-section{min-height:0!important;padding:10px 0!important}
+.jupiterx-header section.elementor-top-section+section.elementor-top-section .elementor-container,.jupiterx-header section.elementor-top-section+section.elementor-top-section .elementor-widget-wrap,.jupiterx-header section.elementor-top-section+section.elementor-top-section .elementor-column{min-height:0!important;height:auto!important}
+.elementor-section-stretched.elementor-section-height-min-height{min-height:0!important;background-image:none!important;background-color:#fbf8f1!important;padding-top:32px!important;padding-bottom:20px!important}
+.elementor-section-stretched.elementor-section-height-min-height .elementor-background-overlay{display:none!important}
+.elementor-section-stretched.elementor-section-height-min-height .elementor-heading-title{color:#0e3b21!important;-webkit-text-fill-color:#0e3b21!important;-webkit-text-stroke:0!important;opacity:1!important}
+</style>
 <a class="jupiterx-a11y jupiterx-a11y-skip-navigation-link" href="#jupiterx-main">Skip to content</a>
 <div class="jupiterx-site">
   <header class="jupiterx-header jupiterx-header-custom" data-jupiterx-settings="{&quot;breakpoint&quot;:&quot;767.98&quot;,&quot;template&quot;:&quot;2820&quot;,&quot;overlap&quot;:&quot;desktop,tablet,mobile&quot;}" role="banner" itemscope="itemscope" itemtype="http://schema.org/WPHeader">
@@ -9,7 +17,7 @@
               <div class="elementor-element elementor-element-5ee66e4 elementor-widget elementor-widget-image" data-id="5ee66e4" data-element_type="widget" data-e-type="widget" data-widget_type="image.default">
                 <div class="elementor-widget-container">
                   <a href="../">
-                    <img fetchpriority="high" width="1024" height="410" src="https://powaynec.com/wp-content/uploads/2020/05/Poway-NEC-Logo-White@600x-1024x410.png" class="attachment-large size-large wp-image-1029" alt="" srcset="https://powaynec.com/wp-content/uploads/2020/05/Poway-NEC-Logo-White@600x-1024x410.png 1024w, https://powaynec.com/wp-content/uploads/2020/05/Poway-NEC-Logo-White@600x-600x240.png 600w, https://powaynec.com/wp-content/uploads/2020/05/Poway-NEC-Logo-White@600x-300x120.png 300w, https://powaynec.com/wp-content/uploads/2020/05/Poway-NEC-Logo-White@600x-768x307.png 768w, https://powaynec.com/wp-content/uploads/2020/05/Poway-NEC-Logo-White@600x-1536x614.png 1536w, https://powaynec.com/wp-content/uploads/2020/05/Poway-NEC-Logo-White@600x-2048x819.png 2048w" sizes="(max-width: 1024px) 100vw, 1024px" />
+                    <!-- v3.28: removed the broken white-text wordmark <img> — it was rendering as a faded watermark over the cream page (no working photo bg behind it). Critical CSS at top of include + cream footer logo carry the branding instead. -->
                   </a>
                 </div>
               </div>
