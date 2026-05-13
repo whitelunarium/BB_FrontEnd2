@@ -61,8 +61,12 @@ repo.
 
 ### 2. `GROQ_API_KEY` (optional but recommended)
 
-Used by the editor's "Generate with AI" button. Without it, the AI
-panel shows "Groq · disabled" and the rest of the editor still works.
+Used by the editor's "✨ Prompt engineer with AI" button. Groq acts
+as a meta-prompt-engineer: it reads the current page + your change
+request, and emits a tailored prompt you paste into Claude /
+Gemini / ChatGPT to get the modified HTML back. Without
+`GROQ_API_KEY`, the AI panel shows "Groq · disabled" and the rest
+of the editor still works.
 
 1. Sign up at https://console.groq.com (free tier is plenty).
 2. Create an API key, copy it (starts with `gsk_…`).
@@ -223,24 +227,57 @@ Click it → opens the editor in a new tab, pre-selected to that page.
 Or press the `E` key (when not focused in a form input) for the
 same effect.
 
-### Generating a section with AI
+### Editing a page with AI (Prompt-engineer flow)
 
-Click **✨ Generate with AI** in the top bar.
+Click **✨ Prompt engineer with AI** in the top bar.
 
-- **Section kind**: hero / card_list / image+text / cta / faq / text
-- **Tone**: neighborly / urgent / formal
-- **Describe the section**: plain English
+**Step 1 — generate the prompt**
 
-Click **Generate**. Groq returns brand-aware HTML in 1-2 seconds.
+- **Page to edit**: defaults to the page you have open. Autocompletes
+  from every known PNEC page.
+- **Describe the change**: plain English ("Add a section under the
+  hero introducing the May 23 Safety Fair, neighborly tone, two
+  paragraphs, include a Learn More button linking to /events.html").
+- **Target AI**: pick Claude (Anthropic), Gemini (Google), or
+  ChatGPT (OpenAI). Each gets a tailored prompt format:
+  - **Claude** → XML tags (`<current_html>`, `<change_request>`,
+    `<constraints>`, `<output_format>`) and `<thinking>` blocks
+  - **Gemini** → concise markdown with ```html fenced blocks
+  - **ChatGPT** → explicit ROLE statement + numbered TASK steps
 
-- **Insert at cursor** — drops it right into the editor where your
-  cursor was.
-- **Copy** — clipboard.
-- **Regenerate** — same prompt, different output.
+Click **⚡ Engineer prompt**. Groq returns the engineered prompt in
+1-3 seconds (with a live "thinking" animation showing each stage).
+
+**Step 2 — paste back the AI's response**
+
+- Click **📋→ Copy & open Claude** (or Gemini / ChatGPT). The prompt
+  is copied to your clipboard and the target AI opens in a new tab.
+- Paste, wait for the AI's response (modified HTML).
+- Copy the AI's response, return to the editor.
+- The **Step 2 panel** is already auto-expanded. Paste into the
+  textarea — a "✓ Looks like a complete HTML document" badge appears.
+- Click **👁 Preview** to see the result rendered in a sandboxed
+  iframe (no scripts execute, safe to inspect untrusted output).
+- Click **↪ Apply to editor**. The editor source is replaced with
+  the AI's HTML, the modal closes, and you can publish as normal.
+
+**Tips**
+
+- **Try the same description with [Claude] [Gemini] [ChatGPT]** pills
+  in the result panel let you A/B compare across all three targets
+  without re-typing.
+- **Show the page summary Groq used** (expandable) reveals exactly
+  what Groq saw when writing the prompt — useful for sanity-checking
+  that the right page anchors are present.
+- **Cancel** stops Groq mid-generation if you change your mind.
+- **Rate limit**: Groq's free tier is 12,000 tokens/minute (each
+  generation uses ~5,500). If you hit it, the Generate button shows
+  a 60-second cooldown countdown — wait, then re-engineer.
 
 PNEC's brand voice + the real-data guardrails (real phone numbers,
-real upcoming event dates, no invented stats) are built into the
-backend prompt, so generated content stays trustworthy.
+real upcoming event dates, no invented stats) are baked into the
+engineered prompt's constraint list, so output from all three target
+AIs stays trustworthy.
 
 ---
 
