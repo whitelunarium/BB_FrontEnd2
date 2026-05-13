@@ -557,13 +557,21 @@ permalink: /pages/admin-editor.html
 }
 .ae-ai-summary-details summary {
   cursor: pointer;
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; gap: 8px;
   font-size: 0.78rem; font-weight: 700; color: #6b7280;
   user-select: none;
-  list-style: none;        /* Hide default disclosure triangle (we use ▸/▾ in JS) */
+  list-style: none;        /* Hide default disclosure triangle (we use the ▸/▾ span) */
 }
 .ae-ai-summary-details summary::-webkit-details-marker { display: none; }
 .ae-ai-summary-details summary:hover .ae-ai-summary-summary-label { color: #145a32; }
+.ae-ai-summary-arrow {
+  display: inline-block; width: 0.9em; text-align: center;
+  color: #1e8449; font-size: 0.85em;
+  transition: transform 0.2s ease;
+}
+.ae-ai-summary-details[open] .ae-ai-summary-arrow {
+  transform: rotate(90deg);
+}
 .ae-ai-summary-meta {
   font-size: 0.7rem; color: #94a3b8; font-weight: 700;
   letter-spacing: 0.04em; text-transform: uppercase;
@@ -948,7 +956,8 @@ permalink: /pages/admin-editor.html
       </div>
       <details class="ae-ai-summary-details" id="ae-ai-summary-details">
         <summary>
-          <span class="ae-ai-summary-summary-label">▸ Show the page summary Groq used</span>
+          <span class="ae-ai-summary-arrow" aria-hidden="true">▸</span>
+          <span class="ae-ai-summary-summary-label">Show the page summary Groq used</span>
           <span class="ae-ai-summary-meta" id="ae-ai-summary-meta"></span>
         </summary>
         <pre class="ae-ai-summary-pre" id="ae-ai-summary-pre" aria-label="Page summary that Groq used to engineer the prompt"></pre>
