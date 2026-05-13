@@ -623,6 +623,11 @@ permalink: /pages/admin-editor.html
 }
 .ae-ai-history-list li:last-child { border-bottom: none; }
 .ae-ai-history-list li:hover { background: #ecf6f0; }
+.ae-ai-history-list li:focus-visible {
+  outline: none;
+  background: #ecf6f0;
+  box-shadow: inset 0 0 0 2px #1e8449;
+}
 .ae-ai-history-list .ae-ai-history-row1 {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
   font-size: 0.78rem; color: #145a32; font-weight: 800;
@@ -2216,7 +2221,13 @@ iframe#ae-ai-paste-iframe[hidden] { display: none; }
     arr.forEach(function(entry, idx) {
       var li = document.createElement('li');
       li.setAttribute('data-history-idx', idx);
+      // Make the row focusable + activatable via keyboard (Enter/Space)
+      li.setAttribute('tabindex', '0');
+      li.setAttribute('role', 'button');
       var targetLabel = ({ claude: 'Claude', gemini: 'Gemini', chatgpt: 'ChatGPT' })[entry.target_ai] || entry.target_ai;
+      li.setAttribute('aria-label',
+        'Re-use this prompt for ' + entry.path + ', target ' + targetLabel +
+        ', from ' + formatHistoryTs(entry.ts) + '. Description: ' + entry.description);
       li.innerHTML =
         '<div class="ae-ai-history-row1">'
         +   '<span class="ae-ai-history-path">' + esc(entry.path) + '</span>'
@@ -2225,6 +2236,12 @@ iframe#ae-ai-paste-iframe[hidden] { display: none; }
         + '</div>'
         + '<div class="ae-ai-history-desc">' + esc(entry.description) + '</div>';
       li.addEventListener('click', function() { applyHistoryEntry(entry); });
+      li.addEventListener('keydown', function(ev) {
+        if (ev.key === 'Enter' || ev.key === ' ') {
+          ev.preventDefault();
+          applyHistoryEntry(entry);
+        }
+      });
       listEl.appendChild(li);
     });
   }
