@@ -589,6 +589,67 @@ permalink: /pages/admin-editor.html
   max-height: 240px; overflow-y: auto; white-space: pre-wrap;
 }
 
+/* ── "Step 2: Paste & apply" expandable ──────────────────────── */
+/* Visually distinct from the summary expandable (forest-green
+   leading bar) so the admin can find it as the "next thing to do"
+   after copying the engineered prompt. */
+.ae-ai-paste-details {
+  margin-top: 14px; padding: 0;
+  border: 1.5px solid #1e8449; border-radius: 10px;
+  background: #f7f8f4;
+  overflow: hidden;
+}
+.ae-ai-paste-details summary {
+  cursor: pointer;
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px;
+  font-size: 0.84rem; font-weight: 800; color: #145a32;
+  user-select: none; list-style: none;
+  background: #ecf6f0;
+}
+.ae-ai-paste-details summary::-webkit-details-marker { display: none; }
+.ae-ai-paste-details[open] summary { border-bottom: 1px solid #d4efdf; }
+.ae-ai-paste-details[open] .ae-ai-summary-arrow { transform: rotate(90deg); }
+.ae-ai-paste-title { color: #145a32; }
+.ae-ai-paste-meta {
+  font-size: 0.7rem; color: #6b7280; font-weight: 700;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  margin-left: auto;
+}
+.ae-ai-paste-body { padding: 14px; }
+.ae-ai-paste-hint {
+  margin: 0 0 10px; font-size: 0.82rem; line-height: 1.5; color: #475569;
+}
+.ae-ai-paste-body textarea#ae-ai-paste-input {
+  width: 100%; min-height: 140px; max-height: 280px;
+  padding: 10px 12px;
+  border: 1.5px solid #d8d4c4; border-radius: 8px;
+  font-family: 'SF Mono', 'Menlo', Consolas, monospace;
+  font-size: 0.76rem; line-height: 1.5; color: #0a1628;
+  background: #ffffff;
+  resize: vertical; white-space: pre-wrap;
+}
+.ae-ai-paste-body textarea#ae-ai-paste-input:focus {
+  outline: none; border-color: #1e8449;
+  box-shadow: 0 0 0 3px rgba(30,132,73,0.16);
+}
+.ae-ai-paste-actions {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-top: 10px;
+}
+.ae-ai-paste-status {
+  font-size: 0.76rem; font-weight: 700; color: #6b7280;
+  margin-left: auto;
+}
+.ae-ai-paste-status.is-valid   { color: #145a32; }
+.ae-ai-paste-status.is-invalid { color: #80261b; }
+iframe#ae-ai-paste-iframe {
+  display: block; width: 100%; min-height: 360px; margin-top: 12px;
+  border: 1.5px solid #d8d4c4; border-radius: 10px;
+  background: #ffffff;
+}
+iframe#ae-ai-paste-iframe[hidden] { display: none; }
+
 /* Respect prefers-reduced-motion — replace animation with a calm,
    static "Working…" badge so it's still clear something is happening. */
 @media (prefers-reduced-motion: reduce) {
@@ -1009,6 +1070,31 @@ permalink: /pages/admin-editor.html
           <span class="ae-ai-summary-meta" id="ae-ai-summary-meta"></span>
         </summary>
         <pre class="ae-ai-summary-pre" id="ae-ai-summary-pre" aria-label="Page summary that Groq used to engineer the prompt"></pre>
+      </details>
+
+      <!-- Step 2: Paste the AI's response back here ───────────────
+           Collapsible so it doesn't clutter the modal until the user
+           is ready for it. Lets the admin paste the modified HTML
+           returned by the target AI, preview it in a sandboxed iframe,
+           and apply directly to the editor — no leaving the modal. -->
+      <details class="ae-ai-paste-details" id="ae-ai-paste-details">
+        <summary>
+          <span class="ae-ai-summary-arrow" aria-hidden="true">▸</span>
+          <span class="ae-ai-paste-title">Step 2 · Paste the AI's response &amp; apply</span>
+          <span class="ae-ai-paste-meta">preview before replacing the editor</span>
+        </summary>
+        <div class="ae-ai-paste-body">
+          <p class="ae-ai-paste-hint">
+            Paste the complete HTML document the AI returned. We'll preview it inline (sandboxed, no JS executes) and let you swap it into the editor with one click.
+          </p>
+          <textarea id="ae-ai-paste-input" placeholder="Paste the AI's response here — should start with &lt;!DOCTYPE html&gt;" aria-label="AI response HTML"></textarea>
+          <div class="ae-ai-paste-actions">
+            <button type="button" class="ae-btn" id="ae-ai-paste-preview">👁 Preview</button>
+            <button type="button" class="ae-btn is-primary" id="ae-ai-paste-apply" disabled>↪ Apply to editor</button>
+            <span class="ae-ai-paste-status" id="ae-ai-paste-status"></span>
+          </div>
+          <iframe id="ae-ai-paste-iframe" sandbox="allow-same-origin" title="Sandboxed preview of pasted HTML" hidden></iframe>
+        </div>
       </details>
     </div>
   </div>
@@ -2195,6 +2281,84 @@ permalink: /pages/admin-editor.html
       if (!nextTarget) return;
       engineerPrompt(nextTarget);
     });
+  });
+
+  // ── Step 2: Paste AI response → preview → apply ─────────────────
+  // Lets the admin paste the modified HTML the target AI returned,
+  // preview it in a sandboxed iframe, and swap it into the editor
+  // textarea — without leaving the modal.
+  function looksLikeHtmlDoc(text) {
+    if (!text) return false;
+    var head = text.trim().slice(0, 200).toLowerCase();
+    return /^<!doctype html|^<html\b/i.test(head);
+  }
+
+  function updatePasteStatus() {
+    var ta = $('ae-ai-paste-input');
+    var status = $('ae-ai-paste-status');
+    var applyBtn = $('ae-ai-paste-apply');
+    var val = (ta.value || '').trim();
+    if (!val) {
+      status.textContent = '';
+      status.className = 'ae-ai-paste-status';
+      applyBtn.disabled = true;
+      return;
+    }
+    if (looksLikeHtmlDoc(val)) {
+      var kb = Math.round(val.length / 1024 * 10) / 10;
+      status.textContent = '✓ Looks like a complete HTML document · ' + kb + ' KB';
+      status.className = 'ae-ai-paste-status is-valid';
+      applyBtn.disabled = false;
+    } else {
+      status.textContent = '⚠ Doesn\'t start with <!DOCTYPE html> — paste the full document';
+      status.className = 'ae-ai-paste-status is-invalid';
+      applyBtn.disabled = true;
+    }
+  }
+  $('ae-ai-paste-input').addEventListener('input', updatePasteStatus);
+
+  // Preview button: render the pasted HTML in the sandboxed iframe
+  $('ae-ai-paste-preview').addEventListener('click', function() {
+    var val = ($('ae-ai-paste-input').value || '').trim();
+    if (!val) { toast('Paste the AI response first.', { error: true }); return; }
+    if (!looksLikeHtmlDoc(val)) {
+      toast('Paste a complete HTML document (starting with <!DOCTYPE html>).', { error: true, ms: 6000 });
+      return;
+    }
+    var iframe = $('ae-ai-paste-iframe');
+    iframe.srcdoc = val;
+    iframe.hidden = false;
+    iframe.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  // Apply button: replace the editor textarea with the pasted content,
+  // close the modal, and toast the next step.
+  $('ae-ai-paste-apply').addEventListener('click', function() {
+    var val = ($('ae-ai-paste-input').value || '').trim();
+    if (!val) return;
+    if (!looksLikeHtmlDoc(val)) {
+      toast('Paste a complete HTML document first.', { error: true });
+      return;
+    }
+    if (!current) {
+      toast('No page is open in the editor. Open a page from the sidebar first.', { error: true, ms: 6000 });
+      return;
+    }
+    // Confirm we're about to replace everything (the editor textarea
+    // may have unsaved manual edits)
+    var confirmMsg = 'Replace the editor\'s entire content for ' + current.label + '? '
+      + 'This won\'t publish — you can still review, preview, and click Publish.';
+    if (dirty && !confirm(confirmMsg)) return;
+    var ta = $('ae-source');
+    ta.value = val;
+    ta.dispatchEvent(new Event('input'));
+    closeAIModal();
+    toast('Applied. Review the source, click "↻ Refresh" on the preview, then Publish.', { ms: 8000 });
+    // Reset the paste panel so it's empty next time
+    $('ae-ai-paste-input').value = '';
+    $('ae-ai-paste-iframe').hidden = true;
+    $('ae-ai-paste-iframe').removeAttribute('srcdoc');
+    updatePasteStatus();
   });
 
   // ── Rate-limit cooldown: counts down on the Generate button ───────
