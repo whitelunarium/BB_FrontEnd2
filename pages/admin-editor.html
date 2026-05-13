@@ -1887,6 +1887,10 @@ permalink: /pages/admin-editor.html
   function closeAIModal() {
     aiModal.classList.remove('is-open');
     stopThinking();
+    // Closing the modal cancels any in-flight Groq request — otherwise
+    // the spinner stays running in the background and the .finally
+    // handler still mutates the (now-hidden) button.
+    if (inflightAbort) { try { inflightAbort.abort(); } catch (_) {} }
   }
 
   // ── Thinking-stage cycler ─────────────────────────────────────────
