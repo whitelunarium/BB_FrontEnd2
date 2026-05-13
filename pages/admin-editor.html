@@ -2196,7 +2196,8 @@ permalink: /pages/admin-editor.html
       openPublishDlg();
     }
     if (ev.key === 'Escape') {
-      aiModal.classList.remove('is-open');
+      // Use the proper closer so any in-flight Groq fetch is aborted
+      if (aiModal.classList.contains('is-open')) closeAIModal();
       $('ae-publish-dlg').classList.remove('is-open');
     }
   });
