@@ -1,7 +1,7 @@
 ---
 layout: pnec-base
 title: "Live Theme Editor — PNEC Admin"
-description: "PNEC admins: edit site pages in the browser, publish straight to GitHub, see real diffs, view revision history, generate sections with AI. No coder required."
+description: "PNEC admins: edit site pages in the browser, publish straight to GitHub, see real diffs, view revision history, and prompt-engineer page changes with AI (Claude / Gemini / ChatGPT). No coder required."
 body_class: inner-page admin-editor-page
 permalink: /pages/admin-editor.html
 ---
@@ -25,7 +25,7 @@ permalink: /pages/admin-editor.html
      GET  /publish/history?path=…      commits for a file
      POST /publish/rollback            restore file to a SHA
      GET  /publish/status              recent Pages workflow runs
-     POST /ai/section                  Groq section generator
+     POST /ai/prompt-engineer          Groq meta-prompt-engineer (for Claude/Gemini/ChatGPT)
    ════════════════════════════════════════════════════════════════ */
 
 .admin-editor-page { background: #fbf8f1; min-height: 100vh; }
@@ -352,17 +352,23 @@ permalink: /pages/admin-editor.html
 }
 .ae-preview-empty h3 { color: #0e3b21; margin: 0 0 6px; font-weight: 800; }
 
-/* ─── AI modal ───────────────────────────────────────────────── */
+/* ─── AI modal (v3.29: "Prompt engineer with AI") ────────────── */
+/* Groq is used as a meta-prompt-engineer — it reads the current
+   page + the user's plain-English change request, and emits a
+   tailored prompt the user pastes into Claude / Gemini / ChatGPT. */
 .ae-ai-modal {
   position: fixed; inset: 0;
   background: rgba(10,22,40,0.55);
   display: none; align-items: center; justify-content: center;
   z-index: 100; padding: 20px;
+  overflow-y: auto;
 }
 .ae-ai-modal.is-open { display: flex; }
 .ae-ai-card {
   background: #ffffff; border-radius: 16px;
-  width: 100%; max-width: 640px; padding: 28px;
+  width: 100%; max-width: 760px;
+  max-height: calc(100vh - 40px); overflow-y: auto;
+  padding: 28px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.25);
   position: relative;
 }
@@ -373,6 +379,10 @@ permalink: /pages/admin-editor.html
 }
 .ae-ai-card h2 { margin: 0 0 6px; font-size: 1.3rem; font-weight: 900; color: #0e3b21; }
 .ae-ai-card .sub { margin: 0 0 18px; font-size: 0.9rem; color: #5a6470; line-height: 1.55; }
+.ae-ai-card .sub code {
+  background: #f0ece0; padding: 1px 6px; border-radius: 4px;
+  font-size: 0.82rem; color: #145a32; font-weight: 700;
+}
 .ae-ai-field { margin-bottom: 14px; }
 .ae-ai-field label {
   display: block; font-size: 0.78rem; font-weight: 800;
@@ -388,27 +398,189 @@ permalink: /pages/admin-editor.html
   outline: none; background: #ffffff; border-color: #1e8449;
   box-shadow: 0 0 0 3px rgba(30,132,73,0.16);
 }
-.ae-ai-field textarea { min-height: 100px; resize: vertical; }
+.ae-ai-field textarea { min-height: 110px; resize: vertical; line-height: 1.5; }
+.ae-ai-field-hint {
+  font-size: 0.78rem; color: #6b7280; margin-top: 4px;
+  display: block; line-height: 1.45;
+}
+
+/* ── Target AI selector: three radio cards (Claude / Gemini / GPT) ── */
+.ae-ai-targets {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+}
+.ae-ai-target {
+  position: relative; cursor: pointer;
+  border: 1.5px solid #d8d4c4; border-radius: 10px;
+  padding: 12px 10px; background: #fbf8f1;
+  text-align: center; transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.ae-ai-target:hover { border-color: #1e8449; background: #ffffff; }
+.ae-ai-target input[type="radio"] {
+  position: absolute; opacity: 0; pointer-events: none;
+}
+.ae-ai-target input[type="radio"]:focus-visible + .ae-ai-target-inner {
+  box-shadow: 0 0 0 3px rgba(30,132,73,0.20);
+  border-radius: 8px;
+}
+.ae-ai-target.is-selected {
+  border-color: #1e8449; background: #ffffff;
+  box-shadow: 0 0 0 2px rgba(30,132,73,0.18), 0 4px 10px rgba(30,132,73,0.10);
+}
+.ae-ai-target-logo {
+  width: 28px; height: 28px; display: block;
+  color: #0e3b21;
+}
+.ae-ai-target.is-selected .ae-ai-target-logo { color: #1e8449; }
+.ae-ai-target-name {
+  font-size: 0.82rem; font-weight: 800; color: #0e3b21;
+  letter-spacing: 0.01em;
+}
+.ae-ai-target-vendor {
+  font-size: 0.68rem; color: #6b7280; text-transform: uppercase;
+  letter-spacing: 0.06em; font-weight: 700;
+}
+
 .ae-ai-buttons { display: flex; gap: 10px; margin-top: 18px; }
 .ae-ai-buttons .ae-btn { flex: 1; padding: 12px; font-size: 0.95rem; }
+
+/* ── "Groq is thinking" loading animation ─────────────────────── */
+/* CSS-only: a soft pulsing bolt + three offset dots + a shimmer bar.
+   No JS-driven RAF loop, no transform-on-large-element. The shimmer
+   uses background-position-x — cheap on the compositor. */
+.ae-ai-thinking {
+  display: none; margin-top: 18px;
+  padding: 18px 18px 14px;
+  background: linear-gradient(135deg, #f7f1e2 0%, #f0eadd 100%);
+  border: 1.5px dashed #1e8449; border-radius: 12px;
+  text-align: center;
+}
+.ae-ai-thinking.is-active { display: block; }
+.ae-ai-thinking-headline {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  font-size: 0.95rem; font-weight: 800; color: #145a32;
+  margin-bottom: 12px;
+}
+.ae-ai-thinking-bolt {
+  width: 22px; height: 22px;
+  animation: ae-ai-bolt-pulse 1.4s ease-in-out infinite;
+  transform-origin: center;
+  color: #1e8449;
+}
+@keyframes ae-ai-bolt-pulse {
+  0%, 100% { opacity: 0.45; transform: scale(0.92) rotate(-3deg); }
+  50%      { opacity: 1.0;  transform: scale(1.06) rotate(3deg); }
+}
+.ae-ai-thinking-dots {
+  display: inline-flex; gap: 4px; align-items: center;
+}
+.ae-ai-thinking-dots span {
+  width: 6px; height: 6px; border-radius: 50%; background: #1e8449;
+  animation: ae-ai-dot 1s ease-in-out infinite;
+}
+.ae-ai-thinking-dots span:nth-child(1) { animation-delay: 0s; }
+.ae-ai-thinking-dots span:nth-child(2) { animation-delay: 0.18s; }
+.ae-ai-thinking-dots span:nth-child(3) { animation-delay: 0.36s; }
+@keyframes ae-ai-dot {
+  0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
+  40%           { opacity: 1;    transform: translateY(-3px); }
+}
+.ae-ai-thinking-shimmer {
+  height: 8px; border-radius: 4px;
+  background: linear-gradient(90deg,
+    rgba(30,132,73,0.10) 0%,
+    rgba(30,132,73,0.45) 35%,
+    rgba(30,132,73,0.10) 70%);
+  background-size: 220% 100%;
+  animation: ae-ai-shimmer 1.8s linear infinite;
+  margin: 4px 0 0;
+}
+@keyframes ae-ai-shimmer {
+  0%   { background-position-x: 100%; }
+  100% { background-position-x: -100%; }
+}
+.ae-ai-thinking-stages {
+  margin-top: 10px;
+  font-size: 0.78rem; color: #475569; font-weight: 600;
+  line-height: 1.5; min-height: 1.5em;
+  transition: opacity 0.3s ease;
+}
+
+/* Respect prefers-reduced-motion — replace animation with a calm,
+   static "Working…" badge so it's still clear something is happening. */
+@media (prefers-reduced-motion: reduce) {
+  .ae-ai-thinking-bolt   { animation: none; opacity: 0.85; }
+  .ae-ai-thinking-dots span { animation: none; opacity: 0.7; }
+  .ae-ai-thinking-shimmer { animation: none; background-position-x: 0; opacity: 0.6; }
+}
+
+/* ── Engineered-prompt result panel ────────────────────────────── */
 .ae-ai-result {
-  margin-top: 16px; padding: 14px;
-  border: 1.5px dashed #1e8449; background: #f7f1e2;
-  border-radius: 10px; display: none;
+  margin-top: 16px; padding: 16px;
+  border: 1.5px solid #1e8449;
+  background: #fffdf6;
+  border-radius: 12px; display: none;
+  box-shadow: 0 6px 18px rgba(30,132,73,0.08);
 }
 .ae-ai-result.is-visible { display: block; }
+.ae-ai-result-header {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 8px; margin-bottom: 10px;
+}
 .ae-ai-result h3 {
-  margin: 0 0 8px; font-size: 0.84rem; font-weight: 800;
-  letter-spacing: 0.04em; color: #145a32;
+  margin: 0; font-size: 0.92rem; font-weight: 900;
+  letter-spacing: 0.01em; color: #145a32;
 }
-.ae-ai-result pre {
-  margin: 0; padding: 12px; background: #ffffff; border-radius: 8px;
+.ae-ai-result-meta {
+  font-size: 0.74rem; color: #6b7280; font-weight: 700;
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+.ae-ai-prompt-wrap {
+  position: relative;
+}
+.ae-ai-result textarea#ae-ai-output {
+  width: 100%; min-height: 180px; max-height: 320px;
+  padding: 12px 12px 12px 14px;
+  background: #ffffff; border-radius: 8px;
   font-family: 'SF Mono', 'Menlo', Consolas, monospace;
-  font-size: 0.78rem; line-height: 1.5; color: #0a1628;
-  max-height: 220px; overflow-y: auto; white-space: pre-wrap;
+  font-size: 0.78rem; line-height: 1.55; color: #0a1628;
   border: 1px solid #e3e0d8;
+  resize: vertical; white-space: pre-wrap;
 }
-.ae-ai-result-actions { display: flex; gap: 8px; margin-top: 10px; }
+.ae-ai-result textarea#ae-ai-output:focus {
+  outline: none; border-color: #1e8449;
+  box-shadow: 0 0 0 3px rgba(30,132,73,0.16);
+}
+.ae-ai-result-actions {
+  display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap;
+}
+.ae-ai-result-actions .ae-btn { flex: 0 1 auto; padding: 10px 14px; }
+.ae-ai-result-actions .ae-btn.is-link-style {
+  text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+}
+.ae-ai-steps {
+  margin: 16px 0 0; padding: 14px 14px 14px 16px;
+  background: #f7f1e2; border-radius: 10px;
+  border: 1px solid #e3deca;
+}
+.ae-ai-steps-title {
+  font-size: 0.78rem; font-weight: 900; color: #145a32;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  margin: 0 0 8px;
+}
+.ae-ai-steps ol {
+  margin: 0; padding-left: 22px;
+  font-size: 0.86rem; line-height: 1.6; color: #0a1628;
+}
+.ae-ai-steps li { margin-bottom: 4px; }
+.ae-ai-steps li:last-child { margin-bottom: 0; }
+.ae-ai-steps li strong { color: #145a32; }
+
+/* ── Mobile: stack target cards two-by-two then one ──────────── */
+@media (max-width: 540px) {
+  .ae-ai-targets { grid-template-columns: 1fr; }
+  .ae-ai-target { flex-direction: row; justify-content: flex-start; gap: 12px; text-align: left; }
+}
 
 /* ─── Confirm dialog (publish, rollback) ─────────────────────── */
 .ae-dlg {
@@ -499,7 +671,7 @@ permalink: /pages/admin-editor.html
       <span class="ae-status-pill is-saved" id="ae-status">Ready</span>
       <button type="button" class="ae-btn is-ghost" id="ae-test-all" title="Re-run health check + load every page once">↻ Self-test</button>
       <button type="button" class="ae-btn" id="ae-upload-open">📷 Upload image</button>
-      <button type="button" class="ae-btn" id="ae-ai-open">✨ Generate with AI</button>
+      <button type="button" class="ae-btn" id="ae-ai-open">✨ Prompt engineer with AI</button>
       <button type="button" class="ae-btn is-primary" id="ae-publish">Publish to GitHub →</button>
       <input type="file" id="ae-upload-input" hidden accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif">
     </div>
@@ -590,50 +762,109 @@ permalink: /pages/admin-editor.html
   </div>
 </div>
 
-<!-- ─── AI modal ───────────────────────────────────────────────── -->
+<!-- ─── AI modal: "Prompt engineer with AI" ─────────────────────
+     Groq reads the current page + the description and emits a
+     tailored prompt the user pastes into Claude / Gemini / ChatGPT.
+     The chosen target AI returns the modified HTML, the user pastes
+     it back into the editor, previews, and publishes. -->
 <div class="ae-ai-modal" id="ae-ai-modal" role="dialog" aria-labelledby="ae-ai-title">
   <div class="ae-ai-card">
-    <h2 id="ae-ai-title">✨ Generate a section with AI</h2>
-    <p class="sub">Describe what you want. PNEC's brand voice (neighborly, concrete, never alarmist) is built into the backend prompt. Powered by Groq · <code>llama-3.3-70b-versatile</code>.</p>
+    <h2 id="ae-ai-title">✨ Prompt engineer with AI</h2>
+    <p class="sub">
+      Describe the change you want. Groq reads the current page and engineers a tailored prompt for the AI you choose — paste it in, get back modified HTML, paste it here. Powered by Groq <code>llama-3.3-70b-versatile</code>.
+    </p>
 
     <div class="ae-ai-field">
-      <label for="ae-ai-kind">Section kind</label>
-      <select id="ae-ai-kind">
-        <option value="hero">Hero (big intro at the top of a page)</option>
-        <option value="card_list">Card list (3-4 features or programs)</option>
-        <option value="image_with_text">Image + text (side-by-side)</option>
-        <option value="cta">Call to action (single button + headline)</option>
-        <option value="faq">FAQ (question + answer pairs)</option>
-        <option value="text" selected>Plain text section</option>
-      </select>
+      <label for="ae-ai-path">Page to edit</label>
+      <input type="text" id="ae-ai-path" placeholder="e.g. pages/about.html">
+      <span class="ae-ai-field-hint" id="ae-ai-path-hint">Defaults to the page you currently have open.</span>
     </div>
 
     <div class="ae-ai-field">
-      <label for="ae-ai-tone">Tone</label>
-      <select id="ae-ai-tone">
-        <option value="neighborly" selected>Neighborly (default)</option>
-        <option value="urgent">Urgent (red-flag day, evacuation)</option>
-        <option value="formal">Formal (board / partner-facing)</option>
-      </select>
+      <label for="ae-ai-description">Describe the change</label>
+      <textarea id="ae-ai-description" placeholder="e.g. 'Add a new section under the hero introducing our partnership with the Poway Fire Department. Two paragraphs, neighborly tone, include a Learn More button linking to /partners.html.'"></textarea>
+      <span class="ae-ai-field-hint">Be specific about where in the page the change should land and what the result should feel like. The more concrete you are, the better the engineered prompt.</span>
     </div>
 
     <div class="ae-ai-field">
-      <label for="ae-ai-prompt">Describe the section</label>
-      <textarea id="ae-ai-prompt" placeholder="e.g. 'A friendly hero block welcoming new Poway residents to PNEC, explaining what we do in 2-3 sentences and inviting them to find their neighborhood coordinator.'"></textarea>
+      <label>Target AI (the one you'll paste the engineered prompt into)</label>
+      <div class="ae-ai-targets" role="radiogroup" aria-label="Target AI">
+
+        <label class="ae-ai-target is-selected" data-target-card="claude">
+          <input type="radio" name="ae-ai-target" value="claude" checked>
+          <svg class="ae-ai-target-logo" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <!-- Stylised Claude/Anthropic-inspired mark (sunrise wedge) -->
+            <path d="M12 2.5c-2 4-4 8-6 13.5h3l1.4-3.6h3.2L15 16h3C16 10.5 14 6.5 12 2.5z"/>
+            <circle cx="12" cy="20" r="1.2"/>
+          </svg>
+          <span class="ae-ai-target-name">Claude</span>
+          <span class="ae-ai-target-vendor">Anthropic</span>
+        </label>
+
+        <label class="ae-ai-target" data-target-card="gemini">
+          <input type="radio" name="ae-ai-target" value="gemini">
+          <svg class="ae-ai-target-logo" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <!-- Stylised Gemini four-point star -->
+            <path d="M12 2 L13.6 10.4 L22 12 L13.6 13.6 L12 22 L10.4 13.6 L2 12 L10.4 10.4 Z"/>
+          </svg>
+          <span class="ae-ai-target-name">Gemini</span>
+          <span class="ae-ai-target-vendor">Google</span>
+        </label>
+
+        <label class="ae-ai-target" data-target-card="chatgpt">
+          <input type="radio" name="ae-ai-target" value="chatgpt">
+          <svg class="ae-ai-target-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <!-- Stylised OpenAI-inspired knot (six-petal rosette) -->
+            <path d="M12 4.5a3.5 3.5 0 0 1 3.5 3.5v.5"/>
+            <path d="M12 4.5a3.5 3.5 0 0 0-3.5 3.5v.5"/>
+            <path d="M19 9.5a3.5 3.5 0 0 1-1.75 3.03l-.43.25"/>
+            <path d="M5 9.5a3.5 3.5 0 0 0 1.75 3.03l.43.25"/>
+            <path d="M16.5 15.5a3.5 3.5 0 0 1-3.5 3.5h-.5"/>
+            <path d="M7.5 15.5a3.5 3.5 0 0 0 3.5 3.5h.5"/>
+            <circle cx="12" cy="12" r="2.3"/>
+          </svg>
+          <span class="ae-ai-target-name">ChatGPT</span>
+          <span class="ae-ai-target-vendor">OpenAI</span>
+        </label>
+
+      </div>
     </div>
 
     <div class="ae-ai-buttons">
       <button type="button" class="ae-btn" id="ae-ai-cancel">Cancel</button>
-      <button type="button" class="ae-btn is-primary" id="ae-ai-generate">Generate</button>
+      <button type="button" class="ae-btn is-primary" id="ae-ai-generate">⚡ Engineer prompt</button>
     </div>
 
+    <!-- Thinking animation (shown while Groq is generating) -->
+    <div class="ae-ai-thinking" id="ae-ai-thinking" aria-live="polite" aria-hidden="true">
+      <div class="ae-ai-thinking-headline">
+        <svg class="ae-ai-thinking-bolt" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M13 2 L4 14 h6 l-1 8 9-12 h-6 l1-8 z"/>
+        </svg>
+        <span>Groq is engineering your prompt</span>
+        <span class="ae-ai-thinking-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+      </div>
+      <div class="ae-ai-thinking-shimmer"></div>
+      <div class="ae-ai-thinking-stages" id="ae-ai-thinking-stages">Reading the current page…</div>
+    </div>
+
+    <!-- Engineered-prompt result panel -->
     <div class="ae-ai-result" id="ae-ai-result">
-      <h3>Generated HTML</h3>
-      <pre id="ae-ai-output"></pre>
+      <div class="ae-ai-result-header">
+        <h3 id="ae-ai-result-title">Engineered prompt</h3>
+        <span class="ae-ai-result-meta" id="ae-ai-result-meta">Ready to paste into Claude</span>
+      </div>
+      <div class="ae-ai-prompt-wrap">
+        <textarea id="ae-ai-output" readonly aria-label="Engineered prompt to paste into the target AI"></textarea>
+      </div>
       <div class="ae-ai-result-actions">
-        <button type="button" class="ae-btn is-primary" id="ae-ai-insert">Insert at cursor</button>
-        <button type="button" class="ae-btn" id="ae-ai-copy">Copy</button>
-        <button type="button" class="ae-btn" id="ae-ai-regen">Regenerate</button>
+        <button type="button" class="ae-btn is-primary" id="ae-ai-copy">📋 Copy prompt</button>
+        <a class="ae-btn is-link-style" id="ae-ai-open-target" target="_blank" rel="noopener" href="https://claude.ai">Open Claude →</a>
+        <button type="button" class="ae-btn" id="ae-ai-regen">↻ Re-engineer</button>
+      </div>
+      <div class="ae-ai-steps" id="ae-ai-steps-wrap">
+        <div class="ae-ai-steps-title">How to use this</div>
+        <ol id="ae-ai-steps"></ol>
       </div>
     </div>
   </div>
@@ -1530,61 +1761,210 @@ permalink: /pages/admin-editor.html
   }
 
   // ──────────────────────────────────────────────────────────────────
-  // AI modal
+  // AI modal — "Prompt engineer with AI" (v3.29)
   // ──────────────────────────────────────────────────────────────────
+  // Groq acts as a meta-prompt-engineer: it reads the current page +
+  // the user's plain-English change request, and returns a tailored
+  // prompt the user pastes into Claude / Gemini / ChatGPT. The result
+  // panel shows the engineered prompt, a Copy button, a deep-link to
+  // open the chosen AI in a new tab, and step-by-step instructions.
   var aiModal = $('ae-ai-modal');
-  $('ae-ai-open').addEventListener('click', function() { aiModal.classList.add('is-open'); });
-  $('ae-ai-cancel').addEventListener('click', function() { aiModal.classList.remove('is-open'); });
-  aiModal.addEventListener('click', function(ev) { if (ev.target === aiModal) aiModal.classList.remove('is-open'); });
-  $('ae-ai-generate').addEventListener('click', generateAI);
-  $('ae-ai-regen').addEventListener('click', generateAI);
+  $('ae-ai-open').addEventListener('click', openAIModal);
+  $('ae-ai-cancel').addEventListener('click', closeAIModal);
+  aiModal.addEventListener('click', function(ev) { if (ev.target === aiModal) closeAIModal(); });
+  $('ae-ai-generate').addEventListener('click', engineerPrompt);
+  $('ae-ai-regen').addEventListener('click', engineerPrompt);
 
-  function generateAI() {
-    var prompt = ($('ae-ai-prompt').value || '').trim();
-    if (!prompt) { toast('Type a description first.', { error: true }); return; }
+  // Target-AI radio cards behave as clickable cards (the <label>
+  // wraps the radio so a click already toggles, but we add visual
+  // .is-selected sync + ARIA niceties + dynamic "Open …" label.)
+  function syncTargetCards() {
+    var radios = document.querySelectorAll('input[name="ae-ai-target"]');
+    for (var i = 0; i < radios.length; i++) {
+      var card = radios[i].closest('.ae-ai-target');
+      if (!card) continue;
+      if (radios[i].checked) card.classList.add('is-selected');
+      else                   card.classList.remove('is-selected');
+    }
+  }
+  document.querySelectorAll('input[name="ae-ai-target"]').forEach(function(r) {
+    r.addEventListener('change', syncTargetCards);
+  });
+
+  function selectedTargetAI() {
+    var checked = document.querySelector('input[name="ae-ai-target"]:checked');
+    return checked ? checked.value : 'claude';
+  }
+
+  function openAIModal() {
+    // Prefill the page path from the currently-open file (if any).
+    var pathInput = $('ae-ai-path');
+    var hint      = $('ae-ai-path-hint');
+    if (current && current.path) {
+      if (!pathInput.value || pathInput.dataset.autofilled === '1') {
+        pathInput.value = current.path;
+        pathInput.dataset.autofilled = '1';
+      }
+      hint.textContent = 'Defaults to the page you have open (' + current.path + '). Edit to target a different file.';
+    } else {
+      hint.textContent = 'Type the repo-relative path (e.g. pages/about.html). No page is currently open.';
+    }
+    aiModal.classList.add('is-open');
+    // Move focus inside the dialog so screen readers + keyboard users
+    // don't get stranded behind the modal.
+    setTimeout(function() { ($('ae-ai-description') || pathInput).focus(); }, 30);
+  }
+
+  function closeAIModal() {
+    aiModal.classList.remove('is-open');
+    stopThinking();
+  }
+
+  // ── Thinking-stage cycler ─────────────────────────────────────────
+  // We rotate through a short list of stage labels every ~1.2s while
+  // Groq is generating. Pure setInterval — no RAF loop, no per-frame
+  // layout work. Stops the moment the request finishes.
+  var thinkingTimer = null;
+  var THINKING_STAGES = [
+    'Reading the current page…',
+    'Analyzing the change request…',
+    'Selecting the best prompt format for ',
+    'Composing the engineered prompt…',
+    'Embedding the page HTML…',
+    'Adding PNEC brand constraints…',
+    'Polishing the final prompt…',
+  ];
+  function startThinking(targetLabel) {
+    var box = $('ae-ai-thinking');
+    var stagesEl = $('ae-ai-thinking-stages');
+    box.classList.add('is-active');
+    box.setAttribute('aria-hidden', 'false');
+    var i = 0;
+    function tick() {
+      var s = THINKING_STAGES[i % THINKING_STAGES.length];
+      // The "Selecting the best prompt format for …" stage gets the
+      // target AI name interpolated for that one cycle.
+      if (s.endsWith('for ')) s += targetLabel + '…';
+      stagesEl.style.opacity = '0';
+      setTimeout(function() {
+        stagesEl.textContent = s;
+        stagesEl.style.opacity = '1';
+      }, 180);
+      i++;
+    }
+    tick();
+    thinkingTimer = setInterval(tick, 1300);
+  }
+  function stopThinking() {
+    if (thinkingTimer) { clearInterval(thinkingTimer); thinkingTimer = null; }
+    var box = $('ae-ai-thinking');
+    box.classList.remove('is-active');
+    box.setAttribute('aria-hidden', 'true');
+  }
+
+  function engineerPrompt() {
+    var pathVal = ($('ae-ai-path').value || '').trim();
+    var descVal = ($('ae-ai-description').value || '').trim();
+    var target  = selectedTargetAI();
+    var targetLabel = ({ claude: 'Claude', gemini: 'Gemini', chatgpt: 'ChatGPT' })[target] || 'Claude';
+
+    if (!pathVal) { toast('Type a page path first.', { error: true }); return; }
+    if (!descVal) { toast('Describe what you want to change first.', { error: true }); return; }
+    if (descVal.length > 4000) { toast('Description is too long (max 4000 chars).', { error: true }); return; }
+
+    // Lock the form + show the loading animation
     $('ae-ai-generate').disabled = true;
-    $('ae-ai-generate').textContent = 'Generating…';
+    $('ae-ai-generate').textContent = 'Engineering…';
+    $('ae-ai-result').classList.remove('is-visible');
+    startThinking(targetLabel);
 
-    fetch(API_BASE + '/api/admin/ai/section', {
+    fetch(API_BASE + '/api/admin/ai/prompt-engineer', {
       method: 'POST',
       headers: apiHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
-        prompt: prompt,
-        section_kind: $('ae-ai-kind').value,
-        tone: $('ae-ai-tone').value,
-        page_context: current ? current.label : '',
+        path:        pathVal,
+        description: descVal,
+        target_ai:   target,
       })
-    }).then(function(r) { return r.json().then(function(j) { return { ok: r.ok, j: j, status: r.status }; }); })
+    })
+      .then(function(r) { return r.json().then(function(j) { return { ok: r.ok, j: j, status: r.status }; }); })
       .then(function(res) {
-        if (!res.ok || !res.j.ok) throw new Error(humanizeError(res.j, res.status, 'generate'));
-        $('ae-ai-output').textContent = res.j.html || '';
-        $('ae-ai-result').classList.add('is-visible');
+        if (!res.ok || !res.j.ok) throw new Error(humanizeError(res.j, res.status, 'prompt-engineer'));
+        renderPromptResult(res.j);
       })
       .catch(function(err) {
-        toast('AI: ' + esc(String(err.message || err)), { error: true, ms: 8000 });
+        toast('AI: ' + esc(String(err.message || err)), { error: true, ms: 9000 });
       })
       .finally(function() {
+        stopThinking();
         $('ae-ai-generate').disabled = false;
-        $('ae-ai-generate').textContent = 'Generate';
+        $('ae-ai-generate').textContent = '⚡ Engineer prompt';
       });
   }
 
-  $('ae-ai-insert').addEventListener('click', function() {
-    var html = $('ae-ai-output').textContent;
-    if (!html) return;
-    if (!current) { toast('Pick a page first.', { error: true }); return; }
-    var ta = $('ae-source');
-    var cur = ta.selectionStart || ta.value.length;
-    var end = ta.selectionEnd || cur;
-    ta.value = ta.value.slice(0, cur) + '\n\n' + html + '\n\n' + ta.value.slice(end);
-    ta.dispatchEvent(new Event('input'));
-    aiModal.classList.remove('is-open');
-    toast('Inserted at cursor. Review the source, then publish.', { ms: 6000 });
-  });
+  function renderPromptResult(j) {
+    // Populate the engineered prompt + meta line
+    $('ae-ai-output').value = j.prompt || '';
+    $('ae-ai-result-title').textContent = 'Engineered prompt for ' + (j.target_ai_label || 'the target AI');
+    var kb = j.page_bytes ? (' · ' + Math.round(j.page_bytes / 1024) + ' KB of page HTML embedded') : '';
+    $('ae-ai-result-meta').textContent = 'Ready to paste' + kb;
+
+    // Open-target link
+    var openLink = $('ae-ai-open-target');
+    openLink.href = j.target_ai_url || '#';
+    openLink.textContent = 'Open ' + (j.target_ai_label || 'AI').replace(/\s*\(.*$/, '') + ' →';
+
+    // Step-by-step list
+    var stepsEl = $('ae-ai-steps');
+    stepsEl.innerHTML = '';
+    var steps = (j.steps && j.steps.length) ? j.steps : [
+      'Open the target AI in a new tab.',
+      'Click "Copy prompt" below.',
+      'Paste the prompt into the AI and wait for the response.',
+      'Copy the response (just the HTML) back into this editor, replacing existing content.',
+      'Click Preview to verify, then Publish.',
+    ];
+    steps.forEach(function(s, idx) {
+      var li = document.createElement('li');
+      // Bold the action verb at the start (first word up to a colon
+      // or the first dash) — purely visual sugar.
+      var m = s.match(/^([A-Z][^:]{0,18}?)(:.*)$/);
+      if (m) { li.innerHTML = '<strong>' + esc(m[1]) + '</strong>' + esc(m[2]); }
+      else   { li.textContent = s; }
+      stepsEl.appendChild(li);
+    });
+
+    $('ae-ai-result').classList.add('is-visible');
+    // Scroll the result into view inside the modal card
+    $('ae-ai-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // Copy the engineered prompt to the clipboard
   $('ae-ai-copy').addEventListener('click', function() {
-    var html = $('ae-ai-output').textContent;
-    if (!html) return;
-    navigator.clipboard.writeText(html).then(function() { toast('Copied.'); });
+    var text = $('ae-ai-output').value || '';
+    if (!text) return;
+    // Modern API first, fall back to selectAll + execCommand for older browsers
+    var ok = function() {
+      var btn = $('ae-ai-copy');
+      var orig = btn.textContent;
+      btn.textContent = '✓ Copied!';
+      btn.disabled = true;
+      setTimeout(function() { btn.textContent = orig; btn.disabled = false; }, 1600);
+      toast('Prompt copied. Paste it into the AI tab.', { ms: 5000 });
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(ok, function() {
+        $('ae-ai-output').select();
+        try { document.execCommand('copy'); ok(); } catch (e) {
+          toast('Could not copy. Select manually + Cmd/Ctrl+C.', { error: true });
+        }
+      });
+    } else {
+      $('ae-ai-output').select();
+      try { document.execCommand('copy'); ok(); } catch (e) {
+        toast('Could not copy. Select manually + Cmd/Ctrl+C.', { error: true });
+      }
+    }
   });
 
   // ──────────────────────────────────────────────────────────────────
