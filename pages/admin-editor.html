@@ -463,36 +463,41 @@ permalink: /pages/admin-editor.html
 }
 .ae-ai-thinking-bolt {
   width: 22px; height: 22px;
-  animation: ae-ai-bolt-pulse 1.4s ease-in-out infinite;
+  animation: ae-ai-bolt-pulse 1.8s ease-in-out infinite;
   transform-origin: center;
   color: #1e8449;
 }
 @keyframes ae-ai-bolt-pulse {
-  0%, 100% { opacity: 0.45; transform: scale(0.92) rotate(-3deg); }
-  50%      { opacity: 1.0;  transform: scale(1.06) rotate(3deg); }
+  /* Calm, no rotation — the rotation tic felt jittery next to the
+     shimmer. Now it's a gentle scale/opacity breathe. */
+  0%, 100% { opacity: 0.55; transform: scale(0.95); }
+  50%      { opacity: 1.0;  transform: scale(1.05); }
 }
 .ae-ai-thinking-dots {
   display: inline-flex; gap: 4px; align-items: center;
 }
 .ae-ai-thinking-dots span {
-  width: 6px; height: 6px; border-radius: 50%; background: #1e8449;
-  animation: ae-ai-dot 1s ease-in-out infinite;
+  width: 5px; height: 5px; border-radius: 50%; background: #1e8449;
+  animation: ae-ai-dot 1.2s ease-in-out infinite;
+  opacity: 0.6;
 }
 .ae-ai-thinking-dots span:nth-child(1) { animation-delay: 0s; }
-.ae-ai-thinking-dots span:nth-child(2) { animation-delay: 0.18s; }
-.ae-ai-thinking-dots span:nth-child(3) { animation-delay: 0.36s; }
+.ae-ai-thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+.ae-ai-thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
 @keyframes ae-ai-dot {
-  0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
-  40%           { opacity: 1;    transform: translateY(-3px); }
+  /* Drop the translateY bounce — purely opacity, more elegant and
+     less attention-grabbing next to the shimmer. */
+  0%, 80%, 100% { opacity: 0.25; }
+  40%           { opacity: 1; }
 }
 .ae-ai-thinking-shimmer {
-  height: 8px; border-radius: 4px;
+  height: 6px; border-radius: 4px;
   background: linear-gradient(90deg,
-    rgba(30,132,73,0.10) 0%,
-    rgba(30,132,73,0.45) 35%,
-    rgba(30,132,73,0.10) 70%);
+    rgba(30,132,73,0.08) 0%,
+    rgba(30,132,73,0.42) 35%,
+    rgba(30,132,73,0.08) 70%);
   background-size: 220% 100%;
-  animation: ae-ai-shimmer 1.8s linear infinite;
+  animation: ae-ai-shimmer 2.0s linear infinite;
   margin: 4px 0 0;
 }
 @keyframes ae-ai-shimmer {
@@ -654,10 +659,53 @@ permalink: /pages/admin-editor.html
 .ae-ai-steps li:last-child { margin-bottom: 0; }
 .ae-ai-steps li strong { color: #145a32; }
 
-/* ── Mobile: stack target cards two-by-two then one ──────────── */
+/* ── Mobile: tighten the modal so the form fits on phones ─────── */
 @media (max-width: 540px) {
+  .ae-ai-modal { padding: 10px; }
+  .ae-ai-card { padding: 20px 18px; border-radius: 14px; }
+  .ae-ai-card h2 { font-size: 1.15rem; }
+  .ae-ai-card .sub { font-size: 0.84rem; line-height: 1.5; }
+
+  /* Target AI cards: stack rows instead of grid */
   .ae-ai-targets { grid-template-columns: 1fr; }
-  .ae-ai-target { flex-direction: row; justify-content: flex-start; gap: 12px; text-align: left; }
+  .ae-ai-target {
+    flex-direction: row; justify-content: flex-start;
+    gap: 12px; text-align: left; padding: 10px 12px;
+  }
+  .ae-ai-target-vendor { margin-left: auto; }
+
+  /* Result-actions buttons: stack full-width so the longest label
+     ("Copy & open ChatGPT") doesn't truncate */
+  .ae-ai-result-actions { flex-direction: column; }
+  .ae-ai-result-actions .ae-btn { flex: 1 1 100%; padding: 11px 12px; }
+
+  /* Switch-target row: stack label above buttons, buttons full-width
+     pills (still 3-up if they fit) */
+  .ae-ai-switch-target { flex-direction: column; align-items: stretch; gap: 6px; }
+  .ae-ai-switch-target-label { font-size: 0.74rem; }
+
+  /* Steps list: smaller, more compact */
+  .ae-ai-steps { padding: 12px 12px 12px 14px; }
+  .ae-ai-steps ol { font-size: 0.82rem; line-height: 1.55; padding-left: 18px; }
+
+  /* Result panel inner padding */
+  .ae-ai-result { padding: 12px; }
+  .ae-ai-result textarea#ae-ai-output { min-height: 140px; font-size: 0.74rem; }
+
+  /* Thinking animation: tighten */
+  .ae-ai-thinking { padding: 14px 12px 10px; }
+  .ae-ai-thinking-headline { font-size: 0.86rem; gap: 8px; }
+
+  /* Field hints small enough to not push the modal too tall */
+  .ae-ai-field-hint { font-size: 0.74rem; }
+}
+
+/* ── Very small phones (iPhone SE / mini) ──────────────────────── */
+@media (max-width: 380px) {
+  .ae-ai-card { padding: 18px 14px; }
+  .ae-ai-card h2 { font-size: 1.06rem; }
+  .ae-ai-buttons { flex-direction: column; }
+  .ae-ai-buttons .ae-btn { flex: 1 1 100%; }
 }
 
 /* ─── Confirm dialog (publish, rollback) ─────────────────────── */
