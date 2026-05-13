@@ -894,7 +894,7 @@ permalink: /pages/admin-editor.html
     </div>
 
     <!-- Engineered-prompt result panel -->
-    <div class="ae-ai-result" id="ae-ai-result">
+    <div class="ae-ai-result" id="ae-ai-result" aria-live="polite">
       <div class="ae-ai-result-header">
         <h3 id="ae-ai-result-title">Engineered prompt</h3>
         <span class="ae-ai-result-meta" id="ae-ai-result-meta">Ready to paste into Claude</span>
@@ -2095,6 +2095,12 @@ permalink: /pages/admin-editor.html
     $('ae-ai-result').classList.add('is-visible');
     // Scroll the result into view inside the modal card
     $('ae-ai-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // A11y: move focus to the Copy button so keyboard + screen-reader
+    // users immediately land on the most likely next action.
+    setTimeout(function() {
+      var copyBtn = $('ae-ai-copy');
+      if (copyBtn) copyBtn.focus();
+    }, 220);
   }
 
   // Copy the engineered prompt to the clipboard
