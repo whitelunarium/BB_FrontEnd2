@@ -742,6 +742,20 @@ iframe#ae-ai-paste-iframe[hidden] { display: none; }
   font-size: 0.74rem; color: #6b7280; font-weight: 700;
   letter-spacing: 0.04em; text-transform: uppercase;
 }
+
+/* Inline warning shown when the user changes the target-AI radio
+   AFTER an engineered prompt has been rendered. The active prompt
+   is still for the old target — the hint tells them to re-engineer
+   if they want a re-tailored version. */
+.ae-ai-stale-hint {
+  display: flex; align-items: flex-start; gap: 8px;
+  margin: 0 0 10px; padding: 8px 12px;
+  background: #fff8e1;
+  border: 1px solid #f1d57a; border-radius: 8px;
+  font-size: 0.78rem; line-height: 1.45; color: #6b5400;
+}
+.ae-ai-stale-hint[hidden] { display: none; }
+.ae-ai-stale-hint-icon { font-size: 0.95rem; line-height: 1.2; }
 .ae-ai-prompt-wrap {
   position: relative;
 }
@@ -1119,6 +1133,10 @@ iframe#ae-ai-paste-iframe[hidden] { display: none; }
       <div class="ae-ai-result-header">
         <h3 id="ae-ai-result-title">Engineered prompt</h3>
         <span class="ae-ai-result-meta" id="ae-ai-result-meta">Ready to paste into Claude</span>
+      </div>
+      <div class="ae-ai-stale-hint" id="ae-ai-stale-hint" hidden>
+        <span class="ae-ai-stale-hint-icon" aria-hidden="true">⚠</span>
+        <span id="ae-ai-stale-hint-text">You selected a different target AI. This prompt is still for the original target — re-engineer to get a tailored version.</span>
       </div>
       <div class="ae-ai-prompt-wrap">
         <textarea id="ae-ai-output" readonly aria-label="Engineered prompt to paste into the target AI"></textarea>
@@ -2131,6 +2149,32 @@ iframe#ae-ai-paste-iframe[hidden] { display: none; }
       if (radios[i].checked) card.classList.add('is-selected');
       else                   card.classList.remove('is-selected');
     }
+    // Stale-state hint: if there's a result currently showing for a
+    // DIFFERENT target than what's now selected, surface a small
+    // "this prompt is for the old target" warning.
+    updateStaleHint();
+  }
+  function updateStaleHint() {
+    var output = $('ae-ai-output');
+    var hint   = $('ae-ai-stale-hint');
+    var result = $('ae-ai-result');
+    if (!result || !result.classList.contains('is-visible')) {
+      hint.hidden = true;
+      return;
+    }
+    var promptForTarget = output.dataset.forTargetAi || '';
+    var currentTarget   = selectedTargetAI();
+    if (promptForTarget && currentTarget && promptForTarget !== currentTarget) {
+      var labels = { claude: 'Claude', gemini: 'Gemini', chatgpt: 'ChatGPT' };
+      $('ae-ai-stale-hint-text').textContent =
+        'You selected ' + (labels[currentTarget] || currentTarget) +
+        ', but this prompt is still tailored for ' + (labels[promptForTarget] || promptForTarget) +
+        '. Click ↻ Re-engineer below for a ' + (labels[currentTarget] || currentTarget) +
+        '-specific version.';
+      hint.hidden = false;
+    } else {
+      hint.hidden = true;
+    }
   }
   document.querySelectorAll('input[name="ae-ai-target"]').forEach(function(r) {
     r.addEventListener('change', syncTargetCards);
@@ -2630,10 +2674,14 @@ iframe#ae-ai-paste-iframe[hidden] { display: none; }
   function renderPromptResult(j) {
     // Populate the engineered prompt + meta line
     $('ae-ai-output').value = j.prompt || '';
-    // Stash the path this prompt was generated for so the Apply step
-    // can warn if the editor is currently on a different file.
+    // Stash the path + target this prompt was generated for so:
+    //   - the Apply step can warn if the editor is on a different file
+    //   - the stale-hint can warn if the target-AI radio is changed after
     $('ae-ai-output').dataset.forPath = j.page_path || '';
     $('ae-ai-output').dataset.forLabel = j.target_ai_label || '';
+    $('ae-ai-output').dataset.forTargetAi = j.target_ai || '';
+    // Hide any stale hint that was visible from a prior generation
+    $('ae-ai-stale-hint').hidden = true;
     $('ae-ai-result-title').textContent = 'Engineered prompt for ' + (j.target_ai_label || 'the target AI');
     var kb = j.page_bytes ? (' · ' + Math.round(j.page_bytes / 1024) + ' KB of page HTML embedded') : '';
     $('ae-ai-result-meta').textContent = 'Ready to paste' + kb;
