@@ -933,7 +933,7 @@ permalink: /pages/admin-editor.html
       </div>
       <div class="ae-ai-result-actions">
         <button type="button" class="ae-btn is-primary" id="ae-ai-copy">📋 Copy prompt</button>
-        <a class="ae-btn is-link-style" id="ae-ai-open-target" target="_blank" rel="noopener" href="https://claude.ai">Open Claude →</a>
+        <button type="button" class="ae-btn" id="ae-ai-copy-and-open" data-target-url="https://claude.ai" data-target-label="Claude">📋→ Copy &amp; open Claude</button>
         <button type="button" class="ae-btn" id="ae-ai-regen">↻ Re-engineer</button>
       </div>
       <div class="ae-ai-switch-target" id="ae-ai-switch-target-wrap">
@@ -2167,10 +2167,12 @@ permalink: /pages/admin-editor.html
     var kb = j.page_bytes ? (' · ' + Math.round(j.page_bytes / 1024) + ' KB of page HTML embedded') : '';
     $('ae-ai-result-meta').textContent = 'Ready to paste' + kb;
 
-    // Open-target link
-    var openLink = $('ae-ai-open-target');
-    openLink.href = j.target_ai_url || '#';
-    openLink.textContent = 'Open ' + (j.target_ai_label || 'AI').replace(/\s*\(.*$/, '') + ' →';
+    // Combo "Copy & open <target>" button
+    var comboBtn = $('ae-ai-copy-and-open');
+    var shortLabel = (j.target_ai_label || 'AI').replace(/\s*\(.*$/, '');
+    comboBtn.dataset.targetUrl = j.target_ai_url || 'https://claude.ai';
+    comboBtn.dataset.targetLabel = shortLabel;
+    comboBtn.innerHTML = '📋→ Copy &amp; open ' + esc(shortLabel);
 
     // Step-by-step list
     var stepsEl = $('ae-ai-steps');
@@ -2226,32 +2228,53 @@ permalink: /pages/admin-editor.html
     }, 220);
   }
 
-  // Copy the engineered prompt to the clipboard
-  $('ae-ai-copy').addEventListener('click', function() {
+  // Copy the engineered prompt to the clipboard. Returns a promise so
+  // the "Copy & open" combo can chain on success.
+  function copyEngineeredPrompt(btnId, onSuccess) {
     var text = $('ae-ai-output').value || '';
-    if (!text) return;
-    // Modern API first, fall back to selectAll + execCommand for older browsers
+    if (!text) return Promise.resolve(false);
+    var btn = $(btnId);
+    var origText = btn ? btn.innerHTML : '';
     var ok = function() {
-      var btn = $('ae-ai-copy');
-      var orig = btn.textContent;
-      btn.textContent = '✓ Copied!';
-      btn.disabled = true;
-      setTimeout(function() { btn.textContent = orig; btn.disabled = false; }, 1600);
+      if (btn) {
+        btn.innerHTML = '✓ Copied!';
+        btn.disabled = true;
+        setTimeout(function() { btn.innerHTML = origText; btn.disabled = false; }, 1600);
+      }
       toast('Prompt copied. Paste it into the AI tab.', { ms: 5000 });
+      if (onSuccess) onSuccess();
     };
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(ok, function() {
-        $('ae-ai-output').select();
-        try { document.execCommand('copy'); ok(); } catch (e) {
-          toast('Could not copy. Select manually + Cmd/Ctrl+C.', { error: true });
-        }
-      });
-    } else {
+    var fail = function() {
       $('ae-ai-output').select();
       try { document.execCommand('copy'); ok(); } catch (e) {
         toast('Could not copy. Select manually + Cmd/Ctrl+C.', { error: true });
       }
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).then(ok, fail);
     }
+    fail();
+    return Promise.resolve(true);
+  }
+
+  $('ae-ai-copy').addEventListener('click', function() {
+    copyEngineeredPrompt('ae-ai-copy');
+  });
+
+  // "Copy & open <target>" combo — copies, then opens the target AI
+  // in a new tab. One click instead of two for the common path.
+  $('ae-ai-copy-and-open').addEventListener('click', function() {
+    var btn = $('ae-ai-copy-and-open');
+    var url   = btn.dataset.targetUrl || 'https://claude.ai';
+    var label = btn.dataset.targetLabel || 'Claude';
+    copyEngineeredPrompt('ae-ai-copy-and-open', function() {
+      // Slight delay so the user sees the "✓ Copied!" feedback before
+      // a new tab steals focus.
+      setTimeout(function() {
+        window.open(url, '_blank', 'noopener,noreferrer');
+        toast('Opened ' + esc(label) + '. Paste with Cmd/Ctrl-V.', { ms: 5000 });
+      }, 280);
+    });
   });
 
   // ──────────────────────────────────────────────────────────────────
