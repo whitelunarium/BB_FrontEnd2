@@ -776,8 +776,9 @@ permalink: /pages/admin-editor.html
 
     <div class="ae-ai-field">
       <label for="ae-ai-path">Page to edit</label>
-      <input type="text" id="ae-ai-path" placeholder="e.g. pages/about.html">
-      <span class="ae-ai-field-hint" id="ae-ai-path-hint">Defaults to the page you currently have open.</span>
+      <input type="text" id="ae-ai-path" list="ae-ai-path-options" placeholder="e.g. pages/about.html" autocomplete="off">
+      <datalist id="ae-ai-path-options"></datalist>
+      <span class="ae-ai-field-hint" id="ae-ai-path-hint">Defaults to the page you currently have open. Start typing to autocomplete from the page list.</span>
     </div>
 
     <div class="ae-ai-field">
@@ -1402,6 +1403,9 @@ permalink: /pages/admin-editor.html
       return 'Conflict — someone else committed an edit to this file while you had it open. Click <strong>↻ Reload</strong> to load their version, then re-apply your edits.';
     }
     if (status === 504) return 'Server timed out. Try again — if it keeps happening, the upstream service (GitHub or Groq) may be down.';
+    if (j && (j.error === 'GROQ_RATE_LIMITED' || (j.detail || '').indexOf('rate-limit') !== -1)) {
+      return 'Groq rate-limit hit (free-tier is 12000 tokens/minute). Wait ~60s and try again — large pages use about 5500 tokens per generation.';
+    }
     if (j && j.detail) {
       // Specific known error patterns
       if (j.detail.indexOf('GITHUB_TOKEN') !== -1) {
@@ -1409,9 +1413,6 @@ permalink: /pages/admin-editor.html
       }
       if (j.detail.indexOf('GROQ_API_KEY') !== -1) {
         return 'Server is missing GROQ_API_KEY env var. Set a Groq API key on the Flask host to enable AI generation.';
-      }
-      if (j.detail.indexOf('rate-limit') !== -1) {
-        return 'Rate-limited. Wait a minute and try again.';
       }
       return 'Failed to ' + action + ': ' + j.detail;
     }
@@ -1796,7 +1797,25 @@ permalink: /pages/admin-editor.html
     return checked ? checked.value : 'claude';
   }
 
+  // Populate the <datalist> autocomplete from GROUPS once at boot. The
+  // datalist gives users free-text autocomplete without forcing them to
+  // pick from a fixed list, so paths outside GROUPS (assets, includes,
+  // anything new) still work.
+  function populateAIPathDatalist() {
+    var dl = $('ae-ai-path-options');
+    if (!dl || dl.dataset.populated === '1') return;
+    var html = '';
+    GROUPS.forEach(function(g) {
+      g.items.forEach(function(it) {
+        html += '<option value="' + esc(it.path) + '">' + esc(g.title) + ' · ' + esc(it.label) + '</option>';
+      });
+    });
+    dl.innerHTML = html;
+    dl.dataset.populated = '1';
+  }
+
   function openAIModal() {
+    populateAIPathDatalist();
     // Prefill the page path from the currently-open file (if any).
     var pathInput = $('ae-ai-path');
     var hint      = $('ae-ai-path-hint');
@@ -1805,9 +1824,9 @@ permalink: /pages/admin-editor.html
         pathInput.value = current.path;
         pathInput.dataset.autofilled = '1';
       }
-      hint.textContent = 'Defaults to the page you have open (' + current.path + '). Edit to target a different file.';
+      hint.textContent = 'Defaults to the page you have open (' + current.path + '). Edit, or start typing to pick a different file from the autocomplete.';
     } else {
-      hint.textContent = 'Type the repo-relative path (e.g. pages/about.html). No page is currently open.';
+      hint.textContent = 'Start typing a page name or path. Autocomplete suggests every known PNEC page.';
     }
     aiModal.classList.add('is-open');
     // Move focus inside the dialog so screen readers + keyboard users
@@ -1889,7 +1908,15 @@ permalink: /pages/admin-editor.html
     })
       .then(function(r) { return r.json().then(function(j) { return { ok: r.ok, j: j, status: r.status }; }); })
       .then(function(res) {
-        if (!res.ok || !res.j.ok) throw new Error(humanizeError(res.j, res.status, 'prompt-engineer'));
+        if (!res.ok || !res.j.ok) {
+          // Rate-limit gets a 60s cooldown badge on the button so the user
+          // can see the timer rather than mashing the button.
+          if (res.j && (res.j.error === 'GROQ_RATE_LIMITED' ||
+                        (res.j.detail || '').indexOf('rate-limit') !== -1)) {
+            startRateLimitCooldown(60);
+          }
+          throw new Error(humanizeError(res.j, res.status, 'prompt-engineer'));
+        }
         renderPromptResult(res.j);
       })
       .catch(function(err) {
@@ -1897,9 +1924,33 @@ permalink: /pages/admin-editor.html
       })
       .finally(function() {
         stopThinking();
-        $('ae-ai-generate').disabled = false;
-        $('ae-ai-generate').textContent = '⚡ Engineer prompt';
+        // Only re-enable + reset label if we're NOT in the rate-limit
+        // cooldown — that path manages the button itself.
+        if (!$('ae-ai-generate').dataset.cooldown) {
+          $('ae-ai-generate').disabled = false;
+          $('ae-ai-generate').textContent = '⚡ Engineer prompt';
+        }
       });
+  }
+
+  // ── Rate-limit cooldown: counts down on the Generate button ───────
+  function startRateLimitCooldown(seconds) {
+    var btn = $('ae-ai-generate');
+    btn.dataset.cooldown = '1';
+    btn.disabled = true;
+    var remaining = seconds;
+    btn.textContent = 'Cooldown · ' + remaining + 's';
+    var t = setInterval(function() {
+      remaining -= 1;
+      if (remaining <= 0) {
+        clearInterval(t);
+        delete btn.dataset.cooldown;
+        btn.disabled = false;
+        btn.textContent = '⚡ Engineer prompt';
+      } else {
+        btn.textContent = 'Cooldown · ' + remaining + 's';
+      }
+    }, 1000);
   }
 
   function renderPromptResult(j) {
