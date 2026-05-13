@@ -2112,8 +2112,13 @@ iframe#ae-ai-paste-iframe[hidden] { display: none; }
   $('ae-ai-open').addEventListener('click', openAIModal);
   $('ae-ai-cancel').addEventListener('click', closeAIModal);
   aiModal.addEventListener('click', function(ev) { if (ev.target === aiModal) closeAIModal(); });
-  $('ae-ai-generate').addEventListener('click', engineerPrompt);
-  $('ae-ai-regen').addEventListener('click', engineerPrompt);
+  // Wrap in anonymous fns so the click Event isn't passed as overrideTarget.
+  // The bare reference `engineerPrompt` would receive the click Event,
+  // serialize it as `{"isTrusted":true}`, and the server would 500 on
+  // .strip() of a dict. This shipped broken — curl smoke tests sent
+  // clean JSON so the bug wasn't caught until real-browser use.
+  $('ae-ai-generate').addEventListener('click', function() { engineerPrompt(); });
+  $('ae-ai-regen').addEventListener('click', function() { engineerPrompt(); });
 
   // Target-AI radio cards behave as clickable cards (the <label>
   // wraps the radio so a click already toggles, but we add visual
@@ -2373,6 +2378,9 @@ iframe#ae-ai-paste-iframe[hidden] { display: none; }
   var inflightAbort = null;
 
   function engineerPrompt(overrideTarget) {
+    // Defensive: if overrideTarget isn't a clean string, ignore it.
+    // Belt + suspenders against the bare-fn-as-listener bug.
+    if (typeof overrideTarget !== 'string') overrideTarget = null;
     var pathVal = ($('ae-ai-path').value || '').trim();
     var descVal = ($('ae-ai-description').value || '').trim();
     var target  = overrideTarget || selectedTargetAI();
