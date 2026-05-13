@@ -589,6 +589,64 @@ permalink: /pages/admin-editor.html
   max-height: 240px; overflow-y: auto; white-space: pre-wrap;
 }
 
+/* ── "Recent prompts" expandable ──────────────────────────────── */
+/* Lives at the top of the modal so admins can quickly re-use a
+   recent description without re-typing it. */
+.ae-ai-history-details {
+  margin-bottom: 14px; padding: 0;
+  border: 1px solid #e3deca; border-radius: 8px;
+  background: #fbf8f1;
+}
+.ae-ai-history-details summary {
+  cursor: pointer;
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  font-size: 0.8rem; font-weight: 800; color: #145a32;
+  user-select: none; list-style: none;
+}
+.ae-ai-history-details summary::-webkit-details-marker { display: none; }
+.ae-ai-history-details[open] .ae-ai-summary-arrow { transform: rotate(90deg); }
+.ae-ai-history-meta {
+  font-size: 0.7rem; color: #6b7280; font-weight: 700;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  margin-left: auto;
+}
+.ae-ai-history-list {
+  list-style: none; margin: 0; padding: 0;
+  max-height: 240px; overflow-y: auto;
+  border-top: 1px solid #e3deca;
+}
+.ae-ai-history-list li {
+  padding: 10px 12px; cursor: pointer;
+  border-bottom: 1px solid #e3deca;
+  transition: background 0.12s ease;
+}
+.ae-ai-history-list li:last-child { border-bottom: none; }
+.ae-ai-history-list li:hover { background: #ecf6f0; }
+.ae-ai-history-list .ae-ai-history-row1 {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  font-size: 0.78rem; color: #145a32; font-weight: 800;
+}
+.ae-ai-history-list .ae-ai-history-target {
+  font-size: 0.68rem; padding: 2px 8px; border-radius: 999px;
+  background: #d4efdf; color: #145a32; font-weight: 800;
+  letter-spacing: 0.02em; text-transform: uppercase;
+}
+.ae-ai-history-list .ae-ai-history-ts {
+  font-size: 0.7rem; color: #6b7280; font-weight: 700; margin-left: auto;
+}
+.ae-ai-history-list .ae-ai-history-desc {
+  margin-top: 4px;
+  font-size: 0.8rem; color: #475569; line-height: 1.4;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.ae-ai-history-actions {
+  padding: 8px 12px; border-top: 1px solid #e3deca;
+  display: flex; justify-content: flex-end;
+}
+.ae-ai-history-actions .ae-btn { padding: 5px 10px; font-size: 0.72rem; }
+
 /* ── "Step 2: Paste & apply" expandable ──────────────────────── */
 /* Visually distinct from the summary expandable (forest-green
    leading bar) so the admin can find it as the "next thing to do"
@@ -960,6 +1018,18 @@ iframe#ae-ai-paste-iframe[hidden] { display: none; }
     <p class="sub">
       Describe the change you want. Groq reads the current page and engineers a tailored prompt for the AI you choose — paste it in, get back modified HTML, paste it here. Powered by Groq <code>llama-3.3-70b-versatile</code>.
     </p>
+
+    <details class="ae-ai-history-details" id="ae-ai-history-details" hidden>
+      <summary>
+        <span class="ae-ai-summary-arrow" aria-hidden="true">▸</span>
+        <span class="ae-ai-history-label">Recent prompts</span>
+        <span class="ae-ai-history-meta" id="ae-ai-history-meta"></span>
+      </summary>
+      <ul class="ae-ai-history-list" id="ae-ai-history-list"></ul>
+      <div class="ae-ai-history-actions">
+        <button type="button" class="ae-btn is-ghost" id="ae-ai-history-clear">Clear history</button>
+      </div>
+    </details>
 
     <div class="ae-ai-field">
       <label for="ae-ai-path">Page to edit</label>
@@ -2082,8 +2152,102 @@ iframe#ae-ai-paste-iframe[hidden] { display: none; }
   // can restore it on close (standard a11y pattern for dialogs).
   var lastFocusedBeforeModal = null;
 
+  // ── Recent-prompts history (localStorage) ────────────────────────
+  // Stores the last 10 successful engineering events so admins can
+  // re-use a description without re-typing. The engineered prompt
+  // itself is NOT stored — only the inputs that produced it.
+  var HISTORY_KEY = 'pnec_prompt_history';
+  var HISTORY_MAX = 10;
+  function loadHistory() {
+    try {
+      var raw = localStorage.getItem(HISTORY_KEY);
+      if (!raw) return [];
+      var arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr : [];
+    } catch (_) { return []; }
+  }
+  function saveHistory(arr) {
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(arr.slice(0, HISTORY_MAX))); }
+    catch (_) {}
+  }
+  function recordHistoryEntry(path, description, targetAi) {
+    if (!path || !description) return;
+    var entry = {
+      ts:          Date.now(),
+      path:        path,
+      description: description.slice(0, 1000),
+      target_ai:   targetAi,
+    };
+    var arr = loadHistory();
+    // Dedupe: if the most recent entry has the same path+description+target, skip
+    if (arr.length && arr[0].path === path && arr[0].description === description && arr[0].target_ai === targetAi) {
+      // Just bump the timestamp instead of pushing a duplicate
+      arr[0].ts = entry.ts;
+    } else {
+      arr.unshift(entry);
+    }
+    saveHistory(arr);
+    renderHistory();
+  }
+  function clearHistory() {
+    try { localStorage.removeItem(HISTORY_KEY); } catch (_) {}
+    renderHistory();
+  }
+  function formatHistoryTs(ts) {
+    var diff = (Date.now() - ts) / 1000;
+    if (diff < 60)       return Math.round(diff) + 's ago';
+    if (diff < 3600)     return Math.round(diff / 60) + 'm ago';
+    if (diff < 86400)    return Math.round(diff / 3600) + 'h ago';
+    if (diff < 86400*7)  return Math.round(diff / 86400) + 'd ago';
+    return new Date(ts).toLocaleDateString();
+  }
+  function renderHistory() {
+    var arr = loadHistory();
+    var details = $('ae-ai-history-details');
+    var listEl  = $('ae-ai-history-list');
+    var metaEl  = $('ae-ai-history-meta');
+    if (!arr.length) {
+      details.hidden = true;
+      return;
+    }
+    details.hidden = false;
+    metaEl.textContent = arr.length + (arr.length === 1 ? ' entry' : ' entries');
+    listEl.innerHTML = '';
+    arr.forEach(function(entry, idx) {
+      var li = document.createElement('li');
+      li.setAttribute('data-history-idx', idx);
+      var targetLabel = ({ claude: 'Claude', gemini: 'Gemini', chatgpt: 'ChatGPT' })[entry.target_ai] || entry.target_ai;
+      li.innerHTML =
+        '<div class="ae-ai-history-row1">'
+        +   '<span class="ae-ai-history-path">' + esc(entry.path) + '</span>'
+        +   '<span class="ae-ai-history-target">' + esc(targetLabel) + '</span>'
+        +   '<span class="ae-ai-history-ts">' + esc(formatHistoryTs(entry.ts)) + '</span>'
+        + '</div>'
+        + '<div class="ae-ai-history-desc">' + esc(entry.description) + '</div>';
+      li.addEventListener('click', function() { applyHistoryEntry(entry); });
+      listEl.appendChild(li);
+    });
+  }
+  function applyHistoryEntry(entry) {
+    $('ae-ai-path').value = entry.path;
+    $('ae-ai-path').dataset.autofilled = '';
+    $('ae-ai-description').value = entry.description;
+    var radio = document.querySelector('input[name="ae-ai-target"][value="' + entry.target_ai + '"]');
+    if (radio) { radio.checked = true; syncTargetCards(); }
+    // Collapse the history details so user can see the form they just filled
+    $('ae-ai-history-details').open = false;
+    toast('Loaded from history. Edit and click "⚡ Engineer prompt".', { ms: 4000 });
+    $('ae-ai-description').focus();
+  }
+  $('ae-ai-history-clear').addEventListener('click', function() {
+    if (confirm('Clear all recent prompts? This only clears your browser; the live editor still works the same.')) {
+      clearHistory();
+    }
+  });
+
   function openAIModal() {
     populateAIPathDatalist();
+    renderHistory();
     // Prefill the page path from the currently-open file (if any).
     var pathInput = $('ae-ai-path');
     var hint      = $('ae-ai-path-hint');
@@ -2239,6 +2403,8 @@ iframe#ae-ai-paste-iframe[hidden] { display: none; }
           }
           throw new Error(humanizeError(res.j, res.status, 'prompt-engineer'));
         }
+        // Save this successful generation to history
+        recordHistoryEntry(pathVal, descVal, target);
         renderPromptResult(res.j);
       })
       .catch(function(err) {
