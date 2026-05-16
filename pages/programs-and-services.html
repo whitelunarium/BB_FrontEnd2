@@ -1,19 +1,26 @@
 <!DOCTYPE html><html lang="en-US"><head >	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<style id="pnec-critical-css">
-/* v3.28: critical-path CSS — parsed BEFORE the 40+ WP CDN stylesheets
-   below in <head>, so the empty header band, broken hero, and white-
-   text wordmark never get a chance to flash during first paint. Same
-   rules as v3.27/v3.25 (in the main <style> block lower in this file)
-   but duplicated here to win the race. */
+/* v3.29: critical-path CSS — parsed BEFORE the 40+ WP CDN stylesheets.
+   Fixes 3 regressions on the cloned-WP interior pages:
+     1. logo <img> was deleted in v3.28 -> CSS wordmark in the anchor
+     2. broken WP hero photo -> giant empty band -> tidy cream strip
+     3. white/invisible page title -> forced PNEC dark green
+   Hero rules are scoped to THIS page's first-section element id
+   (elementor-element-5441025) so legitimate min-height content bands lower on the
+   page are untouched. Header/footer scoped to .jupiterx-* so the
+   homepage + auth pages (own headers) are unaffected. */
 .jupiterx-header img[src*="Poway-NEC-Logo-White"]{display:none!important}
 .jupiterx-header section.elementor-top-section+section.elementor-top-section{min-height:0!important;padding:10px 0!important}
 .jupiterx-header section.elementor-top-section+section.elementor-top-section .elementor-container,
 .jupiterx-header section.elementor-top-section+section.elementor-top-section .elementor-widget-wrap,
 .jupiterx-header section.elementor-top-section+section.elementor-top-section .elementor-column{min-height:0!important;height:auto!important}
-.elementor-section-stretched.elementor-section-height-min-height{min-height:0!important;background-image:none!important;background-color:#fbf8f1!important;padding-top:32px!important;padding-bottom:20px!important}
-.elementor-section-stretched.elementor-section-height-min-height .elementor-background-overlay{display:none!important}
-.elementor-section-stretched.elementor-section-height-min-height .elementor-heading-title{color:#0e3b21!important;-webkit-text-fill-color:#0e3b21!important;-webkit-text-stroke:0!important;opacity:1!important}
+.jupiterx-header .elementor-element-5ee66e4 a{display:inline-block!important;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif!important;font-weight:800!important;font-size:1.4rem!important;line-height:1.1!important;color:#0e3b21!important;text-decoration:none!important;letter-spacing:-.01em!important}
+.jupiterx-header .elementor-element-5ee66e4 a::after{content:"Poway NEC & FSC"!important;white-space:nowrap!important}
+.elementor-element-5441025.elementor-section-height-min-height,.elementor-element-5441025{min-height:0!important;background-image:none!important;background-color:#fbf8f1!important;padding:48px 0 30px!important}
+.elementor-element-5441025>.elementor-container,.elementor-element-5441025 .elementor-row,.elementor-element-5441025 .elementor-column,.elementor-element-5441025 .elementor-widget-wrap{min-height:0!important;height:auto!important}
+.elementor-element-5441025 .elementor-background-overlay{display:none!important}
+.elementor-element-5441025 .raven-heading-title,.elementor-element-5441025 .elementor-heading-title,.elementor-element-5441025 .raven-heading{color:#0e3b21!important;-webkit-text-fill-color:#0e3b21!important;-webkit-text-stroke:0!important;text-shadow:none!important;opacity:1!important}
 </style>
 <title>Programs and Services &#8211; Poway NEC &amp; FSC</title>
 <!-- PNEC SEO meta v3 -->
@@ -53,6 +60,17 @@
   padding-bottom: 20px !important;
   background-color: #fbf8f1 !important;
   background-image: none !important;       /* NEW: was being re-applied at runtime */
+}
+/* v3.29: ALSO collapse the inner container/column/widget-wrap — the
+   missing piece. Zeroing the section min-height alone left the
+   Elementor flex container at its tall min-height, so the band
+   stayed ~400px of empty cream above the title. */
+.elementor-section-stretched.elementor-section-height-min-height > .elementor-container,
+.elementor-section-stretched.elementor-section-height-min-height .elementor-row,
+.elementor-section-stretched.elementor-section-height-min-height .elementor-column,
+.elementor-section-stretched.elementor-section-height-min-height .elementor-widget-wrap {
+  min-height: 0 !important;
+  height: auto !important;
 }
 .elementor-section-stretched.elementor-section-height-min-height .elementor-background-overlay {
   display: none !important;
