@@ -90,6 +90,21 @@ body.pnec-enhanced-raw-page .jupiterx-main .elementor[data-elementor-type="wp-pa
   text-align: center !important;
 }
 
+/* v3.30: kill the leftover dead space INSIDE the title band. Even
+   after the section padding/min-height were collapsed, the band was
+   still ~360px because the Elementor heading widget-container carried
+   ~78px top padding and the WP-cloned <h2>/<h4> carried ~58px top+
+   bottom margin. Zero both, scoped to the first-section title band
+   only, so the band becomes a tidy ~170px cream strip. */
+body.pnec-enhanced-raw-page .jupiterx-main .elementor[data-elementor-type="wp-page"] > .elementor-section:first-child .elementor-widget-container {
+  padding: 0 !important;
+}
+body.pnec-enhanced-raw-page .jupiterx-main .elementor[data-elementor-type="wp-page"] > .elementor-section:first-child .raven-heading,
+body.pnec-enhanced-raw-page .jupiterx-main .elementor[data-elementor-type="wp-page"] > .elementor-section:first-child .raven-heading-title,
+body.pnec-enhanced-raw-page .jupiterx-main .elementor[data-elementor-type="wp-page"] > .elementor-section:first-child .elementor-heading-title {
+  margin: 0 auto !important;
+}
+
 .pnec-preparedness-band {
   background: #f7fbf8;
   border-top: 1px solid rgba(39, 174, 96, 0.22);
