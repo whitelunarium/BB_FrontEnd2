@@ -66,43 +66,108 @@ body.pnec-enhanced-raw-page .jupiterx-main {
   padding-top: 0 !important;
 }
 
-/* v3.30: this band was sized for a tall hero PHOTO with the title
-   sitting in its lower third (268px top padding + ~520px min-height).
-   The WP-cloned hero photo never loads, so it rendered as a giant
-   empty cream void. The green nav is position:absolute and the
-   wordmark strip already clears it in normal flow, so this section
-   does NOT need to reserve overlay space — collapse it to a tidy,
-   proportional cream title strip. */
-body.pnec-enhanced-raw-page .jupiterx-main .elementor[data-elementor-type="wp-page"] > .elementor-section:first-child {
-  min-height: 0 !important;
-  padding: 44px 32px 34px !important;
-  box-sizing: border-box;
+/* v3.33: on interior pages (header template 2820) the nav section
+   c8c3c8c is extracted by JS to the absolute green bar, leaving the
+   old logo+donate strip (section 090b3a9) orphaned — that's the
+   broken overlapping strip in the user's screenshot. Hide ONLY that
+   orphaned strip (not the whole .elementor-2820, so the nav is never
+   hidden during the pre-JS window). The real logo now lives in the
+   green bar; the page title lives in the photo hero. Scoped to
+   .elementor-2820 so the HOME page (template 6) is untouched. */
+body.pnec-enhanced-raw-page .jupiterx-header .elementor-2820 > .elementor-element-090b3a9 {
+  display: none !important;
 }
 
-body.pnec-enhanced-raw-page .jupiterx-main .elementor[data-elementor-type="wp-page"] > .elementor-section:first-child .elementor-heading-title,
-body.pnec-enhanced-raw-page .jupiterx-main .elementor[data-elementor-type="wp-page"] > .elementor-section:first-child .raven-heading-title {
+/* ════════════════════════════════════════════════════════════════
+   v3.33: REAL logo + rotating photo hero (replaces the v3.29–v3.32
+   text-wordmark + cream-strip approach the user rejected).
+
+   1. .pnec-nav-logo — the real white PNEC logo, injected by
+      poway-page-enhancements.js as the first child of the green nav
+      bar. Because the bar is position:absolute, the logo lives IN
+      it → the nav can never overlap the logo.
+   2. The first <section> (page-title band) becomes a photo hero:
+      .pnec-hero-gallery (4 cross-fading Poway photos) + a dark-green
+      overlay, with the page title centred in WHITE on top — the
+      same look as the home page hero-slider.
+   ════════════════════════════════════════════════════════════════ */
+
+/* --- Logo in the green nav bar ----------------------------------- */
+.pnec-top-green-nav .elementor-container {
+  position: relative !important;
+}
+.pnec-nav-logo {
+  position: absolute;
+  left: 26px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  z-index: 5;
+  line-height: 0;
+}
+.pnec-nav-logo img {
+  height: 44px;
+  width: auto;
+  display: block;
+}
+
+/* --- Page-title band → rotating photo hero ---------------------- */
+body.pnec-enhanced-raw-page .jupiterx-main .pnec-hero-band.elementor-section {
+  position: relative !important;
+  min-height: 340px !important;
+  padding: 132px 32px 56px !important;   /* top clears the ~58px absolute nav + breathing room */
+  box-sizing: border-box;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #0e3b21 !important;        /* fallback behind the photos */
+}
+.pnec-hero-gallery {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.pnec-hero-slide {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 1.1s ease-in-out;
+}
+.pnec-hero-slide.is-active { opacity: 1; }
+.pnec-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(8,32,18,0.55) 0%, rgba(8,32,18,0.62) 100%);
+}
+/* The Elementor column/widget that holds the page title sits above */
+body.pnec-enhanced-raw-page .jupiterx-main .pnec-hero-band.elementor-section > .elementor-container {
+  position: relative;
+  z-index: 1;
+}
+body.pnec-enhanced-raw-page .jupiterx-main .pnec-hero-band.elementor-section .elementor-widget-container {
+  padding: 0 !important;
+}
+body.pnec-enhanced-raw-page .jupiterx-main .pnec-hero-band.elementor-section .raven-heading,
+body.pnec-enhanced-raw-page .jupiterx-main .pnec-hero-band.elementor-section .raven-heading-title,
+body.pnec-enhanced-raw-page .jupiterx-main .pnec-hero-band.elementor-section .elementor-heading-title {
+  margin: 0 auto !important;
   display: block;
   max-width: min(1120px, 88vw);
-  margin: 0 auto;
   line-height: 1.08 !important;
   white-space: normal !important;
   overflow-wrap: break-word;
   text-align: center !important;
-}
-
-/* v3.30: kill the leftover dead space INSIDE the title band. Even
-   after the section padding/min-height were collapsed, the band was
-   still ~360px because the Elementor heading widget-container carried
-   ~78px top padding and the WP-cloned <h2>/<h4> carried ~58px top+
-   bottom margin. Zero both, scoped to the first-section title band
-   only, so the band becomes a tidy ~170px cream strip. */
-body.pnec-enhanced-raw-page .jupiterx-main .elementor[data-elementor-type="wp-page"] > .elementor-section:first-child .elementor-widget-container {
-  padding: 0 !important;
-}
-body.pnec-enhanced-raw-page .jupiterx-main .elementor[data-elementor-type="wp-page"] > .elementor-section:first-child .raven-heading,
-body.pnec-enhanced-raw-page .jupiterx-main .elementor[data-elementor-type="wp-page"] > .elementor-section:first-child .raven-heading-title,
-body.pnec-enhanced-raw-page .jupiterx-main .elementor[data-elementor-type="wp-page"] > .elementor-section:first-child .elementor-heading-title {
-  margin: 0 auto !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  -webkit-text-stroke: 0 !important;
+  text-shadow: 0 2px 14px rgba(0,0,0,0.45) !important;
+  opacity: 1 !important;
+  font-size: clamp(2rem, 5vw, 3.1rem) !important;
+  font-weight: 800 !important;
 }
 
 .pnec-preparedness-band {
@@ -169,10 +234,12 @@ body.pnec-enhanced-raw-page .jupiterx-main .elementor[data-elementor-type="wp-pa
 }
 
 @media (max-width: 900px) {
-  body.pnec-enhanced-raw-page .jupiterx-main .elementor[data-elementor-type="wp-page"] > .elementor-section:first-child {
-    min-height: 0 !important;
-    padding: 40px 18px 30px !important;
+  body.pnec-enhanced-raw-page .jupiterx-main .pnec-hero-band.elementor-section {
+    min-height: 260px !important;
+    padding: 112px 18px 44px !important;
   }
+  .pnec-nav-logo { left: 16px; }
+  .pnec-nav-logo img { height: 38px; }
 
   .pnec-preparedness-band-inner {
     grid-template-columns: 1fr;
@@ -185,10 +252,12 @@ body.pnec-enhanced-raw-page .jupiterx-main .elementor[data-elementor-type="wp-pa
     min-height: 52px !important;
   }
 
-  body.pnec-enhanced-raw-page .jupiterx-main .elementor[data-elementor-type="wp-page"] > .elementor-section:first-child {
-    min-height: 0 !important;
-    padding-top: 34px !important;
+  body.pnec-enhanced-raw-page .jupiterx-main .pnec-hero-band.elementor-section {
+    min-height: 220px !important;
+    padding: 96px 16px 36px !important;
   }
+  .pnec-nav-logo { left: 12px; }
+  .pnec-nav-logo img { height: 34px; }
 
   .pnec-preparedness-band {
     padding: 24px 18px;

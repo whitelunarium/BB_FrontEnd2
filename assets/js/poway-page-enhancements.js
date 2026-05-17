@@ -34,6 +34,65 @@
     }
   }
 
+  /* Put the REAL white PNEC logo inside the green nav bar (left side).
+     Because the bar is position:absolute, embedding the logo IN it
+     means the nav can never overlap the logo — they are the same
+     element. Runs on every enhanced page → consistent branding site-
+     wide. White logo on the green bar is high-contrast + on-brand. */
+  function ensureNavLogo() {
+    var nav = document.querySelector('.pnec-top-green-nav');
+    if (!nav || nav.querySelector('.pnec-nav-logo')) return;
+    var container = nav.querySelector('.elementor-container') || nav;
+    var logo = document.createElement('a');
+    logo.className = 'pnec-nav-logo';
+    logo.href = '/';
+    logo.setAttribute('aria-label', 'Poway Neighborhood Emergency Corps — home');
+    var img = document.createElement('img');
+    img.src = '/assets/images/poway-nec-logo-white.png';
+    img.alt = 'Poway Neighborhood Emergency Corps';
+    img.width = 768;
+    img.height = 307;
+    img.decoding = 'async';
+    logo.appendChild(img);
+    container.insertBefore(logo, container.firstChild);
+  }
+
+  /* Give interior pages the same rotating photo hero the home page
+     has. The first <section> inside .jupiterx-post-content is the
+     page-title band; we turn it into a photo hero (4 local Poway
+     images cycling) with the page title overlaid in white. The home
+     page already ships its own .hero-slider so it is left untouched. */
+  function ensureHeroGallery() {
+    if (/register\.html|login|profile\.html|onboarding\.html/.test(window.location.pathname)) return;
+    var content = document.querySelector('.jupiterx-post-content');
+    if (!content) return;
+    if (document.querySelector('.hero-slider')) return;          // home already has one
+    var band = content.querySelector('.elementor-section');
+    if (!band || band.querySelector('.pnec-hero-gallery')) return;
+    band.classList.add('pnec-hero-band');
+    var g = document.createElement('div');
+    g.className = 'pnec-hero-gallery';
+    g.setAttribute('aria-hidden', 'true');
+    var imgs = [
+      '/assets/images/Poway_Lake.webp',
+      '/assets/images/Poway_Fire.webp',
+      '/assets/images/Poway_Flood.webp',
+      '/assets/images/Poway_Image.webp'
+    ];
+    g.innerHTML = imgs.map(function (s, i) {
+      return '<div class="pnec-hero-slide' + (i === 0 ? ' is-active' : '') +
+             '" style="background-image:url(' + s + ')"></div>';
+    }).join('') + '<div class="pnec-hero-overlay"></div>';
+    band.insertBefore(g, band.firstChild);
+    var slides = g.querySelectorAll('.pnec-hero-slide');
+    var idx = 0;
+    setInterval(function () {
+      slides[idx].classList.remove('is-active');
+      idx = (idx + 1) % slides.length;
+      slides[idx].classList.add('is-active');
+    }, 4500);
+  }
+
   function ensureChatbotMarkup() {
     if (document.getElementById('chatbot-trigger-btn')) return;
 
@@ -181,6 +240,8 @@
   onReady(function () {
     document.body.classList.add('pnec-enhanced-raw-page');
     moveFullNavToTop();
+    ensureNavLogo();
+    ensureHeroGallery();
     ensurePreparednessActionBand();
     ensureChatbot();
   });
