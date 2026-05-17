@@ -1,15 +1,12 @@
-<style id="pnec-critical-css">/* v3.28: critical-path CSS — same as marketing pages, ensures the home / blog / blog-post FOUC matches the fixed marketing pages. */.jupiterx-header img[src*="Poway-NEC-Logo-White"]{display:none!important}.jupiterx-header section.elementor-top-section+section.elementor-top-section{min-height:0!important;padding:10px 0!important}.jupiterx-header section.elementor-top-section+section.elementor-top-section .elementor-container,.jupiterx-header section.elementor-top-section+section.elementor-top-section .elementor-widget-wrap,.jupiterx-header section.elementor-top-section+section.elementor-top-section .elementor-column{min-height:0!important;height:auto!important}.elementor-section-stretched.elementor-section-height-min-height{min-height:0!important;background-image:none!important;background-color:#fbf8f1!important;padding-top:32px!important;padding-bottom:20px!important}.elementor-section-stretched.elementor-section-height-min-height .elementor-background-overlay{display:none!important}.elementor-section-stretched.elementor-section-height-min-height .elementor-heading-title{color:#0e3b21!important;-webkit-text-fill-color:#0e3b21!important;-webkit-text-stroke:0!important;opacity:1!important}/* v3.32: home/blog has TWO logo widgets — e445511 (desktop, shown;
-   elementor-hidden-tablet+mobile) and a94d1c7 (mobile, shown;
-   elementor-hidden-desktop). Both clone the white Poway-NEC-Logo PNG
-   which is display:none'd with no working photo bg, so each renders
-   empty. Inject the dark-green "Poway NEC & FSC" wordmark into BOTH
-   widget containers (the responsive-visibility classes keep exactly
-   one shown per breakpoint), matching the 4 marketing pages. The
-   element ids are unique Elementor widget ids so this is surgical. */
-.elementor-element-e445511 a,.elementor-element-a94d1c7 a{font-size:0!important}
-.elementor-element-e445511 .elementor-widget-container,.elementor-element-a94d1c7 .elementor-widget-container{min-height:0!important;display:block!important;padding:0!important}
-.elementor-element-e445511 img,.elementor-element-a94d1c7 img{display:none!important}
-.elementor-element-e445511 .elementor-widget-container::after,.elementor-element-a94d1c7 .elementor-widget-container::after{content:"Poway NEC & FSC";display:inline-block;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-weight:800;font-size:1.4rem;line-height:1.1;color:#0e3b21;text-decoration:none;letter-spacing:-.01em;white-space:nowrap}</style>
+<style id="pnec-critical-css">/* v3.28: critical-path CSS — same as marketing pages, ensures the home / blog / blog-post FOUC matches the fixed marketing pages. */.jupiterx-header img[src*="Poway-NEC-Logo-White"]{display:none!important}.jupiterx-header section.elementor-top-section+section.elementor-top-section{min-height:0!important;padding:10px 0!important}.jupiterx-header section.elementor-top-section+section.elementor-top-section .elementor-container,.jupiterx-header section.elementor-top-section+section.elementor-top-section .elementor-widget-wrap,.jupiterx-header section.elementor-top-section+section.elementor-top-section .elementor-column{min-height:0!important;height:auto!important}.elementor-section-stretched.elementor-section-height-min-height{min-height:0!important;background-image:none!important;background-color:#fbf8f1!important;padding-top:32px!important;padding-bottom:20px!important}.elementor-section-stretched.elementor-section-height-min-height .elementor-background-overlay{display:none!important}.elementor-section-stretched.elementor-section-height-min-height .elementor-heading-title{color:#0e3b21!important;-webkit-text-fill-color:#0e3b21!important;-webkit-text-stroke:0!important;opacity:1!important}/* v3.34: home/blog (header template 6) use the REAL white PNEC logo
+   in the green nav bar (section b000349), matching the interior
+   pages. The old e445511/a94d1c7 logo widgets sat in a separate
+   strip below the nav with no working bg — hide them. The clickable
+   .pnec-nav-logo <a> is injected into b000349 by the inline script
+   at the end of this include; .pnec-nav-logo styling is shared from
+   poway-unified-ui.css. */
+.elementor-element-e445511,.elementor-element-a94d1c7{display:none!important}
+.elementor-element-b000349>.elementor-container{position:relative!important}</style>
 <style>
 /* ════════════════════════════════════════════════════════════════
    v3.24: mobile-only overrides for the Elementor-cloned header + footer
@@ -1371,4 +1368,30 @@ var lottie_defaultAnimationUrl = {"url":"https://powaynec.com/wp-content/plugins
 const a=JSON.parse(document.getElementById("wp-emoji-settings").textContent),o=(window._wpemojiSettings=a,"wpEmojiSettingsSupports"),s=["flag","emoji"];function i(e){try{var t={supportTests:e,timestamp:(new Date).valueOf()};sessionStorage.setItem(o,JSON.stringify(t))}catch(e){}}function c(e,t,n){e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(t,0,0);t=new Uint32Array(e.getImageData(0,0,e.canvas.width,e.canvas.height).data);e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(n,0,0);const a=new Uint32Array(e.getImageData(0,0,e.canvas.width,e.canvas.height).data);return t.every((e,t)=>e===a[t])}function p(e,t){e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(t,0,0);var n=e.getImageData(16,16,1,1);for(let e=0;e<n.data.length;e++)if(0!==n.data[e])return!1;return!0}function u(e,t,n,a){switch(t){case"flag":return n(e,"\ud83c\udff3\ufe0f\u200d\u26a7\ufe0f","\ud83c\udff3\ufe0f\u200b\u26a7\ufe0f")?!1:!n(e,"\ud83c\udde8\ud83c\uddf6","\ud83c\udde8\u200b\ud83c\uddf6")&&!n(e,"\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f","\ud83c\udff4\u200b\udb40\udc67\u200b\udb40\udc62\u200b\udb40\udc65\u200b\udb40\udc6e\u200b\udb40\udc67\u200b\udb40\udc7f");case"emoji":return!a(e,"\ud83e\u1fac8")}return!1}function f(e,t,n,a){let r;const o=(r="undefined"!=typeof WorkerGlobalScope&&self instanceof WorkerGlobalScope?new OffscreenCanvas(300,150):document.createElement("canvas")).getContext("2d",{willReadFrequently:!0}),s=(o.textBaseline="top",o.font="600 32px Arial",{});return e.forEach(e=>{s[e]=t(o,e,n,a)}),s}function r(e){var t=document.createElement("script");t.src=e,t.defer=!0,document.head.appendChild(t)}a.supports={everything:!0,everythingExceptFlag:!0},new Promise(t=>{let n=function(){try{var e=JSON.parse(sessionStorage.getItem(o));if("object"==typeof e&&"number"==typeof e.timestamp&&(new Date).valueOf()<e.timestamp+604800&&"object"==typeof e.supportTests)return e.supportTests}catch(e){}return null}();if(!n){if("undefined"!=typeof Worker&&"undefined"!=typeof OffscreenCanvas&&"undefined"!=typeof URL&&URL.createObjectURL&&"undefined"!=typeof Blob)try{var e="postMessage("+f.toString()+"("+[JSON.stringify(s),u.toString(),c.toString(),p.toString()].join(",")+"));",a=new Blob([e],{type:"text/javascript"});const r=new Worker(URL.createObjectURL(a),{name:"wpTestEmojiSupports"});return void(r.onmessage=e=>{i(n=e.data),r.terminate(),t(n)})}catch(e){}i(n=f(s,u,c,p))}t(n)}).then(e=>{for(const n in e)a.supports[n]=e[n],a.supports.everything=a.supports.everything&&a.supports[n],"flag"!==n&&(a.supports.everythingExceptFlag=a.supports.everythingExceptFlag&&a.supports[n]);var t;a.supports.everythingExceptFlag=a.supports.everythingExceptFlag&&!a.supports.flag,a.supports.everything||((t=a.source||{}).concatemoji?r(t.concatemoji):t.wpemoji&&t.twemoji&&(r(t.twemoji),r(t.wpemoji)))});
 //# sourceURL=https://powaynec.com/wp-includes/js/wp-emoji-loader.min.js
 /* ]]> */
+</script>
+<script>
+/* v3.34: inject the REAL clickable PNEC logo into the home/blog green
+   nav bar (section b000349), mirroring ensureNavLogo() on the interior
+   pages. .pnec-nav-logo styling is shared from poway-unified-ui.css. */
+(function () {
+  function addHomeNavLogo() {
+    var sec = document.querySelector('.elementor-element-b000349');
+    if (!sec) return;
+    var container = sec.querySelector('.elementor-container') || sec;
+    if (container.querySelector('.pnec-nav-logo')) return;
+    var a = document.createElement('a');
+    a.className = 'pnec-nav-logo';
+    a.href = '/';
+    a.setAttribute('aria-label', 'Poway Neighborhood Emergency Corps — home');
+    var img = document.createElement('img');
+    img.src = '/assets/images/poway-nec-logo-white.png';
+    img.alt = 'Poway Neighborhood Emergency Corps';
+    img.width = 768; img.height = 307; img.decoding = 'async';
+    a.appendChild(img);
+    container.insertBefore(a, container.firstChild);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', addHomeNavLogo);
+  } else { addHomeNavLogo(); }
+})();
 </script>
