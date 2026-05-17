@@ -3,10 +3,15 @@
    pages. The old e445511/a94d1c7 logo widgets sat in a separate
    strip below the nav with no working bg — hide them. The clickable
    .pnec-nav-logo <a> is injected into b000349 by the inline script
-   at the end of this include; .pnec-nav-logo styling is shared from
-   poway-unified-ui.css. */
+   at the end of this include. NOTE: home/blog do NOT load
+   poway-unified-ui.css, so the .pnec-nav-logo sizing/position rules
+   are duplicated inline here (must match poway-unified-ui.css). */
 .elementor-element-e445511,.elementor-element-a94d1c7{display:none!important}
-.elementor-element-b000349>.elementor-container{position:relative!important}</style>
+.elementor-element-b000349>.elementor-container{position:relative!important}
+.pnec-nav-logo{position:absolute!important;left:26px;top:50%;transform:translateY(-50%);display:flex;align-items:center;z-index:5;line-height:0}
+.pnec-nav-logo img{height:46px!important;width:auto!important;max-width:none!important;display:block}
+@media (max-width:900px){.pnec-nav-logo{left:16px}.pnec-nav-logo img{height:38px!important}}
+@media (max-width:640px){.pnec-nav-logo{left:12px}.pnec-nav-logo img{height:34px!important}}
 <style>
 /* ════════════════════════════════════════════════════════════════
    v3.24: mobile-only overrides for the Elementor-cloned header + footer
