@@ -293,8 +293,16 @@
       ensureNavLogo,
       ensureHeroGallery,
       ensurePreparednessActionBand,
-      ensureFooterStatsLink,
-      ensureChatbot
+      ensureFooterStatsLink
+      // NOTE: ensureChatbot() is intentionally NOT called. It injects a
+      // legacy chatbot widget (#chatbot-trigger-btn / .chatbot-panel)
+      // whose CSS no longer exists anywhere, so it rendered as raw
+      // unstyled markup dumped below the footer. The real chatbot is the
+      // Helper Bot injected independently by chatbot-inject.js on every
+      // page that loads this script. Previously this never surfaced only
+      // because an upstream throw in ensurePreparednessActionBand aborted
+      // the chain before it; now that each step is isolated we must drop
+      // the dead call explicitly. (Functions kept for git-history clarity.)
     ].forEach(function (fn) {
       try { fn(); } catch (e) { if (window.console && console.warn) console.warn('[pnec-enhance] ' + fn.name + ' failed:', e); }
     });
