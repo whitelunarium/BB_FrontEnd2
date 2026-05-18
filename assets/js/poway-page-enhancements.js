@@ -284,25 +284,28 @@
 
   onReady(function () {
     document.body.classList.add('pnec-enhanced-raw-page');
-    // Run each enhancement in isolation: a failure in one (e.g. a DOM
-    // edge case in ensurePreparednessActionBand) must NOT abort the
-    // others — that previously stopped ensureFooterStatsLink/ensureChatbot
-    // from ever running on pages where an earlier step threw.
+    // Run each enhancement in isolation: a failure in one must NOT abort
+    // the others.
+    //
+    // Intentionally NOT called:
+    //  • ensurePreparednessActionBand — it injected a "Preparedness
+    //    first" CTA band into the cloned page content. For a long time
+    //    it silently threw (a bad insertBefore) so it never actually
+    //    rendered on these pages; the site shipped fine without it.
+    //    Making it work would add unrequested content plus a visible
+    //    post-load reflow that worsens the FOUC on pages like Contact.
+    //    Keep the pages as they shipped — don't inject it.
+    //  • ensureChatbot — injects a legacy #chatbot-trigger-btn /
+    //    .chatbot-panel widget whose CSS no longer exists anywhere, so
+    //    it dumped raw unstyled markup below the footer. The real
+    //    chatbot is the Helper Bot injected by chatbot-inject.js on
+    //    every page that loads this script.
+    // (Both functions kept defined for git-history clarity.)
     [
       moveFullNavToTop,
       ensureNavLogo,
       ensureHeroGallery,
-      ensurePreparednessActionBand,
       ensureFooterStatsLink
-      // NOTE: ensureChatbot() is intentionally NOT called. It injects a
-      // legacy chatbot widget (#chatbot-trigger-btn / .chatbot-panel)
-      // whose CSS no longer exists anywhere, so it rendered as raw
-      // unstyled markup dumped below the footer. The real chatbot is the
-      // Helper Bot injected independently by chatbot-inject.js on every
-      // page that loads this script. Previously this never surfaced only
-      // because an upstream throw in ensurePreparednessActionBand aborted
-      // the chain before it; now that each step is isolated we must drop
-      // the dead call explicitly. (Functions kept for git-history clarity.)
     ].forEach(function (fn) {
       try { fn(); } catch (e) { if (window.console && console.warn) console.warn('[pnec-enhance] ' + fn.name + ' failed:', e); }
     });

@@ -123,11 +123,16 @@
 
       // Mouse: hover preview, click lock.
       el.addEventListener('mouseenter', (ev) => {
+        if (_hoverId === n.id) return;
         _hoverId = n.id;
-        // Bring the hovered polygon to the top so its outline isn't
-        // cut off by adjacent polygons. SVG uses painter's algorithm
-        // — last sibling wins.
-        if (el.parentNode) el.parentNode.appendChild(el);
+        // v3.38 PERF/UX: do NOT reparent the polygon on hover. Re-
+        // appending the node the cursor is over makes the browser drop
+        // its :hover state — that's why the green highlight stopped
+        // sticking — and churns the SVG DOM on every mouseenter across
+        // 60 polygons (the lag). The :hover CSS (scale + drop-shadow)
+        // already lifts the region visually; minor painter-order
+        // clipping at shared edges is far less bad than a broken
+        // highlight + janky map.
         showTooltip(ev, n);
         if (_activeId == null) renderDetail(n);
       });
