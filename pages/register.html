@@ -1173,4 +1173,72 @@ body_class: inner-page auth-page-body
 })();
 </script>
 
+<script>
+/* v3.39: count-up animation for the login-page brand stats
+   (.auth-brand-stat-num). Each number rolls 0 -> target shortly after
+   load, preserving the original prefix/suffix and comma grouping
+   (e.g. "3,200+", "22", "100%"). Respects prefers-reduced-motion
+   (shows the final value, no animation). Animates on load (not gated
+   on scroll) so it always runs regardless of viewport/panel layout. */
+(function () {
+  function init() {
+    var nums = document.querySelectorAll('.auth-brand-stat-num');
+    if (!nums.length) return;
+    var reduce = window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function parse(el) {
+      var raw = (el.textContent || '').trim();
+      var m = raw.match(/^(\D*)([\d.,]+)(.*)$/);
+      if (!m) return null;
+      var target = parseInt(m[2].replace(/[.,]/g, ''), 10);
+      if (!isFinite(target)) return null;
+      return { el: el, raw: raw, prefix: m[1], suffix: m[3],
+               target: target, group: m[2].indexOf(',') !== -1 };
+    }
+    function fmt(d, n) {
+      var v = Math.round(n);
+      return d.prefix + (d.group ? v.toLocaleString('en-US') : String(v)) + d.suffix;
+    }
+    function animate(d, delay) {
+      var dur = 1500;
+      setTimeout(function () {
+        var start = (window.performance && performance.now)
+          ? performance.now() : Date.now();
+        var iv = setInterval(function () {
+          var now = (window.performance && performance.now)
+            ? performance.now() : Date.now();
+          var p = Math.min(1, (now - start) / dur);
+          if (p >= 1) {
+            clearInterval(iv);
+            d.el.textContent = d.raw; /* exact original text */
+          } else {
+            d.el.textContent = fmt(d, d.target * (1 - Math.pow(1 - p, 3)));
+          }
+        }, 1000 / 60);
+        /* hard safety: guarantee the final value even if the interval
+           is throttled (e.g. loaded in a background tab) */
+        setTimeout(function () {
+          clearInterval(iv);
+          d.el.textContent = d.raw;
+        }, dur + 400);
+      }, delay || 0);
+    }
+
+    var n = 0;
+    for (var i = 0; i < nums.length; i++) {
+      var d = parse(nums[i]);
+      if (!d) continue;
+      if (reduce) { continue; }       /* leave the final value as-is */
+      d.el.textContent = fmt(d, 0);   /* start at 0 */
+      animate(d, 120 + n * 140);      /* gentle stagger */
+      n++;
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else { init(); }
+})();
+</script>
+
 <script src="{{ '/assets/js/pages/register-page.js' | relative_url }}"></script>
