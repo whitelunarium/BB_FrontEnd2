@@ -66,38 +66,130 @@ const TOOL_DEFS = {
   },
 };
 
-function slugLabel(slug) {
-  if (!slug) return 'that page';
-  const map = {
-    'home':                            'the home page',
-    'about':                           'the About page',
-    'programs-and-services':           'Programs & Services',
-    'preparedness-resources':          'Preparedness Resources',
-    'community-events-and-activities': 'Community Events',
-    'find-your-neighborhood':          'Find Your Neighborhood',
-    'contact':                         'the Contact page',
-    'volunteer':                       'the Volunteer page',
-    'profile':                         'your Profile',
-    'admin':                           'the Admin Dashboard',
-    'register':                        'the sign-in page',
-    'events':                          'Community Events',
-  };
-  return map[slug] || `the ${slug.replace(/-/g, ' ')} page`;
+// ─── Page registry (single source of truth) ──────────────────────
+// Canonical slug → { href, label }. href accounts for custom Jekyll
+// permalinks (donate → /donation-form/, role-quiz → /role-quiz/);
+// everything else is a real /pages/<file>.html that exists in the repo.
+const PAGES = {
+  'home':                            { href: '/',                                          label: 'the home page' },
+  'about':                           { href: '/pages/about.html',                          label: 'the About page' },
+  'programs-and-services':           { href: '/pages/programs-and-services.html',           label: 'Programs & Services' },
+  'preparedness-resources':          { href: '/pages/preparedness-resources.html',          label: 'Preparedness Resources' },
+  'community-events-and-activities': { href: '/pages/community-events-and-activities.html',  label: 'Community Events' },
+  'find-your-neighborhood':          { href: '/pages/find-your-neighborhood.html',          label: 'Find Your Neighborhood' },
+  'contact':                         { href: '/pages/contact.html',                         label: 'the Contact page' },
+  'volunteer':                       { href: '/pages/volunteer.html',                       label: 'the Volunteer page' },
+  'donate':                          { href: '/donation-form/',                             label: 'the Donate page' },
+  'checklist':                       { href: '/pages/checklist.html',                       label: 'the Preparedness Checklist' },
+  'kit':                             { href: '/pages/kit.html',                             label: 'the 72-Hour Kit page' },
+  'gallery':                         { href: '/pages/gallery.html',                         label: 'the Photo Gallery' },
+  'blog':                            { href: '/pages/blog.html',                            label: 'the Blog' },
+  'poway-statistics-and-information':{ href: '/pages/poway-statistics-and-information.html', label: 'Poway Statistics & Information' },
+  'role-quiz':                       { href: '/role-quiz/',                                 label: 'the Role Quiz' },
+  'profile':                         { href: '/pages/profile.html',                         label: 'your Profile' },
+  'dashboard':                       { href: '/pages/dashboard.html',                       label: 'your Dashboard' },
+  'register':                        { href: '/pages/register.html',                        label: 'the sign-in page' },
+  'privacy':                         { href: '/pages/privacy.html',                         label: 'the Privacy page' },
+  'admin':                           { href: '/pages/admin.html',                           label: 'the Admin Hub' },
+};
+
+// Raw label / synonym (normalized) → canonical slug. Covers the
+// human-readable nav labels the LLM tends to emit verbatim
+// ("programs and services" → "programs-and-services") plus common
+// synonyms, so navigate_to can never build a 404 URL.
+const SLUG_ALIASES = {
+  '':                          'home',
+  'index':                     'home',
+  'homepage':                  'home',
+  'main':                      'home',
+  'programs':                  'programs-and-services',
+  'services':                  'programs-and-services',
+  'programs-services':         'programs-and-services',
+  'programs-and-service':      'programs-and-services',
+  'preparedness':              'preparedness-resources',
+  'preparedness-and-help':     'preparedness-resources',
+  'preparedness-help':         'preparedness-resources',
+  'resources':                 'preparedness-resources',
+  'help':                      'preparedness-resources',
+  'events':                    'community-events-and-activities',
+  'community-events':          'community-events-and-activities',
+  'community-events-and-activity': 'community-events-and-activities',
+  'calendar':                  'community-events-and-activities',
+  'neighborhood':              'find-your-neighborhood',
+  'neighborhoods':             'find-your-neighborhood',
+  'find-neighborhood':         'find-your-neighborhood',
+  'find-your-neighborhoods':   'find-your-neighborhood',
+  'map':                       'find-your-neighborhood',
+  'coordinator':               'find-your-neighborhood',
+  'sign-in':                   'register',
+  'signin':                    'register',
+  'login':                     'register',
+  'log-in':                    'register',
+  'sign-up':                   'register',
+  'signup':                    'register',
+  'sign-in-page':              'register',
+  'stats':                     'poway-statistics-and-information',
+  'statistics':                'poway-statistics-and-information',
+  'poway-statistics':          'poway-statistics-and-information',
+  'data':                      'poway-statistics-and-information',
+  'donation':                  'donate',
+  'donation-form':             'donate',
+  'give':                      'donate',
+  'quiz':                      'role-quiz',
+  'role':                      'role-quiz',
+  'feedback':                  'contact',
+  'contact-us':                'contact',
+  'support':                   'contact',
+  'photos':                    'gallery',
+  'photo-gallery':             'gallery',
+  '72-hour-kit':               'kit',
+  'go-bag':                    'kit',
+  'checklists':                'checklist',
+};
+
+// Normalize whatever the LLM emitted into a bare slug token:
+// lowercase, drop a leading /pages/ or /, drop query/hash, drop a
+// trailing .html, turn "&"→"and" and spaces/underscores/plus → "-".
+function normalizeSlugToken(raw) {
+  return String(raw == null ? '' : raw)
+    .toLowerCase()
+    .trim()
+    .replace(/[?#].*$/, '')
+    .replace(/^\/+/, '')
+    .replace(/^pages\//, '')
+    .replace(/\.html?$/, '')
+    .replace(/\/+$/, '')
+    .replace(/&/g, ' and ')
+    .replace(/[\s_+]+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
 }
 
-function slugToHref(slug) {
-  const map = {
-    home: '/',
-    events: '/pages/community-events-and-activities.html',
-  };
-  if (map[slug]) return map[slug];
-  if (slug === 'profile' || slug === 'admin' || slug === 'register' || slug === 'contact'
-   || slug === 'about' || slug === 'volunteer' || slug === 'find-your-neighborhood'
-   || slug === 'preparedness-resources' || slug === 'programs-and-services'
-   || slug === 'community-events-and-activities') {
-    return `/pages/${slug}.html`;
-  }
-  return `/pages/${slug}.html`;
+// Resolve any input to a canonical slug in PAGES, or null if unknown.
+function resolveSlug(raw) {
+  const t = normalizeSlugToken(raw);
+  if (Object.prototype.hasOwnProperty.call(PAGES, t)) return t;
+  const aliased = SLUG_ALIASES[t];
+  if (aliased && Object.prototype.hasOwnProperty.call(PAGES, aliased)) return aliased;
+  return null;
+}
+
+export function slugLabel(slug) {
+  const canon = resolveSlug(slug);
+  if (canon) return PAGES[canon].label;
+  const t = normalizeSlugToken(slug);
+  if (!t) return 'that page';
+  // unknown but readable: "the foo bar page"
+  return `the ${t.replace(/-/g, ' ')} page`;
+}
+
+export function slugToHref(slug) {
+  const canon = resolveSlug(slug);
+  if (canon) return PAGES[canon].href;
+  // Unknown slug: never fabricate a /pages/<spaces>.html 404 — send
+  // the user somewhere real.
+  return '/';
 }
 
 // ─── Parsing ──────────────────────────────────────────────────────
@@ -348,10 +440,14 @@ async function tool_getLiveConditions() {
 }
 
 async function tool_navigateTo(args, _bot) {
-  const slug = (args.slug || '').toLowerCase().trim();
-  const href = slugToHref(slug);
+  const raw   = args.slug || '';
+  const canon = resolveSlug(raw);
+  const href  = canon ? PAGES[canon].href : '/';
   setTimeout(() => { window.location.assign(href); }, 280);
-  return { text: `Heading to **${slugLabel(slug)}**…` };
+  if (canon) return { text: `Heading to **${PAGES[canon].label}**…` };
+  return {
+    text: `I couldn't find a page for "${_escape(String(raw).trim())}", so I'm taking you to the home page — use the top menu to find what you need.`
+  };
 }
 
 async function tool_searchNews(args) {

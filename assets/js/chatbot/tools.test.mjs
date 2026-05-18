@@ -148,5 +148,51 @@ test('classifyIntent: nothing matches → null', () => {
   assert.equal(tools.classifyIntent('   '), null);
 });
 
+// ── slugToHref / slugLabel — navigate_to URL resolution ───────────
+// Regression guard for the "navigate takes you to a 404" bug: the LLM
+// emits human labels with spaces ("programs and services") or even the
+// full "pages/… .html" path; these must resolve to a real URL, never a
+// fabricated /pages/<spaces>.html that 404s.
+
+test('slugToHref: canonical hyphenated slug', () => {
+  assert.equal(tools.slugToHref('programs-and-services'), '/pages/programs-and-services.html');
+  assert.equal(tools.slugToHref('contact'), '/pages/contact.html');
+  assert.equal(tools.slugToHref('home'), '/');
+});
+
+test('slugToHref: spaced label normalizes (the actual bug)', () => {
+  assert.equal(tools.slugToHref('programs and services'), '/pages/programs-and-services.html');
+  assert.equal(tools.slugToHref('Programs and Services'), '/pages/programs-and-services.html');
+  assert.equal(tools.slugToHref('Programs & Services'), '/pages/programs-and-services.html');
+  assert.equal(tools.slugToHref('pages/programs and services.html'), '/pages/programs-and-services.html');
+  assert.equal(tools.slugToHref('/pages/programs-and-services.html'), '/pages/programs-and-services.html');
+});
+
+test('slugToHref: aliases resolve to canonical pages', () => {
+  assert.equal(tools.slugToHref('events'), '/pages/community-events-and-activities.html');
+  assert.equal(tools.slugToHref('preparedness'), '/pages/preparedness-resources.html');
+  assert.equal(tools.slugToHref('login'), '/pages/register.html');
+  assert.equal(tools.slugToHref('neighborhood'), '/pages/find-your-neighborhood.html');
+});
+
+test('slugToHref: custom Jekyll permalinks (old code 404d these)', () => {
+  assert.equal(tools.slugToHref('donate'), '/donation-form/');
+  assert.equal(tools.slugToHref('role-quiz'), '/role-quiz/');
+});
+
+test('slugToHref: unknown slug falls back to home, never a 404 path', () => {
+  const r = tools.slugToHref('some totally made up page name');
+  assert.equal(r, '/');
+  assert.ok(!/\s/.test(tools.slugToHref('a b c')), 'never emits a URL with spaces');
+});
+
+test('slugLabel: reads cleanly for known + normalized slugs', () => {
+  assert.equal(tools.slugLabel('programs and services'), 'Programs & Services');
+  assert.equal(tools.slugLabel('contact'), 'the Contact page');
+  // empty slug now safely resolves to home (better default than a 404)
+  assert.equal(tools.slugLabel(''), 'the home page');
+  assert.equal(tools.slugToHref(''), '/');
+});
+
 console.log(`tools.test.mjs: ${passed} passed, ${failed} failed`);
 if (failed > 0) process.exit(1);
