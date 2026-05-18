@@ -12,17 +12,18 @@
 .pnec-nav-logo img{height:46px!important;width:auto!important;max-width:none!important;display:block}
 @media (max-width:900px){.pnec-nav-logo{left:16px}.pnec-nav-logo img{height:38px!important}}
 @media (max-width:640px){.pnec-nav-logo{left:12px}.pnec-nav-logo img{height:34px!important}}
-/* v3.36: HOME PAGE ONLY — the logo is moved off the green nav bar and
-   hovers over the rotating image gallery (.hero-slider) instead. The
-   slider is position:relative, so the logo is an absolute overlay in
-   its top-left, white with a drop-shadow for legibility over any photo,
-   clickable back to home. Blog/blog-post keep the nav-bar .pnec-nav-logo
-   (the inline script only swaps to .pnec-hero-logo when pathname is /). */
+/* v3.37: HOME PAGE ONLY — the logo is moved off the green nav bar and
+   sits BIG and CENTERED over the rotating image gallery (.hero-slider).
+   The slider is position:relative, so the logo is an absolute overlay
+   centred both axes, white with a strong drop-shadow so it stays legible
+   over any of the rotating photos, clickable back to home. Blog/blog-post
+   keep the nav-bar .pnec-nav-logo (the inline script only swaps to
+   .pnec-hero-logo when pathname is /). */
 .hero-slider{position:relative}
-.pnec-hero-logo{position:absolute;top:clamp(14px,3vh,30px);left:clamp(16px,3vw,38px);z-index:6;display:block;line-height:0}
-.pnec-hero-logo img{height:clamp(42px,5.4vw,66px);width:auto;max-width:none;display:block;filter:drop-shadow(0 2px 6px rgba(0,0,0,.55)) drop-shadow(0 0 1px rgba(0,0,0,.4));transition:opacity .18s ease}
-.pnec-hero-logo:hover img{opacity:.9}
-@media (max-width:640px){.pnec-hero-logo{top:12px;left:14px}.pnec-hero-logo img{height:38px}}
+.pnec-hero-logo{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:6;display:block;line-height:0;text-align:center;pointer-events:auto}
+.pnec-hero-logo img{height:clamp(96px,17vw,210px);width:auto;max-width:86vw;display:block;filter:drop-shadow(0 4px 14px rgba(0,0,0,.62)) drop-shadow(0 0 3px rgba(0,0,0,.5));transition:opacity .18s ease}
+.pnec-hero-logo:hover img{opacity:.92}
+@media (max-width:640px){.pnec-hero-logo img{height:clamp(72px,26vw,128px);max-width:82vw}}
 <style>
 /* ════════════════════════════════════════════════════════════════
    v3.24: mobile-only overrides for the Elementor-cloned header + footer
