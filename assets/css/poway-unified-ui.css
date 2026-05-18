@@ -43,6 +43,19 @@ body.pnec-enhanced-raw-page .jupiterx-header-custom .elementor-2820 > .elementor
   min-height: 58px;
 }
 
+/* v3.35: on interior pages the .pnec-nav-logo is position:absolute so
+   it's out of flow — the centred menu doesn't reserve any space for it
+   and its left edge ran right up against the logo (~13px gap), making
+   the wordmark look cramped vs the spacious home page (~124px gap).
+   Reserve a fluid "logo gutter" on the menu so the centred items always
+   clear the logo, matching the home page's breathing room. Scoped to
+   body.pnec-enhanced-raw-page so the home page (which has no such class
+   and is already correct) is never affected. ~113px gap at desktop. */
+body.pnec-enhanced-raw-page .pnec-top-green-nav .elementor-nav-menu--main .elementor-nav-menu {
+  box-sizing: border-box;
+  padding-left: clamp(150px, 15vw, 210px) !important;
+}
+
 .pnec-top-green-nav .elementor-item {
   color: #fff !important;
   font-weight: 600 !important;
@@ -241,6 +254,12 @@ body.pnec-enhanced-raw-page .jupiterx-main .pnec-hero-band.elementor-section .el
   .pnec-nav-logo { left: 16px; }
   .pnec-nav-logo img { height: 38px; }
 
+  /* v3.35: logo is smaller here — a tighter gutter still clears it
+     without crowding the menu at mid widths. */
+  body.pnec-enhanced-raw-page .pnec-top-green-nav .elementor-nav-menu--main .elementor-nav-menu {
+    padding-left: 120px !important;
+  }
+
   .pnec-preparedness-band-inner {
     grid-template-columns: 1fr;
   }
@@ -258,6 +277,12 @@ body.pnec-enhanced-raw-page .jupiterx-main .pnec-hero-band.elementor-section .el
   }
   .pnec-nav-logo { left: 12px; }
   .pnec-nav-logo img { height: 34px; }
+
+  /* v3.35: phone layout uses the hamburger / dropdown — drop the gutter
+     so nothing pushes the collapsed menu or toggle off-centre. */
+  body.pnec-enhanced-raw-page .pnec-top-green-nav .elementor-nav-menu--main .elementor-nav-menu {
+    padding-left: 0 !important;
+  }
 
   .pnec-preparedness-band {
     padding: 24px 18px;
