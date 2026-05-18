@@ -12,6 +12,17 @@
 .pnec-nav-logo img{height:46px!important;width:auto!important;max-width:none!important;display:block}
 @media (max-width:900px){.pnec-nav-logo{left:16px}.pnec-nav-logo img{height:38px!important}}
 @media (max-width:640px){.pnec-nav-logo{left:12px}.pnec-nav-logo img{height:34px!important}}
+/* v3.36: HOME PAGE ONLY — the logo is moved off the green nav bar and
+   hovers over the rotating image gallery (.hero-slider) instead. The
+   slider is position:relative, so the logo is an absolute overlay in
+   its top-left, white with a drop-shadow for legibility over any photo,
+   clickable back to home. Blog/blog-post keep the nav-bar .pnec-nav-logo
+   (the inline script only swaps to .pnec-hero-logo when pathname is /). */
+.hero-slider{position:relative}
+.pnec-hero-logo{position:absolute;top:clamp(14px,3vh,30px);left:clamp(16px,3vw,38px);z-index:6;display:block;line-height:0}
+.pnec-hero-logo img{height:clamp(42px,5.4vw,66px);width:auto;max-width:none;display:block;filter:drop-shadow(0 2px 6px rgba(0,0,0,.55)) drop-shadow(0 0 1px rgba(0,0,0,.4));transition:opacity .18s ease}
+.pnec-hero-logo:hover img{opacity:.9}
+@media (max-width:640px){.pnec-hero-logo{top:12px;left:14px}.pnec-hero-logo img{height:38px}}
 <style>
 /* ════════════════════════════════════════════════════════════════
    v3.24: mobile-only overrides for the Elementor-cloned header + footer
@@ -1141,6 +1152,7 @@ February 25 | 6:30PM
 <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1240"><a href="{{ '/pages/community-events-and-activities.html' | relative_url }}" class="elementor-item">Community Events</a></li>{%- endif -%}
 <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1239"><a href="{{ '/pages/find-your-neighborhood.html' | relative_url }}" class="elementor-item">Find Your Neighborhood</a></li>
 <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1297"><a href="{{ '/pages/contact.html' | relative_url }}" class="elementor-item">Contact</a></li>
+<li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="{{ '/pages/preparedness-resources.html#poway-risk-context' | relative_url }}" class="elementor-item">Poway Statistics &amp; Information</a></li>
 </ul>			</nav>
 					<div class="elementor-menu-toggle" role="button" tabindex="0" aria-label="Menu Toggle" aria-expanded="false">
 			<i aria-hidden="true" role="presentation" class="elementor-menu-toggle__icon--open eicon-menu-bar"></i><i aria-hidden="true" role="presentation" class="elementor-menu-toggle__icon--close eicon-close"></i>		</div>
@@ -1153,6 +1165,7 @@ February 25 | 6:30PM
 <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1240"><a href="{{ '/pages/community-events-and-activities.html' | relative_url }}" class="elementor-item" tabindex="-1">Community Events</a></li>{%- endif -%}
 <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1239"><a href="{{ '/pages/find-your-neighborhood.html' | relative_url }}" class="elementor-item" tabindex="-1">Find Your Neighborhood</a></li>
 <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1297"><a href="{{ '/pages/contact.html' | relative_url }}" class="elementor-item" tabindex="-1">Contact</a></li>
+<li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="{{ '/pages/preparedness-resources.html#poway-risk-context' | relative_url }}" class="elementor-item" tabindex="-1">Poway Statistics &amp; Information</a></li>
 </ul>			</nav>
 						</div>
 				</div>
@@ -1375,17 +1388,16 @@ const a=JSON.parse(document.getElementById("wp-emoji-settings").textContent),o=(
 /* ]]> */
 </script>
 <script>
-/* v3.34: inject the REAL clickable PNEC logo into the home/blog green
-   nav bar (section b000349), mirroring ensureNavLogo() on the interior
-   pages. .pnec-nav-logo styling is shared from poway-unified-ui.css. */
+/* v3.34/v3.36: place the REAL clickable PNEC logo.
+   - HOME PAGE (pathname "/"): the logo is MOVED off the green nav bar
+     and hovers over the rotating image gallery (.hero-slider) as an
+     absolute overlay (.pnec-hero-logo).
+   - Blog / blog-post (same shared body, non-"/"): unchanged — the logo
+     stays in the green nav bar (section b000349) as .pnec-nav-logo. */
 (function () {
-  function addHomeNavLogo() {
-    var sec = document.querySelector('.elementor-element-b000349');
-    if (!sec) return;
-    var container = sec.querySelector('.elementor-container') || sec;
-    if (container.querySelector('.pnec-nav-logo')) return;
+  function makeLogo(cls) {
     var a = document.createElement('a');
-    a.className = 'pnec-nav-logo';
+    a.className = cls;
     a.href = '/';
     a.setAttribute('aria-label', 'Poway Neighborhood Emergency Corps — home');
     var img = document.createElement('img');
@@ -1393,10 +1405,27 @@ const a=JSON.parse(document.getElementById("wp-emoji-settings").textContent),o=(
     img.alt = 'Poway Neighborhood Emergency Corps';
     img.width = 768; img.height = 307; img.decoding = 'async';
     a.appendChild(img);
-    container.insertBefore(a, container.firstChild);
+    return a;
+  }
+  function placeLogo() {
+    var p = location.pathname;
+    var isHome = (p === '/' || p === '/index.html' || p === '');
+    var hero = document.querySelector('.hero-slider');
+    if (isHome && hero) {
+      // Move it onto the gallery; do NOT add it to the nav bar.
+      if (hero.querySelector('.pnec-hero-logo')) return;
+      hero.appendChild(makeLogo('pnec-hero-logo'));
+      return;
+    }
+    // Non-home (blog/blog-post): keep the nav-bar logo.
+    var sec = document.querySelector('.elementor-element-b000349');
+    if (!sec) return;
+    var container = sec.querySelector('.elementor-container') || sec;
+    if (container.querySelector('.pnec-nav-logo')) return;
+    container.insertBefore(makeLogo('pnec-nav-logo'), container.firstChild);
   }
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', addHomeNavLogo);
-  } else { addHomeNavLogo(); }
+    document.addEventListener('DOMContentLoaded', placeLogo);
+  } else { placeLogo(); }
 })();
 </script>

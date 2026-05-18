@@ -230,19 +230,73 @@
       '</div>'
     ].join('');
 
-    if (firstSection && firstSection.nextSibling) {
-      content.insertBefore(band, firstSection.nextSibling);
+    // firstSection may be nested (not a direct child of `content`), so
+    // insert relative to its REAL parent — using content.insertBefore
+    // with firstSection.nextSibling threw NotFoundError when the section
+    // wasn't a direct child of content.
+    if (firstSection && firstSection.parentNode) {
+      firstSection.parentNode.insertBefore(band, firstSection.nextSibling);
     } else {
       content.appendChild(band);
     }
   }
 
+  /* Add "Poway Statistics & Information" to the footer Quick Links on
+     these raw cloned pages. Their footers are baked per-file with both
+     a desktop UL (#menu-1-55465df) and a mobile dropdown UL
+     (#menu-2-55465df), so a single static edit can't cover them DRY.
+     This appends one <li> (cloned from the last footer item so classes
+     / tabindex match the surrounding markup) to every footer Quick
+     Links list that doesn't already have it. Idempotent. The link
+     points at the stats page's own declared canonical so there's no
+     redirect flash. */
+  var STATS_HREF = '/pages/preparedness-resources.html#poway-risk-context';
+  var STATS_LABEL = 'Poway Statistics & Information';
+  function ensureFooterStatsLink() {
+    var lists = document.querySelectorAll('.jupiterx-footer ul.elementor-nav-menu');
+    lists.forEach(function (ul) {
+      var links = ul.querySelectorAll('a');
+      var already = false;
+      for (var i = 0; i < links.length; i++) {
+        var h = links[i].getAttribute('href') || '';
+        if (h.indexOf('poway-risk-context') !== -1 ||
+            h.indexOf('poway-statistics-and-information') !== -1 ||
+            (links[i].textContent || '').trim().toLowerCase().indexOf('poway statistics') === 0) {
+          already = true;
+          break;
+        }
+      }
+      if (already) return;
+      var lastLi = ul.querySelector('li:last-child');
+      var li = document.createElement('li');
+      li.className = lastLi ? lastLi.className.replace(/\bcurrent[-_a-z]*\b/g, '').replace(/\s+/g, ' ').trim()
+                            : 'menu-item menu-item-type-post_type menu-item-object-page';
+      var a = document.createElement('a');
+      a.href = STATS_HREF;
+      a.className = 'elementor-item';
+      a.textContent = STATS_LABEL;
+      var lastA = lastLi && lastLi.querySelector('a');
+      if (lastA && lastA.getAttribute('tabindex') === '-1') a.setAttribute('tabindex', '-1');
+      li.appendChild(a);
+      ul.appendChild(li);
+    });
+  }
+
   onReady(function () {
     document.body.classList.add('pnec-enhanced-raw-page');
-    moveFullNavToTop();
-    ensureNavLogo();
-    ensureHeroGallery();
-    ensurePreparednessActionBand();
-    ensureChatbot();
+    // Run each enhancement in isolation: a failure in one (e.g. a DOM
+    // edge case in ensurePreparednessActionBand) must NOT abort the
+    // others — that previously stopped ensureFooterStatsLink/ensureChatbot
+    // from ever running on pages where an earlier step threw.
+    [
+      moveFullNavToTop,
+      ensureNavLogo,
+      ensureHeroGallery,
+      ensurePreparednessActionBand,
+      ensureFooterStatsLink,
+      ensureChatbot
+    ].forEach(function (fn) {
+      try { fn(); } catch (e) { if (window.console && console.warn) console.warn('[pnec-enhance] ' + fn.name + ' failed:', e); }
+    });
   });
 }());
