@@ -366,6 +366,22 @@ html.pb-reduced-motion [class*=" pnec-bot-"] {
   min-width: 0;
   min-height: 0;
 }
+/* v3.34: the 5-track template assumed a fixed child arrangement, but the
+   regions are toggled with the `hidden` attribute (→ display:none, which
+   removes them from grid auto-placement). In an active chat only
+   [head, transcript, followups, composer] are visible, so auto-placement
+   slid the `1fr` flexible track onto #pnec-bot-followups — a flex-wrap
+   row whose default align-items:stretch then blew every follow-up chip
+   up to the full panel height (the "giant elongated vertical pills" in
+   full-screen). Pin every region to an explicit row so the flexible
+   track always belongs to the scroll area (empty/transcript) no matter
+   which siblings are hidden; followups + composer stay content-height. */
+.pnec-bot-head        { grid-row: 1; }
+.pnec-bot-action-drawer { grid-row: 2; }
+.pnec-bot-empty,
+.pnec-bot-transcript  { grid-row: 3; }   /* mutually exclusive scroll area */
+.pnec-bot-followups   { grid-row: 4; }
+.pnec-bot-composer    { grid-row: 5; }
 
 /* Header */
 .pnec-bot-head {
@@ -543,12 +559,25 @@ html.pb-reduced-motion [class*=" pnec-bot-"] {
   width: 100%;
   max-width: 380px;
   margin: 14px 0 18px;
+  /* v3.34: in full-screen / expanded mode the empty-state grid track is
+     much taller than these few chips. A default grid container resolves
+     `align-content` as `stretch` and `grid-auto-rows` as `auto`, so the
+     extra height was distributed INTO the rows — every example question
+     ballooned into a giant elongated vertical pill. Pin the rows to
+     their content height and pack them at the top so the chips stay the
+     same compact size at any panel height. */
+  align-content: start;
+  grid-auto-rows: max-content;
 }
 .pnec-bot-suggestion {
   display: flex;
   align-items: center;
   gap: 10px;
   width: 100%;
+  /* never let a stretched grid/flex parent inflate the chip height */
+  align-self: start;
+  min-height: 44px;
+  box-sizing: border-box;
   padding: 11px 13px;
   font-family: var(--pb-font);
   font-size: 0.85rem;
@@ -1052,7 +1081,13 @@ html.pb-reduced-motion [class*=" pnec-bot-"] {
   flex-wrap: wrap;
   gap: 6px;
   padding: 10px 14px 0;
+  /* v3.34: never let a tall track stretch the wrapped flex lines or the
+     chips themselves — keep them packed at the top at their natural
+     height (defense-in-depth alongside the grid-row pinning above). */
+  align-items: flex-start;
+  align-content: flex-start;
 }
+.pnec-bot-followup { align-self: flex-start; }
 .pnec-bot-followup {
   display: inline-block;
   padding: 6px 11px;
@@ -1485,16 +1520,33 @@ html.pb-reduced-motion [class*=" pnec-bot-"] {
 
 html.pb-theme-dark .pnec-bot-panel,
 html.pb-theme-dark .pnec-bot-panel * {
-  --pb-bg-panel:   #1a2030;
-  --pb-bg-rail:    #232a3d;
-  --pb-bg-glass:   #1d243a;
-  --pb-fg:         #f0efe9;
-  --pb-fg-soft:    #c5c1b3;
-  --pb-fg-faint:   #8a8676;
-  --pb-border:     rgba(255, 255, 255, 0.10);
-  --pb-green-soft: rgba(30, 132, 73, 0.22);
+  --pb-bg-panel:       #1a2030;
+  --pb-bg-panel-solid: #1a2030;
+  --pb-bg-rail:        #232a3d;
+  --pb-bg-glass:       #1d243a;
+  /* v3.34: the bot bubble bg + input bg were never overridden for the
+     explicit dark theme, so they stayed on the light :root values
+     (#f4f7f5 / #ffffff) while --pb-fg flipped to a light cream — bot
+     replies rendered light-on-light and were invisible. Also remap the
+     muted / link / strong-border tokens so meta text, links and table
+     borders stay legible on the dark panel. */
+  --pb-bg-input:       rgba(255, 255, 255, 0.06);
+  --pb-bg-bot-msg:     rgba(255, 255, 255, 0.07);
+  --pb-fg:             #f0efe9;
+  --pb-fg-soft:        #c5c1b3;
+  --pb-fg-muted:       #aab2c0;
+  --pb-fg-faint:       #9aa1b0;
+  --pb-fg-link:        #7ee3a6;
+  --pb-border:         rgba(255, 255, 255, 0.10);
+  --pb-border-strong:  rgba(255, 255, 255, 0.20);
+  --pb-green-soft:     rgba(30, 132, 73, 0.22);
 }
 html.pb-theme-dark .pnec-bot-panel { background: #1a2030; color: #f0efe9; }
+html.pb-theme-dark .pnec-bot-msg-bubble code,
+html.pb-theme-dark .pnec-bot-msg-bubble pre,
+html.pb-theme-dark .pnec-bot-msg-bubble th {
+  background: rgba(255, 255, 255, 0.08);
+}
 html.pb-theme-dark .pnec-bot-settings-textarea,
 html.pb-theme-dark .pnec-bot-settings-stat,
 html.pb-theme-dark .pnec-bot-segmented {
@@ -1513,16 +1565,30 @@ html.pb-theme-dark .pnec-bot-settings-textarea:focus {
 @media (prefers-color-scheme: dark) {
   html.pb-theme-auto .pnec-bot-panel,
   html.pb-theme-auto .pnec-bot-panel * {
-    --pb-bg-panel:   #1a2030;
-    --pb-bg-rail:    #232a3d;
-    --pb-bg-glass:   #1d243a;
-    --pb-fg:         #f0efe9;
-    --pb-fg-soft:    #c5c1b3;
-    --pb-fg-faint:   #8a8676;
-    --pb-border:     rgba(255, 255, 255, 0.10);
-    --pb-green-soft: rgba(30, 132, 73, 0.22);
+    --pb-bg-panel:       #1a2030;
+    --pb-bg-panel-solid: #1a2030;
+    --pb-bg-rail:        #232a3d;
+    --pb-bg-glass:       #1d243a;
+    /* v3.34: keep this panel-scoped block self-complete (mirror of the
+       explicit pb-theme-dark fix) so bot bubbles never fall back to the
+       light :root surface under system dark mode. */
+    --pb-bg-input:       rgba(255, 255, 255, 0.06);
+    --pb-bg-bot-msg:     rgba(255, 255, 255, 0.07);
+    --pb-fg:             #f0efe9;
+    --pb-fg-soft:        #c5c1b3;
+    --pb-fg-muted:       #aab2c0;
+    --pb-fg-faint:       #9aa1b0;
+    --pb-fg-link:        #7ee3a6;
+    --pb-border:         rgba(255, 255, 255, 0.10);
+    --pb-border-strong:  rgba(255, 255, 255, 0.20);
+    --pb-green-soft:     rgba(30, 132, 73, 0.22);
   }
   html.pb-theme-auto .pnec-bot-panel { background: #1a2030; color: #f0efe9; }
+  html.pb-theme-auto .pnec-bot-msg-bubble code,
+  html.pb-theme-auto .pnec-bot-msg-bubble pre,
+  html.pb-theme-auto .pnec-bot-msg-bubble th {
+    background: rgba(255, 255, 255, 0.08);
+  }
   html.pb-theme-auto .pnec-bot-settings-textarea,
   html.pb-theme-auto .pnec-bot-settings-stat,
   html.pb-theme-auto .pnec-bot-segmented {
