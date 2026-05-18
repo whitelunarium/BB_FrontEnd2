@@ -37,6 +37,18 @@
 .jupiterx-header .elementor-element-6ff5748 .elementor-container,.jupiterx-header .elementor-element-6ff5748 .elementor-widget-wrap,.jupiterx-header .elementor-element-6ff5748 .elementor-column{min-height:0!important;height:auto!important}
 .jupiterx-header section.elementor-section-height-min-height{min-height:0!important}
 .jupiterx-main{margin-top:0!important}
+/* v3.40: "feels alive" motion for home/blog (these clone pages don't
+   load main.css, where .pnec-reveal lived, so scroll-reveal.js was
+   inert here). scroll-reveal.js (loaded site-wide) adds .pnec-reveal/
+   .is-in and is hardened to always reveal, so nothing can stay hidden. */
+.pnec-reveal{opacity:0;transform:translateY(20px);transition:opacity 720ms cubic-bezier(.2,.8,.2,1),transform 720ms cubic-bezier(.2,.8,.2,1);will-change:opacity,transform}
+.pnec-reveal.is-in,.no-js .pnec-reveal{opacity:1;transform:none}
+/* Cinematic Ken Burns drift on the rotating hero photos (overflow is
+   hidden on .hero-slider; object-fit:cover keeps full coverage). */
+@keyframes pnec-kenburns{0%{transform:scale(1.002) translate3d(0,0,0)}50%{transform:scale(1.075) translate3d(-1.2%,-1.2%,0)}100%{transform:scale(1.002) translate3d(0,0,0)}}
+.hero-slide img{animation:pnec-kenburns 22s ease-in-out infinite;will-change:transform}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}.pnec-reveal{opacity:1!important;transform:none!important;transition:none!important}.hero-slide img{animation:none!important}}
 <style>
 /* ════════════════════════════════════════════════════════════════
    v3.24: mobile-only overrides for the Elementor-cloned header + footer

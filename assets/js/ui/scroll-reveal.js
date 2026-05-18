@@ -65,9 +65,28 @@
     });
   }
 
+  // v3.40: ultimate failsafe — on a fragile cloned site (flaky external
+  // deps, occasional JS hiccups) a .pnec-reveal element must NEVER stay
+  // invisible. If anything throws, or if any element is still hidden a
+  // few seconds after load, force it visible. The on-scroll effect still
+  // plays for above-the-fold + early-scroll content; this only guarantees
+  // nothing is ever permanently blank.
+  function revealAll() {
+    try {
+      document.querySelectorAll('.pnec-reveal:not(.is-in)')
+        .forEach(function (el) { el.classList.add('is-in'); });
+    } catch (e) { /* no-op */ }
+  }
+
   function boot() {
-    applyAutoReveal();
-    arm();
+    try {
+      applyAutoReveal();
+      arm();
+    } catch (e) {
+      revealAll();
+      return;
+    }
+    setTimeout(revealAll, 3000);
   }
 
   if (document.readyState === 'loading') {
@@ -75,4 +94,7 @@
   } else {
     boot();
   }
+  // Last-resort net: also reveal everything once the page fully loads
+  // (covers a boot() that never ran for any reason).
+  window.addEventListener('load', function () { setTimeout(revealAll, 3500); });
 })();

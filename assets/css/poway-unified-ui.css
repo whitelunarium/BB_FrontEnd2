@@ -329,3 +329,79 @@ body.pnec-enhanced-raw-page .jupiterx-main .pnec-hero-band.elementor-section .el
     grid-template-columns: 1fr;
   }
 }
+
+/* ════════════════════════════════════════════════════════════════
+   v3.40: "feels alive" motion layer for the cloned interior pages.
+   scroll-reveal.js is already loaded site-wide and adds .pnec-reveal /
+   .is-in, but its CSS partner lived in main.css which the cloned pages
+   never load — so it did nothing. Port it here (poway-unified-ui.css
+   loads on every interior page). Plus tasteful, transform-only hover
+   micro-interactions and smooth in-page scrolling. All disabled under
+   prefers-reduced-motion. Nothing here can hide content permanently —
+   scroll-reveal.js only adds .pnec-reveal when it runs and a hardened
+   failsafe always reveals.
+   ════════════════════════════════════════════════════════════════ */
+.pnec-reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 720ms cubic-bezier(.2,.8,.2,1),
+              transform 720ms cubic-bezier(.2,.8,.2,1);
+  will-change: opacity, transform;
+}
+.pnec-reveal.is-in,
+.no-js .pnec-reveal { opacity: 1; transform: none; }
+
+/* Smooth in-page anchor scrolling (Find-your-neighborhood #anchors,
+   skip-link target, FAQ jumps, etc.) */
+html { scroll-behavior: smooth; }
+
+/* Tasteful hover/active micro-interactions — transform/opacity/shadow
+   only (no layout shift), 180–240ms. */
+.pnec-top-green-nav .elementor-item {
+  transition: color 160ms ease, background 180ms ease,
+              transform 180ms ease !important;
+}
+.pnec-top-green-nav .elementor-item:hover { transform: translateY(-1px); }
+
+.pnec-preparedness-band-actions a,
+.elementor-button,
+.jupiterx-footer .elementor-button,
+a.pnec-cta, .pnec-nmap-cta {
+  transition: transform 200ms cubic-bezier(.2,.8,.2,1),
+              box-shadow 240ms ease, background-color 200ms ease,
+              color 200ms ease !important;
+}
+.pnec-preparedness-band-actions a:hover,
+.elementor-button:hover,
+.jupiterx-footer .elementor-button:hover,
+a.pnec-cta:hover, .pnec-nmap-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(20, 90, 50, 0.22);
+}
+.pnec-preparedness-band-actions a:active,
+.elementor-button:active,
+a.pnec-cta:active, .pnec-nmap-cta:active { transform: translateY(0); }
+
+/* Feature/post/event cards: gentle raise on hover */
+.elementor-post, .elementor-icon-box-wrapper,
+.feature-card, .event-card, .tile {
+  transition: transform 220ms cubic-bezier(.2,.8,.2,1),
+              box-shadow 260ms ease;
+}
+.elementor-post:hover, .feature-card:hover,
+.event-card:hover, .tile:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 32px rgba(15, 30, 25, 0.12);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .pnec-reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .pnec-top-green-nav .elementor-item,
+  .pnec-preparedness-band-actions a, .elementor-button,
+  .jupiterx-footer .elementor-button, a.pnec-cta, .pnec-nmap-cta,
+  .elementor-post, .feature-card, .event-card, .tile {
+    transition: none !important;
+    transform: none !important;
+  }
+}
