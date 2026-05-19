@@ -819,7 +819,7 @@ body_class: inner-page auth-page-body
     </header>
 
     <div class="auth-brand-hero">
-      <span class="auth-brand-hero-eyebrow">Since 2003 · Volunteer-run</span>
+      <span class="auth-brand-hero-eyebrow">Since 2011 · Volunteer-run</span>
       <h2>Neighbors helping neighbors prepare for what's next.</h2>
       <p>One in three Poway households loses power, water, or shelter during fire season. PNEC connects you to your block — so when the moment comes, you don't face it alone.</p>
     </div>
@@ -839,7 +839,7 @@ body_class: inner-page auth-page-body
         <div class="auth-brand-stat-label">Households connected</div>
       </div>
       <div>
-        <div class="auth-brand-stat-num">22</div>
+        <div class="auth-brand-stat-num">15</div>
         <div class="auth-brand-stat-label">Years of service</div>
       </div>
       <div>
@@ -890,7 +890,7 @@ body_class: inner-page auth-page-body
       <!-- Tabs -->
       <div class="auth-tabs" role="tablist" aria-label="Choose action" data-active="login">
         <span class="auth-tab-pill" aria-hidden="true"></span>
-        <button id="auth-tab-login"    class="auth-tab is-active" role="tab" aria-selected="true"  aria-controls="pane-login"    data-pane="login">Sign in</button>
+        <button id="auth-tab-login"    class="auth-tab is-active" role="tab" aria-selected="true"  aria-controls="pane-login"    data-pane="login">Login</button>
         <button id="auth-tab-register" class="auth-tab"           role="tab" aria-selected="false" aria-controls="pane-register" data-pane="register">Create account</button>
       </div>
 
@@ -900,12 +900,12 @@ body_class: inner-page auth-page-body
           <div id="login-returning-avatar" class="auth-returning-avatar" aria-hidden="true">N</div>
           <div class="auth-returning-text">
             <strong id="login-returning-name">Welcome back</strong>
-            <span id="login-returning-detail">Sign in to pick up where you left off in your neighborhood.</span>
+            <span id="login-returning-detail">Login to pick up where you left off in your neighborhood.</span>
           </div>
         </div>
 
         <h2>Your neighborhood is here</h2>
-        <p>Sign in to check in with your block, your kit, and your neighbors.</p>
+        <p>Login to check in with your block, your kit, and your neighbors.</p>
 
         <div id="login-error" class="auth-error-box" role="alert" aria-live="polite"></div>
 
@@ -1010,7 +1010,7 @@ body_class: inner-page auth-page-body
         </form>
 
         <p class="auth-switch-row">
-          Already part of the neighborhood? <a class="auth-link" href="#login" data-switch-pane="login">Sign in</a>
+          Already part of the neighborhood? <a class="auth-link" href="#login" data-switch-pane="login">Login</a>
         </p>
       </section>
 
@@ -1156,7 +1156,7 @@ body_class: inner-page auth-page-body
     nameEl.textContent = 'Welcome back, ' + firstName(display);
     detailEl.textContent = cached.neighborhood
       ? "Your block (" + cached.neighborhood + ") is keeping the porch light on."
-      : "Sign in to pick up where you left off in your neighborhood.";
+      : "Login to pick up where you left off in your neighborhood.";
     bubble.classList.add('is-visible');
 
     const emailField = document.getElementById('login-email');
