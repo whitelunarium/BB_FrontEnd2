@@ -30,6 +30,28 @@ body_class: inner-page auth-page-body
 -->
 
 <style>
+  /* v3.42: powaynec.com recompiled its external JupiterX CSS (404 now),
+     which used to hide this skip-link. Inline it here so the login page
+     never shows a stray "Skip to content" band / gap at the very top,
+     regardless of main.css load timing. Still keyboard-focusable. */
+  .jupiterx-a11y-skip-navigation-link {
+    position: absolute !important;
+    width: 1px !important; height: 1px !important;
+    padding: 0 !important; margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important; border: 0 !important;
+  }
+  .jupiterx-a11y-skip-navigation-link:focus {
+    position: fixed !important;
+    top: 10px !important; left: 10px !important;
+    width: auto !important; height: auto !important;
+    clip: auto !important; overflow: visible !important;
+    margin: 0 !important; padding: 10px 16px !important;
+    background: #0e3b21 !important; color: #fff !important;
+    z-index: 100001 !important; border-radius: 6px !important;
+  }
+
   /* ─── Header treatment ─────────────────────────────────────────────
      Hide the cloned-WP page-title overlay and the header carousel.
      The brand panel below provides all the photographic ambience this

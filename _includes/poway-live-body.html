@@ -43,8 +43,12 @@
    .is-in and is hardened to always reveal, so nothing can stay hidden. */
 .pnec-reveal{opacity:0;transform:translateY(20px);transition:opacity 720ms cubic-bezier(.2,.8,.2,1),transform 720ms cubic-bezier(.2,.8,.2,1);will-change:opacity,transform}
 .pnec-reveal.is-in,.no-js .pnec-reveal{opacity:1;transform:none}
-/* Cinematic Ken Burns drift on the rotating hero photos (overflow is
-   hidden on .hero-slider; object-fit:cover keeps full coverage). */
+/* Cinematic Ken Burns drift on the rotating hero photos. v3.42: each
+   slide must clip its OWN scaled image — .hero-slider only clips the
+   outer bounds, so the next slide's Ken-Burns-scaled image (it sits
+   just past the visible right edge) was overhanging ~3.75% back into
+   the visible slide and bleeding in. Clip per-slide to stop that. */
+.hero-slide{overflow:hidden!important}
 @keyframes pnec-kenburns{0%{transform:scale(1.002) translate3d(0,0,0)}50%{transform:scale(1.075) translate3d(-1.2%,-1.2%,0)}100%{transform:scale(1.002) translate3d(0,0,0)}}
 .hero-slide img{animation:pnec-kenburns 22s ease-in-out infinite;will-change:transform}
 html{scroll-behavior:smooth}
