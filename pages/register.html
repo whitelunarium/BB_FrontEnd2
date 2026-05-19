@@ -885,29 +885,9 @@ body_class: inner-page auth-page-body
         Encrypted Member Portal
       </span>
 
-      <!-- Time-aware greeting; replaced at runtime by the script at
-           the bottom. Falls back gracefully if JS is off. -->
       <h1 class="auth-greeting" id="auth-greeting">Welcome back, neighbor</h1>
-      <p class="auth-tagline">
-        Joining <strong id="auth-community-count">3,200+</strong> households across Poway preparing together.
-      </p>
 
-      <!-- Single-row trust pills (now horizontal because the form
-           panel is wide enough to fit them on one line). -->
-      <div class="auth-trust-pills" aria-label="Security and privacy commitments">
-        <span class="auth-trust-pill">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          256-bit encrypted
-        </span>
-        <span class="auth-trust-pill">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-12V5l-8-3-8 3v5c0 8 8 12 8 12z"/></svg>
-          Privacy-first
-        </span>
-        <span class="auth-trust-pill">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          Local to Poway
-        </span>
-      </div>
+     
 
       <!-- Tabs -->
       <div class="auth-tabs" role="tablist" aria-label="Choose action" data-active="login">
@@ -943,10 +923,6 @@ body_class: inner-page auth-page-body
             <button type="button" class="auth-eye-toggle" aria-label="Show password" data-target="login-password">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
-            <p class="auth-encryption-note">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              Encrypted before it leaves your device.
-            </p>
           </div>
 
           <div class="auth-row-between">
@@ -992,10 +968,6 @@ body_class: inner-page auth-page-body
             <button type="button" class="auth-eye-toggle" aria-label="Show password" data-target="register-password">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
-            <p class="auth-encryption-note">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              At least 8 characters. Encrypted before it leaves your device.
-            </p>
           </div>
 
           <div class="auth-field auth-field-pass">
