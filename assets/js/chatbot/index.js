@@ -1092,7 +1092,7 @@ if (document.readyState === 'loading') {
 // Auto-open only on the home page
 window.addEventListener('load', function () {
   var path = window.location.pathname;
-  var isHome = path === '/' || path === '/index.html';
+  var isHome = path === '/' || path === '/_includes/poway-live-body.html';
   if (!isHome) return;
   var fab = document.getElementById('pnec-bot-fab');
   if (fab) fab.click();
