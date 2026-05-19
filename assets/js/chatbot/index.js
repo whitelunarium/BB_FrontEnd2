@@ -1086,3 +1086,14 @@ if (document.readyState === 'loading') {
 } else {
   boot();
 }
+
+// Auto-open when injected into a static page
+// Auto-open on every page load, whether booted via inject or Jekyll layout
+// Auto-open only on the home page
+window.addEventListener('load', function () {
+  var path = window.location.pathname;
+  var isHome = path === '/' || path === '/index.html';
+  if (!isHome) return;
+  var fab = document.getElementById('pnec-bot-fab');
+  if (fab) fab.click();
+}, { once: true });

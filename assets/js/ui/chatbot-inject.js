@@ -65,7 +65,12 @@
 
         // 4. Dynamic-import the v3 module. We add a stable suffix to
         // avoid an aggressive HTTP cache from a stale prior version.
-        return import(/* webpackIgnore: true */ '/assets/js/chatbot/index.js');
+        // Revert to original — index.js handles auto-open via window 'load'
+        return import(/* webpackIgnore: true */ '/assets/js/chatbot/index.js')
+          .then(function () {
+            // Auto-open the panel after the module has booted.
+            document.dispatchEvent(new CustomEvent('pnec-bot:auto-open'));
+          });
       })
       .catch(function (err) {
         // Fail quiet — chatbot is enhancement, not critical-path
