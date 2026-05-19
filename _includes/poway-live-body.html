@@ -49,6 +49,23 @@
 .hero-slide img{animation:pnec-kenburns 22s ease-in-out infinite;will-change:transform}
 html{scroll-behavior:smooth}
 @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}.pnec-reveal{opacity:1!important;transform:none!important;transition:none!important}.hero-slide img{animation:none!important}}
+/* v3.41: KILL the white band between the green nav and the hero. The
+   orphaned header section 6ff5748 (hidden old logos + the DONATE NOW
+   widget ad2dbd9) was still reserving ~120px of flow height even after
+   v3.38 collapsed its min-height. Zero its flow height entirely and
+   float the DONATE button as an overlay on the hero's top-right, so
+   the gallery rises flush under the green nav. */
+.jupiterx-header{position:relative!important;overflow:visible!important}
+.jupiterx-header .elementor-6{position:static!important;overflow:visible!important}
+/* Take the orphaned strip fully OUT OF FLOW so the header is exactly
+   the green nav and the hero sits flush under it (no residual sliver).
+   Anchored to the header's bottom edge (top:100%) = the nav/hero seam;
+   the DONATE button then floats over the hero's top-right. */
+.jupiterx-header .elementor-element-6ff5748{position:absolute!important;top:100%!important;right:24px!important;left:auto!important;bottom:auto!important;width:auto!important;height:auto!important;min-height:0!important;margin:14px 0 0 0!important;padding:0!important;border:0!important;background:transparent!important;overflow:visible!important;z-index:30!important;display:block!important}
+.jupiterx-header .elementor-element-6ff5748 .elementor-container,.jupiterx-header .elementor-element-6ff5748 .elementor-column,.jupiterx-header .elementor-element-6ff5748 .elementor-widget-wrap,.jupiterx-header .elementor-element-6ff5748 .elementor-element-populated{min-height:0!important;width:auto!important;margin:0!important;padding:0!important;overflow:visible!important}
+.jupiterx-header .elementor-element-ad2dbd9{margin:0!important;width:auto!important;max-width:none!important;text-align:right!important}
+.jupiterx-header .elementor-element-ad2dbd9 .raven-button,.jupiterx-header .elementor-element-ad2dbd9 .elementor-button{margin:0!important}
+@media (max-width:640px){.jupiterx-header .elementor-element-6ff5748{right:12px!important;margin-top:10px!important}}
 <style>
 /* ════════════════════════════════════════════════════════════════
    v3.24: mobile-only overrides for the Elementor-cloned header + footer
