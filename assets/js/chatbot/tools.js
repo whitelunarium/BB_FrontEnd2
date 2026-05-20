@@ -274,7 +274,10 @@ export function parseCitations(text) {
     const key = 'faq:' + id;
     if (seen.has(key)) continue;
     seen.add(key);
-    cites.push({ kind: 'faq', label: `FAQ #${id}`, faqId: id, url: `/pages/preparedness-resources.html?faq=${id}` });
+    // No url: the renderer special-cases FAQ cites and expands the
+    // Q+A inline under the message (preparedness-resources has no FAQ
+    // section to deep-link to, so a URL would 404 the affordance).
+    cites.push({ kind: 'faq', label: `FAQ #${id}`, faqId: id });
   }
   NEWS_CITE_RE.lastIndex = 0;
   while ((m = NEWS_CITE_RE.exec(text)) !== null) {

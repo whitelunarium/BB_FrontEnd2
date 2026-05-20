@@ -942,6 +942,55 @@ html.pb-reduced-motion [class*=" pnec-bot-"] {
   font-weight: 800;
 }
 
+/* v3.43: FAQ citation chips toggle an inline Q+A card under the
+   message — they no longer link to a dead URL. The chip itself is
+   styled to look identical to a normal citation (same shape, same
+   hover) but renders as <button>, so it needs to clear button UA
+   styling. */
+.pnec-bot-citation--faq {
+  appearance: none;
+  -webkit-appearance: none;
+  background: rgba(30, 132, 73, 0.10);
+  border: 1px solid rgba(30, 132, 73, 0.22);
+  font: inherit;
+  cursor: pointer;
+}
+.pnec-bot-citation--faq[aria-expanded="true"] {
+  background: rgba(30, 132, 73, 0.20);
+  border-color: rgba(30, 132, 73, 0.40);
+}
+.pnec-bot-faq-card {
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: var(--pb-bg-glass);
+  border: 1px solid var(--pb-border);
+  border-left: 3px solid var(--pb-green);
+  border-radius: 8px;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--pb-fg);
+  max-height: 320px;
+  overflow-y: auto;
+}
+.pnec-bot-faq-card-head {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pb-fg-muted);
+  margin-bottom: 6px;
+}
+.pnec-bot-faq-card-q { margin-bottom: 6px; }
+.pnec-bot-faq-card-q strong, .pnec-bot-faq-card-a strong {
+  color: var(--pb-green-deep);
+  margin-right: 4px;
+}
+.pnec-bot-faq-card-loading,
+.pnec-bot-faq-card-missing {
+  color: var(--pb-fg-muted);
+  font-style: italic;
+}
+
 /* Tool-call action card (Phase 2) */
 .pnec-bot-action-card {
   margin-top: 8px;

@@ -180,17 +180,45 @@ async function getFaqApi() {
 }
 
 export async function fetchAllFaq() {
-  const api = await getFaqApi();
-  if (api && typeof api.fetchFaqItems === 'function') {
-    try { return await api.fetchFaqItems(); } catch (_e) { /* fall through */ }
+  // /api/faq/items requires ?category_id=N — calling it bare returns
+  // an empty list. Iterate every category, merge, and dedupe by id.
+  // This also fixes the chatbot's TF-IDF FAQ index (it used to be
+  // silently empty for the same reason).
+  const base = defaultApiBase();
+  async function fetchCategoryItems(catId) {
+    try {
+      const res = await fetch(`${base}/api/faq/items?category_id=${encodeURIComponent(catId)}`);
+      if (!res.ok) return [];
+      const data = await res.json();
+      const arr = Array.isArray(data) ? data : (data?.items || []);
+      return Array.isArray(arr) ? arr : [];
+    } catch (_e) { return []; }
   }
-  // Direct REST fallback
+  let categoryIds = [];
   try {
-    const res = await fetch(`${defaultApiBase()}/api/faq/items`);
-    if (!res.ok) return [];
-    const data = await res.json();
-    return Array.isArray(data) ? data : (data?.items || []);
-  } catch (_e) { return []; }
+    const res = await fetch(`${base}/api/faq/categories`);
+    if (res.ok) {
+      const data = await res.json();
+      const cats = Array.isArray(data) ? data : (data?.categories || []);
+      categoryIds = (cats || [])
+        .map(c => c && (c.id != null ? c.id : c.category_id))
+        .filter(id => id != null);
+    }
+  } catch (_e) { /* fall through to fallback range */ }
+  // Fallback if /categories fails: try ids 1..12 (PNEC currently uses 1..8;
+  // the unused ids return [] cheaply, so this is safe).
+  if (!categoryIds.length) categoryIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+  const results = await Promise.all(categoryIds.map(fetchCategoryItems));
+  const seen = new Set();
+  const merged = [];
+  results.forEach(list => list.forEach(item => {
+    if (!item || item.id == null) return;
+    const key = String(item.id);
+    if (seen.has(key)) return;
+    seen.add(key);
+    merged.push(item);
+  }));
+  return merged;
 }
 
 export async function searchFaq(query) {

@@ -180,12 +180,26 @@ export function buildMessageEl(msg, ctx = {}) {
     const cites = document.createElement('div');
     cites.className = 'pnec-bot-citations';
     msg.citations.forEach((c, idx) => {
-      const a = document.createElement('a');
-      a.className = 'pnec-bot-citation';
-      a.href = c.url || '#';
-      if (c.url) { a.target = '_blank'; a.rel = 'noopener noreferrer'; }
-      a.innerHTML = `<span class="pnec-bot-citation-num">${idx + 1}</span><span>${escapeHtml(c.label || c.url || 'source')}</span>`;
-      cites.appendChild(a);
+      let el;
+      if (c.kind === 'faq' && c.faqId != null) {
+        // FAQ cites expand the Q+A inline under the message — there's
+        // no FAQ section on preparedness-resources to deep-link to,
+        // so the URL would 404 the affordance. Render as a button.
+        el = document.createElement('button');
+        el.type = 'button';
+        el.className = 'pnec-bot-citation pnec-bot-citation--faq';
+        el.setAttribute('aria-expanded', 'false');
+        el.title = 'Show this FAQ';
+        el.innerHTML = `<span class="pnec-bot-citation-num">${idx + 1}</span><span>${escapeHtml(c.label || 'source')}</span>`;
+        el.addEventListener('click', () => toggleFaqDetail(el, c.faqId, cites));
+      } else {
+        el = document.createElement('a');
+        el.className = 'pnec-bot-citation';
+        el.href = c.url || '#';
+        if (c.url) { el.target = '_blank'; el.rel = 'noopener noreferrer'; }
+        el.innerHTML = `<span class="pnec-bot-citation-num">${idx + 1}</span><span>${escapeHtml(c.label || c.url || 'source')}</span>`;
+      }
+      cites.appendChild(el);
     });
     body.appendChild(cites);
   }
@@ -325,3 +339,66 @@ export function streamIntoBubble(bubbleEl, fullText, opts = {}) {
 // ─── Public escape helper for callers building strings safely ────
 
 export const _escape = escapeHtml;
+
+// ─── Inline FAQ expand (for [FAQ#N] citation chips) ───────────────
+// FAQ citation chips no longer link to a dead URL — they toggle an
+// inline Q+A card under the message. Data is fetched once via the
+// existing fetchAllFaq() and cached by id for instant subsequent
+// expands.
+
+const _faqCache = new Map();
+let _faqAllPromise = null;
+async function ensureFaqCache() {
+  if (_faqAllPromise) return _faqAllPromise;
+  _faqAllPromise = (async () => {
+    try {
+      const mod = await import('./api.js');
+      const items = (mod && typeof mod.fetchAllFaq === 'function') ? await mod.fetchAllFaq() : [];
+      (items || []).forEach(it => {
+        if (it && it.id != null) _faqCache.set(String(it.id), it);
+      });
+    } catch (_e) { /* leave cache empty; fallthrough handles missing */ }
+  })();
+  return _faqAllPromise;
+}
+
+async function toggleFaqDetail(btn, faqId, citesContainer) {
+  const id = String(faqId);
+  // Look for an existing inline card right after the citations row.
+  let card = citesContainer.nextElementSibling;
+  if (!card || !card.classList || !card.classList.contains('pnec-bot-faq-card')) card = null;
+  // Same FAQ → close the card.
+  if (card && card.dataset.faqId === id) {
+    card.remove();
+    btn.setAttribute('aria-expanded', 'false');
+    return;
+  }
+  // Different FAQ → swap.
+  if (card) card.remove();
+  [...citesContainer.querySelectorAll('.pnec-bot-citation--faq')]
+    .forEach(b => b.setAttribute('aria-expanded', 'false'));
+  btn.setAttribute('aria-expanded', 'true');
+
+  card = document.createElement('div');
+  card.className = 'pnec-bot-faq-card';
+  card.dataset.faqId = id;
+  card.innerHTML =
+    `<div class="pnec-bot-faq-card-head">FAQ #${escapeHtml(id)}</div>` +
+    `<div class="pnec-bot-faq-card-body"><div class="pnec-bot-faq-card-loading">Loading…</div></div>`;
+  citesContainer.parentNode.insertBefore(card, citesContainer.nextSibling);
+
+  await ensureFaqCache();
+  const item = _faqCache.get(id);
+  const bodyEl = card.querySelector('.pnec-bot-faq-card-body');
+  if (item && (item.question || item.answer)) {
+    const q = escapeHtml(item.question || '');
+    const a = escapeHtml(item.answer || '');
+    bodyEl.innerHTML =
+      `<div class="pnec-bot-faq-card-q"><strong>Q:</strong> ${q}</div>` +
+      `<div class="pnec-bot-faq-card-a"><strong>A:</strong> ${a}</div>`;
+  } else {
+    bodyEl.innerHTML =
+      `<div class="pnec-bot-faq-card-missing">Couldn't load FAQ #${escapeHtml(id)} right now. ` +
+      `The answer above is based on it — ask a follow-up to dig deeper.</div>`;
+  }
+}
