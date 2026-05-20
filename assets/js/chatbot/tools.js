@@ -285,7 +285,12 @@ export function parseCitations(text) {
     const key = 'news:' + src.toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
-    cites.push({ kind: 'news', label: src, url: `https://www.google.com/search?q=${encodeURIComponent(src + ' Poway')}` });
+    // No url: the LLM only knows the source name, not the article URL.
+    // Rendering as a Google-search link landed users on a generic
+    // results page, not the cited article. Render as a non-clickable
+    // attribution badge instead. Real article cards (with links) come
+    // from the search_news tool when the user explicitly asks for them.
+    cites.push({ kind: 'news', label: src });
   }
   return cites.length ? cites : null;
 }

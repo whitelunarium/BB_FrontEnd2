@@ -959,6 +959,15 @@ html.pb-reduced-motion [class*=" pnec-bot-"] {
   background: rgba(30, 132, 73, 0.20);
   border-color: rgba(30, 132, 73, 0.40);
 }
+/* News citations are non-clickable attribution badges — the LLM only
+   knows the source name, not the article URL. Same visual as the FAQ
+   chip but no pointer cursor and no hover lift. */
+.pnec-bot-citation--badge {
+  background: rgba(15, 30, 25, 0.06);
+  border: 1px solid rgba(15, 30, 25, 0.12);
+  cursor: default;
+}
+.pnec-bot-citation--badge:hover { transform: none; background: rgba(15, 30, 25, 0.06); }
 .pnec-bot-faq-card {
   margin-top: 8px;
   padding: 10px 12px;

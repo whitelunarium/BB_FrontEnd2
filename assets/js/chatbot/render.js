@@ -192,6 +192,15 @@ export function buildMessageEl(msg, ctx = {}) {
         el.title = 'Show this FAQ';
         el.innerHTML = `<span class="pnec-bot-citation-num">${idx + 1}</span><span>${escapeHtml(c.label || 'source')}</span>`;
         el.addEventListener('click', () => toggleFaqDetail(el, c.faqId, cites));
+      } else if (c.kind === 'news' && !c.url) {
+        // News cites = attribution only. The LLM knows the source name
+        // but not the article URL, so we render a non-clickable badge
+        // instead of a Google-search link that just dumps the user on
+        // a generic results page.
+        el = document.createElement('span');
+        el.className = 'pnec-bot-citation pnec-bot-citation--badge';
+        el.title = `Source: ${c.label || 'news'}`;
+        el.innerHTML = `<span class="pnec-bot-citation-num">${idx + 1}</span><span>${escapeHtml(c.label || 'source')}</span>`;
       } else {
         el = document.createElement('a');
         el.className = 'pnec-bot-citation';
