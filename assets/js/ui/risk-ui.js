@@ -42,6 +42,7 @@ function renderRiskCards(riskData) {
     conditions: buildHeatConditions(riskData.conditions),
   });
 
+  updateRiskTimestamp(riskData);
 }
 
 /**
@@ -122,6 +123,31 @@ function classifyRiskLevel(score) {
  * @param {Object|string} riskDataOrTimestamp - API payload or timestamp string
  * @returns {void}
  */
+function updateRiskTimestamp(riskDataOrTimestamp) {
+  const el = document.getElementById('risk-updated-time');
+  if (!el) return;
+
+  const timestamp = resolveRiskTimestamp(riskDataOrTimestamp);
+  if (!timestamp) {
+    el.textContent = '';
+    return;
+  }
+
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) {
+    el.textContent = '';
+    return;
+  }
+
+  const isStale = Boolean(
+    riskDataOrTimestamp
+    && typeof riskDataOrTimestamp === 'object'
+    && riskDataOrTimestamp.is_stale
+  );
+
+  const label = isStale ? 'Last successful update' : 'Updated';
+  el.textContent = `${label}: ${date.toLocaleString()}`;
+}
 
 
 /**
@@ -145,6 +171,7 @@ function showRiskCardsError(message) {
     const el = document.getElementById(id);
     if (el) el.innerHTML = `<p style="font-size:13px;color:#176a3a;text-align:center;padding:16px">${message}</p>`;
   });
+  updateRiskTimestamp(null);
 }
 
 // ─── Condition builders ───────────────────────────────────────────────────────
@@ -161,7 +188,7 @@ function buildFireConditions(conditions) {
     { label: 'Humidity',    value: conditions.humidity != null ? `${conditions.humidity}%` : '—' },
     { label: 'Wind Speed',  value: conditions.wind_mph != null ? `${conditions.wind_mph} mph` : '—' },
   ];
-  const airQuality = conditions.air_quality_index ?? conditions.aqi;
+  const airQuality = conditions.us_aqi ?? conditions.air_quality_index ?? conditions.aqi;
   if (airQuality != null) rows.push({ label: 'Air Quality', value: String(airQuality) });
   return rows;
 }
@@ -192,7 +219,7 @@ function buildHeatConditions(conditions) {
     { label: 'Heat Index',  value: conditions.heat_index_f != null ? `${conditions.heat_index_f}°F` : '—' },
     { label: 'Humidity',    value: conditions.humidity != null ? `${conditions.humidity}%` : '—' },
   ];
-  const airQuality = conditions.air_quality_index ?? conditions.aqi;
+  const airQuality = conditions.us_aqi ?? conditions.air_quality_index ?? conditions.aqi;
   if (airQuality != null) rows.push({ label: 'Air Quality', value: String(airQuality) });
   return rows;
 }

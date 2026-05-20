@@ -4,7 +4,7 @@
 
 document.addEventListener('DOMContentLoaded', initRiskWidget);
 
-const RISK_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
+const RISK_REFRESH_INTERVAL_MS = 30 * 60 * 1000;
 
 let riskRefreshTimer = null;
 let riskFetchInFlight = false;
@@ -43,10 +43,7 @@ function refreshRiskWidget({ showErrors = false } = {}) {
   riskFetchInFlight = true;
 
   fetchRiskAssessment()
-    .then(data => renderRiskCards({
-      ...data,
-      fetched_at: new Date().toISOString(),
-    }))
+    .then(data => renderRiskCards(data))
     .catch(error => {
       if (!showErrors) return;
       const message = error.type === ERROR_TYPES.NETWORK_ERROR
