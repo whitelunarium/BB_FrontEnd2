@@ -1178,9 +1178,9 @@ iframe#ae-ai-paste-iframe[hidden] { display: none; }
         </summary>
         <div class="ae-ai-paste-body">
           <p class="ae-ai-paste-hint">
-            Paste the complete HTML document the AI returned. We'll preview it inline (sandboxed, no JS executes) and let you swap it into the editor with one click.
+            Paste the AI's response below. We auto-strip code fences and lead-in text like "Here is the modified HTML:", then preview it (sandboxed, no JS runs) so you can swap it into the editor with one click. Full HTML documents, Jekyll includes, layouts, and CSS/JS snippets are all fine.
           </p>
-          <textarea id="ae-ai-paste-input" placeholder="Paste the AI's response here — should start with &lt;!DOCTYPE html&gt;" aria-label="AI response HTML"></textarea>
+          <textarea id="ae-ai-paste-input" placeholder="Paste the AI's response here — full HTML, Jekyll includes, or any file content the AI returned" aria-label="AI response HTML"></textarea>
           <div class="ae-ai-paste-actions">
             <button type="button" class="ae-btn" id="ae-ai-paste-preview">👁 Preview</button>
             <button type="button" class="ae-btn is-primary" id="ae-ai-paste-apply" disabled>↪ Apply to editor</button>
@@ -2534,62 +2534,145 @@ iframe#ae-ai-paste-iframe[hidden] { display: none; }
   // comments. Returns the cleaned full text, ready to slot into the
   // editor. We DO NOT touch HTML comments INSIDE the document body —
   // only the leading + trailing junk an LLM adds outside <html>.
+  // v3.44: sanitizer was failing on the realistic ways LLMs respond.
+  // Make it forgiving: extract the doc from prose-wrapped responses
+  // ("Here is the modified HTML: ... <!DOCTYPE html>..."), strip code
+  // fences wherever they sit, and (for partial files like Jekyll
+  // includes) skip leading conversational lines until the first tag.
   function sanitizeAIResponseHTML(text) {
     if (!text) return '';
     var t = String(text).replace(/^﻿/, '');     // BOM
-    // Trim leading whitespace
-    t = t.replace(/^\s+/, '');
-    // Strip a leading markdown code fence like ```html\n
+    t = t.replace(/^\s+/, '').replace(/\s+$/, '');
+    // Whole-response wrapped in a single ```html ... ``` fence → keep the inside
+    var wrap = t.match(/^```[a-z]*\s*\n?([\s\S]*?)\n?```\s*$/i);
+    if (wrap) t = wrap[1].trim();
+    // Otherwise strip a stray leading/trailing fence pair
     t = t.replace(/^```[a-z]*\s*\n?/i, '');
-    // Strip leading HTML comments before the doctype (LLM "explanations")
-    t = t.replace(/^(<!--[\s\S]*?-->\s*)+/, '');
-    // Strip a trailing markdown fence ``` and any trailing whitespace
     t = t.replace(/\s*```\s*$/, '');
-    t = t.replace(/\s+$/, '');
-    return t;
+    // Strip leading HTML comments before the file body (LLM "explanations")
+    t = t.replace(/^(<!--[\s\S]*?-->\s*)+/, '');
+    // If a full HTML document is present anywhere, snip to it: AI prefaces
+    // ("Here is the modified HTML:") and suffixes ("Hope this helps!")
+    // outside the document are not part of the file.
+    var docIdx = t.search(/<!doctype\s+html\b[^>]*>/i);
+    if (docIdx < 0) docIdx = t.search(/<html\b[^>]*>/i);
+    if (docIdx > 0) t = t.slice(docIdx);
+    var closeIdx = t.toLowerCase().lastIndexOf('</html>');
+    if (closeIdx >= 0) t = t.slice(0, closeIdx + '</html>'.length);
+    // For partial files (no doctype/html), drop ONLY obvious leading
+    // conversational lines like "Here is the modified HTML:" — a single
+    // English sentence ending in ':' or '.' with no tag/brace chars.
+    // We DON'T blindly shift non-tag lines because that would eat CSS
+    // (`.foo {`), JS (`import …`), or YAML frontmatter values.
+    if (!/^<!doctype html|^<html\b/i.test(t) && t.indexOf('\n') >= 0) {
+      var lines = t.split('\n');
+      // Drop up to 3 leading "prose" lines (some LLMs add a 2-line lead-in)
+      var dropped = 0;
+      while (lines.length > 1 && dropped < 3) {
+        var first = lines[0];
+        // Blank line right after prose: shift it
+        if (/^\s*$/.test(first)) { lines.shift(); continue; }
+        // Prose heuristic: starts with capital letter, no angle brackets
+        // or braces (which would mean tag/Liquid/CSS/JS), ends with
+        // ':' / '.' / '!' / '?'. Catches "Here is …:", "Here you go!" etc.
+        var trimmed = first.replace(/\s+$/, '');
+        if (/^[A-Z][^<>{}]*[:.!?]$/.test(trimmed) && !/[<>{}]/.test(trimmed)) {
+          lines.shift();
+          dropped++;
+          continue;
+        }
+        break;
+      }
+      t = lines.join('\n').replace(/^\s+/, '');
+    }
+    return t.trim();
   }
   function looksLikeHtmlDoc(text) {
     if (!text) return false;
-    var head = sanitizeAIResponseHTML(text).slice(0, 200);
-    return /^<!doctype html|^<html\b/i.test(head);
+    // Accept anything the admin editor legitimately edits:
+    //   - full HTML docs
+    //   - HTML partials / Jekyll includes / Liquid
+    //   - SCSS / CSS
+    //   - JS modules
+    //   - Markdown / YAML frontmatter
+    // Apply is only blocked for clearly-empty or clearly-prose paste.
+    var clean = sanitizeAIResponseHTML(text);
+    if (!clean || clean.length < 4) return false;
+    var head = clean.slice(0, 600);
+    return (
+      // HTML / Liquid
+      /^<!doctype html|^<html\b|^<[a-z][\w-]*\b|^<!--|^---\s*\n|^\{[%{]/i.test(head)
+      // CSS / SCSS — selector, at-rule, comment, or nesting
+      || /^[.#:@&][\w-]/.test(head)
+      || /^\/\*/.test(head)
+      || /^[\w-]+\s*\{/.test(head)
+      // JS — declaration, IIFE, import, strict mode, comment
+      || /^(['"])use strict\1\s*;/.test(head)
+      || /^(import|export|const|let|var|function|class|async|await|\(function|\(\(\)|\(\s*\))\b/.test(head)
+      || /^\/\//.test(head)
+      // Markdown
+      || /^#{1,6}\s/.test(head)
+    );
   }
 
   function updatePasteStatus() {
     var ta = $('ae-ai-paste-input');
     var status = $('ae-ai-paste-status');
     var applyBtn = $('ae-ai-paste-apply');
-    var val = (ta.value || '').trim();
-    if (!val) {
+    var raw = (ta.value || '').trim();
+    if (!raw) {
       status.textContent = '';
       status.className = 'ae-ai-paste-status';
       applyBtn.disabled = true;
       return;
     }
-    if (looksLikeHtmlDoc(val)) {
-      var kb = Math.round(val.length / 1024 * 10) / 10;
-      status.textContent = '✓ Looks like a complete HTML document · ' + kb + ' KB';
+    var clean = sanitizeAIResponseHTML(raw);
+    var kb = Math.round(clean.length / 1024 * 10) / 10;
+    if (looksLikeHtmlDoc(raw)) {
+      var isFullDoc = /^<!doctype html|^<html\b/i.test(clean);
+      status.textContent = isFullDoc
+        ? '✓ Looks like a complete HTML document · ' + kb + ' KB'
+        : '✓ Looks like file content · ' + kb + ' KB';
       status.className = 'ae-ai-paste-status is-valid';
       applyBtn.disabled = false;
     } else {
-      status.textContent = '⚠ Doesn\'t start with <!DOCTYPE html> — paste the full document';
+      // Don't block — admin may know what they're doing. Warn only.
+      status.textContent = '⚠ Doesn\'t look like HTML or Liquid — apply with caution · ' + kb + ' KB';
       status.className = 'ae-ai-paste-status is-invalid';
-      applyBtn.disabled = true;
+      applyBtn.disabled = false;
     }
   }
   $('ae-ai-paste-input').addEventListener('input', updatePasteStatus);
 
-  // Preview button: render the pasted HTML in the sandboxed iframe
+  // Preview button: render the pasted HTML in the sandboxed iframe.
+  // v3.44: don't gate on doctype. A partial file (Jekyll include,
+  // layout, _polish.scss-like snippet) still renders something useful
+  // in the iframe — at worst the admin sees a blank frame and knows
+  // to fall back to Apply + ↻ Refresh on the real preview.
   $('ae-ai-paste-preview').addEventListener('click', function() {
     var raw = ($('ae-ai-paste-input').value || '').trim();
     if (!raw) { toast('Paste the AI response first.', { error: true }); return; }
-    if (!looksLikeHtmlDoc(raw)) {
-      toast('Paste a complete HTML document (starting with <!DOCTYPE html>).', { error: true, ms: 6000 });
+    var clean = sanitizeAIResponseHTML(raw);
+    if (!clean) {
+      toast('Nothing to preview after stripping fences and prose.', { error: true, ms: 6000 });
       return;
     }
     var iframe = $('ae-ai-paste-iframe');
-    // Sanitize before preview so the user sees what would actually
-    // land in the editor (no stray ```html fences, leading commentary).
-    iframe.srcdoc = sanitizeAIResponseHTML(raw);
+    var isFullDoc = /^<!doctype html|^<html\b/i.test(clean);
+    if (isFullDoc) {
+      iframe.srcdoc = clean;
+    } else {
+      // Wrap a partial in a tiny shell so the iframe has something
+      // to lay out. Useful for layouts/includes/CSS snippets.
+      iframe.srcdoc =
+        '<!doctype html><html><head><meta charset="utf-8"><title>Partial preview</title>'
+        + '<style>body{font:14px ui-sans-serif,system-ui,sans-serif;color:#0e3b21;padding:18px;margin:0;background:#fff} '
+        + 'pre{background:#f6f6f6;border:1px solid #e2e8f0;border-radius:8px;padding:12px;overflow:auto;white-space:pre-wrap;word-break:break-word} '
+        + '.note{font-size:12px;color:#475569;margin:0 0 12px}</style></head><body>'
+        + '<p class="note">Partial file — not a full HTML document. Showing the raw content. After Apply, use ↻ Refresh on the real preview to see it rendered in context.</p>'
+        + '<pre>' + clean.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</pre>'
+        + '</body></html>';
+    }
     iframe.hidden = false;
     iframe.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
@@ -2602,13 +2685,23 @@ iframe#ae-ai-paste-iframe[hidden] { display: none; }
   $('ae-ai-paste-apply').addEventListener('click', function() {
     var val = ($('ae-ai-paste-input').value || '').trim();
     if (!val) return;
-    if (!looksLikeHtmlDoc(val)) {
-      toast('Paste a complete HTML document first.', { error: true });
+    var cleanPreview = sanitizeAIResponseHTML(val);
+    if (!cleanPreview || cleanPreview.length < 4) {
+      toast('Paste the AI response first — nothing usable after stripping prose/fences.', { error: true });
       return;
     }
     if (!current) {
       toast('No page is open in the editor. Open a page from the sidebar first.', { error: true, ms: 6000 });
       return;
+    }
+    // v3.44: warn (don't block) when the paste isn't an obvious HTML/Liquid file.
+    if (!looksLikeHtmlDoc(val)) {
+      var proceed = confirm(
+        'The paste doesn\'t look like HTML or Liquid. Apply it anyway?\n\n'
+        + 'If you\'re editing CSS, JS, or another non-HTML file this is fine. '
+        + 'Otherwise cancel and check the AI\'s response.'
+      );
+      if (!proceed) return;
     }
 
     // Path mismatch check: was the engineered prompt for the same
