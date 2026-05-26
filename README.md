@@ -1,18 +1,59 @@
 # PNEC Frontend — Poway Neighborhood Emergency Corps
 
-Jekyll / GitHub Pages static site for [powaynec.com](https://powaynec.com). Serves as the public-facing website for PNEC, the community emergency preparedness organization serving Poway, CA since 1995.
+Made by Ethan Patel, Aneesh Deevi, Samarth Vaka
 
-## Setup
+**[powaynec.com](https://powaynec.com)** — Public website for the Poway Neighborhood Emergency Corps (PNEC), a community emergency preparedness organization serving Poway, CA since 1995.
+
+PNEC trains residents, coordinates volunteers, and connects neighborhoods so that communities can respond effectively to disasters and emergencies. This site is the organization's primary digital hub: residents can access preparedness resources, check neighborhood maps, browse events, and connect with local coordinators. Staff and coordinators have additional tools for managing content and responding to community questions.
+
+Built as a Jekyll / GitHub Pages static site backed by a Flask API.
+
+---
+
+## What the Site Does
+
+**For residents:**
+- Browse emergency preparedness resources and checklists
+- Build and track a personalized 72-hour emergency kit
+- View an interactive neighborhood map
+- Browse and RSVP to community events and CERT/PACT programs
+- Ask preparedness questions via the FAQ chatbot
+- Play a preparedness trivia game
+- View community photos and media
+
+**For coordinators and staff:**
+- Organize members by volunteers and residents
+- Live edits to website
+- Role-gated access based on trust level (`resident` → `coordinator` → `staff` → `admin`)
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Static site | Jekyll / GitHub Pages |
+| Styles | SCSS (compiled by Jekyll) |
+| JavaScript | Vanilla JS (ES modules, no framework) |
+| Maps | Leaflet.js |
+| Backend API | Flask (runs separately at `http://127.0.0.1:8425`) |
+
+---
+
+## Local Setup
 
 **Prerequisites:** Ruby 3+, Bundler
 
 ```bash
 cd Beasts_FrontEnd
 bundle install
-bundle exec jekyll serve --port 4000
+make clean
+make dev
 ```
 
-Site available at `http://localhost:4000`. API calls hit the Flask backend at `http://127.0.0.1:8425` (set in `assets/js/utils/errors.js`).
+Site available at `http://localhost:4000`. The Flask backend must be running separately for API-dependent features (auth, chatbot, events, etc.). The API base URL is configured in `assets/js/utils/errors.js`.
+
+---
 
 ## Directory Structure
 
@@ -36,20 +77,20 @@ assets/
   css/main.scss            # Jekyll entry point — triggers SASS compile
   js/
     utils/errors.js        # API_BASE, escapeHtml, validateResponse (loaded on all pages)
-    api/                   # WORKER files — fetch only, no DOM
+    api/                   # Worker files — fetch only, no DOM
       auth-api.js          # login, register, logout, me, fetchNeighborhoodsForSelect
       faq-api.js           # FAQ categories, items, search, helpful, question submit/claim/answer
       events-api.js        # fetchEvents, fetchEventsForMonth, createEvent, fetchMediaPosts, uploadMediaPost
       risk-api.js          # fetchRiskAssessment
       neighborhood-api.js  # fetchNeighborhoods, fetchNeighborhoodDetail
       game-api.js          # fetchGameQuestions, submitGameScore
-    ui/                    # WORKER files — DOM manipulation only, no fetch
+    ui/                    # Worker files — DOM manipulation only, no fetch
       auth-ui.js           # renderAccessDenied, updateNavbarAuth
-      chatbot-ui.js        # chatbot widget rendering
-      kit-ui.js            # kit checklist rendering
+      chatbot-ui.js        # Chatbot widget rendering
+      kit-ui.js            # Kit checklist rendering
       map-ui.js            # Leaflet map rendering
-      risk-ui.js           # risk card rendering
-    pages/                 # ORCHESTRATOR files — coordinate workers
+      risk-ui.js           # Risk card rendering
+    pages/                 # Orchestrator files — coordinate workers
       navbar.js            # Navbar state (auth, mobile menu, dropdowns)
       chatbot.js           # FAQ chatbot orchestrator
       risk-widget.js       # Homepage risk widget orchestrator
@@ -84,9 +125,11 @@ pages/
   prepare.html             # Prepare hub
 ```
 
+---
+
 ## Design System
 
-Colors defined in `_sass/_variables.scss`:
+Colors are defined in `_sass/_variables.scss`:
 
 | Token | Hex | Usage |
 |---|---|---|
@@ -98,17 +141,24 @@ Colors defined in `_sass/_variables.scss`:
 
 Breakpoints: 375px (mobile), 768px (tablet), 1200px (desktop max-width).
 
-## Architecture Patterns
+---
 
-**SRP (Single Responsibility Principle):** Every JS function does exactly one thing. Functions are documented with Purpose, @param, @returns, and Algorithm steps.
+## JavaScript Architecture
 
-**Orchestrator / Worker separation:**
-- `pages/` — orchestrators coordinate the page lifecycle (fetch → render → bind)
-- `api/` — workers fetch data, return Promises, no DOM
-- `ui/` — workers render DOM from data, no fetch
+The JS layer follows a strict **Orchestrator / Worker** pattern with Single Responsibility Principle throughout.
 
-**Role-based gating:** Pages with restricted access call `fetchCurrentUser()` on load and render `renderAccessDenied()` if the user's role is insufficient. Roles: `resident` → `coordinator` → `staff` → `admin`.
+Every function does exactly one thing and is documented with its purpose, parameters, return value, and algorithm steps.
 
-## Image Placeholders
+**Workers** are specialized and never cross concerns:
+- `api/` workers — fetch data from the Flask API, return Promises, touch no DOM
+- `ui/` workers — render DOM from data, make no network calls
 
-See `assets/images/README.md` for the full list of images that need real PNEC photos.
+**Orchestrators** (`pages/`) coordinate the full page lifecycle: fetch data via API workers → render via UI workers → bind event listeners.
+
+**Role-based access** is enforced on restricted pages by calling `fetchCurrentUser()` on load. If the user's role is insufficient, `renderAccessDenied()` is rendered instead of the page content. Role hierarchy: `resident` → `coordinator` → `staff` → `admin`.
+
+---
+
+## Images
+
+See `assets/images/README.md` for the full list of placeholder images that need real PNEC photos.
