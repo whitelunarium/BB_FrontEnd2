@@ -16,10 +16,9 @@ Built as a Jekyll / GitHub Pages static site backed by a Flask API.
 - Browse emergency preparedness resources and checklists
 - Build and track a personalized 72-hour emergency kit
 - View an interactive neighborhood map
-- Browse and RSVP to community events and CERT/PACT programs
 - Ask preparedness questions via the FAQ chatbot
-- Play a preparedness trivia game
 - View community photos and media
+- Overall learning for emergency preparedness
 
 **For coordinators and staff:**
 - Organize members by volunteers and residents
