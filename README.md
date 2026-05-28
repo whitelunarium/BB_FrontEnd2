@@ -1,6 +1,6 @@
 # PNEC Frontend — Poway Neighborhood Emergency Corps
 
-**NOT AN ACTIVE FORK.** This repo is kept around for reference and handoff context. Do not assume changes here ship anywhere automatically.
+**NOT AN ACTIVE FORK.**
 
 Made by Ethan Patel, Aneesh Deevi, Samarth Vaka
 
