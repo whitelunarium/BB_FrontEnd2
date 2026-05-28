@@ -1,8 +1,10 @@
 # PNEC Frontend — Poway Neighborhood Emergency Corps
 
+**NOT AN ACTIVE FORK.** This repo is kept around for reference and handoff context. Do not assume changes here ship anywhere automatically.
+
 Made by Ethan Patel, Aneesh Deevi, Samarth Vaka
 
-**[powaynec.com](https://powaynec.com)** — Public website for the Poway Neighborhood Emergency Corps (PNEC), a community emergency preparedness organization serving Poway, CA since 1995.
+**[powaynec.com](https://powaynec.com)** — Public website for the Poway Neighborhood Emergency Corps (PNEC), an all-volunteer 501(c)(3) community emergency preparedness organization in Poway, CA (established 2011).
 
 PNEC trains residents, coordinates volunteers, and connects neighborhoods so that communities can respond effectively to disasters and emergencies. This site is the organization's primary digital hub: residents can access preparedness resources, check neighborhood maps, browse events, and connect with local coordinators. Staff and coordinators have additional tools for managing content and responding to community questions.
 
