@@ -196,7 +196,6 @@ The JS layer follows a strict **Orchestrator / Worker** pattern with Single Resp
 
 Role-based access is enforced on restricted pages by calling `fetchCurrentUser()` on load. If the user's role is insufficient, `renderAccessDenied()` is rendered instead of the page content.
 
-Role hierarchy: `resident` → `coordinator` → `staff` → `admin`
 
 ---
 
