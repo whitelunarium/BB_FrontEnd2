@@ -6,7 +6,7 @@ PNEC trains residents, coordinates volunteers, and connects neighborhoods so tha
 
 Built with Jekyll and hosted on GitHub Pages, backed by a Flask API.
 
-Live site: **[Link]([https://powaynec.com](https://pnec.opencodingsociety.com))**
+Live site: **([https://powaynec.com](https://pnec.opencodingsociety.com))**
 
 Made by Ethan Patel, Aneesh Deevi, Samarth Vaka.
 
